@@ -1,0 +1,13 @@
+setup.py
+timeseriesclient/__init__.py
+timeseriesclient/adalwrapper.py
+timeseriesclient/timeseriesclient.py
+timeseriesclient.egg-info/PKG-INFO
+timeseriesclient.egg-info/SOURCES.txt
+timeseriesclient.egg-info/dependency_links.txt
+timeseriesclient.egg-info/not-zip-safe
+timeseriesclient.egg-info/top_level.txt
+timeseriesclient/test/__init__.py
+timeseriesclient/test/test_adalwrapper.py
+timeseriesclient/test/test_library.py
+timeseriesclient/test/test_timeseriesclient.py

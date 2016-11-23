@@ -1,0 +1,4 @@
+__pycache__/
+timeseriesclient.egg-info/
+*.pyc
+.coverage
