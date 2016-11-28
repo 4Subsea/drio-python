@@ -1,6 +1,10 @@
 import unittest
 import sys
-from testfixtures import compare
+import requests
+import json 
+#from testfixtures import compare
+import pandas as pd
+import numpy as np
 
 try:
     from unittest.mock import Mock, MagicMock, patch, PropertyMock
@@ -51,8 +55,6 @@ class TestTimeSeriesClient(unittest.TestCase):
         expected_header = { key : value }
 
         self.assertEqual(header, expected_header)
-
-
 
             
 class TestTimeSeriesClient_Authenticate(unittest.TestCase):
@@ -113,6 +115,100 @@ class TestTimeSeriesClient_Ping(unittest.TestCase):
         client.ping()
         
         mock.assert_called_once_with(expected_uri, headers=expected_header)
+
+
+class Test_GetFileUploadParameters(unittest.TestCase):
+
+    def setUp(self):
+        self.dummy_params = json.dumps({ 'FileId' : 'a file id',
+                              'Account' : 'account',
+                              'SasKey' : 'abcdef',
+                              'Container' : 'blobcontainer', 
+                              'Path' : 'blobpath',
+                              'Endpoint' : 'endpointURI' }).encode('ascii')
+
+
+    def create_dummy_response(self):
+        response = requests.Response()
+        response._content = self.dummy_params
+        
+        return response
+        
+    
+    @patch('timeseriesclient.timeseriesclient.requests.post')
+    def test_calls_api_files_upload(self, post_mock):
+        client = timeseriesclient.TimeSeriesClient()
+        client._authenticator._token = {'accessToken' : 'dummyToken' }
+
+        post_mock.return_value = self.create_dummy_response()
+
+        client._get_file_upload_params()
+
+        expected_uri = client._api_base_url + 'Files/upload'
+        expected_header = { 'Authorization' : 'Bearer dummyToken' }
+        post_mock.assert_called_once_with(expected_uri, headers=expected_header)
+
+    @patch('timeseriesclient.timeseriesclient.requests.post')
+    def test_returns_python_dictionary(self, post_mock):
+        client = timeseriesclient.TimeSeriesClient()
+        client._authenticator._token = {'accessToken' : 'dummyToken' }
+
+        post_mock.return_value = self.create_dummy_response()
+
+        upload_params = client._get_file_upload_params()
+
+        self.assertIsInstance(upload_params, dict)
+        self.assertEqual(upload_params['FileId'], 'a file id')
+
+class Test_UploadTimeseries(unittest.TestCase):
+
+    def setUp(self):
+        self.dummy_params = { 'FileId' : 'a file id',
+                              'Account' : 'account',
+                              'SasKey' : 'abcdef',
+                              'Container' : 'blobcontainer', 
+                              'Path' : 'blobpath',
+                              'Endpoint' : 'endpointURI' }
+        
+        
+    @patch('timeseriesclient.storage.get_blobservice')
+    def test_asks_for_upload_params(self, mock_blobservice):
+        client = timeseriesclient.TimeSeriesClient()
+        client._get_file_upload_params = Mock(return_value=self.dummy_params)
+
+        df = pd.DataFrame({'a':np.arange(1e3)})
+        client.upload_timeseries(df)
+        client._get_file_upload_params.assert_called_once_with()
+
+
+
+class Test_UploadFile(unittest.TestCase):
+
+    @patch('timeseriesclient.adalwrapper.Authenticator.token', new_callable=PropertyMock)
+    def test_(self, mock):
+        client = timeseriesclient.TimeSeriesClient()
+        
+        mock.return_value = 'dummy token'
+
+        client.upload_file()
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

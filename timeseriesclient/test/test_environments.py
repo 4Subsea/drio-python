@@ -13,7 +13,7 @@ sys.path.append('../../')
 import timeseriesclient
 import timeseriesclient.constants as consts
 import timeseriesclient.globalsettings as gs 
-from timeseriesclient.adal_parameters import ADALParameters
+from timeseriesclient.adalparameters import ADALParameters
 
 gs.environment.set_qa()
 

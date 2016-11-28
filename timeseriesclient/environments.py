@@ -1,5 +1,5 @@
 from . import constants
-from .adal_parameters import ADALParameters
+from .adalparameters import ADALParameters
 import logging
 
 
