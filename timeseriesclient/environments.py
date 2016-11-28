@@ -36,6 +36,7 @@ class Environment(object):
         self._logger.info('Setting baseurl to: {}'.format(base_url))
         self._api_base_url = base_url
 
+    # this method is misplaced here, refactor! //JWE
     def get_adal_parameters(self):
         return ADALParameters(self.current_environment) 
 

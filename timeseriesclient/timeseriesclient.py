@@ -2,16 +2,18 @@ import requests
 import json
 from azure.storage.blob import BlockBlobService
 
-from .adalwrapper import Authenticator
+from .adalwrapper import Authenticator, add_authorization_header
 from . import globalsettings
 from .fileupload import DataFrameUploader
 from . import storage
+from . import apitimeseries
 
 class TimeSeriesClient(object):
     
     def __init__(self, host=None):
         self._authenticator = Authenticator()
         self._api_base_url = globalsettings.environment.api_base_url
+        self._timeseries_api = apitimeseries.TimeSeriesApi()
 
     def authenticate(self):
         self._authenticator.authenticate()
@@ -22,7 +24,7 @@ class TimeSeriesClient(object):
 
     def ping(self):
         uri = self._api_base_url + 'Ping'
-        header = self._add_authorization_header({})
+        header = add_authorization_header({}, self.token)
 
         response = requests.get(uri, headers=header)
         return response
@@ -33,16 +35,31 @@ class TimeSeriesClient(object):
         uploader = DataFrameUploader(blobservice)
 
         uploader.upload(dataframe, upload_params)
+
+        self._commit_file(upload_params['FileId'])
         
         del uploader, blobservice, upload_params
 
     def upload_file(self):
         return None
 
+    def list_timeseries(self):
+        return self._timeseries_api.list(self.token)
+
+    # refactor into apiwrapper
+    def _commit_file(self, file_id):
+        uri = self._api_base_url + 'Files/commit'
+        header = add_authorization_header({}, self.token)
+        body = { 'FileId' : file_id }
+
+        response = requests.post(uri, headers=header, data=body)
+
+        return response.status_code
+
     # refactor into apiwrapper
     def _get_file_upload_params(self):
         uri = self._api_base_url + 'Files/upload'
-        header = self._add_authorization_header({})
+        header = add_authorization_header({}, self.token)
 
         response = requests.post(uri, headers=header)
         upload_params = json.loads(response.text)
@@ -51,19 +68,6 @@ class TimeSeriesClient(object):
 
         return upload_params
 
-    def _add_authorization_header(self, header):
-        key, value = self._create_authorization_header()
-        header[key] = value
-        return header
-
-    # refactor -> put into adalwrapper
-    def _create_authorization_header(self):
-        key = 'Authorization'
-
-        access_token = self.token['accessToken']
-        value = 'Bearer {}'.format(access_token)
-
-        return key, value
 
         
         

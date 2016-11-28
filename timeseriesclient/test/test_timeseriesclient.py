@@ -15,6 +15,7 @@ sys.path.append('../../')
 import timeseriesclient
 from timeseriesclient.adalwrapper import Authenticator
 import timeseriesclient.globalsettings as gs
+from timeseriesclient.apitimeseries import TimeSeriesApiMock, TimeSeriesApi
 
 timeseriesclient.globalsettings.environment.set_qa()
 
@@ -29,32 +30,7 @@ class TestTimeSeriesClient(unittest.TestCase):
         self.assertIsInstance(client._authenticator, Authenticator)
 
         self.assertEqual(client._api_base_url, gs.environment.api_base_url)
-
-    @patch('timeseriesclient.TimeSeriesClient.token', new_callable=PropertyMock)
-    def test_create_authorization_header(self, mock):
-        client = timeseriesclient.TimeSeriesClient()
-
-        mock.return_value = {'accessToken' : 'abcdef'}
-
-        key, value = client._create_authorization_header()
-
-        self.assertEqual(key, 'Authorization')
-        self.assertEqual(value, 'Bearer abcdef')
-
-
-    @patch('timeseriesclient.TimeSeriesClient._create_authorization_header')
-    def test_add_authorization_header(self, mock):
-        client = timeseriesclient.TimeSeriesClient()
-
-        key = 'Authorization'
-        value = 'Bearer abcdef'
-       
-        mock.return_value = (key, value)
-
-        header = client._add_authorization_header({})
-        expected_header = { key : value }
-
-        self.assertEqual(header, expected_header)
+        self.assertIsInstance(client._timeseries_api, TimeSeriesApi)
 
             
 class TestTimeSeriesClient_Authenticate(unittest.TestCase):
@@ -175,27 +151,61 @@ class Test_UploadTimeseries(unittest.TestCase):
     def test_asks_for_upload_params(self, mock_blobservice):
         client = timeseriesclient.TimeSeriesClient()
         client._get_file_upload_params = Mock(return_value=self.dummy_params)
+        client._commit_file = Mock(return_value=200)
 
         df = pd.DataFrame({'a':np.arange(1e3)})
         client.upload_timeseries(df)
         client._get_file_upload_params.assert_called_once_with()
 
 
+    @patch('timeseriesclient.storage.get_blobservice')
+    def test_commits_file(self, mock_blobservice):
+        client = timeseriesclient.TimeSeriesClient()
+        client._get_file_upload_params = Mock(return_value=self.dummy_params)
+        client._commit_file = Mock(return_value=200)
+
+        df = pd.DataFrame({'a':np.arange(1e3)})
+        client.upload_timeseries(df)
+
+        client._commit_file.assert_called_once_with('a file id')
+
+        
+
+
 
 class Test_UploadFile(unittest.TestCase):
 
-    @patch('timeseriesclient.adalwrapper.Authenticator.token', new_callable=PropertyMock)
-    def test_(self, mock):
+    def test_(self):
         client = timeseriesclient.TimeSeriesClient()
+        client._authenticator._token = {'accessToken' : 'dummyToken' }
         
-        mock.return_value = 'dummy token'
 
         client.upload_file()
  
 
+class Test_Commitfile(unittest.TestCase):
+
+    @patch('timeseriesclient.timeseriesclient.requests.post')
+    def test_(self, mock_post):
+        client = timeseriesclient.TimeSeriesClient()
+        client._authenticator._token = {'accessToken' : 'dummyToken' }
+
+        client._commit_file('fileid')
+
+        mock_post.assert_called_with('https://reservoir-api.azurewebsites.net/api/Files/commit', data={'FileId': 'fileid'}, headers={'Authorization': 'Bearer dummyToken'})
 
 
+class Test_ListTimeSeries(unittest.TestCase):
 
+    def test_(self):
+        client = timeseriesclient.TimeSeriesClient()
+        client._authenticator._token = {'accessToken' : 'dummyToken' }
+        client._timeseries_api = TimeSeriesApiMock()
+
+        timeseries = client.list_timeseries()
+
+        self.assertEqual(timeseries, client._timeseries_api.list_return_value)
+        self.assertEqual(client._timeseries_api.last_token, {'accessToken' : 'dummyToken' })
 
 
 
