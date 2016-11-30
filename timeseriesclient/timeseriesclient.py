@@ -1,5 +1,8 @@
 import requests
 import json
+import numpy as np
+import logging
+
 from azure.storage.blob import BlockBlobService
 
 from .adalwrapper import Authenticator, add_authorization_header
@@ -7,6 +10,10 @@ from . import globalsettings
 from .fileupload import DataFrameUploader
 from . import storage
 from . import apitimeseries
+from .log import LogWriter
+
+logger = logging.getLogger(__name__)
+logwriter = LogWriter(logger)
 
 class TimeSeriesClient(object):
     
@@ -16,10 +23,17 @@ class TimeSeriesClient(object):
         self._timeseries_api = apitimeseries.TimeSeriesApi()
 
     def authenticate(self):
+        logwriter.debug("called", "authenticate")
+
         self._authenticator.authenticate()
 
     @property
     def token(self):
+        logwriter.debug("called", "token")
+
+        if not self._authenticator.token:
+            logwriter.warning("returned token is None", "token")
+
         return self._authenticator.token
 
     def ping(self):
@@ -37,14 +51,22 @@ class TimeSeriesClient(object):
         uploader.upload(dataframe, upload_params)
 
         self._commit_file(upload_params['FileId'])
+        response = self._timeseries_api.create(self.token, 
+                                    upload_params['FileId'],
+                                    str(np.datetime64(0, 's')))
         
         del uploader, blobservice, upload_params
+
+        return(response)
 
     def upload_file(self):
         return None
 
     def list_timeseries(self):
         return self._timeseries_api.list(self.token)
+
+    def delete_timeseries(self, timeseries_id):
+        return self._timeseries_api.delete(self.token, timeseries_id)
 
     # refactor into apiwrapper
     def _commit_file(self, file_id):

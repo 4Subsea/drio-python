@@ -139,7 +139,7 @@ class Test_GetFileUploadParameters(unittest.TestCase):
 class Test_UploadTimeseries(unittest.TestCase):
 
     def setUp(self):
-        self.dummy_params = { 'FileId' : 'a file id',
+        self.dummy_params = { 'FileId' : 666,
                               'Account' : 'account',
                               'SasKey' : 'abcdef',
                               'Container' : 'blobcontainer', 
@@ -150,8 +150,11 @@ class Test_UploadTimeseries(unittest.TestCase):
     @patch('timeseriesclient.storage.get_blobservice')
     def test_asks_for_upload_params(self, mock_blobservice):
         client = timeseriesclient.TimeSeriesClient()
+        dummy_token = {'accessToken' : 'abcdef'}
+        client._authenticator._token = dummy_token
         client._get_file_upload_params = Mock(return_value=self.dummy_params)
         client._commit_file = Mock(return_value=200)
+        client._timeseries_api.create = Mock(return_value={"TimeSeriesId":'tsfromhell'})
 
         df = pd.DataFrame({'a':np.arange(1e3)})
         client.upload_timeseries(df)
@@ -161,16 +164,37 @@ class Test_UploadTimeseries(unittest.TestCase):
     @patch('timeseriesclient.storage.get_blobservice')
     def test_commits_file(self, mock_blobservice):
         client = timeseriesclient.TimeSeriesClient()
+        dummy_token = {'accessToken' : 'abcdef'}
+        client._authenticator._token = dummy_token
         client._get_file_upload_params = Mock(return_value=self.dummy_params)
         client._commit_file = Mock(return_value=200)
+        client._timeseries_api.create = Mock(return_value={"TimeSeriesId":'tsfromhell'})
 
         df = pd.DataFrame({'a':np.arange(1e3)})
         client.upload_timeseries(df)
 
-        client._commit_file.assert_called_once_with('a file id')
+        client._commit_file.assert_called_once_with(666)
 
-        
+    @patch('timeseriesclient.storage.get_blobservice')
+    def test_create_file_endpoint_called(self, mock_blob):
+        client = timeseriesclient.TimeSeriesClient()
+        dummy_token = {'accessToken' : 'abcdef'}
+        client._authenticator._token = dummy_token
+        client._get_file_upload_params = Mock(return_value=self.dummy_params)
+        client._commit_file = Mock(return_value=200)
+        client._timeseries_api.create = Mock(return_value={"TimeSeriesId":'tsfromhell'})
 
+        df = pd.DataFrame({'a':np.arange(1e3)})
+        result = client.upload_timeseries(df)
+
+        exp_time = "1970-01-01T00:00:00"
+        exp_id = 666
+
+        client._timeseries_api.create.assert_called_once_with(dummy_token,
+                                                              exp_id,
+                                                              exp_time)
+
+        self.assertEqual(result, {"TimeSeriesId":'tsfromhell'})
 
 
 class Test_UploadFile(unittest.TestCase):
@@ -208,7 +232,18 @@ class Test_ListTimeSeries(unittest.TestCase):
         self.assertEqual(client._timeseries_api.last_token, {'accessToken' : 'dummyToken' })
 
 
+class Test_DeleteTimeSeries(unittest.TestCase):
 
+    def test_(self):
+        client = timeseriesclient.TimeSeriesClient()
+        client._authenticator._token = {'accessToken' : 'dummyToken' }
+        client._timeseries_api = TimeSeriesApiMock()
+
+        response = client.delete_timeseries('123456')
+
+        self.assertEqual(client._timeseries_api.last_token, {'accessToken' : 'dummyToken' })
+
+        
 
 
 
