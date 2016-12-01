@@ -25,22 +25,39 @@ basic usage::
     import timeseriesclient
     import numpy as np
     import pandas as pd
-    import logging
-    import sys
 
-    timeseriesclient.set_log_level(logging.DEBUG)
-    timeseriesclient.logger.addHandler(logging.StreamHandler(sys.stdout))
-    timeseriesclient.globalsettings.environment.set_qa()
-
+    # Create a new client to work with
     client = timeseriesclient.TimeSeriesClient()
 
+    # First step is to authenticate.
+    # The client will ask for your username and password
     client.authenticate()
 
-    df = pd.DataFrame({'a':np.arange(1e6)})
+    # A simple example dataset
+    timevector = np.array(np.arange(0, 10e9, 1e9), dtype='datetime64[ns]')
+    values = np.random.rand(10)
+    df = pd.DataFrame({'values' : values}, index=timevector)
 
-    result = client.upload_timeseries(df)
+    # Upload the dataset
+    result = client.create(df)
 
     print(result)
+
+The response you get is a python dictionary, it should look like this::
+
+    {
+      "FileId": 0,
+      "TimeOfFirstSample": 0,
+      "TimeOfLastSample": 0,
+      "TimeSeriesId": 0,
+      "FileStatus": 0,
+      "ReferenceTime": "2016-12-01T11:18:57.448Z",
+      "LastModifiedByEmail": "string",
+      "Created": "2016-12-01T11:18:57.448Z",
+      "LastModified": "2016-12-01T11:18:57.448Z",
+      "CreatedByEmail": "string"
+    } 
+
 
 Logging and Debugging
 #####################

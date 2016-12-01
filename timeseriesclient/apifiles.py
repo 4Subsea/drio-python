@@ -1,8 +1,14 @@
 import requests
 import json
+import logging
 
 from . import globalsettings
 from . import adalwrapper as adalw
+from .log import LogWriter
+
+logger = logging.getLogger(__name__)
+logwriter = LogWriter(logger)
+
 
 class FilesApi(object):
 
@@ -10,10 +16,13 @@ class FilesApi(object):
         self._api_base_url = globalsettings.environment.api_base_url
     
     def upload(self, token):
+        logwriter.debug("called", "upload")
+
         uri = self._api_base_url + 'Files/upload'
         headers = adalw.add_authorization_header({}, token)
 
-        response = requests.post(uri, headers=headers)
+        response = self._post(uri, headers=headers, member='upload')
+        
         upload_params = json.loads(response.text)
 
         #upload_params['SasKey'] = upload_params['SasKey'].lstrip('?')    
@@ -25,9 +34,17 @@ class FilesApi(object):
         headers = adalw.add_authorization_header({}, token)
         body = { 'FileId' : file_id }
 
-        response = requests.post(uri, headers=headers, data=body)
+        response = self._post(uri, headers=headers, data=body)
 
         return response.status_code
+
+    def _post(self, uri, headers, data=None, member=None):
+        logwriter.debug("issued post request to {}".format(uri), member)
+        response = requests.post(uri, headers=headers, data=data)
+        logwriter.debug("response status code: {}".format(response.status_code), member)
+        logwriter.debug("received: {}".format(response.text), member)
+
+        return response
 
 
 class FilesApiMock(object):

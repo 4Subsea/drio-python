@@ -41,7 +41,7 @@ class Test_FilesApi(unittest.TestCase):
 
         mock_post.assert_called_once_with(
             'https://reservoir-api-qa.azurewebsites.net/api/Files/upload',
-            headers={'Authorization': 'Bearer abcdef'})
+            headers={'Authorization': 'Bearer abcdef'}, data=None)
 
         self.assertIsInstance(result, dict)
         self.assertEqual(result, json.loads(response_upload) )

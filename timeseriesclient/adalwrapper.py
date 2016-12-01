@@ -25,13 +25,11 @@ class Authenticator(object):
     def token(self):
         return self._token
 
-# refactor -> put into adalwrapper
 def add_authorization_header(header, token):
     key, value = create_authorization_header(token)
     header[key] = value
     return header
 
-# refactor -> put into adalwrapper
 def create_authorization_header(token):
     key = 'Authorization'
 

@@ -1,6 +1,7 @@
 import requests
 import json
 import numpy as np
+import pandas as pd
 import logging
 
 from azure.storage.blob import BlockBlobService
@@ -45,7 +46,9 @@ class TimeSeriesClient(object):
         response = requests.get(uri, headers=header)
         return response
     
-    def upload_timeseries(self, dataframe):
+    def create(self, dataframe):
+        self._check_arguments_create(dataframe)
+
         upload_params =  self._files_api.upload(self.token)
         blobservice = storage.get_blobservice(upload_params)
         uploader = DataFrameUploader(blobservice)
@@ -54,9 +57,11 @@ class TimeSeriesClient(object):
 
         self._files_api.commit(self.token, upload_params['FileId'])
 
+        
+        reference_time = self._get_reference_time(dataframe)
         response = self._timeseries_api.create(self.token, 
                                     upload_params['FileId'],
-                                    str(np.datetime64(0, 's')))
+                                    reference_time)
         
         del uploader, blobservice, upload_params
 
@@ -68,6 +73,18 @@ class TimeSeriesClient(object):
     def delete_timeseries(self, timeseries_id):
         return self._timeseries_api.delete(self.token, timeseries_id)
 
+    def _check_arguments_create(self, dataframe):
+        if not isinstance(dataframe, pd.DataFrame):
+            raise ValueError('dataframe must be a pandas DataFrame')
+
+        if not dataframe.index.dtype in ['datetime64[ns]', 'int64']: 
+            raise ValueError('allowed dtypes are datetime64[ns] and int64')
+
+    def _get_reference_time(self, dataframe):
+        if dataframe.index.dtype == 'datetime64[ns]':
+            return str(np.datetime64(0, 's'))
+        else:
+            return None
         
         
 

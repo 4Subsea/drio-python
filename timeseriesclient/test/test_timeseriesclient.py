@@ -94,7 +94,7 @@ class TestTimeSeriesClient_Ping(unittest.TestCase):
         mock.assert_called_once_with(expected_uri, headers=expected_header)
 
 
-class Test_UploadTimeseries(unittest.TestCase):
+class Test_Create(unittest.TestCase):
 
     def setUp(self):
         self.dummy_params = { 'FileId' : 666,
@@ -105,6 +105,7 @@ class Test_UploadTimeseries(unittest.TestCase):
                               'Endpoint' : 'endpointURI' }
 
         self.dummy_token = {'accessToken' : 'abcdef'}
+        self.dummy_df = pd.DataFrame({'a':np.arange(1e3)}, index=np.array(np.arange(1e3), dtype='datetime64[ns]'))
 
         self.create_response = {"TimeSeriesId":'tsfromhell'}
 
@@ -113,12 +114,23 @@ class Test_UploadTimeseries(unittest.TestCase):
         self.client._files_api.commit = Mock(return_value=200)
         self.client._timeseries_api.create = Mock(return_value=self.create_response)
         self.client._files_api.upload = Mock(return_value=self.dummy_params)
+        self.client._check_arguments_create = Mock()
+        self.client._get_reference_time = Mock(return_value='1970-01-01T00:00:00')
         
+    @patch('timeseriesclient.storage.get_blobservice')
+    def test_check_arguments_called(self, mock_blob):
+        self.client.create(self.dummy_df)
+        self.client._check_arguments_create.assert_called_with(self.dummy_df)
         
+    @patch('timeseriesclient.storage.get_blobservice')
+    def test_get_reference_time_called(self, mock_blob):
+        self.client.create(self.dummy_df)
+        self.client._get_reference_time.assert_called_with(self.dummy_df)
+
     @patch('timeseriesclient.storage.get_blobservice')
     def test_all_calls_made(self, mock_blobservice):
         df = pd.DataFrame({'a':np.arange(1e3)})
-        self.client.upload_timeseries(df)
+        self.client.create(df)
 
         self.client._files_api.upload.assert_called_with(self.dummy_token)
         mock_blobservice.asser_called_with()
@@ -127,8 +139,7 @@ class Test_UploadTimeseries(unittest.TestCase):
 
     @patch('timeseriesclient.storage.get_blobservice')
     def test_create_file_endpoint_called(self, mock_blob):
-        df = pd.DataFrame({'a':np.arange(1e3)})
-        result = self.client.upload_timeseries(df)
+        result = self.client.create(self.dummy_df)
 
         exp_time = "1970-01-01T00:00:00"
         exp_id = 666
@@ -138,6 +149,49 @@ class Test_UploadTimeseries(unittest.TestCase):
                                                               exp_time)
 
         self.assertEqual(result, {"TimeSeriesId":'tsfromhell'})
+
+class Test_CheckArgumentsCreate(unittest.TestCase):
+    def setUp(self):
+        self.client = timeseriesclient.TimeSeriesClient()
+
+    def make_dataframe_datetime64(self):
+        timevector = np.array(np.arange(0, 10e9, 1e9), dtype='datetime64[ns]')
+        values = np.random.rand(10)
+        return  pd.DataFrame({'values' : values}, index=timevector)
+
+    def make_dataframe_int64(self):
+        timevector = np.arange(0, 10e9, 1e9, dtype=np.int64)
+        values = np.random.rand(10)
+        return  pd.DataFrame({'values' : values}, index=timevector)
+
+    def test_datetime64(self):
+        df = self.make_dataframe_datetime64()
+        result = self.client._check_arguments_create(df)
+        self.assertIsNone(result)
+
+    def test_int64(self):
+        df = self.make_dataframe_int64()
+        result = self.client._check_arguments_create(df)
+        self.assertIsNone(result)
+
+    def test_not_a_dataframe(self):
+        with self.assertRaises(ValueError):
+            self.client._check_arguments_create('this is wrong input')
+
+    def test_datetime64_reference_time(self):
+        df = self.make_dataframe_datetime64()
+
+        client = timeseriesclient.TimeSeriesClient()
+        result = client._get_reference_time(df)
+        expected = '1970-01-01T00:00:00'
+        self.assertEqual(result, expected)
+        
+    def test_int64_reference_time(self):
+        df = self.make_dataframe_int64()
+
+        client = timeseriesclient.TimeSeriesClient()
+        result = client._get_reference_time(df)
+        self.assertEqual(result, None)
 
 
 class Test_ListTimeSeries(unittest.TestCase):
