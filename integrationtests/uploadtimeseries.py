@@ -14,7 +14,7 @@ client.authenticate()
 
 df = pd.DataFrame({'a':np.arange(1e6)})
 
-result = client.upload_timeseries(df)
+result = client.create(df)
 
 print(result)
 

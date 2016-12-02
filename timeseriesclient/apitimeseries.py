@@ -25,6 +25,17 @@ class TimeSeriesApi(object):
 
         return json.loads(response.text)
 
+    def append(self, token, timeseries_id, file_id):
+        logwriter.debug("called with {}, {}, {}".format(token, timeseries_id, file_id), "append")
+
+        uri = self._api_base_url + 'TimeSeries/append_to'
+        headers = adalw.add_authorization_header({}, token)
+        body = { "TimeSeriesId":timeseries_id, "FileId":file_id }
+
+        response = requests.post(uri, headers=headers, data=body)
+
+        return json.loads(response.text)
+
     def list(self, token):
         logwriter.debug("called with {}".format(token))
 
@@ -57,6 +68,9 @@ class TimeSeriesApiMock(object):
     def create(self, token, file_id, reference_time):
         self.last_token = token
         return self.create_return_value
+
+    def append(self, token, timeseries_id, file_id):
+        return { 'TimeSeriesId':timeseries_id, 'FileId':file_id }
 
     def list(self, token):
         self.last_token = token 

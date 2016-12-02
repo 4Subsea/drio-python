@@ -47,12 +47,28 @@ class Test_DataFrameUploader(unittest.TestCase):
         uploader.upload(df, self.upload_params)
 
         self.assertEqual(mock_putblock.call_count, 1)
-        mock_putblock.assert_called_with(df.to_csv(), 
-                        base64.b64encode('0'.encode('ascii')).decode('ascii'), 
-                        self.upload_params)
+        mock_putblock.assert_called_with(df.to_csv(header=False), base64.b64encode('0'.encode('ascii')).decode('ascii'), self.upload_params)
 
         self.assertEqual(mock_commit.call_count, 1)
 
+    def test_upload_converts_datetime64_to_int64(self):
+        mock_blobservice = Mock()
+        mock_putblock = Mock()
+        mock_commit = Mock()
+        uploader = fileupload.DataFrameUploader(block_blob_service=mock_blobservice)
+        uploader._put_block = mock_putblock
+        uploader._commit_blocks = mock_commit()
+
+        timevector = np.array( np.arange(0, 1001e9, 1e9), dtype='datetime64[ns]' )
+        df = pd.DataFrame({'a':np.arange(1001)}, index=timevector)
+        uploader.upload(df, self.upload_params)
+
+        self.assertEqual(mock_putblock.call_count, 1)
+
+        df.index = df.index.astype(np.int64)
+        mock_putblock.assert_called_with(df.to_csv(header=False), base64.b64encode('0'.encode('ascii')).decode('ascii'), self.upload_params)
+
+        self.assertEqual(mock_commit.call_count, 1)
 
     def test_upload_long(self):
         mock_blobservice = Mock()

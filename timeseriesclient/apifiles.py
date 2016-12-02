@@ -50,4 +50,18 @@ class FilesApi(object):
 class FilesApiMock(object):
 
     def upload(self, token):
-        pass
+        dummy_params = { 
+            'FileId' : 666,
+            'Account' : 'account',
+            'SasKey' : 'abcdef',
+            'Container' : 'blobcontainer', 
+            'Path' : 'blobpath',
+            'Endpoint' : 'endpointURI' 
+        }
+        
+        return dummy_params
+
+    def commit(self, token, file_id):
+        logwriter.debug("called, will return status code 200", 'commit') 
+        return 200
+

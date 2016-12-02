@@ -24,7 +24,12 @@ class DataFrameUploader(object):
 
         for i, chunk in enumerate(self._gen_line_chunks(dataframe, self.n_lines)):
             buf = StringIO()
-            chunk.to_csv(buf)
+            
+            if chunk.index.dtype == 'datetime64[ns]':
+                chunk = chunk.copy()
+                chunk.index = chunk.index.astype('int64')
+
+            chunk.to_csv(buf, header=False)
             buf.seek(0)
 
             n_blocks = 0

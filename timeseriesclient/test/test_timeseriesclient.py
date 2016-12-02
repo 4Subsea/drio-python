@@ -114,13 +114,13 @@ class Test_Create(unittest.TestCase):
         self.client._files_api.commit = Mock(return_value=200)
         self.client._timeseries_api.create = Mock(return_value=self.create_response)
         self.client._files_api.upload = Mock(return_value=self.dummy_params)
-        self.client._check_arguments_create = Mock()
+        self.client._verify_and_prepare_dataframe = Mock()
         self.client._get_reference_time = Mock(return_value='1970-01-01T00:00:00')
         
     @patch('timeseriesclient.storage.get_blobservice')
     def test_check_arguments_called(self, mock_blob):
         self.client.create(self.dummy_df)
-        self.client._check_arguments_create.assert_called_with(self.dummy_df)
+        self.client._verify_and_prepare_dataframe.assert_called_with(self.dummy_df)
         
     @patch('timeseriesclient.storage.get_blobservice')
     def test_get_reference_time_called(self, mock_blob):
@@ -150,6 +150,25 @@ class Test_Create(unittest.TestCase):
 
         self.assertEqual(result, {"TimeSeriesId":'tsfromhell'})
 
+class Test_Append(unittest.TestCase):
+
+    def setUp(self):
+        self.client = timeseriesclient.TimeSeriesClient()
+        self.dummy_df = pd.DataFrame({'a':np.arange(1e3)}, index=np.array(np.arange(1e3), dtype='datetime64[ns]'))
+
+        self.dummy_token = {'accessToken' : 'abcdef'}
+        self.client._authenticator._token = self.dummy_token
+
+        self.client._files_api = FilesApiMock()
+        self.client._timeseries_api = TimeSeriesApiMock()
+
+    @patch('timeseriesclient.storage.get_blobservice')
+    def test_(self, mock_blob):
+        timeseries_id = 't666'
+        result = self.client.append(self.dummy_df, timeseries_id)
+
+        self.assertEqual(result['TimeSeriesId'], 't666')
+
 class Test_CheckArgumentsCreate(unittest.TestCase):
     def setUp(self):
         self.client = timeseriesclient.TimeSeriesClient()
@@ -166,17 +185,17 @@ class Test_CheckArgumentsCreate(unittest.TestCase):
 
     def test_datetime64(self):
         df = self.make_dataframe_datetime64()
-        result = self.client._check_arguments_create(df)
+        result = self.client._verify_and_prepare_dataframe(df)
         self.assertIsNone(result)
 
     def test_int64(self):
         df = self.make_dataframe_int64()
-        result = self.client._check_arguments_create(df)
+        result = self.client._verify_and_prepare_dataframe(df)
         self.assertIsNone(result)
 
     def test_not_a_dataframe(self):
         with self.assertRaises(ValueError):
-            self.client._check_arguments_create('this is wrong input')
+            self.client._verify_and_prepare_dataframe('this is wrong input')
 
     def test_datetime64_reference_time(self):
         df = self.make_dataframe_datetime64()
@@ -192,6 +211,14 @@ class Test_CheckArgumentsCreate(unittest.TestCase):
         client = timeseriesclient.TimeSeriesClient()
         result = client._get_reference_time(df)
         self.assertEqual(result, None)
+
+    def test_too_many_columns(self):
+        df = self.make_dataframe_datetime64()
+        df['values2'] = df['values'].values
+
+        with self.assertRaises(ValueError):
+            self.client._verify_and_prepare_dataframe(df)
+            
 
 
 class Test_ListTimeSeries(unittest.TestCase):

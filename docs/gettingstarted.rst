@@ -58,6 +58,20 @@ The response you get is a python dictionary, it should look like this::
       "CreatedByEmail": "string"
     } 
 
+.. warning::
+
+    Make sure to check the response for errors. Are the times for the first 
+    and last sample reasonable/correct?
+
+    And most of all. Make sure to store the ``TimeSeriesId``. This is ID is 
+    required to retrieve the timeseries from the reservoir. If this ID is not 
+    stored, the timeseries will essentially be lost.
+
+.. note::
+
+    As soon as the backend for storing metadata is ready, the responsibility 
+    for taking care of the ``TimeSeriesId`` will be taken away from the user.
+
 
 Logging and Debugging
 #####################

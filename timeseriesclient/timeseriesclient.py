@@ -47,25 +47,25 @@ class TimeSeriesClient(object):
         return response
     
     def create(self, dataframe):
-        self._check_arguments_create(dataframe)
+        self._verify_and_prepare_dataframe(dataframe)
 
-        upload_params =  self._files_api.upload(self.token)
-        blobservice = storage.get_blobservice(upload_params)
-        uploader = DataFrameUploader(blobservice)
-
-        uploader.upload(dataframe, upload_params)
-
-        self._files_api.commit(self.token, upload_params['FileId'])
-
+        file_id = self._upload_file(dataframe)
         
         reference_time = self._get_reference_time(dataframe)
         response = self._timeseries_api.create(self.token, 
-                                    upload_params['FileId'],
+                                    file_id,  
                                     reference_time)
         
-        del uploader, blobservice, upload_params
-
         return(response)
+
+    def append(self, dataframe, timeseries_id):
+        self._verify_and_prepare_dataframe(dataframe)
+        
+        file_id = self._upload_file(dataframe)
+        
+        response = self._timeseries_api.append(self.token, timeseries_id, file_id)
+
+        return response
 
     def list_timeseries(self):
         return self._timeseries_api.list(self.token)
@@ -73,12 +73,31 @@ class TimeSeriesClient(object):
     def delete_timeseries(self, timeseries_id):
         return self._timeseries_api.delete(self.token, timeseries_id)
 
-    def _check_arguments_create(self, dataframe):
+    def _upload_file(self, dataframe):
+        upload_params =  self._files_api.upload(self.token)
+        blobservice = storage.get_blobservice(upload_params)
+        uploader = DataFrameUploader(blobservice)
+        
+        uploader.upload(dataframe, upload_params)
+
+        self._files_api.commit(self.token, upload_params['FileId'])
+
+        return upload_params['FileId']
+
+    def _verify_and_prepare_dataframe(self, dataframe):
+        logwriter.debug("checking arguments", "_check_arguments_create")
+
         if not isinstance(dataframe, pd.DataFrame):
+            logwriter.error("dataframe type is {}".format(type(dataframe)))
             raise ValueError('dataframe must be a pandas DataFrame')
 
         if not dataframe.index.dtype in ['datetime64[ns]', 'int64']: 
+            logwriter.error("index dtype is {}".format(dataframe.index.dtype)) 
             raise ValueError('allowed dtypes are datetime64[ns] and int64')
+
+        if len(dataframe.keys()) > 1:
+            logwriter.error("the dataframe has too many columns, currently only one column is supported")
+            raise ValueError("the dataframe has too many columns, currently only one column is supported")
 
     def _get_reference_time(self, dataframe):
         if dataframe.index.dtype == 'datetime64[ns]':

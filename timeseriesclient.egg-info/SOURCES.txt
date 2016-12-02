@@ -1,6 +1,5 @@
 setup.py
 timeseriesclient/__init__.py
-timeseriesclient/adal_parameters.py
 timeseriesclient/adalparameters.py
 timeseriesclient/adalwrapper.py
 timeseriesclient/apifiles.py
@@ -19,7 +18,6 @@ timeseriesclient.egg-info/dependency_links.txt
 timeseriesclient.egg-info/not-zip-safe
 timeseriesclient.egg-info/top_level.txt
 timeseriesclient/test/__init__.py
-timeseriesclient/test/test_adal_parameters.py
 timeseriesclient/test/test_adalparameters.py
 timeseriesclient/test/test_adalwrapper.py
 timeseriesclient/test/test_apifiles.py
