@@ -66,8 +66,8 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         self.assertEqual(result, json.loads(example_response))
 
-    @patch('timeseriesclient.apitimeseries.requests.get')
-    def test_delete(self, mock_get):
+    @patch('timeseriesclient.apitimeseries.requests.delete')
+    def test_delete(self, mock_delete):
         api = TimeSeriesApi()
         timeseries_id = '123456'
 
@@ -75,14 +75,14 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         response = requests.Response()
         response._content = example_response.encode('ascii')
-        mock_get.return_value = response
+        mock_delete.return_value = response
 
         result = api.delete(self.token, timeseries_id)
 
         expected_uri = 'https://reservoir-api-qa.azurewebsites.net/api/TimeSeries/delete/123456'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
 
-        mock_get.assert_called_with(expected_uri, headers=expected_header)
+        mock_delete.assert_called_with(expected_uri, headers=expected_header)
 
 
     @patch('timeseriesclient.apitimeseries.requests.post')

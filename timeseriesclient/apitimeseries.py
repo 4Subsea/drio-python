@@ -52,7 +52,7 @@ class TimeSeriesApi(object):
         uri = self._api_base_url + 'TimeSeries/delete/' + timeseries_id
         headers = adalw.add_authorization_header({}, token)
 
-        response = requests.get(uri, headers=headers)
+        response = requests.delete(uri, headers=headers)
 
         return json.loads(response.text)
 

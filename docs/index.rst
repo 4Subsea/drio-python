@@ -13,6 +13,7 @@ Contents:
    :maxdepth: 4
 
    gettingstarted
+   api
 
 
 

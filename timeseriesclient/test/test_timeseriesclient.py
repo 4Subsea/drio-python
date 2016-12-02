@@ -228,7 +228,7 @@ class Test_ListTimeSeries(unittest.TestCase):
         client._authenticator._token = {'accessToken' : 'dummyToken' }
         client._timeseries_api = TimeSeriesApiMock()
 
-        timeseries = client.list_timeseries()
+        timeseries = client.list()
 
         self.assertEqual(timeseries, client._timeseries_api.list_return_value)
         self.assertEqual(client._timeseries_api.last_token, {'accessToken' : 'dummyToken' })
@@ -241,11 +241,18 @@ class Test_DeleteTimeSeries(unittest.TestCase):
         client._authenticator._token = {'accessToken' : 'dummyToken' }
         client._timeseries_api = TimeSeriesApiMock()
 
-        response = client.delete_timeseries('123456')
+        response = client.delete('123456')
 
         self.assertEqual(client._timeseries_api.last_token, {'accessToken' : 'dummyToken' })
 
         
+class Test_Get(unittest.TestCase):
+
+    def test_(self):
+        client = timeseriesclient.TimeSeriesClient()
+
+        with self.assertRaises(NotImplementedError):
+            client.get('myfile')
 
 
 

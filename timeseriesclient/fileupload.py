@@ -1,5 +1,7 @@
 import base64
 import sys
+import logging
+
 
 if sys.version_info.major == 3:
     from io import BytesIO, StringIO
@@ -7,6 +9,10 @@ elif sys.version_info.major == 2:
     from StringIO import StringIO
  
 from azure.storage.blob import BlobBlock
+from .log import LogWriter
+
+logger = logging.getLogger(__name__)
+logwriter = LogWriter(logger)
 
 class DataFrameUploader(object):
 
@@ -61,6 +67,7 @@ class DataFrameUploader(object):
         container = upload_params['Container']
         blobname = upload_params['Path']
 
+        logwriter.debug("calling blobservice.put_block", "_put_block")
         self.block_blob_service.put_block(container, 
                                           blobname, 
                                           block=block_data.encode('ascii'),
@@ -70,6 +77,8 @@ class DataFrameUploader(object):
         container = upload_params['Container']
         blobname = upload_params['Path']
 
+        logwriter.debug("commiting {} blocks for file {}".format(len(blocks),
+                                                                 blobname))
         self.block_blob_service.put_block_list(container, blobname, blocks)
 
     def _make_block(self, block_id):

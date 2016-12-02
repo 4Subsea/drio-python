@@ -18,6 +18,17 @@ logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
 class TimeSeriesClient(object):
+    """
+    The TimeSeriesClient communicates with the data reservoir and allows to
+    upload and retrieve timeseries from the data reservoir. 
+
+    .. note::
+        The client does not handle meta data, only a very small set of data 
+        directly linked to the timeseries. A time series is identified by
+        its unique identifier, its id. If this id is lost, the time series 
+        is essentially lost. Take good care of it!
+
+    """
     
     def __init__(self, host=None):
         self._authenticator = Authenticator()
@@ -26,12 +37,23 @@ class TimeSeriesClient(object):
         self._files_api = apifiles.FilesApi()
 
     def authenticate(self):
+        """
+        To be able to use the client, you need to authenticate yourself first.
+        This is the method to call. You will be prompted for your username and 
+        password, use your usual 4Subsea credentials.
+        """
         logwriter.debug("called", "authenticate")
 
         self._authenticator.authenticate()
 
     @property
     def token(self):
+        """
+        Your token that is sent to the data reservoir with every request you 
+        make. There is no password stored in the token, it only provides access 
+        for a limited amount of time and only to the data reservoir.
+        """
+
         logwriter.debug("called", "token")
 
         if not self._authenticator.token:
@@ -40,6 +62,10 @@ class TimeSeriesClient(object):
         return self._authenticator.token
 
     def ping(self):
+        """
+        With ping you can test that you have a working connection to the data
+        reservoir.
+        """
         uri = self._api_base_url + 'Ping'
         header = add_authorization_header({}, self.token)
 
@@ -47,6 +73,21 @@ class TimeSeriesClient(object):
         return response
     
     def create(self, dataframe):
+        """
+        Create a new time series in the data reservoir from a dataframe.
+
+        Parameters
+        ----------
+        dataframe : pandas.DataFrame
+            the dataframe must contain exactly one column (plus the index). The
+            index must either be a numpy.datetime64 (with nanosecond precision) 
+            or integer array. 
+
+        Returns
+        -------
+        dict 
+            The response from the data reservoir
+        """
         self._verify_and_prepare_dataframe(dataframe)
 
         file_id = self._upload_file(dataframe)
@@ -59,6 +100,23 @@ class TimeSeriesClient(object):
         return(response)
 
     def append(self, dataframe, timeseries_id):
+        """
+        Append data to an already existing time series.
+
+        Parameters
+        ----------
+        dataframe : pandas.DataFrame
+            the dataframe must contain exactly one column (plus the index). The
+            index must either be a numpy.datetime64 (with nanosecond precision) 
+            or integer array. 
+        timeseries_id : string
+            the identifier of the timeseries must exist.
+
+        Returns
+        -------
+        dict 
+            The response from the data reservoir
+        """
         self._verify_and_prepare_dataframe(dataframe)
         
         file_id = self._upload_file(dataframe)
@@ -67,11 +125,47 @@ class TimeSeriesClient(object):
 
         return response
 
-    def list_timeseries(self):
+    def list(self):
+        """
+        Lists all available timeseries in the reservoir. 
+
+        Returns:
+        list
+            All timeseries ids in the reservoir.
+        """
         return self._timeseries_api.list(self.token)
 
-    def delete_timeseries(self, timeseries_id):
+    def delete(self, timeseries_id):
+        """
+        Parameters
+        ----------
+        timeseries_id : string
+            The id of the timeseries to delete.
+
+        Returns
+        -------
+        int
+            http status code. 200 is OK
+        """
         return self._timeseries_api.delete(self.token, timeseries_id)
+
+    def get(self, file_id):
+        """
+        Retrieves a timeseries from the data reservoir.
+
+        .. note:: 
+            Not implemented yet.
+
+        Parameters
+        ----------
+        timeseries_id : string
+            id of the timeseries to download
+
+        Returns
+        -------
+        dataframe
+        """
+        raise NotImplementedError()
 
     def _upload_file(self, dataframe):
         upload_params =  self._files_api.upload(self.token)
