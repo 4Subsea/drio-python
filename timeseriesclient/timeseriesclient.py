@@ -41,6 +41,11 @@ class TimeSeriesClient(object):
         To be able to use the client, you need to authenticate yourself first.
         This is the method to call. You will be prompted for your username and 
         password, use your usual 4Subsea credentials.
+
+        Raises
+        ------
+        AdalError:
+            If the login fails.
         """
         logwriter.debug("called", "authenticate")
 
@@ -57,7 +62,8 @@ class TimeSeriesClient(object):
         logwriter.debug("called", "token")
 
         if not self._authenticator.token:
-            logwriter.warning("returned token is None", "token")
+            logwriter.warning("returned token is None, trying to authenticate user", "token")
+            self.authenticate()
 
         return self._authenticator.token
 
@@ -70,7 +76,8 @@ class TimeSeriesClient(object):
         header = add_authorization_header({}, self.token)
 
         response = requests.get(uri, headers=header)
-        return response
+
+        return response.text
     
     def create(self, dataframe):
         """

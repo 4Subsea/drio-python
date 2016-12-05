@@ -12,7 +12,7 @@ timeseriesclient
 
 
 timeseriesclient.TimeSeriesClient
-****************
+*********************************
 
 .. autoclass:: timeseriesclient.TimeSeriesClient
    :members:

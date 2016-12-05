@@ -5,7 +5,9 @@ RESOURCE_PROD = '383e1005-3497-4b05-b08a-10e6d4b49f7d'
 
 CLIENT_ID = 'a946277d-6f78-43ab-be34-be689c4dd3e0'
 
-AUTHORITY = 'https://login.microsoftonline.com/common/'
+TENANT_ID = 'cdf4cf3d-de23-49cf-a9b0-abd2b675f253'
+AUTHORITY = 'https://login.microsoftonline.com/{}/'.format(TENANT_ID)
+
 
 ENV_TEST = 'TEST'
 ENV_QA = 'QA'

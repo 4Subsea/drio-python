@@ -103,5 +103,32 @@ class TestAdalWrapperRefreshToken(unittest.TestCase):
 
 
 
+class Test_UnsafeAuthenticator(unittest.TestCase):
+    
+    @patch('timeseriesclient.adalwrapper.adal.AuthenticationContext.acquire_token_with_username_password')
+    def test_(self, mock_get_token):
+        username='uname'
+        password='passwd'
+        authenticator = adalw.UnsafeAuthenticator(username, password)
+
+        authenticator.authenticate()
+
+        mock_get_token.assert_called_once_with(consts.RESOURCE_QA, 
+                                                    username, 
+                                                    password, 
+                                                    consts.CLIENT_ID)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

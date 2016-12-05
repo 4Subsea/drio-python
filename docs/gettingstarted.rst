@@ -6,7 +6,7 @@ Installation
 The python wheel, the installable file, is located at ``\\FIL-ASK-004\python``.
 The easiest way to install the package is via pip, like all our other packages::
 
-   pip install timeseriesclient -f \\fil-ask-004\python
+   pip install timeseriesclient -f \\fil-ask-004\python\pypi
 
 Basic Usage
 ###########

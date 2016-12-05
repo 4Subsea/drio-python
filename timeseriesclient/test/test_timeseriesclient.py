@@ -64,6 +64,15 @@ class TestTimeSeriesClient_Token(unittest.TestCase):
 
         self.assertEqual(client.token, dummy_token)
 
+    def test_calls_authenticate_if_no_token_available(self):
+        client = timeseriesclient.TimeSeriesClient()
+        client.authenticate = Mock(return_value = {'token':'dummy'})
+        client.token
+
+        self.assertEqual(client.authenticate.call_count, 1)
+
+        
+
 class TestTimeSeriesClient_Ping(unittest.TestCase):
 
     def setUp(self):
