@@ -58,12 +58,10 @@ class TimeSeriesClient(object):
         make. There is no password stored in the token, it only provides access 
         for a limited amount of time and only to the data reservoir.
         """
-
         logwriter.debug("called", "token")
 
         if not self._authenticator.token:
-            logwriter.warning("returned token is None, trying to authenticate user", "token")
-            self.authenticate()
+            logwriter.error("returned token is None", "token")
 
         return self._authenticator.token
 

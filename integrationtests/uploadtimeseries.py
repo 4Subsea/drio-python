@@ -52,6 +52,16 @@ class Test_Authenticate(unittest.TestCase):
 
         print("login took {} seconds".format(stop-start))
         self.assertLess(stop-start, 0.8)
+
+    def test_refresh_token(self):
+        client = make_test_client()
+        client.authenticate()
+
+        token1 = client.token
+        client._authenticator.refresh_token()
+        token2 = client.token
+
+        self.assertNotEqual(token2, token1)
         
 
 class Test_Ping(unittest.TestCase):

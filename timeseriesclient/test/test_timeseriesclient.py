@@ -39,7 +39,8 @@ class TestTimeSeriesClient_Authenticate(unittest.TestCase):
     def test_authenticate_returns_correct_token(self):
         client = timeseriesclient.TimeSeriesClient()
 
-        dummy_token = {'accessToken' : 'abcdef'}
+        dummy_token = {'accessToken' : 'abcdef',
+                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
         client._authenticator._token = dummy_token
 
         self.assertEqual(client.token, dummy_token)
@@ -59,19 +60,12 @@ class TestTimeSeriesClient_Token(unittest.TestCase):
     def test_get_token(self):
         client = timeseriesclient.TimeSeriesClient()
 
-        dummy_token = {'accessToken' : 'abcdef'}
+        dummy_token = {'accessToken' : 'abcdef',
+                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
         client._authenticator._token = dummy_token 
 
         self.assertEqual(client.token, dummy_token)
 
-    def test_calls_authenticate_if_no_token_available(self):
-        client = timeseriesclient.TimeSeriesClient()
-        client.authenticate = Mock(return_value = {'token':'dummy'})
-        client.token
-
-        self.assertEqual(client.authenticate.call_count, 1)
-
-        
 
 class TestTimeSeriesClient_Ping(unittest.TestCase):
 
@@ -113,7 +107,8 @@ class Test_Create(unittest.TestCase):
                               'Path' : 'blobpath',
                               'Endpoint' : 'endpointURI' }
 
-        self.dummy_token = {'accessToken' : 'abcdef'}
+        self.dummy_token = {'accessToken' : 'abcdef',
+                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
         self.dummy_df = pd.DataFrame({'a':np.arange(1e3)}, index=np.array(np.arange(1e3), dtype='datetime64[ns]'))
 
         self.create_response = {"TimeSeriesId":'tsfromhell'}
@@ -165,7 +160,8 @@ class Test_Append(unittest.TestCase):
         self.client = timeseriesclient.TimeSeriesClient()
         self.dummy_df = pd.DataFrame({'a':np.arange(1e3)}, index=np.array(np.arange(1e3), dtype='datetime64[ns]'))
 
-        self.dummy_token = {'accessToken' : 'abcdef'}
+        self.dummy_token = {'accessToken' : 'abcdef',
+                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
         self.client._authenticator._token = self.dummy_token
 
         self.client._files_api = FilesApiMock()
@@ -234,25 +230,29 @@ class Test_ListTimeSeries(unittest.TestCase):
 
     def test_(self):
         client = timeseriesclient.TimeSeriesClient()
-        client._authenticator._token = {'accessToken' : 'dummyToken' }
+        dummy_token ={'accessToken' : 'dummyToken' ,
+                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
+        client._authenticator._token = dummy_token
         client._timeseries_api = TimeSeriesApiMock()
 
         timeseries = client.list()
 
         self.assertEqual(timeseries, client._timeseries_api.list_return_value)
-        self.assertEqual(client._timeseries_api.last_token, {'accessToken' : 'dummyToken' })
+        self.assertEqual(client._timeseries_api.last_token, dummy_token)
 
 
 class Test_DeleteTimeSeries(unittest.TestCase):
 
     def test_(self):
         client = timeseriesclient.TimeSeriesClient()
-        client._authenticator._token = {'accessToken' : 'dummyToken' }
+        dummy_token ={'accessToken' : 'dummyToken' ,
+                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
+        client._authenticator._token = dummy_token
         client._timeseries_api = TimeSeriesApiMock()
 
         response = client.delete('123456')
 
-        self.assertEqual(client._timeseries_api.last_token, {'accessToken' : 'dummyToken' })
+        self.assertEqual(client._timeseries_api.last_token, dummy_token)
 
         
 class Test_Get(unittest.TestCase):
