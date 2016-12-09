@@ -38,6 +38,22 @@ class FilesApi(object):
 
         return response.status_code
 
+    def status(self, token, file_id):
+        uri = self._api_base_url + 'files/{}/status'.format(file_id)
+        headers = adalw.add_authorization_header({}, token)
+
+        response = self._get(uri, headers=headers)
+
+        return json.loads(response.text)
+        
+
+    def _get(self, uri, headers, member=None):
+        logwriter.debug("issued get request to {}".format(uri))
+        response = requests.get(uri, headers=headers)
+        logwriter.debug("response status code: {}".format(response.status_code))
+        logwriter.debug("response text: {}".format(response.text))
+        return response
+
     def _post(self, uri, headers, data=None, member=None):
         logwriter.debug("issued post request to {}".format(uri), member)
         response = requests.post(uri, headers=headers, data=data)

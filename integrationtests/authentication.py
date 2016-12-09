@@ -1,4 +1,3 @@
-import timeseriesclient
 import numpy as np
 import pandas as pd
 import logging
@@ -7,22 +6,12 @@ import unittest
 from timeit import default_timer as timer
 from adal.adal_error import AdalError
 
+import timeseriesclient
 import timeseriesclient.adalwrapper as adalw
+from utils import make_test_client, configure
 
-def configure():
-    timeseriesclient.set_log_level(logging.DEBUG)
-    timeseriesclient.logger.addHandler(logging.StreamHandler(sys.stdout))
-    timeseriesclient.globalsettings.environment.set_qa()
+configure()
 
-def make_test_client():
-    client = timeseriesclient.TimeSeriesClient()
-
-    username = 'reservoir-integrationtest@4subsea.onmicrosoft.com'
-    password = 'LnqABDrHLYceXLWC7YFhbVAq8dqvPeRAMzbTYKGn'
-
-    client._authenticator = adalw.UnsafeAuthenticator(username, password)
-
-    return client
     
 class Test_Authenticate(unittest.TestCase):
 
@@ -51,7 +40,7 @@ class Test_Authenticate(unittest.TestCase):
         stop = timer()
 
         print("login took {} seconds".format(stop-start))
-        self.assertLess(stop-start, 0.8)
+        self.assertLess(stop-start, 1.0)
 
     def test_refresh_token(self):
         client = make_test_client()
@@ -62,28 +51,3 @@ class Test_Authenticate(unittest.TestCase):
         token2 = client.token
 
         self.assertNotEqual(token2, token1)
-        
-
-class Test_Ping(unittest.TestCase):
-
-    def setUp(self):
-        self.client = make_test_client()
-        self.client.authenticate()
-    
-    def test_ping_suceeds(self):
-        self.client.ping()
-
-class Test_Upload(unittest.TestCase):
-
-    def setUp(self):
-        configure()
-
-    def test_upload(self):
-        client = make_test_client()
-        client.authenticate()
-
-        df = pd.DataFrame({'a':np.arange(1e6)})
-
-        result = client.create(df)
-
-

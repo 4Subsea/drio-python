@@ -69,7 +69,7 @@ class Authenticator(object):
         expires = np.datetime64(self._token.get('expiresOn'), 's')
         now = self._get_utcnow()
         
-        return (expires - now).astype(int)
+        return (expires - now).astype(np.int64)
 
     def _get_utcnow(self):
         return np.datetime64(dt.utcnow().isoformat(), 's')

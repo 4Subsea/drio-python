@@ -14,7 +14,7 @@ from timeseriesclient.apitimeseries import TimeSeriesApiMock, TimeSeriesApi
 
 
   
-dummy_response_append = """
+dummy_response_add = """
     {
       "FileId": 0,
       "TimeOfFirstSample": 0,
@@ -28,9 +28,9 @@ dummy_response_append = """
       "CreatedByEmail": "string"
     }"""
 
-def make_append_to_response():
+def make_add_response():
     response = requests.Response()
-    response._content = dummy_response_append.encode('ascii')
+    response._content = dummy_response_add.encode('ascii')
 
     return response
 
@@ -59,7 +59,33 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         result = api.list(self.token)
 
-        expected_uri = 'https://reservoir-api-qa.azurewebsites.net/api/TimeSeries/list'
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/TimeSeries/list'
+        expected_header = { 'Authorization' : 'Bearer abcdef' }
+
+        mock_post.assert_called_with(expected_uri, headers=expected_header)
+
+        self.assertEqual(result, json.loads(example_response))
+
+    @patch('timeseriesclient.apitimeseries.requests.get')
+    def test_info(self, mock_post):
+        api = TimeSeriesApi()
+
+        example_response = """
+              { "FileId": "someId",
+                "TimeOfFirstSample": 0,
+                "TimeOfLastSample": 0,
+                "TimeSeriesId": 0,
+                "FileStatus": 0,
+                "ReferenceTime": "2016-11-28T08:25:16.184Z"
+              }"""
+
+        response = requests.Response()
+        response._content = example_response.encode('ascii')
+        mock_post.return_value = response
+
+        result = api.info(self.token, "someId")
+
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/someId'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
 
         mock_post.assert_called_with(expected_uri, headers=expected_header)
@@ -71,15 +97,14 @@ class Test_TimeSeriesApi(unittest.TestCase):
         api = TimeSeriesApi()
         timeseries_id = '123456'
 
-        example_response = """{ "StatusCode": 100, "Request": {} }"""
 
         response = requests.Response()
-        response._content = example_response.encode('ascii')
+        response.status_code = 200
         mock_delete.return_value = response
 
         result = api.delete(self.token, timeseries_id)
 
-        expected_uri = 'https://reservoir-api-qa.azurewebsites.net/api/TimeSeries/delete/123456'
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/123456'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
 
         mock_delete.assert_called_with(expected_uri, headers=expected_header)
@@ -106,12 +131,12 @@ class Test_TimeSeriesApi(unittest.TestCase):
         response._content = example_response.encode('ascii')
         mock_post.return_value = response
 
-        result = api.create(self.token, file_id, reference_time)
+        result = api.create(self.token, file_id)
 
-        expected_uri = 'https://reservoir-api-qa.azurewebsites.net/api/TimeSeries/create'
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/create'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
 
-        expected_body = { "FileId":file_id, "ReferenceTime":reference_time }
+        expected_body = { "FileId":file_id }
 
         mock_post.assert_called_with(expected_uri, 
                                      headers=expected_header,
@@ -120,16 +145,16 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.assertEqual(result, json.loads(example_response))
 
     @patch('timeseriesclient.apitimeseries.requests.post')
-    def test_append(self, mock_post):
+    def test_add(self, mock_post):
         api = TimeSeriesApi()
         timeseries_id = 't666'
         file_id = 'f001'
 
-        mock_post.return_value = make_append_to_response()
+        mock_post.return_value = make_add_response()
 
-        result = api.append(self.token, timeseries_id, file_id)
+        result = api.add(self.token, timeseries_id, file_id)
 
-        expected_uri = 'https://reservoir-api-qa.azurewebsites.net/api/TimeSeries/append_to'
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/add'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
         expected_body = { "TimeSeriesId":timeseries_id, "FileId":file_id }
 
@@ -137,7 +162,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
                                      headers=expected_header,
                                      data=expected_body)
 
-        self.assertEqual(result, json.loads(dummy_response_append))
+        self.assertEqual(result, json.loads(dummy_response_add))
         
 
 class Test_TimeSeriesApiMock(unittest.TestCase):

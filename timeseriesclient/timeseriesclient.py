@@ -3,6 +3,7 @@ import json
 import numpy as np
 import pandas as pd
 import logging
+import time
 
 from azure.storage.blob import BlockBlobService
 
@@ -96,17 +97,16 @@ class TimeSeriesClient(object):
         self._verify_and_prepare_dataframe(dataframe)
 
         file_id = self._upload_file(dataframe)
-        
-        reference_time = self._get_reference_time(dataframe)
+        self._wait_until_file_ready(file_id)
         response = self._timeseries_api.create(self.token, 
-                                    file_id,  
-                                    reference_time)
+                                    file_id)
         
         return(response)
+        
 
-    def append(self, dataframe, timeseries_id):
+    def add(self, dataframe, timeseries_id):
         """
-        Append data to an already existing time series.
+        Add data to an already existing time series.
 
         Parameters
         ----------
@@ -125,8 +125,8 @@ class TimeSeriesClient(object):
         self._verify_and_prepare_dataframe(dataframe)
         
         file_id = self._upload_file(dataframe)
-        
-        response = self._timeseries_api.append(self.token, timeseries_id, file_id)
+        self._wait_until_file_ready(file_id)
+        response = self._timeseries_api.add(self.token, timeseries_id, file_id)
 
         return response
 
@@ -139,6 +139,17 @@ class TimeSeriesClient(object):
             All timeseries ids in the reservoir.
         """
         return self._timeseries_api.list(self.token)
+
+    def info(self, timeseries_id):
+        """
+        Retrieves basic information about one timeseries.
+        
+        Returns:
+        dict
+            Available information about the timeseries. None if timeseries not 
+            found.
+        """
+        return self._timeseries_api.info(self.token, timeseries_id)
 
     def delete(self, timeseries_id):
         """
@@ -198,11 +209,22 @@ class TimeSeriesClient(object):
             logwriter.error("the dataframe has too many columns, currently only one column is supported")
             raise ValueError("the dataframe has too many columns, currently only one column is supported")
 
-    def _get_reference_time(self, dataframe):
-        if dataframe.index.dtype == 'datetime64[ns]':
-            return str(np.datetime64(0, 's'))
-        else:
-            return None
+    def _wait_until_file_ready(self, file_id):
+        #wait for server side processing
+        while True:
+            status = self._get_file_status(file_id)
+            logwriter.debug("status is {}".format(status), "create")
+
+            if status == "Ready":
+                break
+            
+            time.sleep(5)
+
+        return
+
+    def _get_file_status(self, file_id):
+        response = self._files_api.status(self.token, file_id)
+        return response['State']
         
         
 

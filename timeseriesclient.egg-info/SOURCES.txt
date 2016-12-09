@@ -1,4 +1,9 @@
 setup.py
+integrationtests/__init__.py
+integrationtests/add_timeseries.py
+integrationtests/authentication.py
+integrationtests/create_timeseries.py
+integrationtests/utils.py
 timeseriesclient/__init__.py
 timeseriesclient/adalparameters.py
 timeseriesclient/adalwrapper.py

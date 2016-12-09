@@ -28,7 +28,7 @@ class LogWriter(object):
         return self.logger.debug(msg)
 
     def format(self, lvl, msg, origin=None):
-        time = datetime.utcnow().isoformat()
+        time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
         if origin:
             origin = '.'+origin
