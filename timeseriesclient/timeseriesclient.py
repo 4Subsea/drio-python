@@ -33,7 +33,7 @@ class TimeSeriesClient(object):
     
     def __init__(self, host=None):
         self._authenticator = Authenticator()
-        self._api_base_url = globalsettings.environment.api_base_url
+        #self._api_base_url = globalsettings.environment.api_base_url
         self._timeseries_api = apitimeseries.TimeSeriesApi()
         self._files_api = apifiles.FilesApi()
 
@@ -71,13 +71,8 @@ class TimeSeriesClient(object):
         With ping you can test that you have a working connection to the data
         reservoir.
         """
-        uri = self._api_base_url + 'Ping'
-        header = add_authorization_header({}, self.token)
+        return self._files_api.ping(self.token)
 
-        response = requests.get(uri, headers=header)
-
-        return response.text
-    
     def create(self, dataframe):
         """
         Create a new time series in the data reservoir from a dataframe.

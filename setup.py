@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='timeseriesclient', 
-      version='0.4',
+      version='0.5',
       description='client to access timeseriesservice',
       url='',
       author='4Subsea',

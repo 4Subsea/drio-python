@@ -78,7 +78,7 @@ class DataFrameUploader(object):
         blobname = upload_params['Path']
 
         logwriter.debug("commiting {} blocks for file {}".format(len(blocks),
-                                                                 blobname))
+                                                                 blobname), '_commit_blocks')
         self.block_blob_service.put_block_list(container, blobname, blocks)
 
     def _make_block(self, block_id):

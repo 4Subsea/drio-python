@@ -21,7 +21,7 @@ class TimeSeriesApi(object):
         headers = adalw.add_authorization_header({}, token)
         body = { "FileId":file_id }
 
-        response = requests.post(uri, headers=headers, data=body)
+        response = self._post(uri, headers=headers, data=body)
         logwriter.debug("status code: {}".format(response.status_code))
         logwriter.debug("raw body: {}".format(response.raw))
         logwriter.debug("raw text: {}".format(response.text))
@@ -35,7 +35,7 @@ class TimeSeriesApi(object):
         headers = adalw.add_authorization_header({}, token)
         body = { "TimeSeriesId":timeseries_id, "FileId":file_id }
 
-        response = requests.post(uri, headers=headers, data=body)
+        response = self._post(uri, headers=headers, data=body)
         logwriter.debug("status code: {}".format(response.status_code))
         logwriter.debug("raw body: {}".format(response.raw))
         logwriter.debug("raw text: {}".format(response.text))
@@ -48,7 +48,7 @@ class TimeSeriesApi(object):
         uri = self._api_base_url + 'TimeSeries/list'
         headers = adalw.add_authorization_header({}, token)
 
-        response = requests.get(uri, headers=headers)
+        response = self._get(uri, headers=headers)
 
         return json.loads(response.text)
 
@@ -58,7 +58,7 @@ class TimeSeriesApi(object):
         uri = self._api_base_url + 'timeseries/' + timeseries_id
         headers = adalw.add_authorization_header({}, token)
 
-        response = requests.get(uri, headers=headers)
+        response = self._get(uri, headers=headers)
 
         return json.loads(response.text)
     
@@ -69,9 +69,31 @@ class TimeSeriesApi(object):
         uri = self._api_base_url + 'timeseries/' + timeseries_id
         headers = adalw.add_authorization_header({}, token)
 
-        response = requests.delete(uri, headers=headers)
+        response = self._delete(uri, headers=headers)
 
         return
+
+    def _get(self, uri, headers, member=None):
+        logwriter.debug("issued get request to {}".format(uri))
+        response = requests.get(uri, headers=headers)
+        logwriter.debug("response status code: {}".format(response.status_code))
+        logwriter.debug("response text: {}".format(response.text))
+        return response
+
+    def _delete(self, uri, headers, member=None):
+        logwriter.debug("issued delete request to {}".format(uri))
+        response = requests.delete(uri, headers=headers)
+        logwriter.debug("response status code: {}".format(response.status_code))
+        logwriter.debug("response text: {}".format(response.text))
+        return response
+
+    def _post(self, uri, headers, data=None, member=None):
+        logwriter.debug("issued post request to {}".format(uri), member)
+        response = requests.post(uri, headers=headers, data=data)
+        logwriter.debug("response status code: {}".format(response.status_code), member)
+        logwriter.debug("received: {}".format(response.text), member)
+
+        return response
 
 
 class TimeSeriesApiMock(object):

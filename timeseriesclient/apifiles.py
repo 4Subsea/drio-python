@@ -45,7 +45,14 @@ class FilesApi(object):
         response = self._get(uri, headers=headers)
 
         return json.loads(response.text)
-        
+
+    def ping(self, token):
+        uri = self._api_base_url + 'ping'
+        headers = adalw.add_authorization_header({}, token)
+
+        response = self._get(uri, headers=headers, member='ping')
+
+        return json.loads(response.text)
 
     def _get(self, uri, headers, member=None):
         logwriter.debug("issued get request to {}".format(uri))
@@ -80,4 +87,7 @@ class FilesApiMock(object):
     def commit(self, token, file_id):
         logwriter.debug("called, will return status code 200", 'commit') 
         return 200
+
+    def ping(self, token):
+        return {'status':'pong'}
 

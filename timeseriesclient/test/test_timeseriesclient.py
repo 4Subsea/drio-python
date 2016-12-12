@@ -30,7 +30,6 @@ class TestTimeSeriesClient(unittest.TestCase):
 
         self.assertIsInstance(client._authenticator, Authenticator)
 
-        self.assertEqual(client._api_base_url, gs.environment.api_base_url)
         self.assertIsInstance(client._timeseries_api, TimeSeriesApi)
 
             
@@ -80,21 +79,14 @@ class TestTimeSeriesClient_Ping(unittest.TestCase):
 
     def test_ping_request(self):
         client = timeseriesclient.TimeSeriesClient()
+        dummy_token ={'accessToken' : 'dummyToken' ,
+                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
+        client._authenticator._token = dummy_token
+        client._files_api = FilesApiMock()
 
+        response = client.ping()
 
-        client.ping()
-
-    @patch('timeseriesclient.timeseriesclient.requests.get')
-    def test_endpoint_URI(self, mock):
-        client = timeseriesclient.TimeSeriesClient()
-
-
-        expected_uri = client._api_base_url + 'Ping'
-        expected_header = { 'Authorization' : 'Bearer abcdef' }
-
-        client.ping()
-        
-        mock.assert_called_once_with(expected_uri, headers=expected_header)
+        self.assertEqual(response, {'status':'pong'})
 
 
 class Test_Create(unittest.TestCase):

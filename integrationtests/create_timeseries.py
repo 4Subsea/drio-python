@@ -32,7 +32,7 @@ class Test_Upload(unittest.TestCase):
         client = make_test_client()
         client.authenticate()
 
-        df = pd.DataFrame({'a':np.arange(1e6)})
+        df = pd.DataFrame({'a':np.arange(1e6, dtype=np.int64)})
         result = client.create(df)
 
         logwriter.info("Got result, checking it...")
@@ -44,7 +44,7 @@ class Test_Upload(unittest.TestCase):
         client = make_test_client()
         client.authenticate()
 
-        index = np.arange(1e8, 10e15, 10e9, dtype=np.int64)
+        index = np.array(np.arange(1e8, 10e15, 10e9, dtype=np.int64), dtype='datetime64[ns]')
         df = pd.DataFrame({'a':np.arange(1e6)}, index=index)
         result = client.create(df)
 
