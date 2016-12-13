@@ -14,6 +14,6 @@ ENV_QA = 'QA'
 ENV_PROD = 'PROD'
 
 
-API_BASE_URL_TEST = 'https://reservoir-api-test.azurewebsites.net/api/'
+API_BASE_URL_TEST = 'https://reservoir-api-test.4subsea.net/api/'
 API_BASE_URL_QA = 'https://reservoir-api-qa.4subsea.net/api/'
-API_BASE_URL_PROD = 'https://reservoir-api.azurewebsites.net/api/'
+API_BASE_URL_PROD = 'https://reservoir-api.4subsea.net/api/'

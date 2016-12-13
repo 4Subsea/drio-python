@@ -82,7 +82,7 @@ class TimeSeriesClient(object):
         dataframe : pandas.DataFrame
             the dataframe must contain exactly one column (plus the index). The
             index must either be a numpy.datetime64 (with nanosecond precision) 
-            or integer array. 
+            or numpy.int64.
 
         Returns
         -------

@@ -18,6 +18,7 @@ import timeseriesclient.globalsettings as gs
 from timeseriesclient.apitimeseries import TimeSeriesApiMock, TimeSeriesApi
 from timeseriesclient.apifiles import FilesApiMock
 
+
 timeseriesclient.globalsettings.environment.set_qa()
 
 class TestTimeSeriesClient(unittest.TestCase):

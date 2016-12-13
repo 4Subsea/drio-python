@@ -3,6 +3,7 @@ import json
 import logging
 
 from . import globalsettings
+
 from . import adalwrapper as adalw
 from .log import LogWriter
 
