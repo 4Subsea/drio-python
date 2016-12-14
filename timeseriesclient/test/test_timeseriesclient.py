@@ -245,9 +245,14 @@ class Test_Get(unittest.TestCase):
 
     def test_(self):
         client = timeseriesclient.TimeSeriesClient()
+        dummy_token ={'accessToken' : 'dummyToken' ,
+                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
+        client._authenticator._token = dummy_token
+        client._timeseries_api = TimeSeriesApiMock()
 
-        with self.assertRaises(NotImplementedError):
-            client.get('myfile')
+        response = client.get('123456', None, None)
+
+        self.assertEqual(client._timeseries_api.last_timeseries_id, '123456')
 
 
 

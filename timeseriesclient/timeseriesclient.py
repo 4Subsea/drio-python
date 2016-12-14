@@ -175,7 +175,7 @@ class TimeSeriesClient(object):
         """
         return self._timeseries_api.delete(self.token, timeseries_id)
 
-    def get(self, file_id):
+    def get(self, timeseries_id, start, stop):
         """
         Retrieves a timeseries from the data reservoir.
 
@@ -191,7 +191,14 @@ class TimeSeriesClient(object):
         -------
         dataframe
         """
-        raise NotImplementedError()
+        # check input arguments
+        # check timeseries exists ?
+
+        self._timeseries_api.get(timeseries_id, start, stop)
+
+        # convert response to dataframe
+
+        # return dataframe
 
     def _upload_file(self, dataframe):
         upload_params =  self._files_api.upload(self.token)
@@ -231,7 +238,6 @@ class TimeSeriesClient(object):
                 return "Failed"
 
             time.sleep(5)
-
 
     def _get_file_status(self, file_id):
         response = self._files_api.status(self.token, file_id)

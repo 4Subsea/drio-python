@@ -74,6 +74,21 @@ class TimeSeriesApi(object):
 
         return
 
+    def get(self, token, timeseries_id, start, stop):
+        logwriter.debug("called with <token>, {}".format(timeseries_id))
+
+        uri = self._api_base_url + 'timeseries/{}/data'.format(timeseries_id)
+        headers = adalw.add_authorization_header({}, token)
+        # create parameters from start and stop to be sent with request
+        # parameters = ...
+
+        response = self._get(uri, headers=headers)
+
+        # return stream to client...
+        #return json.loads(response.text)
+        return
+
+
     def _get(self, uri, headers, member=None):
         logwriter.debug("issued get request to {}".format(uri))
         response = requests.get(uri, headers=headers)
@@ -123,5 +138,8 @@ class TimeSeriesApiMock(object):
 
     def delete(self, token, timeseries_id):
         self.last_token = token
+
+    def get(self, timeseries_id, start, stop):
+        self.last_timeseries_id = timeseries_id
         
 
