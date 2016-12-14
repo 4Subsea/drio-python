@@ -83,3 +83,15 @@ To turn on logging there are a two steps you have to perform:
 
 #. Set the debug level 
 #. Add a logging handler
+
+
+
+Architecture
+############
+
+.. image:: _static/architecture.png
+
+
+
+
+
