@@ -1,6 +1,7 @@
 import base64
 import sys
 import logging
+import timeit
 
 
 if sys.version_info.major == 3:

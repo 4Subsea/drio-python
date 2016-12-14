@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import logging
 import time
+import timeit
 
 from azure.storage.blob import BlockBlobService
 
@@ -91,10 +92,22 @@ class TimeSeriesClient(object):
         """
         self._verify_and_prepare_dataframe(dataframe)
 
+        start = timeit.default_timer()
         file_id = self._upload_file(dataframe)
-        self._wait_until_file_ready(file_id)
-        response = self._timeseries_api.create(self.token, 
+        current = timeit.default_timer()
+        logwriter.info('Fileupload took {} seconds'.format(current - start), 'create')
+
+        status = self._wait_until_file_ready(file_id)
+        if status == "Failed":
+            return status
+        current = timeit.default_timer()
+        logwriter.info('Processing serverside time elapsed since start is {} seconds'.format(current - start), 'create')
+
+        response = self._timeseries_api.create(self.token,
                                     file_id)
+        current = timeit.default_timer()
+        logwriter.info('Done, total time spent: {} seconds ({} minutes)'.format(current - start, (current - start)/60.), 'create')
+
         
         return(response)
         
@@ -120,7 +133,9 @@ class TimeSeriesClient(object):
         self._verify_and_prepare_dataframe(dataframe)
         
         file_id = self._upload_file(dataframe)
-        self._wait_until_file_ready(file_id)
+        status = self._wait_until_file_ready(file_id)
+        if status == "Failed":
+            return status
         response = self._timeseries_api.add(self.token, timeseries_id, file_id)
 
         return response
@@ -211,11 +226,12 @@ class TimeSeriesClient(object):
             logwriter.debug("status is {}".format(status), "create")
 
             if status == "Ready":
-                break
-            
+                return "Ready"
+            elif status == "Failed":
+                return "Failed"
+
             time.sleep(5)
 
-        return
 
     def _get_file_status(self, file_id):
         response = self._files_api.status(self.token, file_id)
