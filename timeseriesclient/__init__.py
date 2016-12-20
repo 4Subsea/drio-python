@@ -2,8 +2,8 @@ from __future__ import absolute_import
 
 import logging
 
-from . import globalsettings
 from .timeseriesclient import TimeSeriesClient
+from . import globalsettings  # wierd bug. must be called second?
 
 
 def set_log_level(lvl):
