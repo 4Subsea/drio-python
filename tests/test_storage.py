@@ -1,18 +1,17 @@
 import unittest
-import sys
-
-from azure.storage.blob import BlockBlobService
 
 try:
     from unittest.mock import  patch, PropertyMock
 except:
     from mock import patch, PropertyMock
 
-sys.path.append('../../')
+from azure.storage.blob import BlockBlobService
+
 import timeseriesclient
 from timeseriesclient.adalwrapper import Authenticator
 import timeseriesclient.globalsettings as gs
 import timeseriesclient.storage as storage
+
 
 class Test_GetBlockBlobService(unittest.TestCase):
 
@@ -26,9 +25,7 @@ class Test_GetBlockBlobService(unittest.TestCase):
 
         mock.assert_called_with('accountname', sas_token='abcdef')
 
-
     def test_returns_BlockBlobService(self):
         blobservice = storage.get_blobservice(self.upload_params)
 
         self.assertIsInstance(blobservice, BlockBlobService)
-        

@@ -1,17 +1,13 @@
 import unittest
 
-#from .. import usercredentials
-
 try:
     from unittest.mock import patch
 except:
     from mock import patch
 
-import sys
-
-sys.path.append('../../')
 import timeseriesclient
 import timeseriesclient.usercredentials as usercredentials
+
 
 class TestGetUserCredentials(unittest.TestCase):
     
@@ -27,7 +23,6 @@ class TestGetUserCredentials(unittest.TestCase):
         mock_user.assert_called_with()
         self.assertEqual(username, expected_username)
 
-    
     @patch('timeseriesclient.usercredentials.get_username')
     @patch('timeseriesclient.usercredentials.get_password')
     def test_password_returned_correctly(self, mock_pass, mock_user):
@@ -40,6 +35,7 @@ class TestGetUserCredentials(unittest.TestCase):
         mock_pass.assert_called_with()
         self.assertEqual(password, expected_passwd)
 
+
 class TestGetUsername(unittest.TestCase):
 
     @patch('timeseriesclient.usercredentials.input')
@@ -51,6 +47,7 @@ class TestGetUsername(unittest.TestCase):
 
         mock.assert_called_with('Username: ')
         self.assertEqual(username, expected_username)
+
 
 class TestGetPassword(unittest.TestCase):
 

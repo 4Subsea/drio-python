@@ -1,14 +1,12 @@
 import unittest
 import datetime
-import numpy as np
 
 try:
     from unittest.mock import patch, Mock
 except:
     from mock import patch, Mock
 
-import sys
-sys.path.append('../../')
+import numpy as np
 
 import timeseriesclient
 import timeseriesclient.adalwrapper as adalw
@@ -16,10 +14,12 @@ import timeseriesclient.constants as consts
 
 timeseriesclient.globalsettings.environment.set_qa()
 
+
 class TestAdalWrapper(unittest.TestCase):
 
     def test_authenticator_exists(self):
         authenticator = adalw.Authenticator()
+
 
 class TestAdalWrapperAuthenticate(unittest.TestCase):
 
@@ -29,7 +29,6 @@ class TestAdalWrapperAuthenticate(unittest.TestCase):
         
         self._patcher_get_user_creds = patch('timeseriesclient.adalwrapper.usercredentials.get_user_credentials')
         self.mock_get_user_creds = self._patcher_get_user_creds.start()
-
 
         self.mock_get_user_creds.return_value = ('username', 'passwd')
 
@@ -63,7 +62,6 @@ class TestAdalWrapperAuthenticate(unittest.TestCase):
 
         self.mock_get_user_creds.assert_called_with()
 
-
     def test_token_init(self):
         authenticator = adalw.Authenticator()
 
@@ -81,6 +79,7 @@ class TestAdalWrapperAuthenticate(unittest.TestCase):
         token = authenticator.token
 
         self.assertEqual(token, dummy_token)
+
 
 class TestAdalWrapperRefreshToken(unittest.TestCase):
     
@@ -106,7 +105,6 @@ class TestAdalWrapperRefreshToken(unittest.TestCase):
         token = auth.token
     
         self.assertEqual(token, { 'expiresOn' : 'newtime'})
-
 
     @patch('timeseriesclient.adalwrapper.adal.AuthenticationContext.acquire_token_with_refresh_token')
     def test_calls_time_till_token_expires(self, mock):
@@ -148,8 +146,6 @@ class TestAdalWrapperRefreshToken(unittest.TestCase):
     def test_refresh_token(self, mock_refresh):
         pass
 
-     
-
 
 class Test_HeaderFunctions(unittest.TestCase):
 
@@ -161,7 +157,6 @@ class Test_HeaderFunctions(unittest.TestCase):
         self.assertEqual(key, 'Authorization')
         self.assertEqual(value, 'Bearer abcdef')
 
-
     def test_add_authorization_header(self):
         token = {'accessToken' : 'abcdef'}
         key = 'Authorization'
@@ -171,7 +166,6 @@ class Test_HeaderFunctions(unittest.TestCase):
         header = adalw.add_authorization_header({}, token)
 
         self.assertEqual(header, expected_header)
-
 
 
 class Test_UnsafeAuthenticator(unittest.TestCase):
@@ -188,18 +182,3 @@ class Test_UnsafeAuthenticator(unittest.TestCase):
                                                     username, 
                                                     password, 
                                                     consts.CLIENT_ID)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

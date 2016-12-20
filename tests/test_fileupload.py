@@ -1,7 +1,4 @@
 import unittest
-import sys
-import pandas as pd
-import numpy as np
 import base64
 
 try:
@@ -9,13 +6,12 @@ try:
 except:
     from mock import Mock
 
+import pandas as pd
+import numpy as np
 from azure.storage.blob import BlobBlock
 
-try:
-    from .. import fileupload
-except:
-    sys.path.append('../../')
-    import timeseriesclient.fileupload as fileupload
+import timeseriesclient.fileupload as fileupload
+
 
 class Test_DataFrameUploader(unittest.TestCase):
 
@@ -33,7 +29,6 @@ class Test_DataFrameUploader(unittest.TestCase):
         for attribute in expected_attributes:
             if not hasattr(uploader, attribute):
                 self.fail('Expected uploader to have attribute {}'.format(attribute))
-
 
     def test_upload(self):
         mock_blobservice = Mock()
@@ -97,8 +92,6 @@ class Test_DataFrameUploader(unittest.TestCase):
                                              'blob_xy', 
                                              blocklist) 
 
-        
-
     def test_upload_block(self):
         mock_blobservice = Mock()
         mock_putblock = Mock()
@@ -108,9 +101,6 @@ class Test_DataFrameUploader(unittest.TestCase):
                             block_id='id', 
                             upload_params={'Container' : 'container',
                                            'Path' : 'blob_xy'})
-
-        
-        
 
     def test_make_block(self):
         uploader = fileupload.DataFrameUploader(block_blob_service=None)
@@ -160,13 +150,3 @@ class Test_DataFrameUploader(unittest.TestCase):
                 self.fail("Too many iterations")
 
         self.assertEqual(i+1, 10)
-
-
-        
-        
-
-
-
-        
-
-

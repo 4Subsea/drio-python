@@ -1,4 +1,6 @@
 import unittest
+import logging
+import sys
 
 try:
     from unittest.mock import patch
@@ -6,16 +8,13 @@ try:
 except:
     from mock import patch, call
 
-import logging
-import sys
-
-sys.path.append('../../')
 import timeseriesclient
 import timeseriesclient.constants as consts
 import timeseriesclient.globalsettings as gs 
 from timeseriesclient.adalparameters import ADALParameters
 
 gs.environment.set_qa()
+
 
 class TestConfiguration(unittest.TestCase):
 
@@ -68,6 +67,7 @@ class TestConfiguration(unittest.TestCase):
         gs.environment.set_qa()
         mock.assert_any_call('Setting environment to: QA')
 
+
 class TestGetAdalParameters(unittest.TestCase):
     def test_get_adal_parameters(self):
         params = gs.environment.get_adal_parameters() 
@@ -94,6 +94,7 @@ class TestGetAdalParameters(unittest.TestCase):
                  call(consts.ENV_PROD)]
         mock.assert_has_calls(calls) 
 
+
 class TestApiBaseURL(unittest.TestCase):
     def test_(self):
         gs.environment.set_test()
@@ -113,5 +114,3 @@ class TestApiBaseURL(unittest.TestCase):
     def test_change_of_base_url_is_logged(self, mock):
         gs.environment.set_qa()
         mock.assert_any_call('Setting baseurl to: {}'.format(consts.API_BASE_URL_QA))
-
-

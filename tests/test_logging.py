@@ -1,18 +1,18 @@
 import unittest
 import logging
-import sys
-import numpy as np
-
-sys.path.append('../../')
-import timeseriesclient
-from timeseriesclient.log import LogWriter
 
 try:
     from unittest.mock import Mock
 except:
     from mock import Mock
 
+import numpy as np
+
+import timeseriesclient
+from timeseriesclient.log import LogWriter
+
 logger = logging.getLogger(__name__)
+
 
 class test_Log_Configuration(unittest.TestCase):
 
@@ -39,6 +39,7 @@ class test_Log_Configuration(unittest.TestCase):
 
         self.assertEqual(logger.level, logging.DEBUG)
 
+
 class test_LogWriter(unittest.TestCase):
 
     def _verify_log_message(self, mock, msg, lvl, member):
@@ -48,8 +49,6 @@ class test_LogWriter(unittest.TestCase):
         self.assertEqual(parts[1], lvl)
         self.assertEqual(parts[2], member)
         self.assertEqual(parts[3], msg)
-        
-        
 
     def test_format(self):
         lw = LogWriter(logger)

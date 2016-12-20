@@ -1,11 +1,9 @@
 import unittest
 
-import sys
-
-sys.path.append('../../')
 import timeseriesclient
 import timeseriesclient.constants as consts
 import timeseriesclient.adalparameters as apm
+
 
 class TestADALParameters(unittest.TestCase):
 

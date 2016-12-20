@@ -1,19 +1,16 @@
 import unittest
-import requests
 import json
-import sys
 
 try:
     from unittest.mock import patch, Mock
 except:
     from mock import patch, Mock
 
-sys.path.append('../../')
+import requests
 
 from timeseriesclient.apitimeseries import TimeSeriesApiMock, TimeSeriesApi
 
 
-  
 dummy_response_add = """
     {
       "FileId": 0,
@@ -163,7 +160,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
                                      data=expected_body)
 
         self.assertEqual(result, json.loads(dummy_response_add))
-        
+
 
 class Test_TimeSeriesApiMock(unittest.TestCase):
 
@@ -191,13 +188,12 @@ class Test_TimeSeriesApiMock(unittest.TestCase):
         api = TimeSeriesApiMock()
         result = api.create({}, 0, "1970")
         expected = { "TimeSeriesId", 'abcde' }
- 
+
         self.assertEqual(result, expected)
 
     def test_create_token_stored(self):
         api = TimeSeriesApiMock()
         token = {'key':'createtoken'}
         api.create(token, 0, "1970")
- 
+
         self.assertEqual(api.last_token, token)
-        

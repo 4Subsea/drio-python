@@ -1,25 +1,23 @@
 import unittest
-import sys
-import requests
-import json 
-#from testfixtures import compare
-import pandas as pd
-import numpy as np
+import json
 
 try:
     from unittest.mock import Mock, MagicMock, patch, PropertyMock
 except:
     from mock import Mock, MagicMock, patch, PropertyMock
 
-sys.path.append('../../')
+import requests
+import pandas as pd
+import numpy as np
+
 import timeseriesclient
 from timeseriesclient.adalwrapper import Authenticator
 import timeseriesclient.globalsettings as gs
 from timeseriesclient.apitimeseries import TimeSeriesApiMock, TimeSeriesApi
 from timeseriesclient.apifiles import FilesApiMock
 
-
 timeseriesclient.globalsettings.environment.set_qa()
+
 
 class TestTimeSeriesClient(unittest.TestCase):
     
@@ -33,7 +31,7 @@ class TestTimeSeriesClient(unittest.TestCase):
 
         self.assertIsInstance(client._timeseries_api, TimeSeriesApi)
 
-            
+
 class TestTimeSeriesClient_Authenticate(unittest.TestCase):
 
     def test_authenticate_returns_correct_token(self):
@@ -114,12 +112,12 @@ class Test_Create(unittest.TestCase):
         self.client._verify_and_prepare_dataframe = Mock()
         self.client._get_reference_time = Mock(return_value='1970-01-01T00:00:00')
         self.client._get_file_status = Mock(side_effect=["Processing", "Processing", "Ready"])
-        
+
     @patch('timeseriesclient.storage.get_blobservice')
     def test_check_arguments_called(self, mock_blob):
         self.client.create(self.dummy_df)
         self.client._verify_and_prepare_dataframe.assert_called_with(self.dummy_df)
-        
+
     @patch('timeseriesclient.storage.get_blobservice')
     def test_all_calls_made(self, mock_blobservice):
         df = pd.DataFrame({'a':np.arange(1e3)})
@@ -141,6 +139,7 @@ class Test_Create(unittest.TestCase):
 
         self.assertEqual(result, {"TimeSeriesId":'tsfromhell'})
 
+
 class Test_Add(unittest.TestCase):
 
     def setUp(self):
@@ -161,6 +160,7 @@ class Test_Add(unittest.TestCase):
         result = self.client.add(self.dummy_df, timeseries_id)
 
         self.assertEqual(result['TimeSeriesId'], 't666')
+
 
 class Test_CheckArgumentsCreate(unittest.TestCase):
     def setUp(self):
@@ -196,7 +196,6 @@ class Test_CheckArgumentsCreate(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.client._verify_and_prepare_dataframe(df)
-            
 
 
 class Test_ListTimeSeries(unittest.TestCase):
@@ -213,6 +212,7 @@ class Test_ListTimeSeries(unittest.TestCase):
         self.assertEqual(timeseries, client._timeseries_api.list_return_value)
         self.assertEqual(client._timeseries_api.last_token, dummy_token)
 
+
 class Test_Info(unittest.TestCase):
     def test_info(self):
         client = timeseriesclient.TimeSeriesClient()
@@ -227,6 +227,7 @@ class Test_Info(unittest.TestCase):
         self.assertEqual(result["TimeSeriesId"],"someId") 
         self.assertEqual(client._timeseries_api.last_token, dummy_token)
 
+
 class Test_DeleteTimeSeries(unittest.TestCase):
 
     def test_(self):
@@ -240,7 +241,7 @@ class Test_DeleteTimeSeries(unittest.TestCase):
 
         self.assertEqual(client._timeseries_api.last_token, dummy_token)
 
-        
+
 class Test_Get(unittest.TestCase):
 
     def test_(self):
@@ -253,16 +254,3 @@ class Test_Get(unittest.TestCase):
         response = client.get('123456', None, None)
 
         self.assertEqual(client._timeseries_api.last_timeseries_id, '123456')
-
-
-
-
-
-
-
-
-
-
-
-
-

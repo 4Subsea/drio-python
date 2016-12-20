@@ -1,19 +1,18 @@
 import unittest
-import requests
-import json 
-import sys
+import json
 
 try:
     from unittest.mock import patch, Mock
 except:
     from mock import patch, Mock
 
-sys.path.append('../../')
+import requests
+
 import timeseriesclient
 from timeseriesclient.apifiles import FilesApi, FilesApiMock
 
-
 timeseriesclient.globalsettings.environment.set_qa()
+
 
 response_upload = """{
   "FileId": "a file id",
@@ -70,7 +69,8 @@ class Test_FilesApi(unittest.TestCase):
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/files/fileid/status'
         mock_get.assert_called_with(expected_uri, headers=self.dummy_header);
-        
+
+
 class Test_FilesApiMock(unittest.TestCase):
 
     def test_(self):

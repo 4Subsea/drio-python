@@ -1,7 +1,10 @@
-import logging
-from . import globalsettings
+from __future__ import absolute_import
 
+import logging
+
+from . import globalsettings
 from .timeseriesclient import TimeSeriesClient
+
 
 def set_log_level(lvl):
     """
