@@ -1,11 +1,11 @@
-import requests
 import json
-import numpy as np
-import pandas as pd
 import logging
 import time
 import timeit
 
+import requests
+import numpy as np
+import pandas as pd
 from azure.storage.blob import BlockBlobService
 
 from .adalwrapper import Authenticator, add_authorization_header
@@ -16,8 +16,10 @@ from . import apitimeseries
 from . import apifiles
 from .log import LogWriter
 
+
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
+
 
 class TimeSeriesClient(object):
     """
@@ -31,7 +33,7 @@ class TimeSeriesClient(object):
         is essentially lost. Take good care of it!
 
     """
-    
+
     def __init__(self, host=None):
         self._authenticator = Authenticator()
         #self._api_base_url = globalsettings.environment.api_base_url
@@ -242,11 +244,3 @@ class TimeSeriesClient(object):
     def _get_file_status(self, file_id):
         response = self._files_api.status(self.token, file_id)
         return response['State']
-        
-        
-
-        
-
-    
-
-        
