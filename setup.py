@@ -1,35 +1,20 @@
 from setuptools import setup, find_packages
-import json
-
-def update_version():
-    #read version file
-    #update minor
-    with open('version.json', 'r') as f:
-        version = json.load(f)
-
-    version['minor'] += 1
-
-    with open('version.json', 'w') as f:
-        json.dump(version, f)
-
-    return "{}.{}".format(version['major'], version['minor'])
 
 
 setup(name='timeseriesclient', 
-      version=update_version(),
-      description='client to access timeseriesservice',
-      url='',
+      version='0.1.0',
+      license='Proprietary',
+      description='Python client for timeseries in 4Subsea data reservoir',
+      url='http://www.4subsea.com/python/timeseriesclient',
       author='4Subsea',
-      packages=find_packages(),
-      zip_safe=False,
+      author_email='python@4subsea.com',
+      packages=find_packages(exclude=['tests', 'integrationtests']),
         install_requires = [
             'adal>=0.4.3',
             'azure>=1.0.3',
             'azure-storage>=0.30.0',
             'numpy',
             'pandas'
-        ]
-    )
-
-      
- #['orcaflextools', 'orcaflextools.tests'],echo %PATH#
+        ],
+    include_package_data = True,
+    zip_safe=False)

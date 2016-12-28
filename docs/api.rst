@@ -2,6 +2,13 @@
 API
 ###
 
+timeseriesclient.TimeSeriesClient
+*********************************
+
+.. autoclass:: timeseriesclient.TimeSeriesClient
+   :members:
+   :undoc-members:
+
 timeseriesclient
 ****************
 
@@ -9,11 +16,3 @@ timeseriesclient
    :members:
    :undoc-members:
    :show-inheritance:
-
-
-timeseriesclient.TimeSeriesClient
-*********************************
-
-.. autoclass:: timeseriesclient.TimeSeriesClient
-   :members:
-   :undoc-members:

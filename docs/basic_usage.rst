@@ -1,13 +1,3 @@
-Getting Started
-###############
-
-Installation
-************
-The python wheel, the installable file, is located at ``\\FIL-ASK-004\python``.
-The easiest way to install the package is via pip, like all our other packages::
-
-   pip install timeseriesclient -f \\fil-ask-004\python\pypi
-
 Basic Usage
 ###########
 As *user* the main object you will be working with from the library is the 
@@ -20,7 +10,7 @@ The basic usage *workflow* is
 #. Authenticate yourself with your 4Subsea credentials
 #. Do what you need to do, upload/update/download time series.
 
-basic usage::
+Example::
 
     import timeseriesclient
     import numpy as np
@@ -66,32 +56,3 @@ The response you get is a python dictionary, it should look like this::
     And most of all. Make sure to store the ``TimeSeriesId``. This is ID is 
     required to retrieve the timeseries from the reservoir. If this ID is not 
     stored, the timeseries will essentially be lost.
-
-.. note::
-
-    As soon as the backend for storing metadata is ready, the responsibility 
-    for taking care of the ``TimeSeriesId`` will be taken away from the user.
-
-
-Logging and Debugging
-#####################
-Sometimes, when things go wrong you would like to gain some insight in what is
-happening in the background. The timeseriesclient package uses pythons built-in
-logging package, see the full documentation here: `https://docs.python.org/2/howto/logging.html <https://docs.python.org/2/howto/logging.html>`_.
-
-To turn on logging there are a two steps you have to perform:
-
-#. Set the debug level 
-#. Add a logging handler
-
-
-
-Architecture
-############
-
-.. image:: _static/architecture.png
-
-
-
-
-

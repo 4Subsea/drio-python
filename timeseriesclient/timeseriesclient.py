@@ -2,6 +2,7 @@ import json
 import logging
 import time
 import timeit
+import cStringIO
 
 import requests
 import numpy as np
@@ -20,18 +21,20 @@ from .log import LogWriter
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
+# Default values to push as start/end dates. (Limited by numpy.datetime64)
+_END_DEFAULT = 9214646400000000000  # 2262-01-01
+_START_DEFAULT = -9214560000000000000  # 1678-01-01
+
 
 class TimeSeriesClient(object):
     """
     The TimeSeriesClient communicates with the data reservoir and allows to
     upload and retrieve timeseries from the data reservoir. 
 
-    .. note::
-        The client does not handle meta data, only a very small set of data 
-        directly linked to the timeseries. A time series is identified by
-        its unique identifier, its id. If this id is lost, the time series 
-        is essentially lost. Take good care of it!
-
+    Warning
+    -------
+    A time series is identified by its unique identifier, its id. If this id is
+    lost, the time series is essentially lost.
     """
 
     def __init__(self, host=None):
@@ -112,11 +115,10 @@ class TimeSeriesClient(object):
 
         
         return(response)
-        
 
-    def add(self, dataframe, timeseries_id):
+    def append(self, dataframe, timeseries_id):
         """
-        Add data to an already existing time series.
+        Append data to an already existing time series.
 
         Parameters
         ----------
@@ -133,21 +135,22 @@ class TimeSeriesClient(object):
             The response from the data reservoir
         """
         self._verify_and_prepare_dataframe(dataframe)
-        
+
         file_id = self._upload_file(dataframe)
         status = self._wait_until_file_ready(file_id)
         if status == "Failed":
             return status
-        response = self._timeseries_api.add(self.token, timeseries_id, file_id)
-
+        response = self._timeseries_api.add(self.token, timeseries_id,
+                                            file_id)
         return response
 
     def list(self):
         """
         Lists all available timeseries in the reservoir. 
 
-        Returns:
-        list
+        Returns
+        -------
+        list 
             All timeseries ids in the reservoir.
         """
         return self._timeseries_api.list(self.token)
@@ -156,8 +159,9 @@ class TimeSeriesClient(object):
         """
         Retrieves basic information about one timeseries.
         
-        Returns:
-        dict
+        Returns
+        -------
+        dict 
             Available information about the timeseries. None if timeseries not 
             found.
         """
@@ -172,35 +176,56 @@ class TimeSeriesClient(object):
 
         Returns
         -------
-        int
+        int 
             http status code. 200 is OK
         """
         return self._timeseries_api.delete(self.token, timeseries_id)
 
-    def get(self, timeseries_id, start, stop):
+    def get(self, timeseries_id, start=None, end=None, convert_date=False):
         """
         Retrieves a timeseries from the data reservoir.
 
-        .. note:: 
-            Not implemented yet.
-
         Parameters
         ----------
-        timeseries_id : string
+        timeseries_id : str
             id of the timeseries to download
+        start : optional
+            start time (inclusive) of the timeseries given as anything
+            pandas.to_datetime is able to parse.
+        end : optional
+            stop time (inclusive) of the timeseries given as anything
+            pandas.to_datetime is able to parse.
+        convert_date : bool
+            If True, the index is converted to numpy.datetime64[ns]. Default is
+            False, index is returned as nanoseconds since epoch.
 
         Returns
         -------
-        dataframe
+        pandas.Series
+            Timeseries data
         """
-        # check input arguments
-        # check timeseries exists ?
+        if not start:
+            start = _START_DEFAULT
+        if not end:
+            end = _END_DEFAULT
 
-        self._timeseries_api.get(timeseries_id, start, stop)
+        start = pd.to_datetime(start, dayfirst=True, unit='ns').value
+        end = pd.to_datetime(end, dayfirst=True, unit='ns').value
 
-        # convert response to dataframe
+        if start >= end:
+            raise ValueError('start must be before end')
 
-        # return dataframe
+        response = self._timeseries_api.data(self.token, timeseries_id, start,
+                                             end)
+
+        response_txt = cStringIO.StringIO(response.text)
+        df = pd.read_csv(response_txt, header=None,
+                         names=['time', 'values'], index_col=0)
+        response_txt.close()
+
+        if convert_date:
+            df.index = pd.to_datetime(df.index)
+        return df['values']
 
     def _upload_file(self, dataframe):
         upload_params =  self._files_api.upload(self.token)

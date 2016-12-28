@@ -140,26 +140,39 @@ class Test_Create(unittest.TestCase):
         self.assertEqual(result, {"TimeSeriesId":'tsfromhell'})
 
 
-class Test_Add(unittest.TestCase):
+class Test_Append(unittest.TestCase):
 
     def setUp(self):
         self.client = timeseriesclient.TimeSeriesClient()
-        self.dummy_df = pd.DataFrame({'a':np.arange(1e3)}, index=np.array(np.arange(1e3), dtype='datetime64[ns]'))
+
+        self.file_id = 'file123abc'
+
+        self.client._verify_and_prepare_dataframe = Mock()
+        self.client._upload_file = Mock(return_value=self.file_id)
+        self.client._wait_until_file_ready = Mock(side_effect=["Processing", "Processing", "Ready"])
+
+        self.dummy_df = pd.DataFrame({'a':np.arange(10)}, index=np.array(np.arange(10), dtype='datetime64[ns]'))
+
+        self.client._timeseries_api = Mock()
 
         self.dummy_token = {'accessToken' : 'abcdef',
-                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
-        self.client._authenticator._token = self.dummy_token
+                            'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
+        self.client._authenticator = Mock()
+        self.client._authenticator.token = self.dummy_token
 
-        self.client._files_api = FilesApiMock()
-        self.client._timeseries_api = TimeSeriesApiMock()
-        self.client._get_file_status = Mock(side_effect=["Processing", "Processing", "Ready"])
-
-    @patch('timeseriesclient.storage.get_blobservice')
-    def test_(self, mock_blob):
+    def test_append(self):
+        self.client._timeseries_api.add.return_value = {'response': 123}
         timeseries_id = 't666'
-        result = self.client.add(self.dummy_df, timeseries_id)
 
-        self.assertEqual(result['TimeSeriesId'], 't666')
+        result = self.client.append(self.dummy_df, timeseries_id)
+
+        self.client._wait_until_file_ready.assert_called_once_with(self.file_id)
+        self.client._verify_and_prepare_dataframe.assert_called_once_with(self.dummy_df)
+
+        self.client._timeseries_api.add.assert_called_once_with(self.dummy_token,
+                                                                timeseries_id,
+                                                                self.file_id)
+        self.assertEqual(result, {'response': 123})
 
 
 class Test_CheckArgumentsCreate(unittest.TestCase):
@@ -244,13 +257,88 @@ class Test_DeleteTimeSeries(unittest.TestCase):
 
 class Test_Get(unittest.TestCase):
 
-    def test_(self):
-        client = timeseriesclient.TimeSeriesClient()
-        dummy_token ={'accessToken' : 'dummyToken' ,
-                        'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
-        client._authenticator._token = dummy_token
-        client._timeseries_api = TimeSeriesApiMock()
+    def setUp(self):
+        self.client = timeseriesclient.TimeSeriesClient()
 
-        response = client.get('123456', None, None)
+        self.client._timeseries_api = Mock()
+    
+        self.dummy_token = {'accessToken' : 'abcdef',
+                            'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
+        self.client._authenticator = Mock()
+        self.client._authenticator.token = self.dummy_token
 
-        self.assertEqual(client._timeseries_api.last_timeseries_id, '123456')
+    def test_call_timeseries_api_default(self):
+        response = Mock()
+        response.text = '1,1\n2,2\n3,3\n4,4'
+
+        self.client._timeseries_api.data.return_value = response
+        timeseries_id = 't666'
+    
+        result = self.client.get(timeseries_id)
+
+        start = timeseriesclient.timeseriesclient._START_DEFAULT
+        end = timeseriesclient.timeseriesclient._END_DEFAULT
+
+        self.client._timeseries_api.data.assert_called_once_with(
+            self.dummy_token, timeseries_id, start, end)
+
+    def test_call_timeseries_api_start(self):
+        response = Mock()
+        response.text = '1,1\n2,2\n3,3\n4,4'
+
+        self.client._timeseries_api.data.return_value = response
+        timeseries_id = 't666'
+    
+        result = self.client.get(timeseries_id, start='1970-01-01 00:00:10')
+
+        start = 10000000000
+        end = timeseriesclient.timeseriesclient._END_DEFAULT
+
+        self.client._timeseries_api.data.assert_called_once_with(
+            self.dummy_token, timeseries_id, start, end)
+
+    def test_call_timeseries_api_stop(self):
+        response = Mock()
+        response.text = '1,1\n2,2\n3,3\n4,4'
+
+        self.client._timeseries_api.data.return_value = response
+        timeseries_id = 't666'
+    
+        result = self.client.get(timeseries_id, end='1970-01-01 00:00:10')
+
+        start = timeseriesclient.timeseriesclient._START_DEFAULT
+        end = 10000000000
+
+        self.client._timeseries_api.data.assert_called_once_with(
+            self.dummy_token, timeseries_id, start, end)
+
+    def test_convert_to_series_date(self):
+        response = Mock()
+        response.text = '1,1\n2,2\n3,3\n4,4'
+
+        self.client._timeseries_api.data.return_value = response
+        timeseries_id = 't666'
+    
+        result = self.client.get(timeseries_id, convert_date=True)
+
+        expected = pd.DataFrame([1, 2, 3, 4],
+                                columns=['values'], index=[1, 2, 3, 4])
+        expected.index.name = 'time'
+        expected.index = pd.to_datetime(expected.index, unit ='ns')
+
+        pd.util.testing.assert_series_equal(result, expected['values'])
+
+    def test_convert_to_series_ns(self):
+        response = Mock()
+        response.text = '1,1\n2,2\n3,3\n4,4'
+
+        self.client._timeseries_api.data.return_value = response
+        timeseries_id = 't666'
+
+        result = self.client.get(timeseries_id, convert_date=False)
+
+        expected = pd.DataFrame([1, 2, 3, 4],
+                                columns=['values'], index=[1, 2, 3, 4])
+        expected.index.name = 'time'
+
+        pd.util.testing.assert_series_equal(result, expected['values'])

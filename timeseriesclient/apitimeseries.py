@@ -10,12 +10,31 @@ from .log import LogWriter
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
+
 class TimeSeriesApi(object):
+    """
+    Python wrapper for reservoir-api.4subsea.net/api/timeseries
+    """    
 
     def __init__(self):
         self._api_base_url = globalsettings.environment.api_base_url
 
     def create(self, token, file_id):
+        """
+        Create timeseries entry in the reservoir
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        file_id : str
+            id of file (File API) to be tied to timeseries entry.
+
+        Return
+        ------
+        dict
+            http response.text loaded as json
+        """
         logwriter.debug("called with <token>, {}".format(file_id), "create")
 
         uri = self._api_base_url + 'timeseries/create'
@@ -23,13 +42,25 @@ class TimeSeriesApi(object):
         body = { "FileId":file_id }
 
         response = self._post(uri, headers=headers, data=body)
-        logwriter.debug("status code: {}".format(response.status_code))
-        logwriter.debug("raw body: {}".format(response.raw))
-        logwriter.debug("raw text: {}".format(response.text))
-
         return json.loads(response.text)
 
     def add(self, token, timeseries_id, file_id):
+        """
+        Append timeseries data to an existing entry in the reservoir
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        timeseries_id : str
+            id of the target timeseries
+        file_id : str
+            id of file (File API) to be appended.
+
+        Notes
+        -----
+        Refer to API documentation wrt apppend, overlap, and overwrite behavior
+        """
         logwriter.debug("called with <token>, {}, {}".format(timeseries_id, file_id), "add")
 
         uri = self._api_base_url + 'timeseries/add'
@@ -37,78 +68,127 @@ class TimeSeriesApi(object):
         body = { "TimeSeriesId":timeseries_id, "FileId":file_id }
 
         response = self._post(uri, headers=headers, data=body)
-        logwriter.debug("status code: {}".format(response.status_code))
-        logwriter.debug("raw body: {}".format(response.raw))
-        logwriter.debug("raw text: {}".format(response.text))
-
         return json.loads(response.text)
 
     def list(self, token):
+        """
+        List all existing entries in the reservoir
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+
+        Return
+        ------
+        list of dict
+            list of dictionaries containing information about timeseries
+            entries in the reservoir
+
+        See also
+        -----
+        TimeSeriesApi.info()
+        """
         logwriter.debug("called with <token>")
 
         uri = self._api_base_url + 'TimeSeries/list'
         headers = adalw.add_authorization_header({}, token)
 
         response = self._get(uri, headers=headers)
-
         return json.loads(response.text)
 
     def info(self, token, timeseries_id):
+        """
+        Information about a timeseries entry in the reservoir
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        timeseries_id : str
+            id of the target timeseries
+
+        Return
+        ------
+        dict
+            dictionary containing information about a timeseries
+            entry in the reservoir
+        """
         logwriter.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/' + timeseries_id
         headers = adalw.add_authorization_header({}, token)
 
         response = self._get(uri, headers=headers)
-
         return json.loads(response.text)
-    
 
     def delete(self, token, timeseries_id):
+        """
+        Delete a timeseries from the reservoir
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        timeseries_id : str
+            id of the target timeseries
+        """
         logwriter.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/' + timeseries_id
         headers = adalw.add_authorization_header({}, token)
 
         response = self._delete(uri, headers=headers)
-
         return
 
-    def get(self, token, timeseries_id, start, stop):
+    def data(self, token, timeseries_id, start, end):
+        """
+        Return timeseries data with start/stop from reservoir.
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        timeseries_id : str
+            id of the timeseries to download
+        start : int long
+            start time in nano seconds since epoch.
+        end : int long
+            end time in nano seconds since epoch.
+
+        Return
+        ------
+        str
+            csv with timeseries data
+        """
         logwriter.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/{}/data'.format(timeseries_id)
         headers = adalw.add_authorization_header({}, token)
-        # create parameters from start and stop to be sent with request
-        # parameters = ...
+        params = {'start': start, 'end': end}
 
-        response = self._get(uri, headers=headers)
+        response = self._get(uri, headers=headers, params=params)
+        return response
 
-        # return stream to client...
-        #return json.loads(response.text)
-        return
-
-
-    def _get(self, uri, headers, member=None):
-        logwriter.debug("issued get request to {}".format(uri))
-        response = requests.get(uri, headers=headers)
+    def _get(self, *args, **kwargs):
+        response = requests.get(*args, **kwargs)
+        logwriter.debug("response request url: {}".format(response.request.url))
         logwriter.debug("response status code: {}".format(response.status_code))
         logwriter.debug("response text: {}".format(response.text))
         return response
 
-    def _delete(self, uri, headers, member=None):
-        logwriter.debug("issued delete request to {}".format(uri))
-        response = requests.delete(uri, headers=headers)
+    def _delete(self, *args, **kwargs):
+        response = requests.delete( *args, **kwargs)
+        logwriter.debug("response request url: {}".format(response.request.url))
         logwriter.debug("response status code: {}".format(response.status_code))
         logwriter.debug("response text: {}".format(response.text))
         return response
 
-    def _post(self, uri, headers, data=None, member=None):
-        logwriter.debug("issued post request to {}".format(uri), member)
-        response = requests.post(uri, headers=headers, data=data)
-        logwriter.debug("response status code: {}".format(response.status_code), member)
-        logwriter.debug("received: {}".format(response.text), member)
-
+    def _post(self, *args, **kwargs):
+        response = requests.post(*args, **kwargs)
+        logwriter.debug("response request url: {}".format(response.request.url))
+        logwriter.debug("response status code: {}".format(response.status_code))
+        logwriter.debug("response text: {}".format(response.text))
         return response
 
 
@@ -141,5 +221,3 @@ class TimeSeriesApiMock(object):
 
     def get(self, timeseries_id, start, stop):
         self.last_timeseries_id = timeseries_id
-        
-
