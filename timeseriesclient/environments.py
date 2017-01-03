@@ -27,6 +27,10 @@ class Environment(object):
     def set_qa(self):
         self._set_environment(constants.ENV_QA)
         self._set_base_url(constants.API_BASE_URL_QA)
+        
+    def set_dev(self):
+        self._set_environment(constants.ENV_DEV)
+        self._set_base_url(constants.API_BASE_URL_DEV)
 
     def _set_environment(self, environment):
         self._logger.info('Setting environment to: {}'.format(environment))

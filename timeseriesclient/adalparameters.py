@@ -9,6 +9,8 @@ class ADALParameters(object):
             self.set_qa()
         elif environment == constants.ENV_PROD:
             self.set_prod()
+        elif environment == constants.ENV_DEV:
+            self.set_dev()
 
     @property
     def resource(self):
@@ -32,6 +34,10 @@ class ADALParameters(object):
 
     def set_prod(self):
         self._resource = constants.RESOURCE_PROD
+        self.set_shared()
+        
+    def set_dev(self):
+        self._resource = constants.RESOURCE_DEV
         self.set_shared()
 
     def set_shared(self):
