@@ -43,13 +43,17 @@ class Test_FilesApi(unittest.TestCase):
     @patch('timeseriesclient.apifiles.requests.post')
     def test_upload(self, mock_post):
         api = FilesApi()
-        mock_post.return_value = make_upload_response()
+
+        response = Mock()
+        response.text = '{"test": "abs"}'
+        response.text = response_upload
+        mock_post.return_value = response
 
         result = api.upload(self.token)
 
         mock_post.assert_called_once_with(
             'https://reservoir-api-qa.4subsea.net/api/Files/upload',
-            headers=self.dummy_header, data=None)
+            headers=self.dummy_header)
 
         self.assertIsInstance(result, dict)
         self.assertEqual(result, json.loads(response_upload) )
@@ -64,7 +68,11 @@ class Test_FilesApi(unittest.TestCase):
     @patch('timeseriesclient.apifiles.requests.get')
     def test_status(self, mock_get):
         api = FilesApi()
-        mock_get.return_value = make_status_response()
+
+        response = Mock()
+        response.text = '{"test": "abc"}'
+
+        mock_get.return_value = response
         api.status(self.token, 'fileid')
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/files/fileid/status'

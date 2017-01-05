@@ -5,15 +5,16 @@ import logging
 from . import globalsettings
 from . import adalwrapper as adalw
 from .log import LogWriter
+from .apiwebbase import WebBaseApi
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
 
-class FilesApi(object):
+class FilesApi(WebBaseApi):
 
     def __init__(self):
-        self._api_base_url = globalsettings.environment.api_base_url
+        super(FilesApi, self).__init__()
     
     def upload(self, token):
         logwriter.debug("called", "upload")
@@ -21,53 +22,37 @@ class FilesApi(object):
         uri = self._api_base_url + 'Files/upload'
         headers = adalw.add_authorization_header({}, token)
 
-        response = self._post(uri, headers=headers, member='upload')
-        
+        response = self._post(uri, headers=headers)
         upload_params = json.loads(response.text)
-
-        #upload_params['SasKey'] = upload_params['SasKey'].lstrip('?')    
-
         return upload_params
 
     def commit(self, token, file_id):
+        logwriter.debug("called", "commit")
+
         uri = self._api_base_url + 'Files/commit'
         headers = adalw.add_authorization_header({}, token)
         body = { 'FileId' : file_id }
 
         response = self._post(uri, headers=headers, data=body)
-
         return response.status_code
 
     def status(self, token, file_id):
+        logwriter.debug("called", "status")
+
         uri = self._api_base_url + 'files/{}/status'.format(file_id)
         headers = adalw.add_authorization_header({}, token)
 
         response = self._get(uri, headers=headers)
-
         return json.loads(response.text)
 
     def ping(self, token):
+        logwriter.debug("called", "ping")
+
         uri = self._api_base_url + 'ping'
         headers = adalw.add_authorization_header({}, token)
 
-        response = self._get(uri, headers=headers, member='ping')
-
+        response = self._get(uri, headers=headers)
         return json.loads(response.text)
-
-    def _get(self, uri, headers, member=None):
-        logwriter.debug("issued get request to {}".format(uri))
-        response = requests.get(uri, headers=headers)
-        logwriter.debug("response status code: {}".format(response.status_code))
-        logwriter.debug("response text: {}".format(response.text))
-        return response
-
-    def _post(self, uri, headers, data=None, member=None):
-        logwriter.debug("issued post request to {}".format(uri), member)
-        response = requests.post(uri, headers=headers, data=data)
-        logwriter.debug("response status code: {}".format(response.status_code), member)
-        logwriter.debug("received: {}".format(response.text), member)
-
-        return response
 
 
 class FilesApiMock(object):

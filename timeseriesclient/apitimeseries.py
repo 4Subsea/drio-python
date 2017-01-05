@@ -6,18 +6,19 @@ from . import globalsettings
 
 from . import adalwrapper as adalw
 from .log import LogWriter
+from .apiwebbase import WebBaseApi
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
 
-class TimeSeriesApi(object):
+class TimeSeriesApi(WebBaseApi):
     """
     Python wrapper for reservoir-api.4subsea.net/api/timeseries
     """    
 
     def __init__(self):
-        self._api_base_url = globalsettings.environment.api_base_url
+        super(TimeSeriesApi, self).__init__()
 
     def create(self, token, file_id):
         """
@@ -168,27 +169,6 @@ class TimeSeriesApi(object):
         params = {'start': start, 'end': end}
 
         response = self._get(uri, headers=headers, params=params)
-        return response
-
-    def _get(self, *args, **kwargs):
-        response = requests.get(*args, **kwargs)
-        logwriter.debug("response request url: {}".format(response.request.url))
-        logwriter.debug("response status code: {}".format(response.status_code))
-        logwriter.debug("response text: {}".format(response.text))
-        return response
-
-    def _delete(self, *args, **kwargs):
-        response = requests.delete( *args, **kwargs)
-        logwriter.debug("response request url: {}".format(response.request.url))
-        logwriter.debug("response status code: {}".format(response.status_code))
-        logwriter.debug("response text: {}".format(response.text))
-        return response
-
-    def _post(self, *args, **kwargs):
-        response = requests.post(*args, **kwargs)
-        logwriter.debug("response request url: {}".format(response.request.url))
-        logwriter.debug("response status code: {}".format(response.status_code))
-        logwriter.debug("response text: {}".format(response.text))
         return response
 
 
