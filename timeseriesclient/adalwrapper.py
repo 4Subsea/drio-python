@@ -1,89 +1,56 @@
-import adal
 import logging
-from datetime import datetime as dt
-#import datetime
-import numpy as np
+import getpass
+
+import adal
 
 from . import globalsettings
-from . import usercredentials
 from .log import LogWriter
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
-class Authenticator(object):
 
-    def __init__(self):
-        self._token = None
-        self._refresh_threshold = 10*60 # 10 minutes in seconds
+class AdalAuthenticator(object):
 
+    def __init__(self, username):
         logwriter.debug("Instanciating authenticator")
 
-    def authenticate(self):
-        logwriter.debug("authenticating...", "authenticate")
-        params = self._get_params()
-        context = self._get_context()
-        username, password = self._get_user_credentials()
+        self.params = self._get_params()
+        self.context = adal.AuthenticationContext(self.params.authority,
+                                                  api_version=None)
 
-        self._token = context.acquire_token_with_username_password(
-                            params.resource,
-                            username, 
-                            password,
-                            params.client_id)
+        self.username = username
+        password = self._get_pass()
 
+        self.context.acquire_token_with_username_password(self.params.resource,
+                                                          self.username,
+                                                          password,
+                                                          self.params.client_id)
     @property
     def token(self):
-        if not self._token:
-            logwriter.debug("token is None, calling authenticate", "token")
-            self.authenticate()
-        
-        if self._time_until_token_expires() < self._refresh_threshold:
-            logwriter.debug("time until token expires is less then threshold", "token")
-            self.refresh_token()
- 
-        return self._token
+        return self._token()
 
-    def refresh_token(self):
-        logwriter.debug("refreshing token", "refresh_token")
-
-        params = self._get_params()
-        context = self._get_context()
-        
-        self._token = context.acquire_token_with_refresh_token(
-                            self._token['refreshToken'], 
-                            params.client_id, 
-                            params.resource) 
+    def _token(self):
+        self._token_cache = self.context.acquire_token(self.params.resource,
+                                                       self.username,
+                                                       self.params.client_id)
+        return self._token_cache
 
     def _get_params(self):
         return globalsettings.environment.get_adal_parameters()
 
-    def _get_context(self):
-        params = self._get_params()
-        context = adal.AuthenticationContext(params.authority, api_version=None)
-        return context
+    def _get_pass(self):
+        return getpass.getpass('Password: ')
 
-    def _get_user_credentials(self):
-        return usercredentials.get_user_credentials()
 
-    def _time_until_token_expires(self):
-        expires = np.datetime64(self._token.get('expiresOn'), 's')
-        now = self._get_utcnow()
-        
-        return (expires - now).astype(np.int64)
-
-    def _get_utcnow(self):
-        return np.datetime64(dt.utcnow().isoformat(), 's')
-        
-
-class UnsafeAuthenticator(Authenticator):
+class UnsafeAdalAuthenticator(AdalAuthenticator):
 
     def __init__(self, username, password):
-        super(UnsafeAuthenticator, self).__init__()
-        self.username = username
         self.password = password
+        super(UnsafeAdalAuthenticator, self).__init__(username)
 
-    def _get_user_credentials(self):
-        return self.username, self.password 
+    def _get_pass(self):
+        return self.password
 
 
 def add_authorization_header(header, token):

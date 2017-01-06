@@ -8,7 +8,7 @@ except:
 from azure.storage.blob import BlockBlobService
 
 import timeseriesclient
-from timeseriesclient.adalwrapper import Authenticator
+from timeseriesclient import Authenticator
 import timeseriesclient.globalsettings as gs
 import timeseriesclient.storage as storage
 

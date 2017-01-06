@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from azure.storage.blob import BlockBlobService
 
-from .adalwrapper import Authenticator, add_authorization_header
+#from .adalwrapper import Authenticator, add_authorization_header
 from . import globalsettings
 from .fileupload import DataFrameUploader
 from . import storage
@@ -28,8 +28,14 @@ _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
 class TimeSeriesClient(object):
     """
-    The TimeSeriesClient communicates with the data reservoir and allows to
-    upload and retrieve timeseries from the data reservoir. 
+    The TimeSeriesClient handles requests, data uploads, and data downloads
+    from the 4Subsea data reservoir.
+
+    Parameters
+    ---------
+    auth : cls
+        An authenticator class with :attr:`token` attribute that provides a valid
+        token to the 4Subsea data reservoir.
 
     Warning
     -------
@@ -37,26 +43,11 @@ class TimeSeriesClient(object):
     lost, the time series is essentially lost.
     """
 
-    def __init__(self, host=None):
-        self._authenticator = Authenticator()
+    def __init__(self, auth):
+        self._authenticator = auth
         #self._api_base_url = globalsettings.environment.api_base_url
         self._timeseries_api = apitimeseries.TimeSeriesApi()
         self._files_api = apifiles.FilesApi()
-
-    def authenticate(self):
-        """
-        To be able to use the client, you need to authenticate yourself first.
-        This is the method to call. You will be prompted for your username and 
-        password, use your usual 4Subsea credentials.
-
-        Raises
-        ------
-        AdalError:
-            If the login fails.
-        """
-        logwriter.debug("called", "authenticate")
-
-        self._authenticator.authenticate()
 
     @property
     def token(self):

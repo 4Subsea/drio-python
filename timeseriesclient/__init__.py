@@ -3,7 +3,8 @@ from __future__ import absolute_import
 import logging
 
 from .timeseriesclient import TimeSeriesClient
-from . import globalsettings  # wierd bug. must be called second?
+from .adalwrapper import AdalAuthenticator as Authenticator
+from . import globalsettings  # wierd bug. must be called last?
 
 
 def set_log_level(lvl):
