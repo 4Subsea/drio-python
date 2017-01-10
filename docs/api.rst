@@ -9,7 +9,7 @@ timeseriesclient.Authenticator
    :members:
    :inherited-members:
 
-.. autoclass:: timeseriesclient.adalwrapper.AdalAuthenticator
+.. autoclass:: timeseriesclient.authenticate.AdalAuthenticator
    :members:
    :undoc-members:
    :inherited-members:
