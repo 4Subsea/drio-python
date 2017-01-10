@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='timeseriesclient', 
-      version='0.1.1',
+      version='0.1.2',
       license='Proprietary',
       description='Python client for timeseries in 4Subsea data reservoir',
       url='http://www.4subsea.com/python/timeseriesclient',
@@ -14,7 +14,8 @@ setup(name='timeseriesclient',
             'azure>=1.0.3',
             'azure-storage>=0.30.0',
             'numpy',
-            'pandas'
+            'pandas',
+            'requests'
         ],
     include_package_data = True,
     zip_safe=False)
