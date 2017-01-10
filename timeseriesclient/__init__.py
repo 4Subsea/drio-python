@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import logging
 
 from .timeseriesclient import TimeSeriesClient
-from .adalwrapper import AdalAuthenticator as Authenticator
+from .authenticate import Authenticator
 from . import globalsettings  # wierd bug. must be called last?
 
 

@@ -65,3 +65,6 @@ def create_authorization_header(token):
     value = 'Bearer {}'.format(access_token)
 
     return key, value
+
+
+Authenticator = AdalAuthenticator

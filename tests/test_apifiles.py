@@ -9,7 +9,7 @@ except:
 import requests
 
 import timeseriesclient
-from timeseriesclient.apifiles import FilesApi, FilesApiMock
+from timeseriesclient.rest_api import FilesApi
 
 timeseriesclient.globalsettings.environment.set_qa()
 
@@ -40,7 +40,7 @@ class Test_FilesApi(unittest.TestCase):
         self.token = { 'accessToken' : 'abcdef' }
         self.dummy_header = {'Authorization': 'Bearer abcdef'}
 
-    @patch('timeseriesclient.apifiles.requests.post')
+    @patch('timeseriesclient.rest_api.base_api.requests.post')
     def test_upload(self, mock_post):
         api = FilesApi()
 
@@ -58,14 +58,14 @@ class Test_FilesApi(unittest.TestCase):
         self.assertIsInstance(result, dict)
         self.assertEqual(result, json.loads(response_upload) )
 
-    @patch('timeseriesclient.apifiles.requests.post')
+    @patch('timeseriesclient.rest_api.base_api.requests.post')
     def test_commit(self, mock_post):
         api = FilesApi()
         api.commit(self.token, 'fileid')
 
         mock_post.assert_called_with('https://reservoir-api-qa.4subsea.net/api/Files/commit', data={'FileId': 'fileid'}, headers={'Authorization': 'Bearer abcdef'})
 
-    @patch('timeseriesclient.apifiles.requests.get')
+    @patch('timeseriesclient.rest_api.base_api.requests.get')
     def test_status(self, mock_get):
         api = FilesApi()
 
@@ -78,8 +78,13 @@ class Test_FilesApi(unittest.TestCase):
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/files/fileid/status'
         mock_get.assert_called_with(expected_uri, headers=self.dummy_header);
 
+    @patch('timeseriesclient.rest_api.files_api.AzureBlobService')
+    def test_upload_service(self,  mock_df_uploader):
+        api = FilesApi()
 
-class Test_FilesApiMock(unittest.TestCase):
+        api.upload_service({'abc': '123'})
+        mock_df_uploader.assert_called_once_with({'abc': '123'})
 
-    def test_(self):
-        api = FilesApiMock()
+
+if __name__ == '__main__':
+    unittest.main()

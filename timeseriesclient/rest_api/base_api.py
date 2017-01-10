@@ -1,10 +1,13 @@
+from __future__ import absolute_import
+
+import json
 import logging
 from functools import wraps
 
 import requests
 
-from . import globalsettings
-from .log import LogWriter
+from .. import globalsettings
+from ..log import LogWriter
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
@@ -24,10 +27,15 @@ def _response_logger(func):
     return func_wrapper
 
 
-class WebBaseApi(object):
+class BaseApi(object):
 
     def __init__(self):
         self._api_base_url = globalsettings.environment.api_base_url
+
+    def _add_authorization_header(self, header, token):
+        value = 'Bearer {}'.format(token['accessToken'])
+        header['Authorization'] = value
+        return header
 
     @_response_logger
     def _get(self, *args, **kwargs):

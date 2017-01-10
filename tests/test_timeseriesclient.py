@@ -13,8 +13,8 @@ import numpy as np
 import timeseriesclient
 from timeseriesclient import Authenticator
 import timeseriesclient.globalsettings as gs
-from timeseriesclient.apitimeseries import TimeSeriesApiMock, TimeSeriesApi
-from timeseriesclient.apifiles import FilesApiMock
+from timeseriesclient.rest_api import TimeSeriesApi
+
 
 timeseriesclient.globalsettings.environment.set_qa()
 
@@ -26,8 +26,7 @@ class TestTimeSeriesClient(unittest.TestCase):
         auth.token = '{"test": "abc"}'
         client = timeseriesclient.TimeSeriesClient(auth)
         
-        self.assertIsInstance(client, 
-            timeseriesclient.timeseriesclient.TimeSeriesClient)
+        self.assertIsInstance(client, timeseriesclient.TimeSeriesClient)
 
         self.assertIsInstance(client._authenticator, Mock)
 
@@ -56,7 +55,7 @@ class TestTimeSeriesClient_Ping(unittest.TestCase):
     def tearDown(self):
         self._patcher_token.stop()
 
-    @patch('timeseriesclient.apifiles.FilesApi.ping')
+    @patch('timeseriesclient.rest_api.FilesApi.ping')
     def test_ping_request(self, mock_filesapi):
         auth = Mock()
         auth.token = {'accessToken' : 'dummyToken' ,
@@ -79,6 +78,10 @@ class Test_Create(unittest.TestCase):
                               'Path' : 'blobpath',
                               'Endpoint' : 'endpointURI' }
 
+        timeseriesclient.rest_api.files_api.AzureBlobService = Mock()
+        timeseriesclient.rest_api.files_api.AzureBlobService.file_id = self.dummy_params['FileId']
+        timeseriesclient.rest_api.files_api.AzureBlobService.container_name = self.dummy_params['Container']
+        timeseriesclient.rest_api.files_api.AzureBlobService.blob_name = self.dummy_params['Path']
         self.dummy_token = {'accessToken' : 'abcdef',
                             'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's')}
         auth = Mock()
@@ -96,30 +99,28 @@ class Test_Create(unittest.TestCase):
         self.client._get_reference_time = Mock(return_value='1970-01-01T00:00:00')
         self.client._get_file_status = Mock(side_effect=["Processing", "Processing", "Ready"])
 
-    @patch('timeseriesclient.storage.get_blobservice')
-    def test_check_arguments_called(self, mock_blob):
+    def test_check_arguments_called(self):
         self.client.create(self.dummy_df)
         self.client._verify_and_prepare_dataframe.assert_called_with(self.dummy_df)
 
-    @patch('timeseriesclient.storage.get_blobservice')
-    def test_all_calls_made(self, mock_blobservice):
+    @patch('timeseriesclient.rest_api.FilesApi.upload_service')
+    def test_all_calls_made(self, mock_upload_service):
+        mock_upload_service.return_value = timeseriesclient.rest_api.files_api.AzureBlobService
         df = pd.DataFrame({'a':np.arange(1e3)})
         self.client.create(df)
 
         self.client._files_api.upload.assert_called_with(self.dummy_token)
-        mock_blobservice.asser_called_with()
+        mock_upload_service.assert_called_with(self.dummy_params)
         self.client._files_api.commit.assert_called_with(self.dummy_token, self.dummy_params['FileId'])
         self.assertTrue(self.client._timeseries_api.create.called)
 
-    @patch('timeseriesclient.storage.get_blobservice')
-    def test_create_file_endpoint_called(self, mock_blob):
+    @patch('timeseriesclient.rest_api.FilesApi.upload_service')
+    def test_create_file_endpoint_called(self, mock_upload_service):
+        mock_upload_service.return_value = timeseriesclient.rest_api.files_api.AzureBlobService
         result = self.client.create(self.dummy_df)
-
         exp_id = 666
-
         self.client._timeseries_api.create.assert_called_once_with(self.dummy_token,
                                                               exp_id)
-
         self.assertEqual(result, {"TimeSeriesId":'tsfromhell'})
 
 
@@ -337,3 +338,7 @@ class Test_Get(unittest.TestCase):
         expected.index.name = 'time'
 
         pd.util.testing.assert_series_equal(result, expected['values'])
+
+
+if __name__ == '__main__':
+    unittest.main()

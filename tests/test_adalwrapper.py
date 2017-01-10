@@ -9,7 +9,7 @@ except:
 import numpy as np
 
 import timeseriesclient
-import timeseriesclient.adalwrapper as adalw
+import timeseriesclient.authenticate as adalw
 import timeseriesclient.constants as consts
 
 timeseriesclient.globalsettings.environment.set_qa()
@@ -24,10 +24,10 @@ class TestAuthenticator(unittest.TestCase):
 class TestAdalAuthenticator(unittest.TestCase):
 
     def setUp(self):
-        self._patcher = patch('timeseriesclient.adalwrapper.adal.AuthenticationContext.acquire_token_with_username_password')
+        self._patcher = patch('timeseriesclient.authenticate.adal.AuthenticationContext.acquire_token_with_username_password')
         self.mock_get_token = self._patcher.start()
         
-        self._patcher_get_pass = patch('timeseriesclient.adalwrapper.AdalAuthenticator._get_pass')
+        self._patcher_get_pass = patch('timeseriesclient.authenticate.AdalAuthenticator._get_pass')
         self.mock_get_pass = self._patcher_get_pass.start()
 
         self.mock_get_pass.return_value = 'passwd'
@@ -36,7 +36,7 @@ class TestAdalAuthenticator(unittest.TestCase):
         self._patcher.stop()
         self._patcher_get_pass.stop()
 
-    @patch('timeseriesclient.adalwrapper.adal.AuthenticationContext')
+    @patch('timeseriesclient.authenticate.adal.AuthenticationContext')
     def test_authenticate_calls_authorizationContext_with_correct_authority(self, mock):
         authenticator = adalw.AdalAuthenticator('username')
         mock.assert_called_once_with(consts.AUTHORITY, api_version=None)
@@ -51,13 +51,13 @@ class TestAdalAuthenticator(unittest.TestCase):
                                                     'passwd', 
                                                     consts.CLIENT_ID)
 
-    @patch('timeseriesclient.adalwrapper.AdalAuthenticator._get_pass')
+    @patch('timeseriesclient.authenticate.AdalAuthenticator._get_pass')
     def test_init_calls_get_pass(self, mock_get_pass):
         
         authenticator = adalw.AdalAuthenticator('username')
         mock_get_pass.assert_called_once()
 
-    @patch('timeseriesclient.adalwrapper.adal.AuthenticationContext.acquire_token')
+    @patch('timeseriesclient.authenticate.adal.AuthenticationContext.acquire_token')
     def test_token(self, mock_acquire_token):
         dummy_token = { 'accessToken' : 'abcdef', 
                         'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's') }
@@ -90,16 +90,20 @@ class Test_HeaderFunctions(unittest.TestCase):
 
 class Test_UnsafeAdalAuthenticator(unittest.TestCase):
 
-    @patch('timeseriesclient.adalwrapper.AdalAuthenticator.__init__')
+    @patch('timeseriesclient.authenticate.AdalAuthenticator.__init__')
     def test_init(self, mock_auth):
         username='username_A3'
         password='passwd'
         authenticator = adalw.UnsafeAdalAuthenticator(username, password)
         mock_auth.assert_called_once_with(username)
 
-    @patch('timeseriesclient.adalwrapper.AdalAuthenticator.__init__')
+    @patch('timeseriesclient.authenticate.AdalAuthenticator.__init__')
     def test_get_pass(self, mock_auth):
         username='username_A3'
         password='passwd'
         authenticator = adalw.UnsafeAdalAuthenticator(username, password)
         self.assertEqual(authenticator._get_pass(), 'passwd')
+
+
+if __name__ == '__main__':
+    unittest.main()

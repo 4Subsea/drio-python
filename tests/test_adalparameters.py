@@ -28,3 +28,7 @@ class TestADALParameters(unittest.TestCase):
     def verify_shared_parameters(self, params):
         self.assertEqual(params.client_id, consts.CLIENT_ID)
         self.assertEqual(params.authority, consts.AUTHORITY)
+
+
+if __name__ == '__main__':
+    unittest.main()

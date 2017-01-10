@@ -1,20 +1,21 @@
+from __future__ import absolute_import
+
 import json
 import logging
+import sys
 import time
 import timeit
-import cStringIO
+
+if sys.version_info.major == 3:
+    from io import StringIO
+elif sys.version_info.major == 2:
+    from cStringIO import StringIO
 
 import requests
 import numpy as np
 import pandas as pd
-from azure.storage.blob import BlockBlobService
 
-#from .adalwrapper import Authenticator, add_authorization_header
-from . import globalsettings
-from .fileupload import DataFrameUploader
-from . import storage
-from . import apitimeseries
-from . import apifiles
+from .rest_api import FilesApi, TimeSeriesApi
 from .log import LogWriter
 
 
@@ -46,8 +47,8 @@ class TimeSeriesClient(object):
     def __init__(self, auth):
         self._authenticator = auth
         #self._api_base_url = globalsettings.environment.api_base_url
-        self._timeseries_api = apitimeseries.TimeSeriesApi()
-        self._files_api = apifiles.FilesApi()
+        self._timeseries_api = TimeSeriesApi()
+        self._files_api = FilesApi()
 
     @property
     def token(self):
@@ -99,12 +100,10 @@ class TimeSeriesClient(object):
         current = timeit.default_timer()
         logwriter.info('Processing serverside time elapsed since start is {} seconds'.format(current - start), 'create')
 
-        response = self._timeseries_api.create(self.token,
-                                    file_id)
+        response = self._timeseries_api.create(self.token, file_id)
         current = timeit.default_timer()
         logwriter.info('Done, total time spent: {} seconds ({} minutes)'.format(current - start, (current - start)/60.), 'create')
 
-        
         return(response)
 
     def append(self, dataframe, timeseries_id):
@@ -209,7 +208,7 @@ class TimeSeriesClient(object):
         response = self._timeseries_api.data(self.token, timeseries_id, start,
                                              end)
 
-        response_txt = cStringIO.StringIO(response.text)
+        response_txt = StringIO(response.text)
         df = pd.read_csv(response_txt, header=None,
                          names=['time', 'values'], index_col=0)
         response_txt.close()
@@ -220,14 +219,10 @@ class TimeSeriesClient(object):
 
     def _upload_file(self, dataframe):
         upload_params =  self._files_api.upload(self.token)
-        blobservice = storage.get_blobservice(upload_params)
-        uploader = DataFrameUploader(blobservice)
-        
-        uploader.upload(dataframe, upload_params)
-
-        self._files_api.commit(self.token, upload_params['FileId'])
-
-        return upload_params['FileId']
+        uploader = self._files_api.upload_service(upload_params)
+        uploader.create_blob_from_df(dataframe)
+        self._files_api.commit(self.token, uploader.file_id)
+        return uploader.file_id
 
     def _verify_and_prepare_dataframe(self, dataframe):
         logwriter.debug("checking arguments", "_check_arguments_create")

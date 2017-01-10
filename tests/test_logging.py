@@ -102,3 +102,7 @@ class test_LogWriter(unittest.TestCase):
         self.assertTrue(logger.debug.called)
         self._verify_log_message(logger.debug, "debug message", "DEBUG",
                 logger.name + ".test_debug")
+
+
+if __name__ == '__main__':
+    unittest.main()

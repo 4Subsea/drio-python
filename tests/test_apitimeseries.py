@@ -8,7 +8,10 @@ except:
 
 import requests
 
-from timeseriesclient.apitimeseries import TimeSeriesApiMock, TimeSeriesApi
+import timeseriesclient
+from timeseriesclient.rest_api import TimeSeriesApi
+
+timeseriesclient.globalsettings.environment.set_qa()
 
 
 dummy_response_add = """
@@ -36,7 +39,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
     def setUp(self):
         self.token = { 'accessToken' : 'abcdef' }
 
-    @patch('timeseriesclient.apitimeseries.requests.get')
+    @patch('timeseriesclient.rest_api.base_api.requests.get')
     def test_list(self, mock_post):
         api = TimeSeriesApi()
 
@@ -50,7 +53,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         mock_post.assert_called_with(expected_uri, headers=expected_header)
 
-    @patch('timeseriesclient.apitimeseries.requests.get')
+    @patch('timeseriesclient.rest_api.base_api.requests.get')
     def test_info(self, mock_post):
         api = TimeSeriesApi()
 
@@ -64,7 +67,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         mock_post.assert_called_with(expected_uri, headers=expected_header)
 
-    @patch('timeseriesclient.apitimeseries.requests.delete')
+    @patch('timeseriesclient.rest_api.base_api.requests.delete')
     def test_delete(self, mock_delete):
         api = TimeSeriesApi()
         timeseries_id = '123456'
@@ -79,7 +82,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         mock_delete.assert_called_with(expected_uri, headers=expected_header)
 
-    @patch('timeseriesclient.apitimeseries.requests.post')
+    @patch('timeseriesclient.rest_api.base_api.requests.post')
     def test_create(self, mock_post):
         api = TimeSeriesApi()
         file_id = 666
@@ -99,7 +102,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
                                      data=expected_body)
 
 
-    @patch('timeseriesclient.apitimeseries.requests.post')
+    @patch('timeseriesclient.rest_api.base_api.requests.post')
     def test_add(self, mock_post):
         api = TimeSeriesApi()
         timeseries_id = 't666'
@@ -118,7 +121,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
                                      headers=expected_header,
                                      data=expected_body)
 
-    @patch('timeseriesclient.apitimeseries.requests.get')
+    @patch('timeseriesclient.rest_api.base_api.requests.get')
     def test_data(self, mock_get):
         api = TimeSeriesApi()
         timeseries_id = 't666'
@@ -136,38 +139,5 @@ class Test_TimeSeriesApi(unittest.TestCase):
                                     params=expected_params)
 
 
-class Test_TimeSeriesApiMock(unittest.TestCase):
-
-    def test_list_return_value(self):
-        api = TimeSeriesApiMock()
-        result = api.list(token={})
-        expected = ['ts1', 'ts2', 'ts3']
-        self.assertEqual(result, expected)
-
-    def test_list_token_stored(self):
-        api = TimeSeriesApiMock()
-        token = {'key':'supervalue'}
-        api.list(token)
-
-        self.assertEqual(api.last_token, token)
-
-    def test_delete_token_stored(self):
-        api = TimeSeriesApiMock()
-        token = {'key':'deletetoken'}
-        api.delete(token, '123456')
-
-        self.assertEqual(api.last_token, token)
-
-    def test_create_return_value(self):
-        api = TimeSeriesApiMock()
-        result = api.create({}, 0, "1970")
-        expected = { "TimeSeriesId", 'abcde' }
-
-        self.assertEqual(result, expected)
-
-    def test_create_token_stored(self):
-        api = TimeSeriesApiMock()
-        token = {'key':'createtoken'}
-        api.create(token, 0, "1970")
-
-        self.assertEqual(api.last_token, token)
+if __name__ == '__main__':
+    unittest.main()

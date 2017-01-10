@@ -114,3 +114,7 @@ class TestApiBaseURL(unittest.TestCase):
     def test_change_of_base_url_is_logged(self, mock):
         gs.environment.set_qa()
         mock.assert_any_call('Setting baseurl to: {}'.format(consts.API_BASE_URL_QA))
+
+
+if __name__ == '__main__':
+    unittest.main()
