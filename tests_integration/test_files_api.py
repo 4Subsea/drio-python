@@ -9,7 +9,7 @@ import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
 from timeseriesclient.rest_api.files_api import FilesApi
 
-timeseriesclient.globalsettings.environment.set_qa()
+timeseriesclient.globalsettings.environment.set_test()
 
 USERNAME = 'ace@4subsea.com'
 PASSWORD = '#bmE378dt!'
@@ -43,7 +43,7 @@ class Test_FilesApi(unittest.TestCase):
 
         counter = 0
         response = self.api.status(self.auth.token, upload_params['FileId'])
-        while response['State'] != 'Ready' and counter < 5:
+        while response['State'] != 'Ready' and counter < 15:
             print(counter, response['State'])
             time.sleep(5)
             response = self.api.status(self.auth.token, upload_params['FileId'])

@@ -10,7 +10,7 @@ import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
 from timeseriesclient.rest_api import FilesApi, TimeSeriesApi
 
-timeseriesclient.globalsettings.environment.set_qa()
+timeseriesclient.globalsettings.environment.set_test()
 
 USERNAME = 'ace@4subsea.com'
 PASSWORD = '#bmE378dt!'

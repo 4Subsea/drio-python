@@ -9,7 +9,7 @@ import pandas as pd
 import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
 
-timeseriesclient.globalsettings.environment.set_qa()
+timeseriesclient.globalsettings.environment.set_test()
 
 USERNAME = 'ace@4subsea.com'
 PASSWORD = '#bmE378dt!'
@@ -104,7 +104,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         pd.util.testing.assert_series_equal(data_sent['values'], data_recieved)
 
-    def test_get_performance(self):
+    def test_create_get_performance(self):
         # 1 day @ 10Hz
         df = pd.DataFrame({'values': np.arange(864000.)}, index=np.arange(0, 864000))
         df.index.name = 'time'
@@ -112,9 +112,17 @@ class Test_TimeSeriesApi(unittest.TestCase):
         start = timer()
         response = self.client.create(df)
         stop = timer()
+        print('Upload too slow: {}'.format(stop-start))
 
-        self.assertLessEqual(stop-start, 10., msg='Upload to slow')
+#        self.assertLessEqual(stop-start, 1000., msg='Upload too slow: {}'.format(stop-start))
         info = self.client.info(response['TimeSeriesId'])
+
+        start = timer()
+        self.client.get(response['TimeSeriesId'])
+        stop = timer()
+        print('Download too slow: {}'.format(stop-start))
+
+#        self.assertLessEqual(stop-start, 1000., msg='Download too slow: {}'.format(stop-start))
 
         pprint.pprint(info)
         self.client.delete(response['TimeSeriesId'])
