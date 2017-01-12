@@ -1,2 +1,2 @@
-python -m unittest discover -s integrationtests -p "*.py"
+python -m unittest discover -s tests_integration -p "*.py"
 pause

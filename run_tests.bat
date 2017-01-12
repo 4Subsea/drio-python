@@ -1,2 +1,2 @@
-python -m unittest discover
+python -m unittest discover -s tests -p "*.py"
 pause
