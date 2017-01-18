@@ -9,14 +9,10 @@ import pandas as pd
 import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
 
-timeseriesclient.globalsettings.environment.set_test()
+timeseriesclient.globalsettings.environment.set_production()
 
-USERNAME = 'ace@4subsea.com'
-PASSWORD = '#bmE378dt!'
-
-#USERNAME = 'reservoir-integrationtest@4subsea.onmicrosoft.com'
-#PASSWORD = 'LnqABDrHLYceXLWC7YFhbVAq8dqvPeRAMzbTYKGn'
-
+USERNAME = 'reservoir-integrationtest@4subsea.com'
+PASSWORD = 'qz9uVgNhANncz9Jp'
 
 class Test_TimeSeriesApi(unittest.TestCase):
 
@@ -53,6 +49,27 @@ class Test_TimeSeriesApi(unittest.TestCase):
         df_1_recieved = self.client.get(response['TimeSeriesId'])
 
         pd.util.testing.assert_series_equal(self.df_1['values'], df_1_recieved)
+
+        self.client.delete(response['TimeSeriesId'])
+
+    def test_create_get_delete(self):
+        rng = pd.date_range('1970-01-01', periods=100, freq='ns')
+        df = pd.DataFrame({'values': np.arange(100.)}, index=rng)
+        df.index.name = 'time'
+        response = self.client.create(df)
+        info = self.client.info(response['TimeSeriesId'])
+
+        pprint.pprint(info)
+
+        self.assertEqual(0, response['TimeOfFirstSample'])
+        self.assertEqual(info['TimeOfFirstSample'], response['TimeOfFirstSample'])
+
+        self.assertEqual(99, response['TimeOfLastSample'])
+        self.assertEqual(info['TimeOfLastSample'], response['TimeOfLastSample'])
+
+        df_recieved = self.client.get(response['TimeSeriesId'], convert_date=True)
+
+        pd.util.testing.assert_series_equal(df['values'], df_recieved)
 
         self.client.delete(response['TimeSeriesId'])
 
@@ -106,23 +123,20 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
     def test_create_get_performance(self):
         # 1 day @ 10Hz
-        df = pd.DataFrame({'values': np.arange(864000.)}, index=np.arange(0, 864000))
+        df = pd.DataFrame({'values': np.arange(10*864000.)}, index=np.arange(0, 10*864000))
         df.index.name = 'time'
 
         start = timer()
         response = self.client.create(df)
         stop = timer()
-        print('Upload too slow: {}'.format(stop-start))
+        print('Average upload time per day: {}'.format((stop-start)/10.))
 
-#        self.assertLessEqual(stop-start, 1000., msg='Upload too slow: {}'.format(stop-start))
         info = self.client.info(response['TimeSeriesId'])
 
         start = timer()
         self.client.get(response['TimeSeriesId'])
         stop = timer()
-        print('Download too slow: {}'.format(stop-start))
-
-#        self.assertLessEqual(stop-start, 1000., msg='Download too slow: {}'.format(stop-start))
+        print('Average download time per day: {}'.format((stop-start)/10.))
 
         pprint.pprint(info)
         self.client.delete(response['TimeSeriesId'])

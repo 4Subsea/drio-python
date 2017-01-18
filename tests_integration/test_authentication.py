@@ -7,8 +7,8 @@ from adal.adal_error import AdalError
 from timeseriesclient.authenticate import Authenticator
 
 
-USERNAME = 'reservoir-integrationtest@4subsea.onmicrosoft.com'
-PASSWORD = 'LnqABDrHLYceXLWC7YFhbVAq8dqvPeRAMzbTYKGn'
+USERNAME = 'reservoir-integrationtest@4subsea.com'
+PASSWORD = 'qz9uVgNhANncz9Jp'
 
 
 class Test_Authenticate(unittest.TestCase):

@@ -9,13 +9,10 @@ import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
 from timeseriesclient.rest_api.files_api import FilesApi
 
-timeseriesclient.globalsettings.environment.set_test()
+timeseriesclient.globalsettings.environment.set_qa()
 
-USERNAME = 'ace@4subsea.com'
-PASSWORD = '#bmE378dt!'
-
-#USERNAME = 'reservoir-integrationtest@4subsea.onmicrosoft.com'
-#PASSWORD = 'LnqABDrHLYceXLWC7YFhbVAq8dqvPeRAMzbTYKGn'
+USERNAME = 'reservoir-integrationtest@4subsea.com'
+PASSWORD = 'qz9uVgNhANncz9Jp'
 
 
 class Test_FilesApi(unittest.TestCase):
