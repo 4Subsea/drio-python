@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='timeseriesclient', 
-      version='0.1.2',
+      version='0.1.3',
       license='Proprietary',
       description='Python client for timeseries in 4Subsea data reservoir',
       url='http://www.4subsea.com/python/timeseriesclient',
