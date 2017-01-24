@@ -5,6 +5,7 @@ from mock import patch
 
 import numpy as np
 import pandas as pd
+from requests.exceptions import HTTPError
 
 import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
@@ -73,7 +74,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         info_pre = self.api.info(*token_tsid)
         self.api.delete(*token_tsid)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(HTTPError):
             info_post = self.api.info(*token_tsid)
 
     def test_list(self):

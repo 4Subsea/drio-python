@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 
-import json
 import logging
 
-from .base_api import BaseApi
+from .base_api import BaseApi, TokenAuth
 from .. import globalsettings
 from ..log import LogWriter
 
@@ -28,7 +27,7 @@ class TimeSeriesApi(BaseApi):
         token : dict
             token recieved from authenticator
         file_id : str
-            id of file (File API) to be tied to timeseries entry.
+            id of file (Files API) to be tied to timeseries entry.
 
         Return
         ------
@@ -38,11 +37,9 @@ class TimeSeriesApi(BaseApi):
         logwriter.debug("called with <token>, {}".format(file_id), "create")
 
         uri = self._api_base_url + 'timeseries/create'
-        headers = self._add_authorization_header({}, token)
         body = { "FileId":file_id }
-
-        response = self._post(uri, headers=headers, data=body)
-        return json.loads(response.text)
+        response = self._post(uri, data=body, auth=TokenAuth(token))
+        return response.json()
 
     def add(self, token, timeseries_id, file_id):
         """
@@ -64,11 +61,9 @@ class TimeSeriesApi(BaseApi):
         logwriter.debug("called with <token>, {}, {}".format(timeseries_id, file_id), "add")
 
         uri = self._api_base_url + 'timeseries/add'
-        headers = self._add_authorization_header({}, token)
         body = { "TimeSeriesId":timeseries_id, "FileId":file_id }
-
-        response = self._post(uri, headers=headers, data=body)
-        return json.loads(response.text)
+        response = self._post(uri, data=body, auth=TokenAuth(token))
+        return response.json()
 
     def list(self, token):
         """
@@ -92,10 +87,8 @@ class TimeSeriesApi(BaseApi):
         logwriter.debug("called with <token>")
 
         uri = self._api_base_url + 'TimeSeries/list'
-        headers = self._add_authorization_header({}, token)
-
-        response = self._get(uri, headers=headers)
-        return json.loads(response.text)
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
 
     def info(self, token, timeseries_id):
         """
@@ -117,10 +110,8 @@ class TimeSeriesApi(BaseApi):
         logwriter.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/' + timeseries_id
-        headers = self._add_authorization_header({}, token)
-
-        response = self._get(uri, headers=headers)
-        return json.loads(response.text)
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
 
     def delete(self, token, timeseries_id):
         """
@@ -136,9 +127,7 @@ class TimeSeriesApi(BaseApi):
         logwriter.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/' + timeseries_id
-        headers = self._add_authorization_header({}, token)
-
-        response = self._delete(uri, headers=headers)
+        response = self._delete(uri, auth=TokenAuth(token))
         return
 
     def data(self, token, timeseries_id, start, end):
@@ -164,8 +153,7 @@ class TimeSeriesApi(BaseApi):
         logwriter.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/{}/data'.format(timeseries_id)
-        headers = self._add_authorization_header({}, token)
         params = {'start': start, 'end': end}
 
-        response = self._get(uri, headers=headers, params=params)
+        response = self._get(uri, params=params, auth=TokenAuth(token))
         return response

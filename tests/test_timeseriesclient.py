@@ -19,53 +19,56 @@ from timeseriesclient.rest_api import TimeSeriesApi
 timeseriesclient.globalsettings.environment.set_qa()
 
 
-class TestTimeSeriesClient(unittest.TestCase):
-    
-    def test_constructor(self):
-        auth = Mock()
-        auth.token = '{"test": "abc"}'
-        client = timeseriesclient.TimeSeriesClient(auth)
-        
-        self.assertIsInstance(client, timeseriesclient.TimeSeriesClient)
-
-        self.assertIsInstance(client._authenticator, Mock)
-
-        self.assertIsInstance(client._timeseries_api, TimeSeriesApi)
-
-
-class TestTimeSeriesClient_Token(unittest.TestCase):
-
-    def test_get_token(self):
-        auth = Mock()
-        auth.token = {'accessToken': 'abcdef',
-                      'expiresOn': np.datetime64('2050-01-01 00:00:00', 's')}
-
-        client = timeseriesclient.TimeSeriesClient(auth)
-        self.assertEqual(client.token, auth.token)
-
-
-class TestTimeSeriesClient_Ping(unittest.TestCase):
+class Test_TimeSeriesClient(unittest.TestCase):
 
     def setUp(self):
-        self._patcher_token = patch('timeseriesclient.TimeSeriesClient.token', 
-                                        new_callable=PropertyMock)
-        self._mock_token = self._patcher_token.start()
-        self._mock_token.return_value = {'accessToken' : 'abcdef'}
+        self.auth = Mock()
+        self.auth.token = {'accessToken': 'abcdef',
+                           'expiresOn': np.datetime64('2050-01-01 00:00:00', 's')}
 
-    def tearDown(self):
-        self._patcher_token.stop()
+        self.client = timeseriesclient.TimeSeriesClient(self.auth)
+        self.client._files_api = Mock()
+        self.client._timeseries_api = Mock()
 
-    @patch('timeseriesclient.rest_api.FilesApi.ping')
-    def test_ping_request(self, mock_filesapi):
-        auth = Mock()
-        auth.token = {'accessToken' : 'dummyToken' ,
-                      'expiresOn' : np.datetime64('2050-01-01 00:00:00', 's')}
-        
-        client = timeseriesclient.TimeSeriesClient(auth)
-        mock_filesapi.return_value = {'status':'pong'}
+        self.dummy_df = pd.DataFrame({'a':np.arange(1e3)}, index=np.array(np.arange(1e3), dtype='datetime64[ns]'))
 
-        response = client.ping()
+        self.dummy_params = { 'FileId' : 666,
+                              'Account' : 'account',
+                              'SasKey' : 'abcdef',
+                              'Container' : 'blobcontainer', 
+                              'Path' : 'blobpath',
+                              'Endpoint' : 'endpointURI' }
+
+    def test_init(self):
+        self.assertIsInstance(self.client, timeseriesclient.TimeSeriesClient)
+        self.assertIsInstance(self.client._authenticator, Mock)
+        self.assertIsInstance(self.client._timeseries_api, Mock)
+        self.assertIsInstance(self.client._files_api, Mock)
+
+    def test_token(self):
+        self.assertEqual(self.client.token, self.auth.token)
+
+    def test_ping_request(self):
+        self.client._files_api.ping.return_value = {'status':'pong'}
+
+        response = self.client.ping()
         self.assertEqual(response, {'status':'pong'})
+
+    def test_create_all_methods_called(self):
+        self.client._verify_and_prepare_dataframe = Mock(return_value=None)
+        self.client._upload_file = Mock(return_value=self.dummy_params['FileId'])
+        self.client._wait_until_file_ready = Mock(return_value='Ready')
+
+        expected_response = {'abc': 123}
+        self.client._timeseries_api.create.return_value = expected_response
+
+        response = self.client.create(self.dummy_df)
+
+        self.client._verify_and_prepare_dataframe.assert_called_once_with(self.dummy_df)
+        self.client._upload_file.assert_called_once_with(self.dummy_df)
+        self.client._wait_until_file_ready.assert_called_once_with(self.dummy_params['FileId'])
+        self.client._timeseries_api.create.assert_called_once_with(self.auth.token, self.dummy_params['FileId'])
+        self.assertDictEqual(response, expected_response)
 
 
 class Test_Create(unittest.TestCase):
@@ -98,10 +101,6 @@ class Test_Create(unittest.TestCase):
         self.client._verify_and_prepare_dataframe = Mock()
         self.client._get_reference_time = Mock(return_value='1970-01-01T00:00:00')
         self.client._get_file_status = Mock(side_effect=["Processing", "Processing", "Ready"])
-
-    def test_check_arguments_called(self):
-        self.client.create(self.dummy_df)
-        self.client._verify_and_prepare_dataframe.assert_called_with(self.dummy_df)
 
     @patch('timeseriesclient.rest_api.FilesApi.upload_service')
     def test_all_calls_made(self, mock_upload_service):
@@ -164,23 +163,15 @@ class Test_CheckArgumentsCreate(unittest.TestCase):
     def setUp(self):
         self.client = timeseriesclient.TimeSeriesClient(Mock())
 
-    def make_dataframe_datetime64(self):
-        timevector = np.array(np.arange(0, 10e9, 1e9), dtype='datetime64[ns]')
-        values = np.random.rand(10)
-        return  pd.DataFrame({'values' : values}, index=timevector)
-
-    def make_dataframe_int64(self):
-        timevector = np.arange(0, 10e9, 1e9, dtype=np.int64)
-        values = np.random.rand(10)
-        return  pd.DataFrame({'values' : values}, index=timevector)
-
     def test_datetime64(self):
-        df = self.make_dataframe_datetime64()
+        df = pd.DataFrame({'values' : np.random.rand(10)},
+                          index=np.arange(0, 10e9, 1e9).astype('datetime64[ns]'))
         result = self.client._verify_and_prepare_dataframe(df)
         self.assertIsNone(result)
 
     def test_int64(self):
-        df = self.make_dataframe_int64()
+        df = pd.DataFrame({'values' : np.random.rand(10)},
+                          index=np.arange(0, 10e9, 1e9).astype('int64'))
         result = self.client._verify_and_prepare_dataframe(df)
         self.assertIsNone(result)
 

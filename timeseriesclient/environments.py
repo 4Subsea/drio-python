@@ -11,7 +11,7 @@ class Environment(object):
         self.set_default()
 
     def get(self):
-        return self.current_environment 
+        return self.current_environment
 
     def set_default(self):
         self.set_production()

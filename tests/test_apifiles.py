@@ -40,43 +40,50 @@ class Test_FilesApi(unittest.TestCase):
         self.token = { 'accessToken' : 'abcdef' }
         self.dummy_header = {'Authorization': 'Bearer abcdef'}
 
-    @patch('timeseriesclient.rest_api.base_api.requests.post')
-    def test_upload(self, mock_post):
-        api = FilesApi()
+        self.api = FilesApi()
+        self.api._session = Mock()
+
+    @patch('timeseriesclient.rest_api.files_api.TokenAuth')
+    def test_upload(self, mock_token):
+        mock_post = self.api._session.post
 
         response = Mock()
-        response.text = '{"test": "abs"}'
-        response.text = response_upload
+        response_upload = {"test": "abs"}
+        response.json.return_value = response_upload
         mock_post.return_value = response
 
-        result = api.upload(self.token)
+        result = self.api.upload(self.token)
 
         mock_post.assert_called_once_with(
             'https://reservoir-api-qa.4subsea.net/api/Files/upload',
-            headers=self.dummy_header)
+            auth=mock_token(), **self.api._defaults)
 
         self.assertIsInstance(result, dict)
-        self.assertEqual(result, json.loads(response_upload) )
+        self.assertEqual(result, response_upload)
 
-    @patch('timeseriesclient.rest_api.base_api.requests.post')
-    def test_commit(self, mock_post):
-        api = FilesApi()
-        api.commit(self.token, 'fileid')
+    @patch('timeseriesclient.rest_api.files_api.TokenAuth')
+    def test_commit(self, mock_token):
+        mock_post = self.api._session.post
 
-        mock_post.assert_called_with('https://reservoir-api-qa.4subsea.net/api/Files/commit', data={'FileId': 'fileid'}, headers={'Authorization': 'Bearer abcdef'})
+        self.api.commit(self.token, 'fileid')
 
-    @patch('timeseriesclient.rest_api.base_api.requests.get')
-    def test_status(self, mock_get):
-        api = FilesApi()
+        mock_post.assert_called_with('https://reservoir-api-qa.4subsea.net/api/Files/commit',
+                                     data={'FileId': 'fileid'}, auth=mock_token(),
+                                     **self.api._defaults)
+
+    @patch('timeseriesclient.rest_api.files_api.TokenAuth')
+    def test_status(self, mock_token):
+        mock_get = self.api._session.get
 
         response = Mock()
         response.text = '{"test": "abc"}'
 
         mock_get.return_value = response
-        api.status(self.token, 'fileid')
+        self.api.status(self.token, 'fileid')
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/files/fileid/status'
-        mock_get.assert_called_with(expected_uri, headers=self.dummy_header);
+        mock_get.assert_called_with(expected_uri, auth=mock_token(),
+                                    **self.api._defaults);
 
     @patch('timeseriesclient.rest_api.files_api.AzureBlobService')
     def test_upload_service(self,  mock_df_uploader):

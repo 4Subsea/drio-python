@@ -5,11 +5,12 @@ from mock import patch
 
 import numpy as np
 import pandas as pd
+import requests
 
 import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
 
-timeseriesclient.globalsettings.environment.set_production()
+timeseriesclient.globalsettings.environment.set_qa()
 
 USERNAME = 'reservoir-integrationtest@4subsea.com'
 PASSWORD = 'qz9uVgNhANncz9Jp'
@@ -82,7 +83,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         info_pre = self.client.info(response['TimeSeriesId'])
         self.client.delete(response['TimeSeriesId'])
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(requests.exceptions.HTTPError):
             info_post = self.client.info(response['TimeSeriesId'])
 
     def test_create_append_nooverlap_get_delete(self):

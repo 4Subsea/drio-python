@@ -39,104 +39,108 @@ class Test_TimeSeriesApi(unittest.TestCase):
     def setUp(self):
         self.token = { 'accessToken' : 'abcdef' }
 
-    @patch('timeseriesclient.rest_api.base_api.requests.get')
-    def test_list(self, mock_post):
-        api = TimeSeriesApi()
+        self.api = TimeSeriesApi()
+        self.api._session = Mock()
+
+    @patch('timeseriesclient.rest_api.timeseries_api.TokenAuth')
+    def test_list(self, mock_token):
+        mock_post = self.api._session.get
 
         mock_post.return_value = Mock()
         mock_post.return_value.text = u'{}'
 
-        result = api.list(self.token)
+        result = self.api.list(self.token)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/TimeSeries/list'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
 
-        mock_post.assert_called_with(expected_uri, headers=expected_header)
+        mock_post.assert_called_once_with(expected_uri, auth=mock_token(), 
+                                          **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.base_api.requests.get')
-    def test_info(self, mock_post):
-        api = TimeSeriesApi()
+    @patch('timeseriesclient.rest_api.timeseries_api.TokenAuth')
+    def test_info(self, mock_token):
+        mock_get = self.api._session.get
 
-        mock_post.return_value = Mock()
-        mock_post.return_value.text = u'{}'
+        mock_get.return_value = Mock()
+        mock_get.return_value.text = u'{}'
 
-        result = api.info(self.token, "someId")
+        result = self.api.info(self.token, "someId")
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/someId'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
 
-        mock_post.assert_called_with(expected_uri, headers=expected_header)
+        mock_get.assert_called_once_with(expected_uri, auth=mock_token(),
+                                         **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.base_api.requests.delete')
-    def test_delete(self, mock_delete):
-        api = TimeSeriesApi()
+    @patch('timeseriesclient.rest_api.timeseries_api.TokenAuth')
+    def test_delete(self, mock_token):
+        mock_delete = self.api._session.delete
         timeseries_id = '123456'
 
         mock_delete.return_value = Mock()
         mock_delete.return_value.status_code = 200
 
-        result = api.delete(self.token, timeseries_id)
+        result = self.api.delete(self.token, timeseries_id)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/123456'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
 
-        mock_delete.assert_called_with(expected_uri, headers=expected_header)
+        mock_delete.assert_called_with(expected_uri, auth=mock_token(),
+                                       **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.base_api.requests.post')
-    def test_create(self, mock_post):
-        api = TimeSeriesApi()
+    @patch('timeseriesclient.rest_api.timeseries_api.TokenAuth')
+    def test_create(self, mock_token):
         file_id = 666
 
+        mock_post = self.api._session.post
         mock_post.return_value = Mock()
         mock_post.return_value.text = u'{}'
 
-        result = api.create(self.token, file_id)
+        result = self.api.create(self.token, file_id)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/create'
         expected_header = { 'Authorization' : 'Bearer abcdef' }
 
         expected_body = { "FileId":file_id }
 
-        mock_post.assert_called_with(expected_uri, 
-                                     headers=expected_header,
-                                     data=expected_body)
+        mock_post.assert_called_with(expected_uri, auth=mock_token(),
+                                     data=expected_body, **self.api._defaults)
 
 
-    @patch('timeseriesclient.rest_api.base_api.requests.post')
-    def test_add(self, mock_post):
-        api = TimeSeriesApi()
+    @patch('timeseriesclient.rest_api.timeseries_api.TokenAuth')
+    def test_add(self, mock_token):
         timeseries_id = 't666'
         file_id = 'f001'
 
+        mock_post = self.api._session.post
         mock_post.return_value = Mock()
         mock_post.return_value.text = u'{}'
         
-        result = api.add(self.token, timeseries_id, file_id)
+        result = self.api.add(self.token, timeseries_id, file_id)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/add'
         expected_header = {'Authorization': 'Bearer abcdef'}
         expected_body = {"TimeSeriesId":timeseries_id, "FileId":file_id}
 
-        mock_post.assert_called_with(expected_uri, 
-                                     headers=expected_header,
-                                     data=expected_body)
+        mock_post.assert_called_with(expected_uri, auth=mock_token(),
+                                     data=expected_body, **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.base_api.requests.get')
-    def test_data(self, mock_get):
-        api = TimeSeriesApi()
+    @patch('timeseriesclient.rest_api.timeseries_api.TokenAuth')
+    def test_data(self, mock_token):
         timeseries_id = 't666'
         start = -1000
         end = 6660000
 
-        result = api.data(self.token, timeseries_id, start, end)
+        result = self.api.data(self.token, timeseries_id, start, end)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{ts_id}/data'.format(ts_id=timeseries_id)
         expected_header = {'Authorization': 'Bearer abcdef'}
         expected_params = {'start': start, 'end': end}
 
-        mock_get.assert_called_with(expected_uri, 
-                                    headers=expected_header,
-                                    params=expected_params)
+        mock_get = self.api._session.get
+        mock_get.assert_called_with(expected_uri, auth=mock_token(),
+                                    params=expected_params,
+                                    **self.api._defaults)
 
 
 if __name__ == '__main__':

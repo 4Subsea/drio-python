@@ -104,7 +104,7 @@ class TimeSeriesClient(object):
         current = timeit.default_timer()
         logwriter.info('Done, total time spent: {} seconds ({} minutes)'.format(current - start, (current - start)/60.), 'create')
 
-        return(response)
+        return response
 
     def append(self, dataframe, timeseries_id):
         """

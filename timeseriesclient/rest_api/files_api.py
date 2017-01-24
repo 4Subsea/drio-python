@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import base64
-import json
 import logging
 import sys
 import timeit
@@ -14,7 +13,7 @@ elif sys.version_info.major == 2:
 
 from azure.storage.blob import BlobBlock, BlockBlobService
 
-from .base_api import BaseApi
+from .base_api import BaseApi, TokenAuth
 from ..log import LogWriter
 
 logger = logging.getLogger(__name__)
@@ -30,13 +29,11 @@ class FilesApi(BaseApi):
         logwriter.debug("called", "upload")
 
         uri = self._api_base_url + 'Files/upload'
-        headers = self._add_authorization_header({}, token)
+        response = self._post(uri, auth=TokenAuth(token))
+        return response.json()
 
-        response = self._post(uri, headers=headers)
-        upload_params = json.loads(response.text)
-        return upload_params
-
-    def upload_service(self, upload_params):
+    @staticmethod
+    def upload_service(upload_params):
         logwriter.debug("called", "upload_service")
         return AzureBlobService(upload_params)
 
@@ -44,29 +41,23 @@ class FilesApi(BaseApi):
         logwriter.debug("called", "commit")
 
         uri = self._api_base_url + 'Files/commit'
-        headers = self._add_authorization_header({}, token)
         body = { 'FileId' : file_id }
-
-        response = self._post(uri, headers=headers, data=body)
+        response = self._post(uri, data=body, auth=TokenAuth(token))
         return response.status_code
 
     def status(self, token, file_id):
         logwriter.debug("called", "status")
 
         uri = self._api_base_url + 'files/{}/status'.format(file_id)
-        headers = self._add_authorization_header({}, token)
-
-        response = self._get(uri, headers=headers)
-        return json.loads(response.text)
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
 
     def ping(self, token):
         logwriter.debug("called", "ping")
 
         uri = self._api_base_url + 'ping'
-        headers = self._add_authorization_header({}, token)
-
-        response = self._get(uri, headers=headers)
-        return json.loads(response.text)
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
 
 
 class AzureBlobService(BlockBlobService):
