@@ -150,7 +150,7 @@ class TimeSeriesApi(BaseApi):
         str
             csv with timeseries data
         """
-        logwriter.debug("called with <token>, {}".format(timeseries_id))
+        logwriter.debug("called with <token>, {}, {}, {}".format(timeseries_id, start, end))
 
         uri = self._api_base_url + 'timeseries/{}/data'.format(timeseries_id)
         params = {'start': start, 'end': end}

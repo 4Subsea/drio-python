@@ -4,6 +4,7 @@ import base64
 import logging
 import sys
 import timeit
+from time import sleep
 from functools import wraps
 
 if sys.version_info.major == 3:
@@ -12,6 +13,7 @@ elif sys.version_info.major == 2:
     from cStringIO import StringIO
 
 from azure.storage.blob import BlobBlock, BlockBlobService
+from azure.storage.storageclient import AzureException
 
 from .base_api import BaseApi, TokenAuth
 from ..log import LogWriter
@@ -20,25 +22,46 @@ logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
 
+def _backoff_put_block(func):
+    '''Simple backoff strategy for put_block - hotfix'''
+    @wraps(func)
+    def func_wrapper(*args, **kwargs):
+        count = 0
+        while count <= 5:
+            try:
+                func(*args, **kwargs)
+                return None
+            except AzureException as ex:
+                logwriter.debug("raise AzureException", "put_block")
+                count += 1
+                time.sleep(1)
+        raise ex
+    return func_wrapper
+
+
 class FilesApi(BaseApi):
 
     def __init__(self):
         super(FilesApi, self).__init__()
 
     def upload(self, token):
-        logwriter.debug("called", "upload")
+        logwriter.debug("called with <token>", "upload")
 
         uri = self._api_base_url + 'Files/upload'
         response = self._post(uri, auth=TokenAuth(token))
+
+        for key, value in response.json().iteritems():
+            logwriter.debug("parameter received - {key}: {value}"
+                            .format(key=key, value=value), "upload")
         return response.json()
 
     @staticmethod
     def upload_service(upload_params):
-        logwriter.debug("called", "upload_service")
+        logwriter.debug("called <token>, <upload_params>", "upload_service")
         return AzureBlobService(upload_params)
 
     def commit(self, token, file_id):
-        logwriter.debug("called", "commit")
+        logwriter.debug("called with <token>, {}".format(file_id), "commit")
 
         uri = self._api_base_url + 'Files/commit'
         body = { 'FileId' : file_id }
@@ -46,14 +69,14 @@ class FilesApi(BaseApi):
         return response.status_code
 
     def status(self, token, file_id):
-        logwriter.debug("called", "status")
+        logwriter.debug("called with <token>, {}".format(file_id), "status")
 
         uri = self._api_base_url + 'files/{}/status'.format(file_id)
         response = self._get(uri, auth=TokenAuth(token))
         return response.json()
 
     def ping(self, token):
-        logwriter.debug("called", "ping")
+        logwriter.debug("called <token>", "ping")
 
         uri = self._api_base_url + 'ping'
         response = self._get(uri, auth=TokenAuth(token))
@@ -101,7 +124,7 @@ class AzureBlobService(BlockBlobService):
                 block_id += 1
 
                 logwriter.debug("put block {} for blob {}".format(block.id, self.blob_name), 'put_block')
-                self.put_block(self.container_name, self.blob_name,
+                self.put_block_retry(self.container_name, self.blob_name,
                                block_data.encode('ascii'), block.id)
 
         if leftover:
@@ -109,10 +132,23 @@ class AzureBlobService(BlockBlobService):
             blocks.append(block)
 
             logwriter.debug("put block {} for blob {}".format(block.id, self.blob_name), 'put_block')
-            self.put_block(self.container_name, self.blob_name,
+            self.put_block_retry(self.container_name, self.blob_name,
                            block_data.encode('ascii'), block.id)
 
         self.put_block_list(self.container_name, self.blob_name, blocks)
+
+    def put_block_retry(self, *args, **kwargs):
+        '''put_block with some retry - hotfix'''
+        count = 0
+        while count <= 5:
+            try:
+                self.put_block(*args, **kwargs)
+                return None
+            except AzureException as ex:
+                logwriter.debug("raise AzureException", "put_block")
+                count += 1
+                sleep(1*count)
+        raise ex
 
     def _make_block(self, block_id):
         base64_block_id = self._b64encode(block_id)

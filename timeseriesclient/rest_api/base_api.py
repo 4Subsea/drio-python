@@ -19,9 +19,12 @@ logwriter = LogWriter(logger)
 def _response_logger(func):
     @wraps(func)
     def func_wrapper(*args, **kwargs):
+        logwriter.debug("request initiated")
         response = func(*args, **kwargs)
-        logwriter.debug("response request url: {}".format(response.request.url))
-        logwriter.debug("response status code: {}".format(response.status_code))
+        logwriter.debug("response recieved")
+
+        logwriter.debug("request url: {}".format(response.request.url))
+        logwriter.debug("status code: {}".format(response.status_code))
         try:
             logwriter.debug("response text: {}".format(response.text))
         except:

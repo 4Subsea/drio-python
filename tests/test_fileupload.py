@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from azure.storage.blob import BlobBlock
 
-from timeseriesclient.rest_api.files_api import AzureBlobService
+from timeseriesclient.rest_api.files_api import AzureBlobService, AzureException
 
 
 class Test_DataFrameUploader(unittest.TestCase):
@@ -60,15 +60,16 @@ class Test_DataFrameUploader(unittest.TestCase):
         uploader.put_block_list.assert_called_once()
 
     def test_upload_long(self):
+        side_effect = [AzureException] + 4*[None]
         uploader = AzureBlobService(self.upload_params)
-        uploader.put_block = Mock()
+        uploader.put_block = Mock(side_effect=side_effect)
         uploader.put_block_list = Mock()
 
         df = pd.DataFrame({'a':np.arange(1.001e6)})
         uploader.create_blob_from_df(df)
 
-        # 4 was just found empirically 
-        self.assertEqual(uploader.put_block.call_count, 4)
+        # 4 was just found empirically + 1 error
+        self.assertEqual(uploader.put_block.call_count, 4+1)
 
     def test_make_block(self):
         uploader = AzureBlobService(self.upload_params)

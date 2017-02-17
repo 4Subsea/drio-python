@@ -57,11 +57,6 @@ class TimeSeriesClient(object):
         make. There is no password stored in the token, it only provides access 
         for a limited amount of time and only to the data reservoir.
         """
-        logwriter.debug("called", "token")
-
-        if not self._authenticator.token:
-            logwriter.error("returned token is None", "token")
-
         return self._authenticator.token
 
     def ping(self):
@@ -89,21 +84,23 @@ class TimeSeriesClient(object):
         """
         self._verify_and_prepare_dataframe(dataframe)
 
-        start = timeit.default_timer()
+        time_start = timeit.default_timer()
         file_id = self._upload_file(dataframe)
-        current = timeit.default_timer()
-        logwriter.info('Fileupload took {} seconds'.format(current - start), 'create')
+        time_upload = timeit.default_timer()
+        logwriter.info('Fileupload took {} seconds'
+                       .format(time_upload - time_start), 'create')
 
         status = self._wait_until_file_ready(file_id)
+        time_process = timeit.default_timer()
+        logwriter.info('Processing serverside took {} seconds'
+                       .format(time_process - time_upload), 'create')
         if status == "Failed":
             return status
-        current = timeit.default_timer()
-        logwriter.info('Processing serverside time elapsed since start is {} seconds'.format(current - start), 'create')
 
         response = self._timeseries_api.create(self.token, file_id)
-        current = timeit.default_timer()
-        logwriter.info('Done, total time spent: {} seconds ({} minutes)'.format(current - start, (current - start)/60.), 'create')
-
+        time_end = timeit.default_timer()
+        logwriter.info('Done, total time spent: {} seconds ({} minutes)'
+                       .format(time_end - time_start, (time_end - time_start)/60.), 'create')
         return response
 
     def append(self, dataframe, timeseries_id):
@@ -126,12 +123,24 @@ class TimeSeriesClient(object):
         """
         self._verify_and_prepare_dataframe(dataframe)
 
+        time_start = timeit.default_timer()
         file_id = self._upload_file(dataframe)
+        time_upload = timeit.default_timer()
+        logwriter.info('Upload took {} seconds'
+                       .format(time_upload - time_start), 'append')
+
         status = self._wait_until_file_ready(file_id)
+        time_process = timeit.default_timer()
+        logwriter.info('Processing serverside took {} seconds'
+                       .format(time_process - time_upload), 'append')
         if status == "Failed":
             return status
-        response = self._timeseries_api.add(self.token, timeseries_id,
-                                            file_id)
+
+        time_end = timeit.default_timer()
+        logwriter.info('Done, total time spent: {} seconds ({} minutes)'
+                       .format(time_end - time_start, (time_end - time_start)/60.), 'append')
+
+        response = self._timeseries_api.add(self.token, timeseries_id, file_id)
         return response
 
     def list(self):

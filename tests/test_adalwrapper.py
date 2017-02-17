@@ -67,27 +67,6 @@ class TestAdalAuthenticator(unittest.TestCase):
         self.assertEqual(token, dummy_token)
 
 
-class Test_HeaderFunctions(unittest.TestCase):
-
-    def test_create_authorization_header(self):
-        token = {'accessToken' : 'abcdef'}
-
-        key, value = adalw.create_authorization_header(token)
-
-        self.assertEqual(key, 'Authorization')
-        self.assertEqual(value, 'Bearer abcdef')
-
-    def test_add_authorization_header(self):
-        token = {'accessToken' : 'abcdef'}
-        key = 'Authorization'
-        value = 'Bearer abcdef'
-        expected_header = { key : value }
-       
-        header = adalw.add_authorization_header({}, token)
-
-        self.assertEqual(header, expected_header)
-
-
 class Test_UnsafeAdalAuthenticator(unittest.TestCase):
 
     @patch('timeseriesclient.authenticate.AdalAuthenticator.__init__')

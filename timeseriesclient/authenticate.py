@@ -36,6 +36,8 @@ class AdalAuthenticator(object):
         self._token_cache = self.context.acquire_token(self.params.resource,
                                                        self.username,
                                                        self.params.client_id)
+        logwriter.debug("token retrieved - expires {}"
+                        .format(self._token_cache['expiresOn']), "_token")
         return self._token_cache
 
     def _get_params(self):
@@ -53,20 +55,6 @@ class UnsafeAdalAuthenticator(AdalAuthenticator):
 
     def _get_pass(self):
         return self.password
-
-
-def add_authorization_header(header, token):
-    key, value = create_authorization_header(token)
-    header[key] = value
-    return header
-
-def create_authorization_header(token):
-    key = 'Authorization'
-
-    access_token = token['accessToken']
-    value = 'Bearer {}'.format(access_token)
-
-    return key, value
 
 
 Authenticator = AdalAuthenticator
