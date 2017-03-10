@@ -1,20 +1,21 @@
 import pprint
 import time
 import unittest
-from mock import patch
 
 import numpy as np
 import pandas as pd
+from mock import patch
 from requests.exceptions import HTTPError
 
 import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
-from timeseriesclient.rest_api import FilesApi, TimeSeriesApi
+from timeseriesclient.rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
 
-timeseriesclient.globalsettings.environment.set_test()
+timeseriesclient.globalsettings.environment.set_qa()
 
 USERNAME = 'reservoir-integrationtest@4subsea.com'
 PASSWORD = 'qz9uVgNhANncz9Jp'
+
 
 class Test_TimeSeriesApi(unittest.TestCase):
 
@@ -22,8 +23,9 @@ class Test_TimeSeriesApi(unittest.TestCase):
     @patch('getpass.getpass', return_value=PASSWORD)
     def setUpClass(cls, mock_input):
         cls.auth = Authenticator(USERNAME)
-        
-        files_api = FilesApi()
+        cls.metaapi = MetadataAPI()
+
+        files_api = FilesAPI()
 
         df_1 = pd.DataFrame({'a': np.arange(100.)}, index=np.arange(0, 100))
         df_2 = pd.DataFrame({'a': np.arange(100.)}, index=np.arange(50, 150))
@@ -41,30 +43,49 @@ class Test_TimeSeriesApi(unittest.TestCase):
             files_api.commit(cls.auth.token, upload_params['FileId'])
 
             counter = 0
-            response = files_api.status(cls.auth.token, upload_params['FileId'])
+            response = files_api.status(
+                cls.auth.token, upload_params['FileId'])
             while response['State'] != 'Ready' and counter < 5:
                 time.sleep(5)
-                response = files_api.status(cls.auth.token, upload_params['FileId'])
+                response = files_api.status(
+                    cls.auth.token, upload_params['FileId'])
                 counter += 1
 
             cls.token_fileid.append(token_fileid)
 
+        cls.meta_1 = {
+            "Namespace": "namespace_string_1",
+            "Key": "key_string_1",
+            "Value": {
+                "Ding": "Dong"
+            }
+        }
+
+        cls.metaapi = MetadataAPI()
+        cls.meta_respons = cls.metaapi.create(cls.auth.token, cls.meta_1)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.metaapi.delete(cls.auth.token, cls.meta_respons['Id'])
+
     def setUp(self):
-        self.api = TimeSeriesApi()
+        self.api = TimeSeriesAPI()
 
     def test_create_data_delete(self):
         response = self.api.create(*self.token_fileid[0])
         token_tsid = (self.auth.token, response['TimeSeriesId'])
         info = self.api.info(*token_tsid)
 
-
         self.assertEqual(0, response['TimeOfFirstSample'])
-        self.assertEqual(info['TimeOfFirstSample'], response['TimeOfFirstSample'])
+        self.assertEqual(info['TimeOfFirstSample'],
+                         response['TimeOfFirstSample'])
 
         self.assertEqual(99, response['TimeOfLastSample'])
-        self.assertEqual(info['TimeOfLastSample'], response['TimeOfLastSample'])
+        self.assertEqual(info['TimeOfLastSample'],
+                         response['TimeOfLastSample'])
 
-        data = self.api.data(self.auth.token, response['TimeSeriesId'], -1000, 1000)
+        data = self.api.data(self.auth.token, response[
+                             'TimeSeriesId'], -1000, 1000)
         self.api.delete(*token_tsid)
 
     def test_delete(self):
@@ -84,31 +105,55 @@ class Test_TimeSeriesApi(unittest.TestCase):
     def test_create_add_overlap_data_delete(self):
         response = self.api.create(*self.token_fileid[0])
         token_tsid = (self.auth.token, response['TimeSeriesId'])
-        response = self.api.add(self.auth.token, response['TimeSeriesId'], self.token_fileid[1][1])
-        response = self.api.add(self.auth.token, response['TimeSeriesId'], self.token_fileid[2][1])
+        response = self.api.add(self.auth.token, response[
+                                'TimeSeriesId'], self.token_fileid[1][1])
+        response = self.api.add(self.auth.token, response[
+                                'TimeSeriesId'], self.token_fileid[2][1])
 
         info = self.api.info(*token_tsid)
 
         self.assertEqual(0, info['TimeOfFirstSample'])
         self.assertEqual(174, info['TimeOfLastSample'])
 
-        data = self.api.data(self.auth.token, response['TimeSeriesId'], -1000, 1000)
+        data = self.api.data(self.auth.token, response[
+                             'TimeSeriesId'], -1000, 1000)
         self.api.delete(*token_tsid)
         print info
 
     def test_create_add_nooverlap_data_delete(self):
         response = self.api.create(*self.token_fileid[0])
         token_tsid = (self.auth.token, response['TimeSeriesId'])
-        response = self.api.add(self.auth.token, response['TimeSeriesId'], self.token_fileid[2][1])
+        response = self.api.add(self.auth.token, response[
+                                'TimeSeriesId'], self.token_fileid[2][1])
 
         info = self.api.info(*token_tsid)
 
         self.assertEqual(0, info['TimeOfFirstSample'])
         self.assertEqual(174, info['TimeOfLastSample'])
 
-        data = self.api.data(self.auth.token, response['TimeSeriesId'], -1000, 1000)
+        data = self.api.data(self.auth.token, response[
+                             'TimeSeriesId'], -1000, 1000)
         self.api.delete(*token_tsid)
         print info
+
+    def test_attach_detach_meta(self):
+        response = self.api.create(*self.token_fileid[0])
+        token_tsid = (self.auth.token, response['TimeSeriesId'])
+        print response
+        self.api.attach_metadata(*token_tsid,
+                                 metadata_id_list=[self.meta_respons['Id']])
+
+        response = self.api.info(*token_tsid)
+        self.assertEqual(response['Metadata'][0]['Id'],
+                         self.meta_respons['Id'])
+
+        self.api.detach_metadata(*token_tsid,
+                                 metadata_id_list=[self.meta_respons['Id']])
+
+        response = self.api.info(*token_tsid)
+        self.assertListEqual(response['Metadata'], [])
+
+        self.api.delete(*token_tsid)
 
 
 if __name__ == '__main__':

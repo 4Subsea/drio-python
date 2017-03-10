@@ -1,11 +1,11 @@
 import pprint
-from timeit import default_timer as timer
 import unittest
-from mock import patch
+from timeit import default_timer as timer
 
 import numpy as np
 import pandas as pd
 import requests
+from mock import patch
 
 import timeseriesclient
 from timeseriesclient.authenticate import Authenticator
@@ -15,6 +15,7 @@ timeseriesclient.globalsettings.environment.set_qa()
 USERNAME = 'reservoir-integrationtest@4subsea.com'
 PASSWORD = 'qz9uVgNhANncz9Jp'
 
+
 class Test_TimeSeriesApi(unittest.TestCase):
 
     @classmethod
@@ -22,11 +23,14 @@ class Test_TimeSeriesApi(unittest.TestCase):
     def setUpClass(cls, mock_input):
         cls.auth = Authenticator(USERNAME)
 
-        cls.df_1 = pd.DataFrame({'values': np.arange(100.)}, index=np.arange(0, 100))
+        cls.df_1 = pd.DataFrame(
+            {'values': np.arange(100.)}, index=np.arange(0, 100))
         cls.df_1.index.name = 'time'
-        cls.df_2 = pd.DataFrame({'values': np.arange(100.)}, index=np.arange(50, 150))
+        cls.df_2 = pd.DataFrame(
+            {'values': np.arange(100.)}, index=np.arange(50, 150))
         cls.df_2.index.name = 'time'
-        cls.df_3 = pd.DataFrame({'values': np.arange(50.)}, index=np.arange(125, 175))
+        cls.df_3 = pd.DataFrame(
+            {'values': np.arange(50.)}, index=np.arange(125, 175))
         cls.df_3.index.name = 'time'
 
     def setUp(self):
@@ -42,10 +46,12 @@ class Test_TimeSeriesApi(unittest.TestCase):
         pprint.pprint(info)
 
         self.assertEqual(0, response['TimeOfFirstSample'])
-        self.assertEqual(info['TimeOfFirstSample'], response['TimeOfFirstSample'])
+        self.assertEqual(info['TimeOfFirstSample'],
+                         response['TimeOfFirstSample'])
 
         self.assertEqual(99, response['TimeOfLastSample'])
-        self.assertEqual(info['TimeOfLastSample'], response['TimeOfLastSample'])
+        self.assertEqual(info['TimeOfLastSample'],
+                         response['TimeOfLastSample'])
 
         df_1_recieved = self.client.get(response['TimeSeriesId'])
 
@@ -63,12 +69,15 @@ class Test_TimeSeriesApi(unittest.TestCase):
         pprint.pprint(info)
 
         self.assertEqual(0, response['TimeOfFirstSample'])
-        self.assertEqual(info['TimeOfFirstSample'], response['TimeOfFirstSample'])
+        self.assertEqual(info['TimeOfFirstSample'],
+                         response['TimeOfFirstSample'])
 
         self.assertEqual(99, response['TimeOfLastSample'])
-        self.assertEqual(info['TimeOfLastSample'], response['TimeOfLastSample'])
+        self.assertEqual(info['TimeOfLastSample'],
+                         response['TimeOfLastSample'])
 
-        df_recieved = self.client.get(response['TimeSeriesId'], convert_date=True)
+        df_recieved = self.client.get(
+            response['TimeSeriesId'], convert_date=True)
 
         pd.util.testing.assert_series_equal(df['values'], df_recieved)
 
@@ -124,20 +133,21 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
     def test_create_get_performance(self):
         # 1 day @ 10Hz
-        df = pd.DataFrame({'values': np.arange(10*864000.)}, index=np.arange(0, 10*864000))
+        df = pd.DataFrame({'values': np.arange(10 * 864000.)},
+                          index=np.arange(0, 10 * 864000))
         df.index.name = 'time'
 
         start = timer()
         response = self.client.create(df)
         stop = timer()
-        print('Average upload time per day: {}'.format((stop-start)/10.))
+        print('Average upload time per day: {}'.format((stop - start) / 10.))
 
         info = self.client.info(response['TimeSeriesId'])
 
         start = timer()
         self.client.get(response['TimeSeriesId'])
         stop = timer()
-        print('Average download time per day: {}'.format((stop-start)/10.))
+        print('Average download time per day: {}'.format((stop - start) / 10.))
 
         pprint.pprint(info)
         self.client.delete(response['TimeSeriesId'])

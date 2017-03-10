@@ -6,17 +6,17 @@ import sys
 import time
 import timeit
 
+import numpy as np
+import pandas as pd
+import requests
+
+from .log import LogWriter
+from .rest_api import FilesAPI, TimeSeriesAPI
+
 if sys.version_info.major == 3:
     from io import StringIO
 elif sys.version_info.major == 2:
     from cStringIO import StringIO
-
-import requests
-import numpy as np
-import pandas as pd
-
-from .rest_api import FilesApi, TimeSeriesApi
-from .log import LogWriter
 
 
 logger = logging.getLogger(__name__)
@@ -46,14 +46,14 @@ class TimeSeriesClient(object):
 
     def __init__(self, auth):
         self._authenticator = auth
-        #self._api_base_url = globalsettings.environment.api_base_url
-        self._timeseries_api = TimeSeriesApi()
-        self._files_api = FilesApi()
+        # self._api_base_url = globalsettings.environment.api_base_url
+        self._timeseries_api = TimeSeriesAPI()
+        self._files_api = FilesAPI()
 
     @property
     def token(self):
         """
-        Your token that is sent to the data reservoir with every request you 
+        Your token that is sent to the data reservoir with every request you
         make. There is no password stored in the token, it only provides access 
         for a limited amount of time and only to the data reservoir.
         """
@@ -100,7 +100,7 @@ class TimeSeriesClient(object):
         response = self._timeseries_api.create(self.token, file_id)
         time_end = timeit.default_timer()
         logwriter.info('Done, total time spent: {} seconds ({} minutes)'
-                       .format(time_end - time_start, (time_end - time_start)/60.), 'create')
+                       .format(time_end - time_start, (time_end - time_start) / 60.), 'create')
         return response
 
     def append(self, dataframe, timeseries_id):
@@ -138,7 +138,7 @@ class TimeSeriesClient(object):
 
         time_end = timeit.default_timer()
         logwriter.info('Done, total time spent: {} seconds ({} minutes)'
-                       .format(time_end - time_start, (time_end - time_start)/60.), 'append')
+                       .format(time_end - time_start, (time_end - time_start) / 60.), 'append')
 
         response = self._timeseries_api.add(self.token, timeseries_id, file_id)
         return response
@@ -157,7 +157,7 @@ class TimeSeriesClient(object):
     def info(self, timeseries_id):
         """
         Retrieves basic information about one timeseries.
-        
+
         Returns
         -------
         dict 
@@ -227,7 +227,7 @@ class TimeSeriesClient(object):
         return df['values']
 
     def _upload_file(self, dataframe):
-        upload_params =  self._files_api.upload(self.token)
+        upload_params = self._files_api.upload(self.token)
         uploader = self._files_api.upload_service(upload_params)
         uploader.create_blob_from_df(dataframe)
         self._files_api.commit(self.token, uploader.file_id)
@@ -240,16 +240,18 @@ class TimeSeriesClient(object):
             logwriter.error("dataframe type is {}".format(type(dataframe)))
             raise ValueError('dataframe must be a pandas DataFrame')
 
-        if not dataframe.index.dtype in ['datetime64[ns]', 'int64']: 
-            logwriter.error("index dtype is {}".format(dataframe.index.dtype)) 
+        if not dataframe.index.dtype in ['datetime64[ns]', 'int64']:
+            logwriter.error("index dtype is {}".format(dataframe.index.dtype))
             raise ValueError('allowed dtypes are datetime64[ns] and int64')
 
         if len(dataframe.keys()) > 1:
-            logwriter.error("the dataframe has too many columns, currently only one column is supported")
-            raise ValueError("the dataframe has too many columns, currently only one column is supported")
+            logwriter.error(
+                "the dataframe has too many columns, currently only one column is supported")
+            raise ValueError(
+                "the dataframe has too many columns, currently only one column is supported")
 
     def _wait_until_file_ready(self, file_id):
-        #wait for server side processing
+        # wait for server side processing
         while True:
             status = self._get_file_status(file_id)
             logwriter.debug("status is {}".format(status), "create")

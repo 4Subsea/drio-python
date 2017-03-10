@@ -9,11 +9,9 @@ except:
     from mock import patch, call
 
 import timeseriesclient
-import timeseriesclient.constants as consts
-import timeseriesclient.globalsettings as gs 
-from timeseriesclient.adalparameters import ADALParameters
-
-gs.environment.set_qa()
+import timeseriesclient._constants as consts
+import timeseriesclient.globalsettings as gs
+from timeseriesclient.authenticate import ADALParameters
 
 
 class TestConfiguration(unittest.TestCase):
@@ -25,7 +23,6 @@ class TestConfiguration(unittest.TestCase):
     def tearDown(self):
         gs.environment.set_qa()
 
-
     def verify_environment(self, expected):
         env = gs.environment.get()
 
@@ -35,7 +32,7 @@ class TestConfiguration(unittest.TestCase):
         gs.environment.set_default()
 
         self.verify_environment(consts.ENV_PROD)
-    
+
     def test_set_test_environment(self):
         gs.environment.set_test()
 
@@ -54,7 +51,6 @@ class TestConfiguration(unittest.TestCase):
 
         self.assertEqual(env1, env2)
 
-
         gs.environment.set_qa()
 
         env1 = gs.environment.get()
@@ -68,34 +64,8 @@ class TestConfiguration(unittest.TestCase):
         mock.assert_any_call('Setting environment to: QA')
 
 
-class TestGetAdalParameters(unittest.TestCase):
-    def test_get_adal_parameters(self):
-        params = gs.environment.get_adal_parameters() 
-
-        self.assertIsInstance(params, ADALParameters)
-
-    @patch('timeseriesclient.environments.ADALParameters')
-    def test_get_adal_parameter_calls_constructor_with_correct_environment(self, mock):
-        initial_environment = gs.environment.get()
-        gs.environment.get_adal_parameters()
-
-        gs.environment.set_test()
-        gs.environment.get_adal_parameters()
-
-        gs.environment.set_qa()
-        gs.environment.get_adal_parameters()
-
-        gs.environment.set_production()
-        gs.environment.get_adal_parameters()
-
-        calls = [call(initial_environment),
-                 call(consts.ENV_TEST),
-                 call(consts.ENV_QA),
-                 call(consts.ENV_PROD)]
-        mock.assert_has_calls(calls) 
-
-
 class TestApiBaseURL(unittest.TestCase):
+
     def test_(self):
         gs.environment.set_test()
         base_url = gs.environment.api_base_url
@@ -109,11 +79,11 @@ class TestApiBaseURL(unittest.TestCase):
         base_url = gs.environment.api_base_url
         self.assertEqual(base_url, consts.API_BASE_URL_PROD)
 
-
     @patch('timeseriesclient.globalsettings.environment._logger.info')
     def test_change_of_base_url_is_logged(self, mock):
         gs.environment.set_qa()
-        mock.assert_any_call('Setting baseurl to: {}'.format(consts.API_BASE_URL_QA))
+        mock.assert_any_call(
+            'Setting baseurl to: {}'.format(consts.API_BASE_URL_QA))
 
 
 if __name__ == '__main__':

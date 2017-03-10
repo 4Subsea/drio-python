@@ -2,15 +2,14 @@ import unittest
 
 from mock import Mock, patch
 
-from timeseriesclient.rest_api.base_api import (BaseApi,
-                                                TokenAuth,
-                                                _update_kwargs)
+from timeseriesclient.rest_api.base import (BaseAPI, TokenAuth,
+                                            _update_kwargs)
 
 
-class Test_WebBaseApi(unittest.TestCase):
+class Test_BaseAPI(unittest.TestCase):
 
     def setUp(self):
-        self.api = BaseApi()
+        self.api = BaseAPI()
         self.api._session = Mock()
 
     def test__post(self):
@@ -18,6 +17,12 @@ class Test_WebBaseApi(unittest.TestCase):
         self.api._post(1, 2, a='a', b='c')
         mock_post.assert_called_once_with(1, 2, a='a', b='c',
                                           **self.api._defaults)
+
+    def test__put(self):
+        mock_put = self.api._session.put
+        self.api._put(1, 2, a='a', b='c')
+        mock_put.assert_called_once_with(1, 2, a='a', b='c',
+                                         **self.api._defaults)
 
     def test__get(self):
         mock_get = self.api._session.get

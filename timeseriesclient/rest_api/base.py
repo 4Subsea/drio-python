@@ -9,8 +9,8 @@ import requests
 from requests.packages.urllib3 import Retry, Timeout
 from requests.adapters import HTTPAdapter
 
-from .. import globalsettings
-from ..log import LogWriter
+from timeseriesclient import globalsettings
+from timeseriesclient.log import LogWriter
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
@@ -33,7 +33,9 @@ def _response_logger(func):
     return func_wrapper
 
 
-class BaseApi(object):
+class BaseAPI(object):
+    '''Base class for reservoir REST API'''
+
     def __init__(self):
         self._api_base_url = globalsettings.environment.api_base_url
 
@@ -41,7 +43,7 @@ class BaseApi(object):
         retry_status = frozenset([413, 429, 500, 502, 503, 504])
 
         persist = Retry(total=10, backoff_factor=0.5,
-                        status_forcelist=retry_status)
+                        status_forcelist=retry_status, raise_on_status=False)
         self._session.mount(self._api_base_url,
                             HTTPAdapter(max_retries=persist))
 
@@ -62,14 +64,22 @@ class BaseApi(object):
         return response
 
     @_response_logger
+    def _put(self, *args, **kwargs):
+        _update_kwargs(kwargs, self._defaults)
+        response = self._session.put(*args, **kwargs)
+        response.raise_for_status()
+        return response
+
+    @_response_logger
     def _delete(self, *args, **kwargs):
         _update_kwargs(kwargs, self._defaults)
-        response = self._session.delete( *args, **kwargs)
+        response = self._session.delete(*args, **kwargs)
         response.raise_for_status()
         return response
 
 
 class TokenAuth(requests.auth.AuthBase):
+    '''Authenticator class for reservoir REST API'''
     def __init__(self, token):
         self.token = token
 
@@ -80,5 +90,6 @@ class TokenAuth(requests.auth.AuthBase):
 
 
 def _update_kwargs(kwargs, defaults):
+    '''Append defaults to keyword arguments'''
     for key in defaults:
         kwargs.setdefault(key, defaults[key])
