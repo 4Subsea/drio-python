@@ -41,9 +41,9 @@ class MetadataAPI(BaseAPI):
         response = self._post(uri, json=metadata_json, auth=TokenAuth(token))
         return response.json()
 
-    def reset(self, token, metadata_id, metadata_json):
+    def update(self, token, metadata_id, metadata_json):
         """
-        Reset an existing metadata entry.
+        Update an existing metadata entry. Overwrites `Value` object.
 
         Parameters
         ----------
