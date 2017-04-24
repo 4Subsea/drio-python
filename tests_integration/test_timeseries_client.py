@@ -25,13 +25,13 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         cls.df_1 = pd.DataFrame(
             {'values': np.arange(100.)}, index=np.arange(0, 100))
-        cls.df_1.index.name = 'time'
+        cls.df_1.index.name = 'index'
         cls.df_2 = pd.DataFrame(
             {'values': np.arange(100.)}, index=np.arange(50, 150))
-        cls.df_2.index.name = 'time'
+        cls.df_2.index.name = 'index'
         cls.df_3 = pd.DataFrame(
             {'values': np.arange(50.)}, index=np.arange(125, 175))
-        cls.df_3.index.name = 'time'
+        cls.df_3.index.name = 'index'
 
     def setUp(self):
         self.client = timeseriesclient.TimeSeriesClient(self.auth)
@@ -62,7 +62,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
     def test_create_get_delete(self):
         rng = pd.date_range('1970-01-01', periods=100, freq='ns')
         df = pd.DataFrame({'values': np.arange(100.)}, index=rng)
-        df.index.name = 'time'
+        df.index.name = 'index'
         response = self.client.create(df)
         info = self.client.info(response['TimeSeriesId'])
 
@@ -135,7 +135,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         # 1 day @ 10Hz
         df = pd.DataFrame({'values': np.arange(10 * 864000.)},
                           index=np.arange(0, 10 * 864000))
-        df.index.name = 'time'
+        df.index.name = 'index'
 
         start = timer()
         response = self.client.create(df)

@@ -47,7 +47,7 @@ class Test_TimeSeriesClient(unittest.TestCase):
         self.response.text = '1,1\n2,2\n3,3\n4,4'
         self.response_df = pd.DataFrame(
             data={'values': [1, 2, 3, 4]}, index=[1, 2, 3, 4])
-        self.response_df.index.name = 'time'
+        self.response_df.index.name = 'index'
 
     def test_init(self):
         self.assertIsInstance(self.client, timeseriesclient.TimeSeriesClient)
@@ -145,16 +145,16 @@ class Test_TimeSeriesClient(unittest.TestCase):
         pd.util.testing.assert_series_equal(
             response, self.response_df['values'])
 
-    def test_get_all_methods_called_with_default(self):
+    def test_get_all_methods_called_with_overflow(self):
         self.client._timeseries_api.data.return_value = self.response
 
-        response = self.client.get(self.timeseries_id)
+        response = self.client.get(self.timeseries_id, start=2, end=3)
 
         self.client._timeseries_api.data.assert_called_once_with(
-            self.auth.token, self.timeseries_id, timeseriesclient.timeseriesclient._START_DEFAULT, timeseriesclient.timeseriesclient._END_DEFAULT)
+            self.auth.token, self.timeseries_id, 2, 3)
 
         pd.util.testing.assert_series_equal(
-            response, self.response_df['values'])
+            response, self.response_df.loc[2:3]['values'])
 
     def test_get_all_methods_called_with_convert_datetime(self):
         self.client._timeseries_api.data.return_value = self.response

@@ -5,6 +5,7 @@ import logging
 import sys
 import time
 import timeit
+from io import BytesIO
 
 import numpy as np
 import pandas as pd
@@ -12,11 +13,6 @@ import requests
 
 from .log import LogWriter
 from .rest_api import FilesAPI, TimeSeriesAPI
-
-if sys.version_info.major == 3:
-    from io import StringIO
-elif sys.version_info.major == 2:
-    from cStringIO import StringIO
 
 
 logger = logging.getLogger(__name__)
@@ -217,10 +213,10 @@ class TimeSeriesClient(object):
         response = self._timeseries_api.data(self.token, timeseries_id, start,
                                              end)
 
-        response_txt = StringIO(response.text)
-        df = pd.read_csv(response_txt, header=None,
-                         names=['time', 'values'], index_col=0)
-        response_txt.close()
+        with BytesIO(response.text) as response_txt:
+            df = pd.read_csv(response_txt, header=None,
+                             names=['index', 'values'], index_col=0)
+            df = df.loc[start:end]
 
         if convert_date:
             df.index = pd.to_datetime(df.index)
