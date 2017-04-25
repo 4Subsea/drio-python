@@ -2,9 +2,14 @@ from __future__ import absolute_import
 
 import logging
 
+import pkg_resources
+
 from .timeseriesclient import TimeSeriesClient
 from .authenticate import Authenticator
 from . import globalsettings  # wierd bug. must be called last?
+
+
+__version__ = pkg_resources.get_distribution('timeseriesclient').version
 
 
 def set_log_level(lvl):
