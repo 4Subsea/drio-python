@@ -5,7 +5,7 @@ import logging
 import sys
 import time
 import timeit
-from io import BytesIO
+from io import StringIO
 
 import numpy as np
 import pandas as pd
@@ -213,9 +213,10 @@ class TimeSeriesClient(object):
         response = self._timeseries_api.data(self.token, timeseries_id, start,
                                              end)
 
-        with BytesIO(response.text) as response_txt:
+        with StringIO(response.text) as response_txt:
             df = pd.read_csv(response_txt, header=None,
                              names=['index', 'values'], index_col=0)
+        if not df.empty:
             df = df.loc[start:end]
 
         if convert_date:
