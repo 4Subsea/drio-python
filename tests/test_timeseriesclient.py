@@ -44,7 +44,7 @@ class Test_TimeSeriesClient(unittest.TestCase):
                              'Endpoint': 'endpointURI'}
 
         self.response = Mock()
-        self.response.text = '1,1\n2,2\n3,3\n4,4'
+        self.response.text = u'1,1\n2,2\n3,3\n4,4'
         self.response_df = pd.DataFrame(
             data={'values': [1, 2, 3, 4]}, index=[1, 2, 3, 4])
         self.response_df.index.name = 'index'
