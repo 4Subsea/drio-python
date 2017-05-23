@@ -57,6 +57,28 @@ class FilesAPI(BaseAPI):
         return response.json()
 
     @staticmethod
+    def download_service(account_params):
+        """
+        Initiate a blob service.
+
+        An instance of a subclass of Azure Storage BlockBlobService is
+        returned.
+
+        Parameters
+        ----------
+        account_params : dict
+            account/key parameters recieved by e.g. `upload` method
+
+        Return
+        ------
+        object
+            Pre-configured blob service
+        """
+
+        return AzureBlobDownloadService(account_params)
+
+
+    @staticmethod
     def upload_service(upload_params):
         """
         Initiate an uploader service.
@@ -165,6 +187,63 @@ class FilesAPI(BaseAPI):
         uri = self._api_base_url + 'ping'
         response = self._get(uri, auth=TokenAuth(token))
         return response.json()
+
+class AzureBlobDownloadService(BlockBlobService):
+    """Sub-class of BlockBlobService for downloading blobs from Storage
+    
+    :ivar int MAX_DOWNLOAD_CONCURRENT_BLOCKS: 
+        Max connections to use for downloading blob blocks.
+
+    """
+
+    MAX_DOWNLOAD_CONCURRENT_BLOCKS = 32
+
+    def __init__(self, account_params):
+        """
+        Initiate download service to Azure Blob Storage.
+
+        Parameters
+        ----------
+        account_params : dict
+            Dict must include:
+
+                * "Account"
+                * "SasKey"
+                * "Container" (container_name)
+                * "Path" (blob_name)
+        """
+
+        super(AzureBlobDownloadService, self).__init__(
+            account_params['Account'], sas_token=account_params['SasKey'])
+        self.MAX_CHUNK_GET_SIZE = 8 * 1024 * 1024
+        self.MAX_SINGLE_GET_SIZE = self.MAX_CHUNK_GET_SIZE
+        self.container_name = account_params['Container']
+        self.blob_name = account_params['Path']
+
+    def get_content_to_stream(self, stream, progress_callback=None):
+        """
+        Download content of the current blob
+
+        Parameters
+        ----------
+        stream : stream
+            A writable stream that will receive the bytes downloaded for the current blob
+
+        """
+
+        time_start = timeit.default_timer()
+
+        blob = self.get_blob_to_stream(
+            self.container_name, self.blob_name,
+            stream=stream,
+            max_connections=self.MAX_DOWNLOAD_CONCURRENT_BLOCKS,
+            progress_callback=lambda current,total: progress_callback(current/self.MAX_CHUNK_GET_SIZE, total/self.MAX_CHUNK_GET_SIZE))
+
+        time_end = timeit.default_timer()
+        logwriter.debug('Blob download took {} seconds'
+                       .format(time_end - time_start), 'get_content')
+
+        return blob
 
 
 class AzureBlobService(BlockBlobService):

@@ -112,6 +112,13 @@ class Test_FilesAPI(unittest.TestCase):
         api.upload_service({'abc': '123'})
         mock_df_uploader.assert_called_once_with({'abc': '123'})
 
+    @patch('timeseriesclient.rest_api.files.AzureBlobDownloadService')
+    def test_download_service(self,  mock_df_downloader):
+        api = FilesAPI()
+
+        api.download_service({'abc': '123'})
+        mock_df_downloader.assert_called_once_with({'abc': '123'})
+
 
 class Test_DataFrameUploader(unittest.TestCase):
 

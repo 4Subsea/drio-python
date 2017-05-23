@@ -31,6 +31,8 @@ class Test_TimeSeriesClient(unittest.TestCase):
         self.client = timeseriesclient.TimeSeriesClient(self.auth)
         self.client._files_api = Mock()
         self.client._timeseries_api = Mock()
+        self.downloader = Mock()
+        self.client._files_api.download_service.return_value = self.downloader
 
         self.dummy_df = pd.DataFrame({'a': np.arange(1e3)}, index=np.array(
             np.arange(1e3), dtype='datetime64[ns]'))
@@ -45,9 +47,49 @@ class Test_TimeSeriesClient(unittest.TestCase):
 
         self.response = Mock()
         self.response.text = u'1,1\n2,2\n3,3\n4,4'
-        self.response_df = pd.DataFrame(
-            data={'values': [1, 2, 3, 4]}, index=[1, 2, 3, 4])
+        self.response_df = pd.DataFrame(data={'values': [1, 2, 3, 4]}, index=[1, 2, 3, 4], columns=['index','values'])
+        self.dataframe_with_10_rows = pd.DataFrame(data={'values': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], columns=['index','values'])
+        self.dataframe_with_10_rows_csv = self.dataframe_with_10_rows.to_csv(header=False)
         self.response_df.index.name = 'index'
+        self.download_days_response = {'Files': 
+                        [
+                        {'Index': 0,
+                        'FileId': '00000000-3ad3-4b13-b452-d2c212fab6f1',
+                        'Chunks': [
+                            {
+                            'Account': 'reservoirfiles00test',
+                            'SasKey': 'sv=2016-05-31&sr=b&sig=HF58vgk5RTKB8pN6SXp40Ih%2FRhsHnyJPh8fTqzbVcKM%3D&se=2017-05-22T15%3A25%3A59Z&sp=r',
+                            'Container': 'timeseries-days',
+                            'Path': '5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/17/16238.csv',
+                            'Endpoint': 'https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/17/16238.csv'
+                            }
+                        ]},
+                        {'Index': 1,
+                        'FileId': '10000000-3ad3-4b13-b452-d2c212fab6f1',
+                        'Chunks': [
+                            {
+                            'Account': 'reservoirfiles00test',
+                            'SasKey': 'sv=2016-05-31&sr=b&sig=9u%2Fg5BY%2BODexgRvV0Bt6OMoM6Wr5zCyDL7vRP%2B2zrtc%3D&se=2017-05-22T15%3A25%3A59Z&sp=r',
+                            'Container': 'timeseries-days',
+                            'Path': '5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv',
+                            'Endpoint': 'https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv'
+                            }
+                        ]},
+                        {'Index': 2,
+                        'FileId': '20000000-3ad3-4b13-b452-d2c212fab6f1',
+                        'Chunks': [
+                            {
+                            'Account': 'reservoirfiles00test',
+                            'SasKey': 'sv=2016-05-31&sr=b&sig=9u%2Fg5BY%2BODexgRvV0Bt6OMoM6Wr5zCyDL7vRP%2B2zrtc%3D&se=2017-05-22T15%3A25%3A59Z&sp=r',
+                            'Container': 'timeseries-days',
+                            'Path': '5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv',
+                            'Endpoint': 'https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv'
+                            }
+                        ]}
+                        ]}
+            
+        
+        
 
     def test_init(self):
         self.assertIsInstance(self.client, timeseriesclient.TimeSeriesClient)
@@ -135,51 +177,53 @@ class Test_TimeSeriesClient(unittest.TestCase):
         self.assertEqual(response, expected_response)
 
     def test_get_all_methods_called_with_default(self):
-        self.client._timeseries_api.data.return_value = self.response
+        self.client._timeseries_api.download_days.return_value = self.download_days_response
+        self.downloader.get_content_to_stream = lambda stream,progress_callback: stream.write(self.dataframe_with_10_rows_csv)
 
         response = self.client.get(self.timeseries_id)
 
-        self.client._timeseries_api.data.assert_called_once_with(
+        self.client._timeseries_api.download_days.assert_called_once_with(
             self.auth.token, self.timeseries_id, timeseriesclient.timeseriesclient._START_DEFAULT, timeseriesclient.timeseriesclient._END_DEFAULT)
-
         pd.util.testing.assert_series_equal(
-            response, self.response_df['values'])
+            response, self.dataframe_with_10_rows['values'])
 
     def test_get_all_methods_called_with_overflow(self):
-        self.client._timeseries_api.data.return_value = self.response
+        self.client._timeseries_api.download_days.return_value = self.download_days_response
+        self.downloader.get_content_to_stream = lambda stream,progress_callback: stream.write(self.dataframe_with_10_rows_csv)
 
         response = self.client.get(self.timeseries_id, start=2, end=3)
 
-        self.client._timeseries_api.data.assert_called_once_with(
+        self.client._timeseries_api.download_days.assert_called_once_with(
             self.auth.token, self.timeseries_id, 2, 3)
-
         pd.util.testing.assert_series_equal(
-            response, self.response_df.loc[2:3]['values'])
+            response, self.dataframe_with_10_rows['values'].loc[2:3])
 
     def test_get_all_methods_called_with_convert_datetime(self):
-        self.client._timeseries_api.data.return_value = self.response
+        start = pd.to_datetime(1, dayfirst=True, unit='ns').value
+        end = pd.to_datetime(10, dayfirst=True, unit='ns').value
+        self.client._timeseries_api.download_days.return_value = self.download_days_response
+        self.downloader.get_content_to_stream = lambda stream,progress_callback: stream.write(self.dataframe_with_10_rows_csv)
 
-        response = self.client.get(self.timeseries_id, convert_date=True)
+        response = self.client.get(self.timeseries_id, start, end, convert_date=True)
 
-        self.client._timeseries_api.data.assert_called_once_with(
-            self.auth.token, self.timeseries_id, timeseriesclient.timeseriesclient._START_DEFAULT, timeseriesclient.timeseriesclient._END_DEFAULT)
-
-        df = self.response_df
-        df.index = pd.to_datetime(df.index)
-        pd.util.testing.assert_series_equal(response, df['values'])
+        self.client._timeseries_api.download_days.assert_called_once_with(
+            self.auth.token, self.timeseries_id, start, end)
+        self.dataframe_with_10_rows.index = pd.to_datetime(self.dataframe_with_10_rows.index)
+        pd.util.testing.assert_series_equal(
+            response, self.dataframe_with_10_rows['values'])
 
     def test_get_all_methods_called_with_start_stop_as_str(self):
-        self.client._timeseries_api.data.return_value = self.response
+        self.client._timeseries_api.download_days.return_value = self.download_days_response
+        self.downloader.get_content_to_stream = lambda stream,progress_callback: stream.write(self.dataframe_with_10_rows_csv)
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',
                                    end='1970-01-01 00:00:00.000000004')
 
-        self.client._timeseries_api.data.assert_called_once_with(
+        self.client._timeseries_api.download_days.assert_called_once_with(
             self.auth.token, self.timeseries_id, 1, 4)
-
         pd.util.testing.assert_series_equal(
-            response, self.response_df['values'])
+            response, self.dataframe_with_10_rows['values'].loc[1:4])
 
     def test_get_start_stop_exception(self):
         self.client._timeseries_api.data.return_value = self.response

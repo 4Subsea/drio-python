@@ -32,3 +32,23 @@ and to update:
 .. code:: shell
 
     pip install timeseriesclient --upgrade -f \\fil-ask-004\python\pypi
+
+
+Developers
+**********
+
+
+Pre-requisites
+''''''''''''''
+* python 2.7
+* anaconda (https://www.continuum.io/downloads)
+
+Dev environment
+'''''''''''''''
+
+In your working folder, do the following:
+.. code:: pip install mock
+.. code:: pip install -e .
+    
+If your editor is VS Code, we recommend installing the autopep8 linter extension
+

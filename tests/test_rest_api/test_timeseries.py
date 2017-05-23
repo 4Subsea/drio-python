@@ -129,14 +129,14 @@ class Test_TimeSeriesAPI(unittest.TestCase):
                                      data=expected_body, **self.api._defaults)
 
     @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
-    def test_data(self, mock_token):
+    def test_download_days(self, mock_token):
         timeseries_id = 't666'
         start = -1000
         end = 6660000
 
-        result = self.api.data(self.token, timeseries_id, start, end)
+        result = self.api.download_days(self.token, timeseries_id, start, end)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{ts_id}/data'.format(
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
         expected_header = {'Authorization': 'Bearer abcdef'}
         expected_params = {'start': start, 'end': end}

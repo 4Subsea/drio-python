@@ -129,7 +129,7 @@ class TimeSeriesAPI(BaseAPI):
         response = self._delete(uri, auth=TokenAuth(token))
         return
 
-    def data(self, token, timeseries_id, start, end):
+    def download_days(self, token, timeseries_id, start, end):
         """
         Return timeseries data with start/stop.
 
@@ -146,17 +146,17 @@ class TimeSeriesAPI(BaseAPI):
 
         Return
         ------
-        str
-            csv with timeseries data
+        json
+            a list of files, each having a list of Azure Storage compatible chunk urls
         """
         logwriter.debug("called with <token>, {}, {}, {}".format(
             timeseries_id, start, end))
 
-        uri = self._api_base_url + 'timeseries/{}/data'.format(timeseries_id)
+        uri = self._api_base_url + 'timeseries/{}/download/days'.format(timeseries_id)
         params = {'start': start, 'end': end}
 
         response = self._get(uri, params=params, auth=TokenAuth(token))
-        return response
+        return response.json()
 
     def attach_metadata(self, token, timeseries_id, metadata_id_list):
         """

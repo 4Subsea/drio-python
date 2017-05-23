@@ -5,7 +5,8 @@ import logging
 import sys
 import time
 import timeit
-from io import StringIO
+from io import StringIO,BytesIO,TextIOWrapper
+from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pandas as pd
@@ -171,7 +172,7 @@ class TimeSeriesClient(object):
 
         Returns
         -------
-        int 
+        int
             http status code. 200 is OK
         """
         return self._timeseries_api.delete(self.token, timeseries_id)
@@ -210,18 +211,45 @@ class TimeSeriesClient(object):
         if start >= end:
             raise ValueError('start must be before end')
 
-        response = self._timeseries_api.data(self.token, timeseries_id, start,
-                                             end)
+        time_start = timeit.default_timer()
 
-        with StringIO(response.text) as response_txt:
-            df = pd.read_csv(response_txt, header=None,
-                             names=['index', 'values'], index_col=0)
+        logwriter.debug("getting chunks list")
+        response = self._timeseries_api.download_days(self.token, timeseries_id, start, end)
+        filechunks = [file['Chunks'] for file in response['Files']]
+
+        # download chunks, one by one
+        filedatas = [self._download_chunks_as_dataframe(chunk) for chunk in filechunks]
+        df = pd.DataFrame(columns=['index','values'])
+        for fd in filedatas:
+            df = fd.combine_first(df)
+
         if not df.empty:
             df = df.loc[start:end]
 
         if convert_date:
             df.index = pd.to_datetime(df.index)
+
+        time_end = timeit.default_timer()
+        logwriter.info('Download timeseries to dataframe took {} seconds'
+                       .format(time_end - time_start), 'get')
+
         return df['values']
+
+    def _download_chunks_as_dataframe(self, chunks):
+        with ThreadPoolExecutor(max_workers=32) as executor:
+            filechunks = executor.map(self._download_chunk_as_dataframe, chunks)
+            return pd.concat(filechunks)
+
+    def _download_chunk_as_dataframe(self, download_info):
+        dl = self._files_api.download_service(download_info)
+
+        with BytesIO() as binary_content:
+            logwriter.debug('getting chunk {}'.format(download_info['Path']), 'get')
+            blob = dl.get_content_to_stream(binary_content,
+                progress_callback=lambda current,total: logwriter.debug(" blocks downloaded {} of {}".format(current, total)))
+            binary_content.seek(0)
+            with TextIOWrapper(binary_content, encoding='utf-8') as text_content:
+                return pd.read_csv(text_content, header=None, names=['index', 'values'], index_col=0)
 
     def _upload_file(self, dataframe):
         upload_params = self._files_api.upload(self.token)
