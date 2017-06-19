@@ -7,11 +7,11 @@ import pandas as pd
 from mock import patch
 from requests.exceptions import HTTPError
 
-import timeseriesclient
-from timeseriesclient.authenticate import Authenticator
-from timeseriesclient.rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
+import datareservoirio
+from datareservoirio.authenticate import Authenticator
+from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
 
-timeseriesclient.globalsettings.environment.set_qa()
+datareservoirio.globalsettings.environment.set_test()
 
 USERNAME = 'reservoir-integrationtest@4subsea.com'
 PASSWORD = 'qz9uVgNhANncz9Jp'
@@ -27,18 +27,18 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         files_api = FilesAPI()
 
-        df_1 = pd.DataFrame({'a': np.arange(100.)}, index=np.arange(0, 100))
-        df_2 = pd.DataFrame({'a': np.arange(100.)}, index=np.arange(50, 150))
-        df_3 = pd.DataFrame({'a': np.arange(50.)}, index=np.arange(125, 175))
+        df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
+        df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
+        df_3 = pd.Series(np.arange(50.), index=np.arange(125, 175))
 
         df_list = [df_1, df_2, df_3]
         cls.token_fileid = []
         for df in df_list:
             upload_params = files_api.upload(cls.auth.token)
             token_fileid = (cls.auth.token, upload_params['FileId'])
-            uploader = files_api.upload_service(upload_params)
+            uploader = files_api.transfer_service(upload_params)
 
-            uploader.create_blob_from_df(df)
+            uploader.create_blob_from_series(df)
 
             files_api.commit(cls.auth.token, upload_params['FileId'])
 
@@ -84,7 +84,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.assertEqual(info['TimeOfLastSample'],
                          response['TimeOfLastSample'])
 
-        data = self.api.data(self.auth.token, response[
+        data_files = self.api.download_days(self.auth.token, response[
                              'TimeSeriesId'], -1000, 1000)
         self.api.delete(*token_tsid)
 
@@ -115,7 +115,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.assertEqual(0, info['TimeOfFirstSample'])
         self.assertEqual(174, info['TimeOfLastSample'])
 
-        data = self.api.data(self.auth.token, response[
+        data_days = self.api.download_days(self.auth.token, response[
                              'TimeSeriesId'], -1000, 1000)
         self.api.delete(*token_tsid)
         print info
@@ -131,7 +131,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.assertEqual(0, info['TimeOfFirstSample'])
         self.assertEqual(174, info['TimeOfLastSample'])
 
-        data = self.api.data(self.auth.token, response[
+        data_days = self.api.download_days(self.auth.token, response[
                              'TimeSeriesId'], -1000, 1000)
         self.api.delete(*token_tsid)
         print info

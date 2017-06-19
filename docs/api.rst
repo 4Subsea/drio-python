@@ -2,30 +2,30 @@
 API
 ###
 
-timeseriesclient.Authenticator
+datareservoirio.Authenticator
 *********************************
 
-.. autoclass:: timeseriesclient.Authenticator
+.. autoclass:: datareservoirio.Authenticator
    :members:
    :inherited-members:
 
-.. autoclass:: timeseriesclient.authenticate.AdalAuthenticator
+.. autoclass:: datareservoirio.authenticate.AdalAuthenticator
    :members:
    :undoc-members:
    :inherited-members:
 
 
-timeseriesclient.TimeSeriesClient
+datareservoirio.Client
 *********************************
 
-.. autoclass:: timeseriesclient.TimeSeriesClient
+.. autoclass:: datareservoirio.Client
    :members:
    :undoc-members:
 
-timeseriesclient
+datareservoirio
 ****************
 
-.. automodule:: timeseriesclient
+.. automodule:: datareservoirio
    :members:
    :undoc-members:
    :show-inheritance:

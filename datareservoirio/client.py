@@ -5,16 +5,14 @@ import logging
 import sys
 import time
 import timeit
-from io import StringIO,BytesIO,TextIOWrapper
-from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 import pandas as pd
 import requests
+from concurrent.futures import ThreadPoolExecutor
 
 from .log import LogWriter
 from .rest_api import FilesAPI, TimeSeriesAPI
-
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
@@ -24,9 +22,9 @@ _END_DEFAULT = 9214646400000000000  # 2262-01-01
 _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
 
-class TimeSeriesClient(object):
+class Client(object):
     """
-    The TimeSeriesClient handles requests, data uploads, and data downloads
+    Client class handles requests, data uploads, and data downloads
     from the 4Subsea data reservoir.
 
     Parameters
@@ -34,11 +32,6 @@ class TimeSeriesClient(object):
     auth : cls
         An authenticator class with :attr:`token` attribute that provides a valid
         token to the 4Subsea data reservoir.
-
-    Warning
-    -------
-    A time series is identified by its unique identifier, its id. If this id is
-    lost, the time series is essentially lost.
     """
 
     def __init__(self, auth):
@@ -63,26 +56,25 @@ class TimeSeriesClient(object):
         """
         return self._files_api.ping(self.token)
 
-    def create(self, dataframe):
+    def create(self, series):
         """
-        Create a new time series in the data reservoir from a dataframe.
+        Create a new series in the reservoir from a pandas.Series.
 
         Parameters
         ----------
-        dataframe : pandas.DataFrame
-            the dataframe must contain exactly one column (plus the index). The
-            index must either be a numpy.datetime64 (with nanosecond precision) 
-            or numpy.int64.
+        series : pandas.Series
+            Series with index (as numpy.datetime64 (with nanosecond precision)
+            or integer array).
 
         Returns
         -------
-        dict 
-            The response from the data reservoir
+        dict
+            The response from the reservoir
         """
-        self._verify_and_prepare_dataframe(dataframe)
+        self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
-        file_id = self._upload_file(dataframe)
+        file_id = self._upload_series(series)
         time_upload = timeit.default_timer()
         logwriter.info('Fileupload took {} seconds'
                        .format(time_upload - time_start), 'create')
@@ -100,28 +92,27 @@ class TimeSeriesClient(object):
                        .format(time_end - time_start, (time_end - time_start) / 60.), 'create')
         return response
 
-    def append(self, dataframe, timeseries_id):
+    def append(self, series, series_id):
         """
-        Append data to an already existing time series.
+        Append data to an already existing series.
 
         Parameters
         ----------
-        dataframe : pandas.DataFrame
-            the dataframe must contain exactly one column (plus the index). The
-            index must either be a numpy.datetime64 (with nanosecond precision) 
-            or integer array. 
-        timeseries_id : string
-            the identifier of the timeseries must exist.
+        series : pandas.Series
+            Series with index (as numpy.datetime64 (with nanosecond precision)
+            or integer array).
+        series_id : string
+            the identifier of the existing series.
 
         Returns
         -------
-        dict 
-            The response from the data reservoir
+        dict
+            The response from the reservoir
         """
-        self._verify_and_prepare_dataframe(dataframe)
+        self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
-        file_id = self._upload_file(dataframe)
+        file_id = self._upload_series(series)
         time_upload = timeit.default_timer()
         logwriter.info('Upload took {} seconds'
                        .format(time_upload - time_start), 'append')
@@ -137,7 +128,7 @@ class TimeSeriesClient(object):
         logwriter.info('Done, total time spent: {} seconds ({} minutes)'
                        .format(time_end - time_start, (time_end - time_start) / 60.), 'append')
 
-        response = self._timeseries_api.add(self.token, timeseries_id, file_id)
+        response = self._timeseries_api.add(self.token, series_id, file_id)
         return response
 
     def list(self):
@@ -146,7 +137,7 @@ class TimeSeriesClient(object):
 
         Returns
         -------
-        list 
+        list
             All timeseries ids in the reservoir.
         """
         return self._timeseries_api.list(self.token)
@@ -215,13 +206,8 @@ class TimeSeriesClient(object):
 
         logwriter.debug("getting chunks list")
         response = self._timeseries_api.download_days(self.token, timeseries_id, start, end)
-        filechunks = [file['Chunks'] for file in response['Files']]
 
-        # download chunks, one by one
-        filedatas = [self._download_chunks_as_dataframe(chunk) for chunk in filechunks]
-        df = pd.DataFrame(columns=['index','values'])
-        for fd in filedatas:
-            df = fd.combine_first(df)
+        df = self._download_series(response)
 
         if not df.empty:
             df = df.loc[start:end]
@@ -235,45 +221,42 @@ class TimeSeriesClient(object):
 
         return df['values']
 
+    def _download_series(self, params):
+        filechunks = [f['Chunks'] for f in params['Files']]
+
+        # download chunks, one by one
+        filedatas = [
+            self._download_chunks_as_dataframe(chunk) for chunk in filechunks]
+        df = pd.DataFrame(columns=['index', 'values'])
+        for fd in filedatas:
+            df = fd.combine_first(df)
+        return df
+
     def _download_chunks_as_dataframe(self, chunks):
         with ThreadPoolExecutor(max_workers=32) as executor:
-            filechunks = executor.map(self._download_chunk_as_dataframe, chunks)
+            filechunks = executor.map(
+                lambda chunk: self._files_api.transfer_service(
+                    chunk).get_blob_to_series(),
+                chunks)
             return pd.concat(filechunks)
 
-    def _download_chunk_as_dataframe(self, download_info):
-        dl = self._files_api.download_service(download_info)
-
-        with BytesIO() as binary_content:
-            logwriter.debug('getting chunk {}'.format(download_info['Path']), 'get')
-            blob = dl.get_content_to_stream(binary_content,
-                progress_callback=lambda current,total: logwriter.debug(" blocks downloaded {} of {}".format(current, total)))
-            binary_content.seek(0)
-            with TextIOWrapper(binary_content, encoding='utf-8') as text_content:
-                return pd.read_csv(text_content, header=None, names=['index', 'values'], index_col=0)
-
-    def _upload_file(self, dataframe):
+    def _upload_series(self, series):
         upload_params = self._files_api.upload(self.token)
-        uploader = self._files_api.upload_service(upload_params)
-        uploader.create_blob_from_df(dataframe)
-        self._files_api.commit(self.token, uploader.file_id)
-        return uploader.file_id
+        uploader = self._files_api.transfer_service(upload_params)
+        uploader.create_blob_from_series(series)
+        self._files_api.commit(self.token, upload_params['FileId'])
+        return upload_params['FileId']
 
-    def _verify_and_prepare_dataframe(self, dataframe):
+    def _verify_and_prepare_series(self, series):
         logwriter.debug("checking arguments", "_check_arguments_create")
 
-        if not isinstance(dataframe, pd.DataFrame):
-            logwriter.error("dataframe type is {}".format(type(dataframe)))
-            raise ValueError('dataframe must be a pandas DataFrame')
+        if not isinstance(series, pd.Series):
+            logwriter.error("series type is {}".format(type(series)))
+            raise ValueError('series must be a pandas Series')
 
-        if not dataframe.index.dtype in ['datetime64[ns]', 'int64']:
-            logwriter.error("index dtype is {}".format(dataframe.index.dtype))
+        if series.index.dtype not in ['datetime64[ns]', 'int64']:
+            logwriter.error("index dtype is {}".format(series.index.dtype))
             raise ValueError('allowed dtypes are datetime64[ns] and int64')
-
-        if len(dataframe.keys()) > 1:
-            logwriter.error(
-                "the dataframe has too many columns, currently only one column is supported")
-            raise ValueError(
-                "the dataframe has too many columns, currently only one column is supported")
 
     def _wait_until_file_ready(self, file_id):
         # wait for server side processing

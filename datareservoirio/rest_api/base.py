@@ -9,8 +9,8 @@ import requests
 from requests.packages.urllib3 import Retry, Timeout
 from requests.adapters import HTTPAdapter
 
-from timeseriesclient import globalsettings
-from timeseriesclient.log import LogWriter
+from .. import globalsettings
+from ..log import LogWriter
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)

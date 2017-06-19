@@ -3,8 +3,8 @@ import unittest
 
 import requests
 
-import timeseriesclient
-from timeseriesclient.rest_api import TimeSeriesAPI
+import datareservoirio
+from datareservoirio.rest_api import TimeSeriesAPI
 
 try:
     from unittest.mock import patch, Mock
@@ -35,7 +35,7 @@ def make_add_response():
 
 
 def setUpModule():
-    timeseriesclient.globalsettings.environment.set_qa()
+    datareservoirio.globalsettings.environment.set_qa()
 
 
 class Test_TimeSeriesAPI(unittest.TestCase):
@@ -46,7 +46,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         self.api = TimeSeriesAPI()
         self.api._session = Mock()
 
-    @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_list(self, mock_token):
         mock_post = self.api._session.get
 
@@ -61,7 +61,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
                                           **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_info(self, mock_token):
         mock_get = self.api._session.get
 
@@ -76,7 +76,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_get.assert_called_once_with(expected_uri, auth=mock_token(),
                                          **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_delete(self, mock_token):
         mock_delete = self.api._session.delete
         timeseries_id = '123456'
@@ -92,7 +92,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_delete.assert_called_with(expected_uri, auth=mock_token(),
                                        **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_create(self, mock_token):
         file_id = 666
 
@@ -110,7 +110,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      data=expected_body, **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_add(self, mock_token):
         timeseries_id = 't666'
         file_id = 'f001'
@@ -128,7 +128,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      data=expected_body, **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_download_days(self, mock_token):
         timeseries_id = 't666'
         start = -1000
@@ -146,7 +146,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
                                     params=expected_params,
                                     **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_attach_metadata(self, mock_token):
         timeseries_id = 't666'
         meta_list = ['meta_1', 'meta_2']
@@ -160,7 +160,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      json=meta_list, **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.timeseries.TokenAuth')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_detach_metadata(self, mock_token):
         timeseries_id = 't666'
         meta_list = ['meta_1', 'meta_2']

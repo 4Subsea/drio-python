@@ -8,10 +8,10 @@ try:
 except:
     from mock import patch, call
 
-import timeseriesclient
-import timeseriesclient._constants as consts
-import timeseriesclient.globalsettings as gs
-from timeseriesclient.authenticate import ADALParameters
+import datareservoirio
+import datareservoirio._constants as consts
+import datareservoirio.globalsettings as gs
+from datareservoirio.authenticate import ADALParameters
 
 
 class TestConfiguration(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestConfiguration(unittest.TestCase):
 
         self.assertEqual(env1, env2)
 
-    @patch('timeseriesclient.globalsettings.environment._logger.info')
+    @patch('datareservoirio.globalsettings.environment._logger.info')
     def test_change_of_environment_is_logged(self, mock):
         gs.environment.set_qa()
         mock.assert_any_call('Setting environment to: QA')
@@ -79,7 +79,7 @@ class TestApiBaseURL(unittest.TestCase):
         base_url = gs.environment.api_base_url
         self.assertEqual(base_url, consts.API_BASE_URL_PROD)
 
-    @patch('timeseriesclient.globalsettings.environment._logger.info')
+    @patch('datareservoirio.globalsettings.environment._logger.info')
     def test_change_of_base_url_is_logged(self, mock):
         gs.environment.set_qa()
         mock.assert_any_call(

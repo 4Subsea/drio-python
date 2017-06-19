@@ -1,0 +1,164 @@
+from __future__ import absolute_import
+
+import base64
+import logging
+import sys
+import timeit
+from io import BytesIO, TextIOWrapper
+from time import sleep
+
+import pandas as pd
+from azure.storage.blob import BlobBlock, BlockBlobService
+from azure.storage.storageclient import AzureException
+
+from .log import LogWriter
+
+if sys.version_info.major == 3:
+    from io import StringIO
+elif sys.version_info.major == 2:
+    from cStringIO import StringIO
+
+
+logger = logging.getLogger(__name__)
+logwriter = LogWriter(logger)
+
+
+class AzureBlobService(BlockBlobService):
+    """Sub-class of BlockBlobService"""
+
+    MAX_DOWNLOAD_CONCURRENT_BLOCKS = 32
+    MAX_CHUNK_GET_SIZE = 8 * 1024 * 1024
+    MAX_SINGLE_GET_SIZE = MAX_CHUNK_GET_SIZE
+
+    def __init__(self, params):
+        """
+        Initiate transfer service to Azure Blob Storage.
+
+        Parameters
+        ----------
+        params : dict
+            Dict must include:
+
+                * "Account"
+                * "SasKey"
+                * "Container" (container_name)
+                * "Path" (blob_name)
+        """
+
+        self.container_name = params['Container']
+        self.blob_name = params['Path']
+
+        super(AzureBlobService, self).__init__(
+            params['Account'], sas_token=params['SasKey'])
+
+    def get_blob_to_series(self):
+        """Download content of the current blob to DataFrame"""
+        time_start = timeit.default_timer()
+
+        with BytesIO() as binary_content:
+            logwriter.debug('getting chunk {}'.format(self.blob_name), 'get')
+
+            blob = self.get_blob_to_stream(
+                self.container_name, self.blob_name, stream=binary_content,
+                max_connections=self.MAX_DOWNLOAD_CONCURRENT_BLOCKS,
+                progress_callback=lambda current, total: logwriter.debug(
+                    " blocks downloaded {} of {}".format(
+                        current / self.MAX_CHUNK_GET_SIZE,
+                        total / self.MAX_CHUNK_GET_SIZE)))
+
+            binary_content.seek(0)
+            with TextIOWrapper(binary_content, encoding='utf-8') as text_content:
+                series = pd.read_csv(text_content, header=None,
+                                     names=['index', 'values'], index_col=0)
+        time_end = timeit.default_timer()
+        logwriter.debug('Blob download took {} seconds'
+                        .format(time_end - time_start), 'get_content')
+        return series
+
+    def create_blob_from_series(self, series):
+        """
+        Upload Pandas Series objects to the reservoir.
+
+        Parameters
+        ----------
+        series : Pandas Series
+            Appropriately indexed series
+        """
+        blocks = []
+        leftover = ''
+        block_id = 0
+
+        for i, chunk in enumerate(self._gen_line_chunks(series, int(1e6))):
+            buf = StringIO()
+
+            if chunk.index.dtype == 'datetime64[ns]':
+                chunk = chunk.copy()
+                chunk.index = chunk.index.astype('int64')
+
+            chunk.to_csv(buf, header=False)
+            buf.seek(0)
+
+            n_blocks = 0
+            while True:
+                block_data = leftover + buf.read(self.MAX_BLOCK_SIZE -
+                                                 len(leftover))
+                leftover = ''
+                n_blocks += 1
+
+                if len(block_data) < self.MAX_BLOCK_SIZE:
+                    leftover = block_data
+                    break
+
+                block = self._make_block(block_id)
+                blocks.append(block)
+                block_id += 1
+
+                logwriter.debug("put block {} for blob {}".format(
+                    block.id, self.blob_name), 'put_block')
+                self.put_block_retry(self.container_name, self.blob_name,
+                                     block_data.encode('ascii'), block.id)
+
+        if leftover:
+            block = self._make_block(block_id)
+            blocks.append(block)
+
+            logwriter.debug("put block {} for blob {}".format(
+                block.id, self.blob_name), 'put_block')
+            self.put_block_retry(self.container_name, self.blob_name,
+                                 block_data.encode('ascii'), block.id)
+
+        self.put_block_list(self.container_name, self.blob_name, blocks)
+
+    def put_block_retry(self, *args, **kwargs):
+        '''put_block with some retry - hotfix'''
+        count = 0
+        while count <= 5:
+            try:
+                self.put_block(*args, **kwargs)
+                return None
+            except AzureException as ex:
+                logwriter.debug("raise AzureException", "put_block")
+                count += 1
+                sleep(1 * count)
+        raise ex
+
+    def _make_block(self, block_id):
+        base64_block_id = self._b64encode(block_id)
+        logwriter.debug("block id {} blockidbase64 {}"
+                        .format(block_id, base64_block_id), '_make_block')
+        return BlobBlock(id=base64_block_id)
+
+    def _b64encode(self, i, length=8):
+        i_str = '{0:0{length}d}'.format(i, length=length)
+        b_ascii = i_str.encode('ascii')
+        b_b64 = base64.b64encode(b_ascii)
+        return b_b64.decode('ascii')
+
+    def _gen_line_chunks(self, series, n):
+        a = 0
+        b = n
+
+        while a < len(series):
+            yield series.iloc[a:b]
+            a += n
+            b += n

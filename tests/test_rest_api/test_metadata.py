@@ -2,8 +2,8 @@ import unittest
 
 import requests
 
-import timeseriesclient
-from timeseriesclient.rest_api import MetadataAPI
+import datareservoirio
+from datareservoirio.rest_api import MetadataAPI
 
 try:
     from unittest.mock import patch, Mock
@@ -45,7 +45,7 @@ dummy_response = """
 
 
 def setUpModule():
-    timeseriesclient.globalsettings.environment.set_qa()
+    datareservoirio.globalsettings.environment.set_qa()
 
 
 class Test_MetadataAPI(unittest.TestCase):
@@ -57,7 +57,7 @@ class Test_MetadataAPI(unittest.TestCase):
         self.api = MetadataAPI()
         self.api._session = Mock()
 
-    @patch('timeseriesclient.rest_api.metadata.TokenAuth')
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_get(self, mock_token):
         mock_post = self.api._session.get
 
@@ -72,7 +72,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
                                           **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.metadata.TokenAuth')
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_list(self, mock_token):
         mock_post = self.api._session.get
 
@@ -86,7 +86,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
                                           **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.metadata.TokenAuth')
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_create(self, mock_token):
         mock_post = self.api._session.post
 
@@ -99,7 +99,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      json=expected_body, **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.metadata.TokenAuth')
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_update(self, mock_token):
         mock_post = self.api._session.put
 
@@ -113,7 +113,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      json=expected_body, **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.metadata.TokenAuth')
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_delete(self, mock_token):
         mock_post = self.api._session.delete
 
@@ -125,7 +125,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.metadata.TokenAuth')
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_search(self, mock_token):
         search_json = {
             "Namespace": "hello",
@@ -141,7 +141,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      json=search_json, **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.metadata.TokenAuth')
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_attach_series(self, mock_token):
         series_list = ['series_1', 'series_2']
         mock_post = self.api._session.post
@@ -154,7 +154,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      json=series_list, **self.api._defaults)
 
-    @patch('timeseriesclient.rest_api.metadata.TokenAuth')
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_detach_series(self, mock_token):
         series_list = ['series_1', 'series_2']
         mock_delete = self.api._session.delete

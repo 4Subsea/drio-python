@@ -1,22 +1,22 @@
-timeseriesclient
+datareservoirio
 ================
 
 .. attention:: DO NOT DISTRIBUTE THE CONTENT OF THIS PACKAGE OUTSIDE 4SUBSEA.
 
-.. important:: Maintainer: ACE
+.. important:: Maintainer: ESS
 
 Description
 ***********
 
-Python client for accessing timeseries stored in 4Subsea Data Reservoir.
+Python client for 4Subsea data reservoir / datareservoir.io.
 
 Features
 ''''''''
-* Add/upload timeseries
-* Append to existing timeseries
-* Get/download timeseries
-* Delete timeseries
-* Retrieve information about timeseries
+* Add/upload series
+* Append to existing series
+* Get/download series
+* Delete series
+* Retrieve information about series
 
 Getting Started
 ***************
@@ -25,13 +25,13 @@ To install:
 
 .. code:: shell
 
-    pip install timeseriesclient -f \\fil-ask-004\python\pypi
+    pip install datareservoirio -f \\fil-ask-004\python\pypi
 
 and to update:
 
 .. code:: shell
 
-    pip install timeseriesclient --upgrade -f \\fil-ask-004\python\pypi
+    pip install datareservoirio --upgrade -f \\fil-ask-004\python\pypi
 
 
 Developers
@@ -49,6 +49,3 @@ Dev environment
 In your working folder, do the following:
 .. code:: pip install mock
 .. code:: pip install -e .
-    
-If your editor is VS Code, we recommend installing the autopep8 linter extension
-

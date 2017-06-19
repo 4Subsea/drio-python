@@ -1,35 +1,34 @@
 Basic Usage
 ###########
-As *user* the main object you will be working with from the library is the 
-class ``TimeSeriesClient``. This class exposes all relevant functionality
-to upload and retrieve data from the data reservoir.
+``datareservoirio`` library comes with a ``Client`` class, which exposes all 
+relevant functionality required to upload and retrieve data from the 4Subsea data reservoir.
 
 The basic usage *workflow* is
 
-#. Create a new ``TimeSeriesClient``
-#. Authenticate yourself with your 4Subsea credentials
-#. Do what you need to do, upload/update/download time series.
+#. Create an ``Authenticator`` instace with your credentials
+#. Initiate a new ``Client``
+#. Do what you need to do, upload/update/download data.
 
 Example::
 
-    import timeseriesclient
+    import datareservoirio as drio
     import numpy as np
     import pandas as pd
 
     # The first step is to initiate an authenticator
-    auth = timeseriesclient.Authenticator('user@domain.com')
+    auth = drio.Authenticator('user@domain.com')
     # Provide password
 
     # Initiate a client
-    client = timeseriesclient.TimeSeriesClient(auth)
+    client = drio.Client(auth)
 
     # A simple example dataset
     timevector = np.array(np.arange(0, 10e9, 1e9), dtype='datetime64[ns]')
     values = np.random.rand(10)
-    df = pd.DataFrame({'values' : values}, index=timevector)
+    data = pd.Series(values, index=timevector)
 
     # Upload the dataset
-    result = client.create(df)
+    result = client.create(data)
 
     print(result)
 

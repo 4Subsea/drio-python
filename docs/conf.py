@@ -14,6 +14,7 @@
 
 import sys
 import os
+from datetime import date
 
 import pkg_resources
 
@@ -56,8 +57,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Timeseriesclient'
-copyright = u'2017, 4Subsea'
+project = u'datareservoirio'
+copyright = u'{}, 4Subsea'.format(date.today().year)
 author = u'4Subsea'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -65,7 +66,7 @@ author = u'4Subsea'
 # built documents.
 
 # The short X.Y version.
-version = pkg_resources.get_distribution('timeseriesclient').version
+version = pkg_resources.get_distribution('datareservoirio').version
 # The full version, including alpha/beta/rc tags.
 release = version
 

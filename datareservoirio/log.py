@@ -2,6 +2,7 @@ import logging
 
 from datetime import datetime 
 
+
 class LogWriter(object):
 
     def __init__(self, logger):

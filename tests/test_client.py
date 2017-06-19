@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 import requests
 
-import timeseriesclient
-import timeseriesclient.globalsettings as gs
-from timeseriesclient import Authenticator
-from timeseriesclient.rest_api import TimeSeriesAPI
+import datareservoirio
+import datareservoirio.globalsettings as gs
+from datareservoirio import Authenticator
+from datareservoirio.rest_api import TimeSeriesAPI
 
 try:
     from unittest.mock import Mock, MagicMock, patch, PropertyMock
@@ -18,21 +18,21 @@ except:
 
 # Test should not make calls to the API, but just in case!
 def setUpModule():
-    timeseriesclient.globalsettings.environment.set_qa()
+    datareservoirio.globalsettings.environment.set_qa()
 
 
-class Test_TimeSeriesClient(unittest.TestCase):
+class Test_Client(unittest.TestCase):
 
     def setUp(self):
         self.auth = Mock()
         self.auth.token = {'accessToken': 'abcdef',
                            'expiresOn': np.datetime64('2050-01-01 00:00:00', 's')}
 
-        self.client = timeseriesclient.TimeSeriesClient(self.auth)
+        self.client = datareservoirio.Client(self.auth)
         self.client._files_api = Mock()
         self.client._timeseries_api = Mock()
         self.downloader = Mock()
-        self.client._files_api.download_service.return_value = self.downloader
+        self.client._files_api.transfer_service.return_value = self.downloader
 
         self.dummy_df = pd.DataFrame({'a': np.arange(1e3)}, index=np.array(
             np.arange(1e3), dtype='datetime64[ns]'))
@@ -47,52 +47,54 @@ class Test_TimeSeriesClient(unittest.TestCase):
 
         self.response = Mock()
         self.response.text = u'1,1\n2,2\n3,3\n4,4'
-        self.response_df = pd.DataFrame(data={'values': [1, 2, 3, 4]}, index=[1, 2, 3, 4], columns=['index','values'])
-        self.dataframe_with_10_rows = pd.DataFrame(data={'values': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], columns=['index','values'])
-        self.dataframe_with_10_rows_csv = self.dataframe_with_10_rows.to_csv(header=False)
+        self.response_df = pd.DataFrame(data={'values': [1, 2, 3, 4]}, index=[
+                                        1, 2, 3, 4], columns=['index', 'values'])
+        self.dataframe_with_10_rows = pd.DataFrame(data={'values': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=[
+                                                   1, 2, 3, 4, 5, 6, 7, 8, 9, 10], columns=['index', 'values'])
+        self.dataframe_with_10_rows_csv = self.dataframe_with_10_rows.to_csv(
+            header=False)
         self.response_df.index.name = 'index'
-        self.download_days_response = {'Files': 
-                        [
-                        {'Index': 0,
-                        'FileId': '00000000-3ad3-4b13-b452-d2c212fab6f1',
-                        'Chunks': [
-                            {
+        self.download_days_response = {
+            'Files':
+                [
+                    {'Index': 0,
+                     'FileId': '00000000-3ad3-4b13-b452-d2c212fab6f1',
+                     'Chunks': [
+                        {
                             'Account': 'reservoirfiles00test',
                             'SasKey': 'sv=2016-05-31&sr=b&sig=HF58vgk5RTKB8pN6SXp40Ih%2FRhsHnyJPh8fTqzbVcKM%3D&se=2017-05-22T15%3A25%3A59Z&sp=r',
                             'Container': 'timeseries-days',
                             'Path': '5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/17/16238.csv',
                             'Endpoint': 'https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/17/16238.csv'
-                            }
-                        ]},
-                        {'Index': 1,
-                        'FileId': '10000000-3ad3-4b13-b452-d2c212fab6f1',
-                        'Chunks': [
-                            {
+                        }
+                     ]
+                     },
+                    {'Index': 1,
+                     'FileId': '10000000-3ad3-4b13-b452-d2c212fab6f1',
+                     'Chunks': [
+                        {
                             'Account': 'reservoirfiles00test',
                             'SasKey': 'sv=2016-05-31&sr=b&sig=9u%2Fg5BY%2BODexgRvV0Bt6OMoM6Wr5zCyDL7vRP%2B2zrtc%3D&se=2017-05-22T15%3A25%3A59Z&sp=r',
                             'Container': 'timeseries-days',
                             'Path': '5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv',
                             'Endpoint': 'https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv'
-                            }
-                        ]},
-                        {'Index': 2,
-                        'FileId': '20000000-3ad3-4b13-b452-d2c212fab6f1',
-                        'Chunks': [
-                            {
+                        }
+                         ]},
+                    {'Index': 2,
+                     'FileId': '20000000-3ad3-4b13-b452-d2c212fab6f1',
+                     'Chunks': [
+                        {
                             'Account': 'reservoirfiles00test',
                             'SasKey': 'sv=2016-05-31&sr=b&sig=9u%2Fg5BY%2BODexgRvV0Bt6OMoM6Wr5zCyDL7vRP%2B2zrtc%3D&se=2017-05-22T15%3A25%3A59Z&sp=r',
                             'Container': 'timeseries-days',
                             'Path': '5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv',
                             'Endpoint': 'https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv'
-                            }
-                        ]}
-                        ]}
-            
-        
-        
+                        }
+                         ]}
+                ]}
 
     def test_init(self):
-        self.assertIsInstance(self.client, timeseriesclient.TimeSeriesClient)
+        self.assertIsInstance(self.client, datareservoirio.Client)
         self.assertIsInstance(self.client._authenticator, Mock)
         self.assertIsInstance(self.client._timeseries_api, Mock)
         self.assertIsInstance(self.client._files_api, Mock)
@@ -107,8 +109,8 @@ class Test_TimeSeriesClient(unittest.TestCase):
         self.assertEqual(response, {'status': 'pong'})
 
     def test_create_all_methods_called(self):
-        self.client._verify_and_prepare_dataframe = Mock(return_value=None)
-        self.client._upload_file = Mock(
+        self.client._verify_and_prepare_series = Mock(return_value=None)
+        self.client._upload_series = Mock(
             return_value=self.dummy_params['FileId'])
         self.client._wait_until_file_ready = Mock(return_value='Ready')
 
@@ -117,9 +119,9 @@ class Test_TimeSeriesClient(unittest.TestCase):
 
         response = self.client.create(self.dummy_df)
 
-        self.client._verify_and_prepare_dataframe.assert_called_once_with(
+        self.client._verify_and_prepare_series.assert_called_once_with(
             self.dummy_df)
-        self.client._upload_file.assert_called_once_with(self.dummy_df)
+        self.client._upload_series.assert_called_once_with(self.dummy_df)
         self.client._wait_until_file_ready.assert_called_once_with(
             self.dummy_params['FileId'])
         self.client._timeseries_api.create.assert_called_once_with(
@@ -127,8 +129,8 @@ class Test_TimeSeriesClient(unittest.TestCase):
         self.assertDictEqual(response, expected_response)
 
     def test_append_all_methods_called(self):
-        self.client._verify_and_prepare_dataframe = Mock(return_value=None)
-        self.client._upload_file = Mock(
+        self.client._verify_and_prepare_series = Mock(return_value=None)
+        self.client._upload_series = Mock(
             return_value=self.dummy_params['FileId'])
         self.client._wait_until_file_ready = Mock(return_value='Ready')
 
@@ -137,9 +139,9 @@ class Test_TimeSeriesClient(unittest.TestCase):
 
         response = self.client.append(self.dummy_df, self.timeseries_id)
 
-        self.client._verify_and_prepare_dataframe.assert_called_once_with(
+        self.client._verify_and_prepare_series.assert_called_once_with(
             self.dummy_df)
-        self.client._upload_file.assert_called_once_with(self.dummy_df)
+        self.client._upload_series.assert_called_once_with(self.dummy_df)
         self.client._wait_until_file_ready.assert_called_once_with(
             self.dummy_params['FileId'])
         self.client._timeseries_api.add.assert_called_once_with(
@@ -178,23 +180,27 @@ class Test_TimeSeriesClient(unittest.TestCase):
 
     def test_get_all_methods_called_with_default(self):
         self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_content_to_stream = lambda stream,progress_callback: stream.write(self.dataframe_with_10_rows_csv)
+        self.downloader.get_blob_to_series.return_value = self.dataframe_with_10_rows
+        self.client._download_series = Mock(return_value=self.dataframe_with_10_rows)
 
         response = self.client.get(self.timeseries_id)
 
         self.client._timeseries_api.download_days.assert_called_once_with(
-            self.auth.token, self.timeseries_id, timeseriesclient.timeseriesclient._START_DEFAULT, timeseriesclient.timeseriesclient._END_DEFAULT)
+            self.auth.token, self.timeseries_id, datareservoirio.client._START_DEFAULT, datareservoirio.client._END_DEFAULT)
+        self.client._download_series.assert_called_once_with(self.download_days_response)
         pd.util.testing.assert_series_equal(
             response, self.dataframe_with_10_rows['values'])
 
     def test_get_all_methods_called_with_overflow(self):
         self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_content_to_stream = lambda stream,progress_callback: stream.write(self.dataframe_with_10_rows_csv)
+        self.downloader.get_blob_to_series.return_value = self.dataframe_with_10_rows
+        self.client._download_series = Mock(return_value=self.dataframe_with_10_rows)
 
         response = self.client.get(self.timeseries_id, start=2, end=3)
 
         self.client._timeseries_api.download_days.assert_called_once_with(
             self.auth.token, self.timeseries_id, 2, 3)
+        self.client._download_series.assert_called_once_with(self.download_days_response)
         pd.util.testing.assert_series_equal(
             response, self.dataframe_with_10_rows['values'].loc[2:3])
 
@@ -202,19 +208,23 @@ class Test_TimeSeriesClient(unittest.TestCase):
         start = pd.to_datetime(1, dayfirst=True, unit='ns').value
         end = pd.to_datetime(10, dayfirst=True, unit='ns').value
         self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_content_to_stream = lambda stream,progress_callback: stream.write(self.dataframe_with_10_rows_csv)
+        self.downloader.get_blob_to_series.return_value = self.dataframe_with_10_rows
+        self.client._download_series = Mock(return_value=self.dataframe_with_10_rows)
 
-        response = self.client.get(self.timeseries_id, start, end, convert_date=True)
+        response = self.client.get(
+            self.timeseries_id, start, end, convert_date=True)
 
         self.client._timeseries_api.download_days.assert_called_once_with(
             self.auth.token, self.timeseries_id, start, end)
-        self.dataframe_with_10_rows.index = pd.to_datetime(self.dataframe_with_10_rows.index)
+        self.client._download_series.assert_called_once_with(self.download_days_response)
+        self.dataframe_with_10_rows.index = pd.to_datetime(
+            self.dataframe_with_10_rows.index)
         pd.util.testing.assert_series_equal(
             response, self.dataframe_with_10_rows['values'])
 
     def test_get_all_methods_called_with_start_stop_as_str(self):
         self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_content_to_stream = lambda stream,progress_callback: stream.write(self.dataframe_with_10_rows_csv)
+        self.downloader.get_blob_to_series.return_value = self.dataframe_with_10_rows
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',
@@ -237,37 +247,29 @@ class Test_TimeSeriesClient(unittest.TestCase):
 class Test_TimeSeriesClient_verify_prep_dataframe(unittest.TestCase):
 
     def setUp(self):
-        self.client = timeseriesclient.TimeSeriesClient(Mock())
+        self.client = datareservoirio.Client(Mock())
 
     def test_datetime64(self):
-        df = pd.DataFrame({'values': np.random.rand(10)},
-                          index=np.arange(0, 10e9, 1e9).astype('datetime64[ns]'))
-        result = self.client._verify_and_prepare_dataframe(df)
+        series = pd.Series(np.random.rand(10),
+                           index=np.arange(0, 10e9, 1e9).astype('datetime64[ns]'))
+        result = self.client._verify_and_prepare_series(series)
         self.assertIsNone(result)
 
     def test_int64(self):
-        df = pd.DataFrame({'values': np.random.rand(10)},
-                          index=np.arange(0, 10e9, 1e9).astype('int64'))
-        result = self.client._verify_and_prepare_dataframe(df)
+        series = pd.Series(np.random.rand(10),
+                           index=np.arange(0, 10e9, 1e9).astype('int64'))
+        result = self.client._verify_and_prepare_series(series)
         self.assertIsNone(result)
 
     def test_index_not_valid(self):
-        df = pd.DataFrame({'values': np.random.rand(10)},
-                          index=np.arange(0, 10e9, 1e9).astype('float'))
+        series = pd.Series(np.random.rand(10),
+                           index=np.arange(0, 10e9, 1e9).astype('float'))
         with self.assertRaises(ValueError):
-            self.client._verify_and_prepare_dataframe(df)
+            self.client._verify_and_prepare_series(series)
 
-    def test_not_a_dataframe(self):
+    def test_not_a_series(self):
         with self.assertRaises(ValueError):
-            self.client._verify_and_prepare_dataframe('this is wrong input')
-
-    def test_too_many_columns(self):
-        df = pd.DataFrame({'values': np.random.rand(10)},
-                          index=np.arange(0, 10e9, 1e9).astype('datetime64[ns]'))
-        df['values2'] = df['values'].values
-
-        with self.assertRaises(ValueError):
-            self.client._verify_and_prepare_dataframe(df)
+            self.client._verify_and_prepare_series('this is wrong input')
 
 
 class Test_TimeSeriesClient_private_funcs(unittest.TestCase):
@@ -284,31 +286,30 @@ class Test_TimeSeriesClient_private_funcs(unittest.TestCase):
                              'Path': 'blobpath',
                              'Endpoint': 'endpointURI'}
 
-        self.client = timeseriesclient.TimeSeriesClient(self.auth)
+        self.client = datareservoirio.Client(self.auth)
         self.client._files_api = Mock()
 
         self.dummy_df = pd.DataFrame({'a': np.arange(1e3)},
                                      index=np.array(np.arange(1e3), dtype='datetime64[ns]'))
 
         self.uploader = Mock()
-        self.uploader.file_id = 123
-        self.client._files_api.upload_service.return_value = self.uploader
+        self.client._files_api.transfer_service.return_value = self.uploader
 
     def test__upload_file(self):
-        upload_params = {'parmas': 123}
+        upload_params = {'parmas': 123, 'FileId': '123abc'}
         self.client._files_api.upload.return_value = upload_params
 
-        response = self.client._upload_file(self.dummy_df)
+        response = self.client._upload_series(self.dummy_df)
 
         self.client._files_api.upload.assert_called_once_with(self.auth.token)
-        self.client._files_api.upload_service.assert_called_once_with(
+        self.client._files_api.transfer_service.assert_called_once_with(
             upload_params)
-        self.uploader.create_blob_from_df.assert_called_once_with(
+        self.uploader.create_blob_from_series.assert_called_once_with(
             self.dummy_df)
         self.client._files_api.commit.assert_called_once_with(self.auth.token,
-                                                              self.uploader.file_id)
+                                                              upload_params['FileId'])
 
-        self.assertEqual(response, self.uploader.file_id)
+        self.assertEqual(response, upload_params['FileId'])
 
     def test__get_file_status(self):
         response = {'State': 'Ready'}

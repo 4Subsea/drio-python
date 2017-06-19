@@ -2,8 +2,8 @@ import unittest
 
 from mock import Mock, patch
 
-from timeseriesclient.rest_api.base import (BaseAPI, TokenAuth,
-                                            _update_kwargs)
+from datareservoirio.rest_api.base import (BaseAPI, TokenAuth,
+                                           _update_kwargs)
 
 
 class Test_BaseAPI(unittest.TestCase):

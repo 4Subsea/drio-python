@@ -7,10 +7,10 @@ import pandas as pd
 import requests
 from mock import patch
 
-import timeseriesclient
-from timeseriesclient.authenticate import Authenticator
+import datareservoirio
+from datareservoirio.authenticate import Authenticator
 
-timeseriesclient.globalsettings.environment.set_qa()
+datareservoirio.globalsettings.environment.set_test()
 
 USERNAME = 'reservoir-integrationtest@4subsea.com'
 PASSWORD = 'qz9uVgNhANncz9Jp'
@@ -23,18 +23,18 @@ class Test_TimeSeriesApi(unittest.TestCase):
     def setUpClass(cls, mock_input):
         cls.auth = Authenticator(USERNAME)
 
-        cls.df_1 = pd.DataFrame(
-            {'values': np.arange(100.)}, index=np.arange(0, 100))
+        cls.df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
         cls.df_1.index.name = 'index'
-        cls.df_2 = pd.DataFrame(
-            {'values': np.arange(100.)}, index=np.arange(50, 150))
+        cls.df_1.name = 'values'
+        cls.df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
         cls.df_2.index.name = 'index'
-        cls.df_3 = pd.DataFrame(
-            {'values': np.arange(50.)}, index=np.arange(125, 175))
+        cls.df_2.name = 'values'
+        cls.df_3 = pd.Series(np.arange(50.), index=np.arange(125, 175))
         cls.df_3.index.name = 'index'
+        cls.df_3.name = 'values'
 
     def setUp(self):
-        self.client = timeseriesclient.TimeSeriesClient(self.auth)
+        self.client = datareservoirio.Client(self.auth)
 
     def test_ping(self):
         self.client.ping()
@@ -61,8 +61,9 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
     def test_create_get_delete(self):
         rng = pd.date_range('1970-01-01', periods=100, freq='ns')
-        df = pd.DataFrame({'values': np.arange(100.)}, index=rng)
+        df = pd.Series(np.arange(100.), index=rng)
         df.index.name = 'index'
+        df.name = 'values'
         response = self.client.create(df)
         info = self.client.info(response['TimeSeriesId'])
 
@@ -79,7 +80,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         df_recieved = self.client.get(
             response['TimeSeriesId'], convert_date=True)
 
-        pd.util.testing.assert_series_equal(df['values'], df_recieved)
+        pd.util.testing.assert_series_equal(df, df_recieved)
 
         self.client.delete(response['TimeSeriesId'])
 
@@ -110,7 +111,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         data_sent = self.df_1
         data_sent = data_sent.append(self.df_3)
 
-        pd.util.testing.assert_series_equal(data_sent['values'], data_recieved)
+        pd.util.testing.assert_series_equal(data_sent, data_recieved)
 
     def test_create_append_overlap_get_delete(self):
         response = self.client.create(self.df_1)
@@ -129,13 +130,14 @@ class Test_TimeSeriesApi(unittest.TestCase):
         data_sent = data_sent.combine_first(self.df_2)
         data_sent = data_sent.combine_first(self.df_1)
 
-        pd.util.testing.assert_series_equal(data_sent['values'], data_recieved)
+        pd.util.testing.assert_series_equal(data_sent, data_recieved)
 
     def test_create_get_performance(self):
-        # 1 day @ 10Hz
-        df = pd.DataFrame({'values': np.arange(10 * 864000.)},
-                          index=np.arange(0, 10 * 864000))
+        # 10 days @ 10Hz
+        df = pd.Series(np.arange(10 * 864000.),
+                       index=np.arange(0, 10 * 864000))
         df.index.name = 'index'
+        df.name = 'values'
 
         start = timer()
         response = self.client.create(df)
