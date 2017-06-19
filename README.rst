@@ -47,5 +47,8 @@ Dev environment
 '''''''''''''''
 
 In your working folder, do the following:
-.. code:: pip install mock
-.. code:: pip install -e .
+
+.. code:: 
+
+    pip install mock
+    pip install -e .
