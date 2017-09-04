@@ -11,7 +11,6 @@ setup(name='datareservoirio',
       packages=find_packages(exclude=['tests', 'integrationtests']),
       install_requires=[
           'adal>=0.4.3',
-          'azure>=1.0.3',
           'azure-storage>=0.30.0',
           'numpy',
           'pandas>=0.20.2',
