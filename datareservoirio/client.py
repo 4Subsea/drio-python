@@ -254,7 +254,8 @@ class Client(object):
             logwriter.error("series type is {}".format(type(series)))
             raise ValueError('series must be a pandas Series')
 
-        if series.index.dtype not in ['datetime64[ns]', 'int64']:
+        if not (pd.api.types.is_datetime64_ns_dtype(series.index) or
+                pd.api.types.is_int64_dtype(series.index)):
             logwriter.error("index dtype is {}".format(series.index.dtype))
             raise ValueError('allowed dtypes are datetime64[ns] and int64')
 
