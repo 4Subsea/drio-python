@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='datareservoirio',
-      version='0.2.1',
+      version='0.2.2',
       license='Proprietary',
       description='Python client for 4Subsea datareservoir.io',
       url='http://www.4subsea.com/python/datareservoirio',
