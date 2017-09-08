@@ -60,6 +60,7 @@ class Test_AzureBlobService(unittest.TestCase):
                                                    base64.b64encode('00000000'.encode('ascii')).decode('ascii'))
         uploader.put_block_list.assert_called_once()
 
+
     def test_upload_long(self):
         side_effect = 4 * [None]
         uploader = AzureBlobService(self.upload_params)

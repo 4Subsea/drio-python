@@ -91,7 +91,7 @@ class AzureBlobService(BlockBlobService):
         for i, chunk in enumerate(self._gen_line_chunks(series, int(1e6))):
             buf = StringIO()
 
-            if chunk.index.dtype == 'datetime64[ns]':
+            if pd.api.types.is_datetime64_ns_dtype(chunk.index):
                 chunk = chunk.copy()
                 chunk.index = chunk.index.astype('int64')
 
