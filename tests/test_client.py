@@ -43,7 +43,8 @@ class Test_Client(unittest.TestCase):
                              'SasKey': 'abcdef',
                              'Container': 'blobcontainer',
                              'Path': 'blobpath',
-                             'Endpoint': 'endpointURI'}
+                             'Endpoint': 'endpointURI',
+                             'Files': []}
 
         self.response = Mock()
         self.response.text = u'1,1\n2,2\n3,3\n4,4'
@@ -235,6 +236,25 @@ class Test_Client(unittest.TestCase):
         pd.util.testing.assert_series_equal(
             response, self.dataframe_with_10_rows['values'].loc[1:4])
 
+    def test_get_return_empty(self):
+        self.client._timeseries_api.download_days.return_value = self.download_days_response
+        self.downloader.get_blob_to_series.return_value = pd.DataFrame(columns=['index', 'values'])
+
+        response = self.client.get(self.timeseries_id,
+                                   start='1970-01-01 00:00:00.000000001',
+                                   end='1970-01-01 00:00:00.000000004', raise_empty=False)
+
+        response_expected = pd.Series(name='values')
+        pd.testing.assert_series_equal(response, response_expected, check_dtype=False)  # fix in future. dtype should be checked
+
+    def test_get_raise_empty(self):
+        self.client._timeseries_api.download_days.return_value = self.download_days_response
+        self.downloader.get_blob_to_series.return_value = pd.DataFrame(columns=['index', 'values'])
+
+        with self.assertRaises(ValueError):
+            self.client.get(self.timeseries_id, start='1970-01-01 00:00:00.000000001',
+                            end='1970-01-01 00:00:00.000000004', raise_empty=True)
+
     def test_get_start_stop_exception(self):
         self.client._timeseries_api.data.return_value = self.response
 
@@ -284,7 +304,9 @@ class Test_TimeSeriesClient_private_funcs(unittest.TestCase):
                              'SasKey': 'abcdef',
                              'Container': 'blobcontainer',
                              'Path': 'blobpath',
-                             'Endpoint': 'endpointURI'}
+                             'Endpoint': 'endpointURI',
+                             'Files': [{'Chunks': ['dummy_chunk_1', 'dummy_chunk_2']},
+                                       {'Chunks': ['dummy_chunk_1', 'dummy_chunk_2']}]}
 
         self.client = datareservoirio.Client(self.auth)
         self.client._files_api = Mock()
@@ -342,6 +364,31 @@ class Test_TimeSeriesClient_private_funcs(unittest.TestCase):
             self.dummy_params['FileId'])
         self.assertEqual(status, 'Failed')
 
+    def test__download_chunks_as_dataframe_empty_chunks(self):
+        df_returned = self.client._download_chunks_as_dataframe([])
+        df_expected = pd.DataFrame(columns=['index', 'values'])
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    def test__download_chunks_as_dataframe_w_chunks(self):
+        self.uploader.get_blob_to_series = Mock(side_effect=[
+            pd.DataFrame([0, 1, 2], index=[0, 1, 2], columns=['values']),
+            pd.DataFrame([3, 4, 5], index=[3, 4, 5], columns=['values'])])
+
+        df_returned = self.client._download_chunks_as_dataframe(['dummy_chunk_1', 'dummy_chunk_2'])
+        df_expected = pd.DataFrame([0, 1, 2, 3, 4, 5], index=[0, 1, 2, 3, 4, 5], columns=['values'])
+
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
+    @patch('datareservoirio.Client._download_chunks_as_dataframe')
+    def test__download_series(self, mock_chunks):
+
+        mock_chunks.side_effect = [
+            pd.DataFrame([0., 1., 2.], index=[0, 1, 2], columns=['values']),
+            pd.DataFrame([2., 3., 4.], index=[2, 3, 4], columns=['values'])]
+        df_returned = self.client._download_series(self.dummy_params)
+
+        df_expected = pd.DataFrame([0., 1., 2., 3., 4.], index=[0, 1, 2, 3, 4], columns=['values'])
+        pd.testing.assert_frame_equal(df_expected, df_returned)
 
 if __name__ == '__main__':
     unittest.main()

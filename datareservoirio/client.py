@@ -168,7 +168,8 @@ class Client(object):
         """
         return self._timeseries_api.delete(self.token, timeseries_id)
 
-    def get(self, timeseries_id, start=None, end=None, convert_date=False):
+    def get(self, timeseries_id, start=None, end=None, convert_date=False,
+            raise_empty=False):
         """
         Retrieves a timeseries from the data reservoir.
 
@@ -185,6 +186,9 @@ class Client(object):
         convert_date : bool
             If True, the index is converted to numpy.datetime64[ns]. Default is
             False, index is returned as nanoseconds since epoch.
+        raise_empty : bool
+            If True, raise ValueError if no data exist in the provided interval. Otherwise,
+            return an empty pandas.Series (default).
 
         Returns
         -------
@@ -212,6 +216,9 @@ class Client(object):
         if not df.empty:
             df = df.loc[start:end]
 
+        if df.empty and raise_empty:  # may become empty after slicing
+            raise ValueError('can\'t find data in the given interval')
+
         if convert_date:
             df.index = pd.to_datetime(df.index)
 
@@ -223,16 +230,17 @@ class Client(object):
 
     def _download_series(self, params):
         filechunks = [f['Chunks'] for f in params['Files']]
-
         # download chunks, one by one
         filedatas = [
             self._download_chunks_as_dataframe(chunk) for chunk in filechunks]
-        df = pd.DataFrame(columns=['index', 'values'])
+        df = pd.DataFrame()
         for fd in filedatas:
             df = fd.combine_first(df)
         return df
 
     def _download_chunks_as_dataframe(self, chunks):
+        if not chunks:
+            return pd.DataFrame(columns=['index', 'values'])
         with ThreadPoolExecutor(max_workers=32) as executor:
             filechunks = executor.map(
                 lambda chunk: self._files_api.transfer_service(
