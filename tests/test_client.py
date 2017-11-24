@@ -390,5 +390,16 @@ class Test_TimeSeriesClient_private_funcs(unittest.TestCase):
         df_expected = pd.DataFrame([0., 1., 2., 3., 4.], index=[0, 1, 2, 3, 4], columns=['values'])
         pd.testing.assert_frame_equal(df_expected, df_returned)
 
+    @patch('datareservoirio.Client._download_chunks_as_dataframe')
+    def test__download_series_with_unordered_series(self, mock_chunks):
+
+        mock_chunks.side_effect = [
+            pd.DataFrame([2., 3., 5.], index=[2, 3, 1], columns=['values']),
+            pd.DataFrame([10., 11., 14., 16.], index=[0, 5, 4, 6], columns=['values'])]
+        df_returned = self.client._download_series(self.dummy_params)
+
+        df_expected = pd.DataFrame([10., 5., 2., 3., 14., 11., 16.], index=[0, 1, 2, 3, 4, 5, 6], columns=['values'])
+        pd.testing.assert_frame_equal(df_expected, df_returned)
+
 if __name__ == '__main__':
     unittest.main()
