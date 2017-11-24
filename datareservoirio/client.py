@@ -246,8 +246,9 @@ class Client(object):
                 lambda chunk: self._files_api.transfer_service(
                     chunk).get_blob_to_series(),
                 chunks)
-            
-            return pd.concat(filechunks)
+            df_chunks = pd.concat(filechunks)
+            df_chunks.sort_index(inplace=True)
+            return df_chunks
 
     def _upload_series(self, series):
         upload_params = self._files_api.upload(self.token)
