@@ -167,9 +167,6 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_delete.assert_called_with(expected_uri, auth=mock_token(),
                                        json=series_list, **self.api._defaults)
 
-    def test_json_validate(self):
-        self.fail()
-
 
 if __name__ == '__main__':
     unittest.main()
