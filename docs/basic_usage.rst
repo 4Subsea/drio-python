@@ -20,12 +20,12 @@ Example::
     # Provide password
 
     # Initiate a client
-    client = drio.Client(auth)
+    client = drio.CClient(auth)
 
     # A simple example dataset
     timevector = np.array(np.arange(0, 10e9, 1e9), dtype='datetime64[ns]')
     values = np.random.rand(10)
-    data = pd.Seriess(values, index=timevector)
+    data = pd.Series(values, index=timevector)
 
     # Upload the dataset
     result = client.create(data)
