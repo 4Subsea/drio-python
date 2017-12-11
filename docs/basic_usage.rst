@@ -20,7 +20,7 @@ Example::
     # Provide password
 
     # Initiate a client
-    client = drio.CClient(auth)
+    client = drio.Client(auth)
 
     # A simple example dataset
     timevector = np.array(np.arange(0, 10e9, 1e9), dtype='datetime64[ns]')
