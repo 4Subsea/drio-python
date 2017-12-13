@@ -1,58 +1,112 @@
 <?xml version="1.0" ?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-    <PropertyGroup>
-        <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)</SolutionDir>
-        <ToolsDir Condition="$(ToolsDir) == ''">$(SolutionDir)\.tools</ToolsDir>
-        <PackageDir Condition="$(ToolsDir) == ''">$(SolutionDir)\packages</PackageDir>
-        <NuGetExePath>$(SolutionDir)\.nuget\v2.7\nuget.exe</NuGetExePath>
-        <NuGetUseAutomaticPackageRestore Condition="$(NuGetUseAutomaticPackageRestore) == ''">false</NuGetUseAutomaticPackageRestore>
-        <OctoExePath>$(PackageDir)\Octopus.Client\Octo.exe</OctoExePath>
-        <OctoPackTargetsDirectory>$(SolutionDir)\packages\OctoPack.3.4.3\tools</OctoPackTargetsDirectory>
-        <OctoPackTargetsPath>$(OctoPackTargetsDirectory)\OctoPack.targets</OctoPackTargetsPath>
-        <OctoPackOctoPackTasksAssembly>$(OctoPackTargetsDirectory)\OctoPack.Tasks.dll</OctoPackOctoPackTasksAssembly>
+  <PropertyGroup>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)</SolutionDir>
+    <DeployDir Condition="$(DeployDir) == ''">$(SolutionDir)\.tools</DeployDir>
+    <PackageDir Condition="$(DeployDir) == ''">$(SolutionDir)\packages</PackageDir>
+    <NuGetExePath>$(SolutionDir)\.nuget\v2.7\nuget.exe</NuGetExePath>
+    <NuGetUseAutomaticPackageRestore Condition="$(NuGetUseAutomaticPackageRestore) == ''">false</NuGetUseAutomaticPackageRestore>
+    <OctoExePath>$(PackageDir)\Octopus.Client\Octo.exe</OctoExePath>
+    <OctoPackTargetsDirectory>$(SolutionDir)\packages\OctoPack.3.6.1\build</OctoPackTargetsDirectory>
+    <OctoPackTargetsPath>$(OctoPackTargetsDirectory)\OctoPack.targets</OctoPackTargetsPath>
+    <OctoPackOctoPackTasksAssembly>$(OctoPackTargetsDirectory)\OctoPack.Tasks.dll</OctoPackOctoPackTasksAssembly>
+  </PropertyGroup>
 
-        <BuildVersion ></BuildVersion>
-    </PropertyGroup>
-
-    <UsingTask TaskName="ReplaceFileText" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-        <ParameterGroup>
-            <InputFilename ParameterType="System.String" Required="true" />
-            <OutputFilename ParameterType="System.String" Required="true" />
-            <MatchExpression ParameterType="System.String" Required="true" />
-            <ReplacementText ParameterType="System.String" Required="true" />
-        </ParameterGroup>
-        <Task>
-            <Reference Include="System.Core" />
-            <Using Namespace="System" />
-            <Using Namespace="System.IO" />
-            <Using Namespace="System.Text.RegularExpressions" />
-            <Code Type="Fragment" Language="cs">
-            <![CDATA[
+  <!-- Declare using tasks -->
+  <UsingTask TaskName="OctoPack.Tasks.CreateOctoPackPackage" AssemblyFile="$(OctoPackOctoPackTasksAssembly)" />
+  <UsingTask TaskName="ReplaceFileText" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <InputFilename ParameterType="System.String" Required="true" />
+      <OutputFilename ParameterType="System.String" Required="true" />
+      <MatchExpression ParameterType="System.String" Required="true" />
+      <ReplacementText ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
                     File.WriteAllText(
                         OutputFilename,
                         Regex.Replace(File.ReadAllText(InputFilename), MatchExpression, ReplacementText)
                         );
                 ]]>
-            </Code>
-        </Task>
-    </UsingTask>
+      </Code>
+    </Task>
+  </UsingTask>
 
+  <!-- Declare using tasks done -->
+  
+  <PropertyGroup>
+    <Major>$(PackageVersion.Split('.')[0])</Major>
+    <Minor>$(PackageVersion.Split('.')[1])</Minor>
+    <Build>$(PackageVersion.Split('.')[2])</Build>
+    <LibVersion>$(Major).$(Minor).$(Build)</LibVersion>
+  </PropertyGroup>
+
+  <Target Name="SetupVersion">
+    <Error Condition="$(PackageVersion) == ''" Text="PackageVersion parameter must be specified" />
+    <ReplaceFileText
+      InputFilename="$(SolutionDir)\setup.py"
+      OutputFilename="$(SolutionDir)\setup.py"
+      MatchExpression="version='0.0.1'"
+      ReplacementText="version='$(LibVersion)'" />
+  </Target>
+
+  <Target Name="BuildPythonLibrary">
+    <Exec Command="build.bat" WorkingDirectory="$(SolutionDir)" />
+  </Target>
+
+  <Target Name="BuildPackage" DependsOnTargets="SetupVersion;BuildPythonLibrary">
     <PropertyGroup>
-        <Major>$(PackageVersion.Split('.')[0])</Major>
-        <Minor>$(PackageVersion.Split('.')[1])</Minor>
-        <Build>$(PackageVersion.Split('.')[2])</Build>
-        <LibVersion>$(Major).$(Minor).$(Build)</LibVersion>
+      <ProjectName>datareservoirio.pythonclient</ProjectName>
+      <NuSpecFilename>$(ProjectName).nuspec</NuSpecFilename>
+      <NugetDir>$(SolutionDir)\build\pkg</NugetDir>
+      <PackageOutputDir>$(SolutionDir)\build</PackageOutputDir>
+      <PythonWheelFile>$(SolutionDir)\build\*$(LibVersion)*.whl</PythonWheelFile>
+    </PropertyGroup>
+    <ConvertToAbsolutePath Paths="$(NugetDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="NugetAbsoluteDir"/>
+    </ConvertToAbsolutePath>
+    <ConvertToAbsolutePath Paths="$(PackageOutputDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PackageOutputAbsDir"/>
+    </ConvertToAbsolutePath>
+    <PropertyGroup>
+      <NuSpecSourceFilePath>$(DeployDir)\$(NuSpecFilename)</NuSpecSourceFilePath>
+      <NuSpecFilePath>$(NugetAbsoluteDir)\$(NuSpecFilename)</NuSpecFilePath>
     </PropertyGroup>
 
+    <!-- Copy additinonal scripts required by Octopus deployment -->
+    <ItemGroup>
+      <PackageSourceFiles Include="$(DeployDir)\scripts\*.ps1" />
+      <PackageSourceFiles Include="$(PythonWheelFile)" />
+      <PackageSourceFiles Include="$(NuSpecSourceFilePath)" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackageSourceFiles)" DestinationFolder="$(NugetAbsoluteDir)" />
 
-    <Target Name="Build">
-        <Error Condition="$(PackageVersion) == ''" Text="PackageVersion parameter must be specified" />
-        <ReplaceFileText 
-            InputFilename="$(SolutionDir)\setup.py" 
-            OutputFilename="$(SolutionDir)\setup.py" 
-            MatchExpression="version='0.0.1'" 
-            ReplacementText="version='$(LibVersion)'" />
-    </Target>
+    <!-- Octopack it! -->
+    <ItemGroup>
+      <PackageFiles Include="$(NugetAbsoluteDir)\**\*.*" />
+    </ItemGroup>
+    <CreateOctoPackPackage
+      NuSpecFileName="$(NuSpecFilename)"
+      ContentFiles=""
+      WrittenFiles="@(PackageFiles)"
+      OutDir="$(PackageOutputAbsDir)"
+      ProjectDirectory="$(NugetAbsoluteDir)"
+      ProjectName="$(ProjectName)"
+      PackageVersion="$(PackageVersion)"
+      PrimaryOutputAssembly="na"
+      ReleaseNotesFile=""
+      NuGetProperties="" />
+
+  </Target>
+
+  
+  <Target Name="Build" DependsOnTargets="BuildPackage">
+  </Target>
 
 </Project>

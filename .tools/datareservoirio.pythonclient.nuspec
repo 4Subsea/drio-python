@@ -1,0 +1,12 @@
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>datareservoirio.pythonclient</id>
+    <version>$version$</version>
+    <authors>4Subsea Team</authors>
+    <owners>4Subsea AS</owners>
+    <licenseUrl>http://4subsea.com</licenseUrl>
+    <projectUrl>http://datareservoir.io</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>DataReservoir python client</description>
+  </metadata>
+</package>
