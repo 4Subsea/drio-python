@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(MSBuildProjectDirectory)</SolutionDir>
-    <DeployDir Condition="$(DeployDir) == ''">$(SolutionDir)\.tools</DeployDir>
+    <DeployDir Condition="$(DeployDir) == ''">$(SolutionDir)\.deploy</DeployDir>
     <PackageDir Condition="$(DeployDir) == ''">$(SolutionDir)\packages</PackageDir>
     <NuGetExePath>$(SolutionDir)\.nuget\v2.7\nuget.exe</NuGetExePath>
     <NuGetUseAutomaticPackageRestore Condition="$(NuGetUseAutomaticPackageRestore) == ''">false</NuGetUseAutomaticPackageRestore>
