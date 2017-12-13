@@ -59,8 +59,12 @@
   <Target Name="BuildPythonLibrary">
     <Exec Command="build.bat" WorkingDirectory="$(SolutionDir)" />
   </Target>
+  
+  <Target Name="BuildPythonDoc">
+    <Exec Command="build_doc.bat" WorkingDirectory="$(SolutionDir)" />
+  </Target>
 
-  <Target Name="BuildPackage" DependsOnTargets="SetupVersion;BuildPythonLibrary">
+  <Target Name="BuildPackage" DependsOnTargets="SetupVersion;BuildPythonLibrary;BuildPythonDoc">
     <PropertyGroup>
       <ProjectName>datareservoirio.pythonclient</ProjectName>
       <NuSpecFilename>$(ProjectName).nuspec</NuSpecFilename>
