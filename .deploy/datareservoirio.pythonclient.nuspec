@@ -9,4 +9,9 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>DataReservoir python client</description>
   </metadata>
+  <files>
+    <file src="Deploy.ps1" />
+    <file src="*.whl" />
+    <file src="html\**\*.*" target="html" />
+  </files>
 </package>

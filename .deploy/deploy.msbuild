@@ -95,6 +95,7 @@
       <NuSpecFilename>$(ProjectName).nuspec</NuSpecFilename>
       <NugetDir>$(BuildDir)\pkg</NugetDir>
       <PackageOutputDir>$(BuildDir)</PackageOutputDir>
+      <PackageDeployScript>$(DeployDir)\scripts\*.ps1</PackageDeployScript>
       <PythonWheelFile>$(BuildDir)\*$(LibVersion)*.whl</PythonWheelFile>
       <PythonDocFiles>$(BuildDir)\html\**\*</PythonDocFiles>
     </PropertyGroup>
@@ -111,21 +112,19 @@
 
     <!-- Copy all files that goes into the Octopus package into the working folder -->
     <ItemGroup>
-      <PackageSourceFiles Include="$(DeployDir)\scripts\*.ps1" />
+      <PackageSourceFiles Include="$(PackageDeployScript)" />
       <PackageSourceFiles Include="$(PythonWheelFile)" />
-      <PackageSourceFiles Include="$(PythonDocFiles)" />
       <PackageSourceFiles Include="$(NuSpecSourceFilePath)" />
+      <PackageDocFiles Include="$(PythonDocFiles)" />
     </ItemGroup>
-    <Copy SourceFiles="@(PackageSourceFiles)" DestinationFolder="$(NugetAbsoluteDir)" />
+    <Copy SourceFiles="@(PackageSourceFiles)" DestinationFolder="$(NugetAbsoluteDir)\%(RecursiveDir)" />
+    <Copy SourceFiles="@(PackageDocFiles)" DestinationFolder="$(NugetAbsoluteDir)\html\%(RecursiveDir)" />
 
     <!-- Octopack it! -->
-    <ItemGroup>
-      <PackageFiles Include="$(NugetAbsoluteDir)\**\*.*" />
-    </ItemGroup>
     <CreateOctoPackPackage
       NuSpecFileName="$(NuSpecFilename)"
       ContentFiles=""
-      WrittenFiles="@(PackageFiles)"
+      WrittenFiles=""
       OutDir="$(PackageOutputAbsDir)"
       ProjectDirectory="$(NugetAbsoluteDir)"
       ProjectName="$(ProjectName)"
