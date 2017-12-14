@@ -1,1 +1,36 @@
-# Deployment script pushing files to python feed (NOTE: get feed paths from Octopus variables)
+# Deployment script pushing lib and documentation to python feed
+
+function Get-ScriptDirectory
+{
+    $Invocation = (Get-Variable MyInvocation -Scope 1).Value
+    Split-Path $Invocation.MyCommand.Path
+}
+
+if (!(Test-Path variable:global:OctopusReleaseNumber)) {
+    Write-Error "OctopusReleaseNumber variable must be set"
+    return
+}
+if (!(Test-Path variable:global:PyPiLocation)) {
+    Write-Error "PyPiLocation variable must be set"
+    return
+}
+if (!(Test-Path variable:global:DocLocation)) {
+    Write-Error "DocLocation variable must be set"
+    return
+}
+
+$Root = (Get-ScriptDirectory)
+$PythonSource = Join-Path $Root "*.whl"
+$PythonDocSource = Join-Path $Root "html\*.whl"
+
+Write-Host "Copying Python library to feed location"
+Write-Host "Source folder: $PythonSource"
+Write-Host "Destination folder: $PyPiLocation"
+& "xcopy" "$PythonSource" "$PyPiLocation" /Y /I
+
+Write-Host "Copying Python documentation"
+Write-Host "Source folder: $PythonDocSource"
+Write-Host "Destination folder: $DocLocation"
+# & "xcopy" "$PythonSource" "$PyPiLocation" /Y /I
+
+Write-Host "Done copying package files";
