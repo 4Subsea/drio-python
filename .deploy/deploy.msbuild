@@ -56,15 +56,11 @@
       ReplacementText="version='$(LibVersion)'" />
   </Target>
 
-  <Target Name="BuildPythonLibrary">
-    <Exec Command="build.bat" WorkingDirectory="$(SolutionDir)" />
+  <Target Name="BuildPython">
+    <Exec Command="tox -c tox-deploy.ini" WorkingDirectory="$(SolutionDir)" />
   </Target>
   
-  <Target Name="BuildPythonDoc">
-    <Exec Command="build_doc.bat" WorkingDirectory="$(SolutionDir)" />
-  </Target>
-
-  <Target Name="BuildPackage" DependsOnTargets="SetupVersion;BuildPythonLibrary;BuildPythonDoc">
+  <Target Name="BuildPackage" DependsOnTargets="SetupVersion;BuildPython">
     <PropertyGroup>
       <ProjectName>datareservoirio.pythonclient</ProjectName>
       <NuSpecFilename>$(ProjectName).nuspec</NuSpecFilename>
@@ -83,7 +79,7 @@
       <NuSpecFilePath>$(NugetAbsoluteDir)\$(NuSpecFilename)</NuSpecFilePath>
     </PropertyGroup>
 
-    <!-- Copy additinonal scripts required by Octopus deployment -->
+    <!-- Copy all files that goes into the Octopus package into the working folder -->
     <ItemGroup>
       <PackageSourceFiles Include="$(DeployDir)\scripts\*.ps1" />
       <PackageSourceFiles Include="$(PythonWheelFile)" />
@@ -106,10 +102,8 @@
       PrimaryOutputAssembly="na"
       ReleaseNotesFile=""
       NuGetProperties="" />
-
   </Target>
 
-  
   <Target Name="Build" DependsOnTargets="BuildPackage">
   </Target>
 
