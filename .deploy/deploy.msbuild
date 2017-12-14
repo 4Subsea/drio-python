@@ -12,9 +12,12 @@
     <OctoPackTargetsPath>$(OctoPackTargetsDirectory)\OctoPack.targets</OctoPackTargetsPath>
     <OctoPackOctoPackTasksAssembly>$(OctoPackTargetsDirectory)\OctoPack.Tasks.dll</OctoPackOctoPackTasksAssembly>
 
+    <DeploymentFeedPath Condition="$(DeploymentFeedPath) == ''">https://wellspotdeploy-4ss.pkg.kode.cc/api/v2/package/</DeploymentFeedPath>
+    <DeploymentFeedApiKey Condition="$(DeploymentFeedApiKey) == ''"></DeploymentFeedApiKey>
+
     <OctopusApiKey Condition="$(OctopusApiKey) == ''"></OctopusApiKey>
-    <OctopusServer>https://kode.cc/deploy2</OctopusServer>
-    <OctopusProject>reservoir-api</OctopusProject>
+    <OctopusServer Condition="$(OctopusServer) == ''">https://kode.cc/deploy2</OctopusServer>
+    <OctopusProject Condition="$(OctopusProject) == ''">reservoir-python</OctopusProject>
     <OctopusTargetEnvironment Condition="$(OctopusTargetEnvironment) == ''">test</OctopusTargetEnvironment>
     <OctopusCreateRelease Condition="$(OctopusCreateRelease) == ''">False</OctopusCreateRelease>
     <OctopusPerformDeploy Condition="$(OctopusPerformDeploy) == ''">False</OctopusPerformDeploy>
