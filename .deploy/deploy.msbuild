@@ -96,6 +96,7 @@
       <NugetDir>$(BuildDir)\pkg</NugetDir>
       <PackageOutputDir>$(BuildDir)</PackageOutputDir>
       <PythonWheelFile>$(BuildDir)\*$(LibVersion)*.whl</PythonWheelFile>
+      <PythonDocFiles>$(BuildDir)\html\**\*</PythonDocFiles>
     </PropertyGroup>
     <ConvertToAbsolutePath Paths="$(NugetDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NugetAbsoluteDir"/>
@@ -112,6 +113,7 @@
     <ItemGroup>
       <PackageSourceFiles Include="$(DeployDir)\scripts\*.ps1" />
       <PackageSourceFiles Include="$(PythonWheelFile)" />
+      <PackageSourceFiles Include="$(PythonDocFiles)" />
       <PackageSourceFiles Include="$(NuSpecSourceFilePath)" />
     </ItemGroup>
     <Copy SourceFiles="@(PackageSourceFiles)" DestinationFolder="$(NugetAbsoluteDir)" />
