@@ -12,6 +12,6 @@
   <files>
     <file src="Deploy.ps1" />
     <file src="*.whl" />
-    <file src="html\**\*.*" target="html" />
+    <file src="docs\**\*.*" target="docs" />
   </files>
 </package>

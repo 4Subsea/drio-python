@@ -118,7 +118,7 @@
       <PackageDocFiles Include="$(PythonDocFiles)" />
     </ItemGroup>
     <Copy SourceFiles="@(PackageSourceFiles)" DestinationFolder="$(NugetAbsoluteDir)\%(RecursiveDir)" />
-    <Copy SourceFiles="@(PackageDocFiles)" DestinationFolder="$(NugetAbsoluteDir)\html\%(RecursiveDir)" />
+    <Copy SourceFiles="@(PackageDocFiles)" DestinationFolder="$(NugetAbsoluteDir)\docs\v$(LibVersion)\%(RecursiveDir)" />
 
     <!-- Octopack it! -->
     <CreateOctoPackPackage

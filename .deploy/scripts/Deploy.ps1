@@ -21,16 +21,12 @@ if (!(Test-Path variable:global:DocLocation)) {
 
 $Root = (Get-ScriptDirectory)
 $PythonSource = Join-Path $Root "*.whl"
-$PythonDocSource = Join-Path $Root "html\*.whl"
+$PythonDocSource = Join-Path $Root "docs"
 
-Write-Host "Copying Python library to feed location"
-Write-Host "Source folder: $PythonSource"
-Write-Host "Destination folder: $PyPiLocation"
+Write-Host "Copying Python library from $PythonSource to $PyPiLocation"
 & "xcopy" "$PythonSource" "$PyPiLocation" /Y /I
 
-Write-Host "Copying Python documentation"
-Write-Host "Source folder: $PythonDocSource"
-Write-Host "Destination folder: $DocLocation"
-# & "xcopy" "$PythonSource" "$PyPiLocation" /Y /I
+Write-Host "Copying Python documentation from $PythonDocSource to $DocLocation"
+& "xcopy" "$PythonDocSource" "$DocLocation" /E /Y /I
 
 Write-Host "Done copying package files";
