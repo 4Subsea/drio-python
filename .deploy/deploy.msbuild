@@ -12,13 +12,13 @@
     <OctoPackTargetsPath>$(OctoPackTargetsDirectory)\OctoPack.targets</OctoPackTargetsPath>
     <OctoPackOctoPackTasksAssembly>$(OctoPackTargetsDirectory)\OctoPack.Tasks.dll</OctoPackOctoPackTasksAssembly>
 
-    <DeploymentFeedPath Condition="$(DeploymentFeedPath) == ''">https://wellspotdeploy-4ss.pkg.kode.cc/api/v2/package/</DeploymentFeedPath>
+    <DeploymentFeedPath Condition="$(DeploymentFeedPath) == ''"></DeploymentFeedPath>
     <DeploymentFeedApiKey Condition="$(DeploymentFeedApiKey) == ''"></DeploymentFeedApiKey>
 
     <OctopusApiKey Condition="$(OctopusApiKey) == ''"></OctopusApiKey>
-    <OctopusServer Condition="$(OctopusServer) == ''">https://kode.cc/deploy2</OctopusServer>
-    <OctopusProject Condition="$(OctopusProject) == ''">reservoir-python</OctopusProject>
-    <OctopusTargetEnvironment Condition="$(OctopusTargetEnvironment) == ''">test</OctopusTargetEnvironment>
+    <OctopusServer Condition="$(OctopusServer) == ''"></OctopusServer>
+    <OctopusProject Condition="$(OctopusProject) == ''"></OctopusProject>
+    <OctopusTargetEnvironment Condition="$(OctopusTargetEnvironment) == ''"></OctopusTargetEnvironment>
     <OctopusCreateRelease Condition="$(OctopusCreateRelease) == ''">False</OctopusCreateRelease>
     <OctopusPerformDeploy Condition="$(OctopusPerformDeploy) == ''">False</OctopusPerformDeploy>
 
@@ -90,9 +90,13 @@
   </Target>
 
   <Target Name="BuildPackage" DependsOnTargets="BuildPython">
+    <!-- Locate .nuspec file and package it -->
+    <ItemGroup>
+      <_NuspecItem Include="$(DeployDir)\*.nuspec" />
+    </ItemGroup>
     <PropertyGroup>
-      <ProjectName>datareservoirio.pythonclient</ProjectName>
-      <NuSpecFilename>$(ProjectName).nuspec</NuSpecFilename>
+      <ProjectName>%(_NuspecItem.Filename)</ProjectName>
+      <NuSpecFilename>%(_NuspecItem.Filename).nuspec</NuSpecFilename>
       <NugetDir>$(BuildDir)\pkg</NugetDir>
       <PackageOutputDir>$(BuildDir)</PackageOutputDir>
       <PackageDeployScript>$(DeployDir)\scripts\*.ps1</PackageDeployScript>
@@ -121,6 +125,7 @@
     <Copy SourceFiles="@(PackageDocFiles)" DestinationFolder="$(NugetAbsoluteDir)\docs\v$(LibVersion)\%(RecursiveDir)" />
 
     <!-- Octopack it! -->
+    <Message Text="Packaging up $(NuSpecFilename) v$(PackageVersion)" />
     <CreateOctoPackPackage
       NuSpecFileName="$(NuSpecFilename)"
       ContentFiles=""
