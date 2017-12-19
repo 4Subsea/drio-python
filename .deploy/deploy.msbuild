@@ -51,13 +51,6 @@
 
   <!-- Declare using tasks done -->
 
-  <PropertyGroup>
-    <Major>$(PackageVersion.Split('.')[0])</Major>
-    <Minor>$(PackageVersion.Split('.')[1])</Minor>
-    <Build>$(PackageVersion.Split('.')[2])</Build>
-    <LibVersion>$(Major).$(Minor).$(Build)</LibVersion>
-  </PropertyGroup>
-
   <Target Name="ValidateDeploymentFeedApiKey">
     <Error Condition="$(DeploymentFeedApiKey) == ''" Text="Deployment feed api key was not specified" />
   </Target>
@@ -68,12 +61,12 @@
   </Target>
 
   <Target Name="SetupVersion">
-    <Error Condition="$(PackageVersion) == ''" Text="PackageVersion parameter must be specified" />
+    <Error Condition="$(ReleaseVersion) == ''" Text="ReleaseVersion parameter must be specified" />
     <ReplaceFileText
       InputFilename="$(SolutionDir)\setup.py"
       OutputFilename="$(SolutionDir)\setup.py"
       MatchExpression="version='0.0.1'"
-      ReplacementText="version='$(LibVersion)'" />
+      ReplacementText="version='$(ReleaseVersion)'" />
   </Target>
 
   <Target Name="BuildPython" DependsOnTargets="SetupVersion">
@@ -100,7 +93,7 @@
       <NugetDir>$(BuildDir)\pkg</NugetDir>
       <PackageOutputDir>$(BuildDir)</PackageOutputDir>
       <PackageDeployScript>$(DeployDir)\scripts\*.ps1</PackageDeployScript>
-      <PythonWheelFile>$(BuildDir)\*$(LibVersion)*.whl</PythonWheelFile>
+      <PythonWheelFile>$(BuildDir)\*$(ReleaseVersion)*.whl</PythonWheelFile>
       <PythonDocFiles>$(BuildDir)\html\**\*</PythonDocFiles>
     </PropertyGroup>
     <ConvertToAbsolutePath Paths="$(NugetDir)">
@@ -122,7 +115,7 @@
       <PackageDocFiles Include="$(PythonDocFiles)" />
     </ItemGroup>
     <Copy SourceFiles="@(PackageSourceFiles)" DestinationFolder="$(NugetAbsoluteDir)\%(RecursiveDir)" />
-    <Copy SourceFiles="@(PackageDocFiles)" DestinationFolder="$(NugetAbsoluteDir)\docs\v$(LibVersion)\%(RecursiveDir)" />
+    <Copy SourceFiles="@(PackageDocFiles)" DestinationFolder="$(NugetAbsoluteDir)\docs\v$(ReleaseVersion)\%(RecursiveDir)" />
 
     <!-- Octopack it! -->
     <Message Text="Packaging up $(NuSpecFilename) v$(PackageVersion)" />
