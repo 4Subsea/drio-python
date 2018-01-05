@@ -8,7 +8,7 @@ from datareservoirio.authenticate import Authenticator
 
 
 USERNAME = 'reservoir-integrationtest@4subsea.com'
-PASSWORD = 'ogsxFTmhBwk3VUrXq4Hp'
+PASSWORD = 'qz9uVgNhANncz9Jp'
 
 
 class Test_Authenticate(unittest.TestCase):

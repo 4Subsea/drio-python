@@ -19,7 +19,7 @@ elif sys.version_info.major == 2:
 datareservoirio.globalsettings.environment.set_test()
 
 USERNAME = 'reservoir-integrationtest@4subsea.com'
-PASSWORD = 'ogsxFTmhBwk3VUrXq4Hp'
+PASSWORD = 'qz9uVgNhANncz9Jp'
 
 
 class Test_FilesApi(unittest.TestCase):
