@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import getpass
 import logging
+import sys
 
 import adal
 
@@ -90,7 +91,12 @@ class AdalAuthenticator(object):
         return ADALParameters(environment.current_environment)
 
     def _get_pass(self):
-        return getpass.getpass('Password: ')
+        _p = getpass.getpass('Password: ')
+        try:
+            _p = _p.encode('utf-8')
+        except UnicodeDecodeError:
+            _p = _p.decode(sys.stdin.encoding).encode('utf-8')
+        return _p
 
 
 class UnsafeAdalAuthenticator(AdalAuthenticator):
