@@ -2,9 +2,8 @@ from __future__ import absolute_import
 
 import logging
 
-from .. import globalsettings
 from ..log import LogWriter
-from .base import BaseAPI, TokenAuth
+from .base import BaseAPI, TokenAuth, request_cache
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
@@ -129,6 +128,7 @@ class TimeSeriesAPI(BaseAPI):
         response = self._delete(uri, auth=TokenAuth(token))
         return
 
+    @request_cache(timeout=180)
     def download_days(self, token, timeseries_id, start, end):
         """
         Return timeseries data with start/stop.

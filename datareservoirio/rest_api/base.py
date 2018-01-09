@@ -1,12 +1,12 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
-import json
+from datetime import datetime, timedelta
 import logging
-import time
-from functools import wraps
+from functools import update_wrapper, wraps
+from threading import RLock as Lock
 
 import requests
-from requests.packages.urllib3 import Retry, Timeout
+from requests.packages.urllib3 import Retry
 from requests.adapters import HTTPAdapter
 
 from .. import globalsettings
@@ -14,6 +14,57 @@ from ..log import LogWriter
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
+
+
+def request_cache(timeout=180):
+    """
+    Cache request response with timeout.
+
+    Assumes that first positional argument is token and is not included in the
+    request cache signature.
+    """
+    def func_wrapper(func):
+        wrapper = _request_cache_wrapper(func, timeout, maxsize=256)
+        return update_wrapper(wrapper, func)
+    return func_wrapper
+
+
+def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=2):
+    sentinel = object()  # unique object used to signal cache misses
+    cache = {}
+
+    def wrapper(*args, **kwargs):
+        timestamp = datetime.utcnow()
+
+        request_signature = _make_request_hash(args[skip_argpos:], kwargs)
+
+        logwriter.debug('attempting to access request cache')
+        result, timestamp_cache = cache.get(request_signature,
+                                            (sentinel, None))
+
+        if (result is sentinel or
+                (timestamp_cache + timedelta(seconds=timeout) < timestamp)):
+            logwriter.debug('request cache invalid - acquiring from source')
+            result = func(*args, **kwargs)
+
+            with Lock():  # altering cache is not thread-safe
+                cache[request_signature] = (result, timestamp)
+                if len(cache) > maxsize:
+                    logwriter.debug('request cache full - pop out oldest item')
+                    key = sorted(cache, key=lambda x: cache.get(x)[-1])[0]
+                    del cache[key]
+        return result
+
+    wrapper._cache = cache
+    return wrapper
+
+
+def _make_request_hash(args, kwargs):
+    """Hash request signature."""
+    key = args
+    for kwarg in kwargs.iteritems():
+        key += kwarg
+    return hash(key)
 
 
 def _response_logger(func):
