@@ -1,16 +1,70 @@
 from __future__ import absolute_import
 
+from datetime import datetime, timedelta
 import logging
+from functools import update_wrapper
+from threading import RLock as Lock
 
 from ..log import LogWriter
-from .base import BaseAPI, TokenAuth, request_cache
+from .base import BaseAPI, TokenAuth
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
 
+def request_cache(timeout=180):
+    """
+    Cache request response with timeout.
+
+    Assumes that first positional argument is token and is not included in the
+    request cache signature.
+    """
+    def func_wrapper(func):
+        wrapper = _request_cache_wrapper(func, timeout, maxsize=256)
+        return update_wrapper(wrapper, func)
+    return func_wrapper
+
+
+def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=2):
+    sentinel = object()  # unique object used to signal cache misses
+    cache = {}
+
+    def wrapper(*args, **kwargs):
+        timestamp = datetime.utcnow()
+
+        request_signature = _make_request_hash(args[skip_argpos:], kwargs)
+
+        logwriter.debug('attempting to access request cache')
+        result, timestamp_cache = cache.get(request_signature,
+                                            (sentinel, None))
+
+        if (result is sentinel or
+                (timestamp_cache + timedelta(seconds=timeout) < timestamp)):
+            logwriter.debug('request cache invalid - acquiring from source')
+            result = func(*args, **kwargs)
+
+            with Lock():  # altering cache is not thread-safe
+                cache[request_signature] = (result, timestamp)
+                if len(cache) > maxsize:
+                    logwriter.debug('request cache full - pop out oldest item')
+                    key = sorted(cache, key=lambda x: cache.get(x)[-1])[0]
+                    del cache[key]
+        return result
+
+    wrapper._cache = cache
+    return wrapper
+
+
+def _make_request_hash(args, kwargs):
+    """Hash request signature."""
+    key = args
+    for kwarg in kwargs.iteritems():
+        key += kwarg
+    return hash(key)
+
+
 class TimeSeriesAPI(BaseAPI):
-    """Python wrapper for reservoir-api.4subsea.net/api/timeseries"""
+    """Python wrapper for reservoir-api.4subsea.net/api/timeseries."""
 
     def __init__(self):
         super(TimeSeriesAPI, self).__init__()
@@ -128,10 +182,45 @@ class TimeSeriesAPI(BaseAPI):
         response = self._delete(uri, auth=TokenAuth(token))
         return
 
-    @request_cache(timeout=180)
     def download_days(self, token, timeseries_id, start, end):
         """
         Return timeseries data with start/stop.
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        timeseries_id : str
+            id of the timeseries to download
+        start : int long
+            start time in nano seconds since epoch.
+        end : int long
+            end time in nano seconds since epoch.
+
+        Return
+        ------
+        json
+            a list of files, each having a list of Azure Storage compatible
+            chunk urls
+
+        Note
+        ----
+        Requests are divided into n-sub requests per day.
+        """
+        logwriter.debug("called with <token>, {}, {}, {}".format(
+            timeseries_id, start, end))
+
+        nanoseconds_day = 86400000000000
+        start = (start//nanoseconds_day)*nanoseconds_day
+        end = ((end//nanoseconds_day) + 1)*nanoseconds_day - 1
+        return self._download_days(token, timeseries_id, start, end)
+
+    @request_cache(timeout=180)
+    def _download_days(self, token, timeseries_id, start, end):
+        """
+        Return timeseries data with start/stop.
+        Internal low level function to allow for higher level operations on
+        public counterpart.
 
         Parameters
         ----------

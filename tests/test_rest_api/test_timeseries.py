@@ -1,10 +1,13 @@
-import json
+import time
 import unittest
 
 import requests
 
 import datareservoirio
 from datareservoirio.rest_api import TimeSeriesAPI
+from datareservoirio.rest_api.timeseries import (
+    request_cache,
+    _make_request_hash)
 
 try:
     from unittest.mock import patch, Mock
@@ -129,12 +132,12 @@ class Test_TimeSeriesAPI(unittest.TestCase):
                                      data=expected_body, **self.api._defaults)
 
     @patch('datareservoirio.rest_api.timeseries.TokenAuth')
-    def test_download_days(self, mock_token):
+    def test__download_days(self, mock_token):
         timeseries_id = 't666'
         start = -1000
         end = 6660000
 
-        result = self.api.download_days(self.token, timeseries_id, start, end)
+        result = self.api._download_days(self.token, timeseries_id, start, end)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
@@ -145,6 +148,37 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_get.assert_called_with(expected_uri, auth=mock_token(),
                                     params=expected_params,
                                     **self.api._defaults)
+
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
+    def test_download_days(self, mock_token):
+        timeseries_id = 't666'
+        nanoseconds_day = 86400000000000
+        start = 10*nanoseconds_day
+        end = 21*nanoseconds_day - 1
+
+        with patch.object(self.api, '_download_days') as mock_download_days:
+            mock_download_days.return_value = Mock()
+            result = self.api.download_days(self.token, timeseries_id,
+                                            start+102, end-102933)
+        mock_download_days.assert_called_once_with(self.token, timeseries_id,
+                                                   start, end)
+        self.assertEqual(result, mock_download_days.return_value)
+
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
+    def test_download_days_exact_end(self, mock_token):
+        timeseries_id = 't666'
+        nanoseconds_day = 86400000000000
+        start = 10*nanoseconds_day
+        end = 21*nanoseconds_day
+        end_expected = 22*nanoseconds_day - 1
+
+        with patch.object(self.api, '_download_days') as mock_download_days:
+            mock_download_days.return_value = Mock()
+            result = self.api.download_days(self.token, timeseries_id,
+                                            start, end)
+        mock_download_days.assert_called_once_with(self.token, timeseries_id,
+                                                   start, end_expected)
+        self.assertEqual(result, mock_download_days.return_value)
 
     @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_attach_metadata(self, mock_token):
@@ -173,6 +207,66 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         mock_delete.assert_called_with(expected_uri, auth=mock_token(),
                                        json=meta_list, **self.api._defaults)
+
+
+class Test__make_request_hash(unittest.TestCase):
+    def test_just_args(self):
+        args = (1, 2)
+        kwargs = {}
+
+        hash_out = _make_request_hash(args, kwargs)
+        self.assertEqual(hash_out, hash((1, 2)))
+
+    def test_just_kwargs(self):
+        args = tuple()
+        kwargs = {'a': 1}
+
+        hash_out = _make_request_hash(args, kwargs)
+        self.assertEqual(hash_out, hash(('a', 1)))
+
+    def test_args_kwargs(self):
+        args = (1, 2)
+        kwargs = {'a': 1}
+
+        hash_out = _make_request_hash(args, kwargs)
+        self.assertEqual(hash_out, hash((1, 2, 'a', 1)))
+
+
+class Test__request_cache(unittest.TestCase):
+    def setUp(self):
+
+        @request_cache()
+        def user_function(some_object, somedict, x, y=5):
+            return x + y
+
+        self.user_function = user_function
+
+    def test_max_cache_size(self):
+        for i in range(512):
+            self.user_function(self, {'abc': 123}, 3, i)
+        self.assertEqual(len(self.user_function._cache), 256)
+
+    def test_check_cache(self):
+        self.user_function(self, {'abc': 123}, 3, 5)
+        self.assertEqual(len(self.user_function._cache), 1)
+        self.assertEqual(self.user_function._cache.values()[0][0], 8)
+
+    def test_check_cache_expire(self):
+        @request_cache(timeout=1)
+        def user_function(some_object, somedict, x, y=5):
+            return x + y
+
+        user_function(self, {'abc': 123}, 3, 5)
+        self.assertEqual(len(user_function._cache), 1)
+        timestamp_0 = user_function._cache.values()[0][1]
+
+        time.sleep(2)
+
+        user_function(self, {'abc': 123}, 3, 5)
+        self.assertEqual(len(user_function._cache), 1)
+        timestamp_1 = user_function._cache.values()[0][1]
+
+        self.assertGreater(timestamp_1, timestamp_0)
 
 
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ elif sys.version_info.major == 2:
 datareservoirio.globalsettings.environment.set_test()
 
 USERNAME = 'reservoir-integrationtest@4subsea.com'
-PASSWORD = 'qz9uVgNhANncz9Jp'
+PASSWORD = 'ogsxFTmhBwk3VUrXq4Hp'
 
 
 class Test_FilesApi(unittest.TestCase):
@@ -64,6 +64,7 @@ class Test_FilesApi(unittest.TestCase):
         response_txt.close()
 
         pd.util.testing.assert_series_equal(df, df_recieved['values'])
+
 
 if __name__ == '__main__':
     unittest.main()

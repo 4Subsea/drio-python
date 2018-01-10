@@ -14,7 +14,7 @@ from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
 datareservoirio.globalsettings.environment.set_test()
 
 USERNAME = 'reservoir-integrationtest@4subsea.com'
-PASSWORD = 'qz9uVgNhANncz9Jp'
+PASSWORD = 'ogsxFTmhBwk3VUrXq4Hp'
 
 
 class Test_TimeSeriesApi(unittest.TestCase):
