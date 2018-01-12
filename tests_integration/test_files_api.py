@@ -15,19 +15,17 @@ if sys.version_info.major == 3:
 elif sys.version_info.major == 2:
     from cStringIO import StringIO
 
+from tests_integration._auth import USER
 
 datareservoirio.globalsettings.environment.set_test()
-
-USERNAME = 'reservoir-integrationtest@4subsea.com'
-PASSWORD = 'ogsxFTmhBwk3VUrXq4Hp'
 
 
 class Test_FilesApi(unittest.TestCase):
 
     @classmethod
-    @patch('getpass.getpass', return_value=PASSWORD)
+    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USERNAME)
+        cls.auth = Authenticator(USER.NAME)
 
     def setUp(self):
         self.api = FilesAPI()

@@ -6,28 +6,26 @@ from adal.adal_error import AdalError
 
 from datareservoirio.authenticate import Authenticator
 
-
-USERNAME = 'reservoir-integrationtest@4subsea.com'
-PASSWORD = 'ogsxFTmhBwk3VUrXq4Hp'
+from tests_integration._auth import USER
 
 
 class Test_Authenticate(unittest.TestCase):
 
-    @patch('getpass.getpass', return_value=PASSWORD)
+    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def test_authentication_succeeds_without_error(self, mock_input):
         start = timer()
-        auth = Authenticator(USERNAME)
+        auth = Authenticator(USER.NAME)
         stop = timer()
         print("login took {} seconds".format(stop - start))
 
     @patch('getpass.getpass', return_value='the wrong password')
     def test_authentication_raises_error(self, mock_input):
         with self.assertRaises(AdalError):
-            auth = Authenticator(USERNAME)
+            auth = Authenticator(USER.NAME)
 
-    @patch('getpass.getpass', return_value=PASSWORD)
+    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def test_authentication_token(self, mock_input):
-        auth = Authenticator(USERNAME)
+        auth = Authenticator(USER.NAME)
         self.assertIsInstance(auth.token, dict)
 
 

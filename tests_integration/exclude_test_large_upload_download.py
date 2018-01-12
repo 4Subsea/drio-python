@@ -12,21 +12,20 @@ import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI
 
+from tests_integration._auth import USER
+
 datareservoirio.set_log_level('DEBUG')
 datareservoirio.logger.addHandler(logging.FileHandler('upload.log'))
 
 datareservoirio.globalsettings.environment.set_test()
 
-USERNAME = 'reservoir-integrationtest@4subsea.com'
-PASSWORD = 'qz9uVgNhANncz9Jp'
-
 
 class Test_ClientUploadDownload(unittest.TestCase):
 
     @classmethod
-    @patch('getpass.getpass', return_value=PASSWORD)
+    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USERNAME)
+        cls.auth = Authenticator(USER.NAME)
 
     def setUp(self):
         self.client = datareservoirio.Client(self.auth)

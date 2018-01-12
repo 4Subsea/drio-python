@@ -11,18 +11,17 @@ import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
 
-datareservoirio.globalsettings.environment.set_test()
+from tests_integration._auth import USER
 
-USERNAME = 'reservoir-integrationtest@4subsea.com'
-PASSWORD = 'ogsxFTmhBwk3VUrXq4Hp'
+datareservoirio.globalsettings.environment.set_test()
 
 
 class Test_TimeSeriesApi(unittest.TestCase):
 
     @classmethod
-    @patch('getpass.getpass', return_value=PASSWORD)
+    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USERNAME)
+        cls.auth = Authenticator(USER.NAME)
         cls.metaapi = MetadataAPI()
 
         files_api = FilesAPI()
