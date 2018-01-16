@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import logging
 
 from ..log import LogWriter
-from ..storage_engine import AzureBlobService
 from .base import BaseAPI, TokenAuth
 
 logger = logging.getLogger(__name__)
@@ -42,28 +41,6 @@ class FilesAPI(BaseAPI):
             logwriter.debug("parameter received - {key}: {value}"
                             .format(key=key, value=value), "upload")
         return response.json()
-
-    @staticmethod
-    def transfer_service(account_params):
-        """
-        Initiate an data transfer service.
-
-        An instance of a subclass of Azure Storage BlockBlobService is
-        returned.
-
-        Parameters
-        ----------
-        account_params : dict
-            parameters recieved by e.g. `upload` method
-
-        Return
-        ------
-        object
-            Pre-configured transfer service
-        """
-
-        logwriter.debug("called <token>, <upload_params>", "upload_service")
-        return AzureBlobService(account_params)
 
     def commit(self, token, file_id):
         """

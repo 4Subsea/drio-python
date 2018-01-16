@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 
 import base64
 import logging
@@ -9,9 +10,9 @@ from time import sleep
 
 import pandas as pd
 from azure.storage.blob import BlobBlock, BlockBlobService
-from azure.storage.storageclient import AzureException
+from azure.common import AzureException
 
-from .log import LogWriter
+from ..log import LogWriter
 
 if sys.version_info.major == 3:
     from io import StringIO
@@ -24,7 +25,7 @@ logwriter = LogWriter(logger)
 
 
 class AzureBlobService(BlockBlobService):
-    """Sub-class of BlockBlobService"""
+    """Sub-class of BlockBlobService that handle upload/download of Pandas dataframes to/from Azure Blob Storage"""
 
     MAX_DOWNLOAD_CONCURRENT_BLOCKS = 32
     MAX_CHUNK_GET_SIZE = 8 * 1024 * 1024
@@ -58,13 +59,14 @@ class AzureBlobService(BlockBlobService):
         with BytesIO() as binary_content:
             logwriter.debug('getting chunk {}'.format(self.blob_name), 'get')
 
-            blob = self.get_blob_to_stream(
+            self.get_blob_to_stream(
                 self.container_name, self.blob_name, stream=binary_content,
                 max_connections=self.MAX_DOWNLOAD_CONCURRENT_BLOCKS,
-                progress_callback=lambda current, total: logwriter.debug(
-                    " blocks downloaded {} of {}".format(
-                        current / self.MAX_CHUNK_GET_SIZE,
-                        total / self.MAX_CHUNK_GET_SIZE)))
+                progress_callback=lambda current, total: logwriter.info(
+                    " {0:.1f}% downloaded ({1:.1f} of {2:.1f} MB)".format(
+                        (current / total) * 100,
+                        current / (1024*1024),
+                        total / (1024*1024))))
 
             binary_content.seek(0)
             with TextIOWrapper(binary_content, encoding='utf-8') as text_content:

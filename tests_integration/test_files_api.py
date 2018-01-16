@@ -9,6 +9,9 @@ from mock import patch
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api.files import FilesAPI
+from datareservoirio.storage.uploadstrategy import UploadStrategy
+
+from tests_integration._auth import USER
 
 if sys.version_info.major == 3:
     from io import StringIO
@@ -36,13 +39,13 @@ class Test_FilesApi(unittest.TestCase):
     def test_upload_df_cycle(self):
         upload_params = self.api.upload(self.auth.token)
         print upload_params
-        uploader = self.api.transfer_service(upload_params)
+        uploader = UploadStrategy()
 
         df = pd.Series(np.arange(1e3))
         df.index.name = 'time'
         df.name = 'values'
 
-        uploader.create_blob_from_series(df)
+        uploader.put(upload_params, df)
 
         self.api.commit(self.auth.token, upload_params['FileId'])
 

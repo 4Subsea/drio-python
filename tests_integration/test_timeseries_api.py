@@ -10,6 +10,7 @@ from requests.exceptions import HTTPError
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
+from datareservoirio.storage.uploadstrategy import UploadStrategy
 
 from tests_integration._auth import USER
 
@@ -25,6 +26,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         cls.metaapi = MetadataAPI()
 
         files_api = FilesAPI()
+        uploader = UploadStrategy()
 
         df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
         df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
@@ -35,9 +37,8 @@ class Test_TimeSeriesApi(unittest.TestCase):
         for df in df_list:
             upload_params = files_api.upload(cls.auth.token)
             token_fileid = (cls.auth.token, upload_params['FileId'])
-            uploader = files_api.transfer_service(upload_params)
 
-            uploader.create_blob_from_series(df)
+            uploader.put(upload_params, df)
 
             files_api.commit(cls.auth.token, upload_params['FileId'])
 

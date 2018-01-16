@@ -99,13 +99,5 @@ class Test_FilesAPI(unittest.TestCase):
         mock_get.assert_called_with(expected_uri, auth=mock_token(),
                                     **self.api._defaults)
 
-    @patch('datareservoirio.rest_api.files.AzureBlobService')
-    def test_transfer_service(self,  mock_df_uploader):
-        api = FilesAPI()
-
-        api.transfer_service({'abc': '123'})
-        mock_df_uploader.assert_called_once_with({'abc': '123'})
-
-
 if __name__ == '__main__':
     unittest.main()

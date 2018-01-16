@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from .log import LogWriter
 from .rest_api import FilesAPI, TimeSeriesAPI
+from .storage import Storage, CachedDownloadStrategy, AlwaysDownloadStrategy, SimpleFileCache
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
@@ -24,21 +25,53 @@ _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
 class Client(object):
     """
-    Client class handles requests, data uploads, and data downloads
-    from the 4Subsea data reservoir.
+    Client handles requests, data uploads, and data downloads from the 4Subsea data reservoir.
 
     Parameters
     ---------
     auth : cls
         An authenticator class with :attr:`token` attribute that provides a valid
         token to the 4Subsea data reservoir.
+    cache: dict
+        Configuration object for controlling the timeseries cache.
+        'enabled' set to False will disable caching. Default is True.
+        'format' defaults to 'csv.gz', set to 'csv' to disable gzip compression. Default is 'csv.gz'.
+
     """
 
-    def __init__(self, auth):
+    def __init__(self, auth, cache=None):
         self._authenticator = auth
-        # self._api_base_url = globalsettings.environment.api_base_url
         self._timeseries_api = TimeSeriesAPI()
         self._files_api = FilesAPI()
+
+        enableCache = True
+        cacheFormat = 'csv.gz'
+        cacheRoot = None
+        if cache != None:
+            if 'enabled' in cache:
+                enableCache = cache['enabled']
+            if 'format' in cache:
+                cacheFormat = cache['format']
+            if 'cache_root' in cache:
+                cacheRoot = cache['cache_root']
+
+        if cacheFormat not in ('csv.gz', 'csv'):
+            raise ValueError('Supported cache formats: csv, csv.gz')
+
+        enableCacheCompression = cacheFormat == 'csv.gz'
+
+        downloader = None
+        if enableCache:
+            cache = SimpleFileCache(cache_root=cacheRoot, compressionOn=enableCacheCompression)
+            downloader = CachedDownloadStrategy(cache)
+        else:
+            downloader = AlwaysDownloadStrategy()
+
+        self._storage = Storage(
+            self._authenticator,
+            self._timeseries_api,
+            self._files_api,
+            downloadStrategy=downloader)
 
     @property
     def token(self):
@@ -74,7 +107,7 @@ class Client(object):
         self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
-        file_id = self._upload_series(series)
+        file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
         logwriter.info('Fileupload took {} seconds'
                        .format(time_upload - time_start), 'create')
@@ -112,7 +145,7 @@ class Client(object):
         self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
-        file_id = self._upload_series(series)
+        file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
         logwriter.info('Upload took {} seconds'
                        .format(time_upload - time_start), 'append')
@@ -208,13 +241,8 @@ class Client(object):
 
         time_start = timeit.default_timer()
 
-        logwriter.debug("getting chunks list")
-        response = self._timeseries_api.download_days(self.token, timeseries_id, start, end)
-
-        df = self._download_series(response)
-
-        if not df.empty:
-            df = df.loc[start:end]
+        logwriter.debug("Getting timeseries range")
+        df = self._storage.get(timeseries_id, start, end)
 
         if df.empty and raise_empty:  # may become empty after slicing
             raise ValueError('can\'t find data in the given interval')
@@ -223,39 +251,10 @@ class Client(object):
             df.index = pd.to_datetime(df.index)
 
         time_end = timeit.default_timer()
-        logwriter.info('Download timeseries to dataframe took {} seconds'
+        logwriter.info('Gownload timeseries dataframe took {} seconds'
                        .format(time_end - time_start), 'get')
 
         return df['values']
-
-    def _download_series(self, params):
-        filechunks = [f['Chunks'] for f in params['Files']]
-        # download chunks, one by one
-        filedatas = [
-            self._download_chunks_as_dataframe(chunk) for chunk in filechunks]
-        df = pd.DataFrame()
-        for fd in filedatas:
-            df = fd.combine_first(df)
-        return df
-
-    def _download_chunks_as_dataframe(self, chunks):
-        if not chunks:
-            return pd.DataFrame(columns=['index', 'values'])
-        with ThreadPoolExecutor(max_workers=32) as executor:
-            filechunks = executor.map(
-                lambda chunk: self._files_api.transfer_service(
-                    chunk).get_blob_to_series(),
-                chunks)
-            df_chunks = pd.concat(filechunks)
-            df_chunks.sort_index(inplace=True)
-            return df_chunks
-
-    def _upload_series(self, series):
-        upload_params = self._files_api.upload(self.token)
-        uploader = self._files_api.transfer_service(upload_params)
-        uploader.create_blob_from_series(series)
-        self._files_api.commit(self.token, upload_params['FileId'])
-        return upload_params['FileId']
 
     def _verify_and_prepare_series(self, series):
         logwriter.debug("checking arguments", "_check_arguments_create")

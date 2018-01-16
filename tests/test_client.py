@@ -7,8 +7,9 @@ import requests
 
 import datareservoirio
 import datareservoirio.globalsettings as gs
-from datareservoirio import Authenticator
+from datareservoirio import Authenticator, Client
 from datareservoirio.rest_api import TimeSeriesAPI
+from datareservoirio.storage import CachedDownloadStrategy, AlwaysDownloadStrategy, SimpleFileCache
 
 try:
     from unittest.mock import Mock, MagicMock, patch, PropertyMock
@@ -23,16 +24,16 @@ def setUpModule():
 
 class Test_Client(unittest.TestCase):
 
-    def setUp(self):
+    @patch('datareservoirio.client.SimpleFileCache')
+    def setUp(self, mock_cache):
         self.auth = Mock()
         self.auth.token = {'accessToken': 'abcdef',
                            'expiresOn': np.datetime64('2050-01-01 00:00:00', 's')}
 
-        self.client = datareservoirio.Client(self.auth)
+        self.client = Client(self.auth)
         self.client._files_api = Mock()
         self.client._timeseries_api = Mock()
-        self.downloader = Mock()
-        self.client._files_api.transfer_service.return_value = self.downloader
+        self._storage = self.client._storage = Mock()
 
         self.dummy_df = pd.DataFrame({'a': np.arange(1e3)}, index=np.array(
             np.arange(1e3), dtype='datetime64[ns]'))
@@ -99,6 +100,46 @@ class Test_Client(unittest.TestCase):
         self.assertIsInstance(self.client._authenticator, Mock)
         self.assertIsInstance(self.client._timeseries_api, Mock)
         self.assertIsInstance(self.client._files_api, Mock)
+        self.assertIsInstance(self.client._storage, Mock)
+    
+    @patch('datareservoirio.client.AlwaysDownloadStrategy')
+    def test_init_with_cache_disabled(self, mock_dl):
+        client = Client(self.auth, cache={'enabled':False})
+        mock_dl.assert_called_once_with()
+
+    @patch('datareservoirio.client.SimpleFileCache')
+    def test_init_with_defaults_cache_is_enabled_and_compressed(self, mock_cache):
+        client = Client(self.auth)
+        self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
+        mock_cache.assert_called_once_with(cache_root=None, compressionOn=True)
+
+    @patch('datareservoirio.client.SimpleFileCache')
+    def test_init_with_cache_enabled(self, mock_cache):
+        client = Client(self.auth, cache={'enabled':True})
+        self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
+        mock_cache.assert_called_once_with(cache_root=None, compressionOn=True)
+
+    @patch('datareservoirio.client.SimpleFileCache')
+    def test_init_with_cache_format_compressed_csv(self, mock_cache):
+        client = Client(self.auth, cache={'format':'csv.gz'})
+        self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
+        mock_cache.assert_called_once_with(cache_root=None, compressionOn=True)
+
+    @patch('datareservoirio.client.SimpleFileCache')
+    def test_init_with_cache_format_uncompressed_csv(self, mock_cache):
+        client = Client(self.auth, cache={'format':'csv'})
+        self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
+        mock_cache.assert_called_once_with(cache_root=None, compressionOn=False)
+
+    @patch('datareservoirio.client.SimpleFileCache')
+    def test_init_with_invalid_cache_format_raises_exception(self, mock_cache):
+        with self.assertRaises(ValueError):
+            Client(self.auth, cache={'format':'bogusformat'})
+
+    @patch('datareservoirio.client.SimpleFileCache')
+    def test_init_with_cache_root(self, mock_cache):
+        client = Client(self.auth, cache={'cache_root':'a:\\diskett'})
+        mock_cache.assert_called_once_with(cache_root='a:\\diskett', compressionOn=True)
 
     def test_token(self):
         self.assertEqual(self.client.token, self.auth.token)
@@ -109,9 +150,10 @@ class Test_Client(unittest.TestCase):
         response = self.client.ping()
         self.assertEqual(response, {'status': 'pong'})
 
-    def test_create_all_methods_called(self):
+    @patch('time.sleep')
+    def test_create_all_methods_called(self, mock_sleep):
         self.client._verify_and_prepare_series = Mock(return_value=None)
-        self.client._upload_series = Mock(
+        self._storage.put = Mock(
             return_value=self.dummy_params['FileId'])
         self.client._wait_until_file_ready = Mock(return_value='Ready')
 
@@ -122,16 +164,17 @@ class Test_Client(unittest.TestCase):
 
         self.client._verify_and_prepare_series.assert_called_once_with(
             self.dummy_df)
-        self.client._upload_series.assert_called_once_with(self.dummy_df)
+        self._storage.put.assert_called_once_with(self.dummy_df)
         self.client._wait_until_file_ready.assert_called_once_with(
             self.dummy_params['FileId'])
         self.client._timeseries_api.create.assert_called_once_with(
             self.auth.token, self.dummy_params['FileId'])
         self.assertDictEqual(response, expected_response)
 
-    def test_append_all_methods_called(self):
+    @patch('time.sleep')
+    def test_append_all_methods_called(self, mock_sleep):
         self.client._verify_and_prepare_series = Mock(return_value=None)
-        self.client._upload_series = Mock(
+        self._storage.put = Mock(
             return_value=self.dummy_params['FileId'])
         self.client._wait_until_file_ready = Mock(return_value='Ready')
 
@@ -142,7 +185,7 @@ class Test_Client(unittest.TestCase):
 
         self.client._verify_and_prepare_series.assert_called_once_with(
             self.dummy_df)
-        self.client._upload_series.assert_called_once_with(self.dummy_df)
+        self._storage.put.assert_called_once_with(self.dummy_df)
         self.client._wait_until_file_ready.assert_called_once_with(
             self.dummy_params['FileId'])
         self.client._timeseries_api.add.assert_called_once_with(
@@ -179,77 +222,50 @@ class Test_Client(unittest.TestCase):
             self.auth.token, self.timeseries_id)
         self.assertEqual(response, expected_response)
 
-    def test_get_all_methods_called_with_default(self):
-        self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_blob_to_series.return_value = self.dataframe_with_10_rows
-        self.client._download_series = Mock(return_value=self.dataframe_with_10_rows)
+    def test_get_with_defaults(self):
+        self._storage.get.return_value = self.dataframe_with_10_rows
 
         response = self.client.get(self.timeseries_id)
 
-        self.client._timeseries_api.download_days.assert_called_once_with(
-            self.auth.token, self.timeseries_id, datareservoirio.client._START_DEFAULT, datareservoirio.client._END_DEFAULT)
-        self.client._download_series.assert_called_once_with(self.download_days_response)
+        self.client._storage.get.assert_called_once_with(
+            self.timeseries_id, datareservoirio.client._START_DEFAULT, datareservoirio.client._END_DEFAULT)
         pd.util.testing.assert_series_equal(
             response, self.dataframe_with_10_rows['values'])
 
-    def test_get_all_methods_called_with_overflow(self):
-        self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_blob_to_series.return_value = self.dataframe_with_10_rows
-        self.client._download_series = Mock(return_value=self.dataframe_with_10_rows)
-
-        response = self.client.get(self.timeseries_id, start=2, end=3)
-
-        self.client._timeseries_api.download_days.assert_called_once_with(
-            self.auth.token, self.timeseries_id, 2, 3)
-        self.client._download_series.assert_called_once_with(self.download_days_response)
-        pd.util.testing.assert_series_equal(
-            response, self.dataframe_with_10_rows['values'].loc[2:3])
-
-    def test_get_all_methods_called_with_convert_datetime(self):
+    def test_get_with_convert_date_returns_dataframe(self):
         start = pd.to_datetime(1, dayfirst=True, unit='ns').value
         end = pd.to_datetime(10, dayfirst=True, unit='ns').value
-        self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_blob_to_series.return_value = self.dataframe_with_10_rows
-        self.client._download_series = Mock(return_value=self.dataframe_with_10_rows)
+        self.client._storage.get.return_value = self.dataframe_with_10_rows
 
         response = self.client.get(
             self.timeseries_id, start, end, convert_date=True)
 
-        self.client._timeseries_api.download_days.assert_called_once_with(
-            self.auth.token, self.timeseries_id, start, end)
-        self.client._download_series.assert_called_once_with(self.download_days_response)
-        self.dataframe_with_10_rows.index = pd.to_datetime(
-            self.dataframe_with_10_rows.index)
+        self.client._storage.get.assert_called_once_with(self.timeseries_id, start, end)
         pd.util.testing.assert_series_equal(
             response, self.dataframe_with_10_rows['values'])
 
-    def test_get_all_methods_called_with_start_stop_as_str(self):
-        self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_blob_to_series.return_value = self.dataframe_with_10_rows
+    def test_get_with_start_stop_as_str_calls_storagewithnanonsinceepoch(self):
+        self._storage.get.return_value = self.dataframe_with_10_rows
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',
                                    end='1970-01-01 00:00:00.000000004')
 
-        self.client._timeseries_api.download_days.assert_called_once_with(
-            self.auth.token, self.timeseries_id, 1, 4)
-        pd.util.testing.assert_series_equal(
-            response, self.dataframe_with_10_rows['values'].loc[1:4])
+        self.client._storage.get.assert_called_once_with(
+            self.timeseries_id, 1, 4)
 
-    def test_get_return_empty(self):
-        self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_blob_to_series.return_value = pd.DataFrame(columns=['index', 'values'])
+    def test_get_with_emptytimeseries_return_empty(self):
+        self._storage.get.return_value = pd.DataFrame(columns=['index', 'values'])
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',
                                    end='1970-01-01 00:00:00.000000004', raise_empty=False)
 
         response_expected = pd.Series(name='values')
-        pd.testing.assert_series_equal(response, response_expected, check_dtype=False)  # fix in future. dtype should be checked
+        pd.testing.assert_series_equal(response, response_expected, check_dtype=False)
 
-    def test_get_raise_empty(self):
-        self.client._timeseries_api.download_days.return_value = self.download_days_response
-        self.downloader.get_blob_to_series.return_value = pd.DataFrame(columns=['index', 'values'])
+    def test_get_with_raise_empty_throws(self):
+        self._storage.get.return_value = pd.DataFrame(columns=['index', 'values'])
 
         with self.assertRaises(ValueError):
             self.client.get(self.timeseries_id, start='1970-01-01 00:00:00.000000001',
@@ -267,7 +283,7 @@ class Test_Client(unittest.TestCase):
 class Test_TimeSeriesClient_verify_prep_dataframe(unittest.TestCase):
 
     def setUp(self):
-        self.client = datareservoirio.Client(Mock())
+        self.client = Client(Mock())
 
     def test_datetime64(self):
         series = pd.Series(np.random.rand(10),
@@ -290,116 +306,6 @@ class Test_TimeSeriesClient_verify_prep_dataframe(unittest.TestCase):
     def test_not_a_series(self):
         with self.assertRaises(ValueError):
             self.client._verify_and_prepare_series('this is wrong input')
-
-
-class Test_TimeSeriesClient_private_funcs(unittest.TestCase):
-
-    def setUp(self):
-        self.auth = Mock()
-        self.auth.token = {'accessToken': 'abcdef',
-                           'expiresOn': np.datetime64('2050-01-01 00:00:00', 's')}
-
-        self.dummy_params = {'FileId': 666,
-                             'Account': 'account',
-                             'SasKey': 'abcdef',
-                             'Container': 'blobcontainer',
-                             'Path': 'blobpath',
-                             'Endpoint': 'endpointURI',
-                             'Files': [{'Chunks': ['dummy_chunk_1', 'dummy_chunk_2']},
-                                       {'Chunks': ['dummy_chunk_1', 'dummy_chunk_2']}]}
-
-        self.client = datareservoirio.Client(self.auth)
-        self.client._files_api = Mock()
-
-        self.dummy_df = pd.DataFrame({'a': np.arange(1e3)},
-                                     index=np.array(np.arange(1e3), dtype='datetime64[ns]'))
-
-        self.uploader = Mock()
-        self.client._files_api.transfer_service.return_value = self.uploader
-
-    def test__upload_file(self):
-        upload_params = {'parmas': 123, 'FileId': '123abc'}
-        self.client._files_api.upload.return_value = upload_params
-
-        response = self.client._upload_series(self.dummy_df)
-
-        self.client._files_api.upload.assert_called_once_with(self.auth.token)
-        self.client._files_api.transfer_service.assert_called_once_with(
-            upload_params)
-        self.uploader.create_blob_from_series.assert_called_once_with(
-            self.dummy_df)
-        self.client._files_api.commit.assert_called_once_with(self.auth.token,
-                                                              upload_params['FileId'])
-
-        self.assertEqual(response, upload_params['FileId'])
-
-    def test__get_file_status(self):
-        response = {'State': 'Ready'}
-        self.client._files_api.status.return_value = response
-
-        status = self.client._get_file_status(self.dummy_params['FileId'])
-
-        self.client._files_api.status.assert_called_once_with(self.auth.token,
-                                                              self.dummy_params['FileId'])
-
-        self.assertEqual(status, response['State'])
-
-    @patch('time.sleep')
-    def test__wait_until_file_ready_ready(self, mock_sleep):
-        self.client._get_file_status = Mock(
-            side_effect=['Processing', 'Ready'])
-        status = self.client._wait_until_file_ready(
-            self.dummy_params['FileId'])
-
-        self.client._get_file_status.assert_called_with(
-            self.dummy_params['FileId'])
-        self.assertEqual(status, 'Ready')
-
-    def test__wait_until_file_ready_fail(self):
-        self.client._get_file_status = Mock(return_value='Failed')
-        status = self.client._wait_until_file_ready(
-            self.dummy_params['FileId'])
-
-        self.client._get_file_status.assert_called_with(
-            self.dummy_params['FileId'])
-        self.assertEqual(status, 'Failed')
-
-    def test__download_chunks_as_dataframe_empty_chunks(self):
-        df_returned = self.client._download_chunks_as_dataframe([])
-        df_expected = pd.DataFrame(columns=['index', 'values'])
-        pd.testing.assert_frame_equal(df_expected, df_returned)
-
-    def test__download_chunks_as_dataframe_w_chunks(self):
-        self.uploader.get_blob_to_series = Mock(side_effect=[
-            pd.DataFrame([0, 1, 2], index=[0, 1, 2], columns=['values']),
-            pd.DataFrame([3, 4, 5], index=[3, 4, 5], columns=['values'])])
-
-        df_returned = self.client._download_chunks_as_dataframe(['dummy_chunk_1', 'dummy_chunk_2'])
-        df_expected = pd.DataFrame([0, 1, 2, 3, 4, 5], index=[0, 1, 2, 3, 4, 5], columns=['values'])
-
-        pd.testing.assert_frame_equal(df_expected, df_returned)
-
-    @patch('datareservoirio.Client._download_chunks_as_dataframe')
-    def test__download_series(self, mock_chunks):
-
-        mock_chunks.side_effect = [
-            pd.DataFrame([0., 1., 2.], index=[0, 1, 2], columns=['values']),
-            pd.DataFrame([2., 3., 4.], index=[2, 3, 4], columns=['values'])]
-        df_returned = self.client._download_series(self.dummy_params)
-
-        df_expected = pd.DataFrame([0., 1., 2., 3., 4.], index=[0, 1, 2, 3, 4], columns=['values'])
-        pd.testing.assert_frame_equal(df_expected, df_returned)
-
-    @patch('datareservoirio.Client._download_chunks_as_dataframe')
-    def test__download_series_with_unordered_series(self, mock_chunks):
-
-        mock_chunks.side_effect = [
-            pd.DataFrame([2., 3., 5.], index=[2, 3, 1], columns=['values']),
-            pd.DataFrame([10., 11., 14., 16.], index=[0, 5, 4, 6], columns=['values'])]
-        df_returned = self.client._download_series(self.dummy_params)
-
-        df_expected = pd.DataFrame([10., 5., 2., 3., 14., 11., 16.], index=[0, 1, 2, 3, 4, 5, 6], columns=['values'])
-        pd.testing.assert_frame_equal(df_expected, df_returned)
 
 if __name__ == '__main__':
     unittest.main()
