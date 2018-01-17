@@ -73,7 +73,7 @@ class Test_AzureBlobService(unittest.TestCase):
         # 4 was just found empirically + 1 error
         self.assertEqual(uploader.put_block.call_count, 4)
 
-    @patch('datareservoirio.storage_engine.sleep')
+    @patch('datareservoirio.storage.storage_engine.sleep')
     def test_upload_long_w_azureexception(self, mock_sleep):
         side_effect = 3 * [AzureException] + 4 * [None]
         uploader = AzureBlobService(self.upload_params)
@@ -86,7 +86,7 @@ class Test_AzureBlobService(unittest.TestCase):
         # 4 was just found empirically + 3 error
         self.assertEqual(uploader.put_block.call_count, 4 + 3)
 
-    @patch('datareservoirio.storage_engine.sleep')
+    @patch('datareservoirio.storage.storage_engine.sleep')
     def test_upload_raise_azureexception(self, mock_sleep):
         side_effect = 6 * [AzureException] + 4 * [None]
         uploader = AzureBlobService(self.upload_params)
