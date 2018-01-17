@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from azure.storage.blob import BlobBlock
 
-from datareservoirio.storage_engine import AzureBlobService, AzureException
+from datareservoirio.storage.storage_engine import AzureBlobService, AzureException
 
 try:
     from unittest.mock import patch, Mock
