@@ -5,5 +5,6 @@
    :hidden:
 
    basic_usage
+   caching
    api
    developer

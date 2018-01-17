@@ -37,6 +37,7 @@ class Client(object):
         'enabled': set to False will disable caching. Default is True.
         'format': default 'csv.gz', set to 'csv' to disable gzip compression.
         'max_size': max size of cache in megabytes, defaults to 1024 MB.
+        'cache_root': cache storage location, defaults to %LOCALAPPDATA%\\reservoir_cache
 
     """
 
