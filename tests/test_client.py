@@ -123,13 +123,13 @@ class Test_Client(unittest.TestCase):
     def test_init_with_cache_format_compressed_csv(self, mock_cache):
         client = Client(self.auth, cache={'format':'csv.gz'})
         self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
-        mock_cache.assert_called_once_with(compressionOn=True)
+        mock_cache.assert_called_once_with(enable_compression=True)
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_format_uncompressed_csv(self, mock_cache):
         client = Client(self.auth, cache={'format':'csv'})
         self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
-        mock_cache.assert_called_once_with(compressionOn=False)
+        mock_cache.assert_called_once_with(enable_compression=False)
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_invalid_cache_format_raises_exception(self, mock_cache):

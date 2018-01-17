@@ -38,7 +38,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._rmtree = self._rmtree_patch.start()
         self.addCleanup(self._unpatch)
 
-        self._cache = SimpleFileCache(cache_folder='root', compressionOn=False)
+        self._cache = SimpleFileCache(cache_folder='root', enable_compression=False)
 
     def _unpatch(self):
         self._io_open_patch.stop()
@@ -55,12 +55,12 @@ class Test_SimpleFileCache(unittest.TestCase):
 
     def test_init_with_cache_root_initializes_root_folder(self):
         self._path_exists.return_value = False
-        cache = SimpleFileCache(cache_root = 'root\\folder', compressionOn=False)
+        cache = SimpleFileCache(cache_root = 'root\\folder', enable_compression=False)
         self._makedirs.assert_called_once_with('root\\folder')
 
     def test_init_with_cache_root_ignores_cache_folder_parameter(self):
         self._path_exists.return_value = False
-        cache = SimpleFileCache(cache_root = 'root', cache_folder='whatevver', compressionOn=False)
+        cache = SimpleFileCache(cache_root = 'root', cache_folder='whatevver', enable_compression=False)
         self._makedirs.assert_called_once_with('root')
 
     def test_reset_cache(self):
@@ -94,7 +94,7 @@ class Test_SimpleFileCache(unittest.TestCase):
 
     def test_get_compressed_without_cached_data_deflates_to_cache(self):
         self._path_exists.return_value = False
-        self._cache._compressionOn = True
+        self._cache._enable_compression = True
         expected_tmp_file = 'app\\root\\v1gz\\a\\b\\file.csv.uncommitted'
         expected_file = 'app\\root\\v1gz\\a\\b\\file.csv'
 
@@ -120,7 +120,7 @@ class Test_SimpleFileCache(unittest.TestCase):
     def test_get_compressed_with_data_in_cache_inflates_from_cache(self):
         self._path_exists.return_value = True
         self._path_getsize.return_value = 10
-        self._cache._compressionOn = True
+        self._cache._enable_compression = True
 
         cached_message = self._cache.get(
             lambda: 'Hello!',
@@ -145,7 +145,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_getsize.side_effect = lambda p: 0 if p not in files else files[p]['size']
         self._path_getmtime.side_effect = lambda p: 0 if p not in files else files[p]['time']
         self._path_exists.side_effect = lambda p: files[p]['exists']
-        cache = SimpleFileCache(cache_folder='root', compressionOn=False)
+        cache = SimpleFileCache(cache_folder='root', enable_compression=False)
 
         cached_message = cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
 

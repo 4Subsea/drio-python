@@ -20,8 +20,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._data.index.name = 'index'
         self._data.name = 'values'
 
-        self.cache = SimpleFileCache(cache_folder='reservoir_cache_integration', compressionOn=False)
-        # self.cache.reset_cache()
+        self.cache = SimpleFileCache(cache_folder='reservoir_cache_integration', enable_compression=False)
     
     def test_get_when_key_changes_cache_is_updated(self):
         rows = [(0, 1.0), (1, 2.0), (2, 3.0)]
@@ -76,7 +75,7 @@ class Test_SimpleFileCache(unittest.TestCase):
     def test_get_without_compression(self):
         key = 'test_get_without_compression\\data'
 
-        cache = SimpleFileCache(cache_root='reservoir_cache_integration', compressionOn=False)
+        cache = SimpleFileCache(cache_root='reservoir_cache_integration', enable_compression=False)
 
         cacheddata = self.cache.get(
             lambda: self._data,
@@ -90,7 +89,7 @@ class Test_SimpleFileCache(unittest.TestCase):
 
         key = 'test_get_read_performance\\data\\{}'
 
-        cache = SimpleFileCache(cache_root='reservoir_cache_integration', compressionOn=False, max_size_MB=10)
+        cache = SimpleFileCache(cache_root='reservoir_cache_integration', enable_compression=False, max_size_MB=10)
 
         # ensure data is cached
         cacheddata = cache.get(

@@ -55,7 +55,7 @@ class Client(object):
                 cacheFormat = cache['format']
                 if cacheFormat not in ('csv.gz', 'csv'):
                     raise ValueError('Supported cache formats: csv, csv.gz')
-                cache_params['compressionOn'] = cacheFormat == 'csv.gz'
+                cache_params['enable_compression'] = cacheFormat == 'csv.gz'
             if 'cache_root' in cache:
                 cache_params['cache_root'] = cache['cache_root']
             if 'max_size' in cache:

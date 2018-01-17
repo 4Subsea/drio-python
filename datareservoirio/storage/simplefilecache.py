@@ -32,7 +32,7 @@ class SimpleFileCache:
     STOREFORMATVERSION = 'v1'
     DEFAULT_MAX_CACHE_SIZE_MB = 1024
 
-    def __init__(self, max_size_MB=DEFAULT_MAX_CACHE_SIZE_MB, cache_root=None, cache_folder='reservoir_cache', compressionOn=True):
+    def __init__(self, max_size_MB=DEFAULT_MAX_CACHE_SIZE_MB, cache_root=None, cache_folder='reservoir_cache', enable_compression=True):
         """
         Cache implementation that stores files in the current account's profile.
         
@@ -49,11 +49,13 @@ class SimpleFileCache:
         cache_folder : string
             Base folder within the default cache_root where cached data is stored.
             If cache_root is specified, this parameter is ignored.
+        enable_compression : bool
+            Enable or disable gzip compression.
 
         """
         self._max_size_MB = max_size_MB
         self._evicter = EvictBySizeAndAge()
-        self._compressionOn = compressionOn
+        self._enable_compression = enable_compression
         self._evict_lock = threading.Lock()
         self._current_size = None
         self._init_cache(cache_root, cache_folder)
@@ -71,7 +73,7 @@ class SimpleFileCache:
 
     @property
     def _cache_hive(self):
-        return self.STOREFORMATVERSION + ('gz' if self._compressionOn else 'raw')
+        return self.STOREFORMATVERSION + ('gz' if self._enable_compression else 'raw')
 
     @property
     def cache_root(self):
@@ -86,12 +88,12 @@ class SimpleFileCache:
     @property
     def enable_compression(self):
         """Compression enabled or not."""
-        return self._compressionOn
+        return self._enable_compression
 
     @enable_compression.setter
     def enable_compression(self, value):
         """Enable or disable compression."""
-        self._compressionOn = value
+        self._enable_compression = value
 
     def reset_cache(self):
         """Reset the cache, deleting any stored data."""
@@ -177,7 +179,7 @@ class SimpleFileCache:
             log.debug('Storage analyzed. Current size: {} in {}'.format(self._current_size, self._root))
 
     def _write_to_cache(self, data, filepath, serialize_data):
-        opener = gzip.open if self._compressionOn else io.open
+        opener = gzip.open if self._enable_compression else io.open
         pre_filepath = filepath + '.uncommitted'
         with opener(pre_filepath, 'wb') as file:
             try:
@@ -189,7 +191,7 @@ class SimpleFileCache:
         return _file_size_in_megabytes(filepath)
 
     def _read_from_cache(self, filepath, deserialize_data):
-        opener = gzip.open if self._compressionOn else io.open
+        opener = gzip.open if self._enable_compression else io.open
         with opener(filepath, 'rb') as file:
             return deserialize_data(file)
 
