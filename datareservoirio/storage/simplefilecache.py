@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import division
 
 import os
 import io
@@ -205,7 +206,7 @@ class EvictBySizeAndAge:
     def evict(self, folder, max_size_MB):
         """Evict potential files from `folder` based on total file size and maximum file size."""
         entries = [
-            {'filepath': filepath, 'size': _file_size_in_megabytes(filepath), 'time': _file_lastmodified_time(filepath) / (60 * 60)}
+            {'filepath': filepath, 'size': _file_size_in_megabytes(filepath), 'time': _file_lastmodified_time(filepath) // (60 * 60)}
             for filepath in [
                 os.path.join(root, filename)
                 for root, directories, filenames in os.walk(folder)

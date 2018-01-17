@@ -138,9 +138,9 @@ class Test_SimpleFileCache(unittest.TestCase):
             'app\\root': {'exists': True},
             'app\\root\\v1raw': {'exists': True},
             'app\\root\\v1raw\\file.0': {'exists': False},
-            'rt\\file.1': {'size': 1000, 'time': 1000, 'exists': True}, 
-            'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20, 'exists': True},
-            'rt\\file.3': {'size': 3000, 'time': 50, 'exists': True}
+            'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True}, 
+            'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20.0, 'exists': True},
+            'rt\\file.3': {'size': 3000, 'time': 50.0, 'exists': True}
         }
         self._path_getsize.side_effect = lambda p: 0 if p not in files else files[p]['size']
         self._path_getmtime.side_effect = lambda p: 0 if p not in files else files[p]['time']
