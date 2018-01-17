@@ -1,4 +1,6 @@
 import pprint
+import logging
+import sys
 import unittest
 from timeit import default_timer as timer
 
@@ -33,7 +35,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         cls.df_3.name = 'values'
 
     def setUp(self):
-        self.client = datareservoirio.Client(self.auth)
+        self.client = datareservoirio.Client(self.auth, cache={'format':'csv', 'max_size': 100.})
 
     def test_ping(self):
         self.client.ping()
@@ -155,4 +157,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stderr)
+    logging.getLogger("datareservoirio.storage").setLevel(logging.DEBUG)
     unittest.main()

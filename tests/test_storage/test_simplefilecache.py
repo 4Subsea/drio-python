@@ -1,5 +1,7 @@
 import unittest
+import logging
 import os
+import sys
 
 from datareservoirio.storage import SimpleFileCache
 
@@ -133,19 +135,23 @@ class Test_SimpleFileCache(unittest.TestCase):
             ('rt', (), ('file.1', 'file.2', 'file.3')),
         ]
         files = {
-            'app\\root\\v1raw': {'exists': False},
+            'app\\root': {'exists': True},
+            'app\\root\\v1raw': {'exists': True},
             'app\\root\\v1raw\\file.0': {'exists': False},
             'rt\\file.1': {'size': 1000, 'time': 1000, 'exists': True}, 
-            'rt\\file.2': {'size': 2000 * 1024 * 1024, 'time': 20, 'exists': True},
+            'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20, 'exists': True},
             'rt\\file.3': {'size': 3000, 'time': 50, 'exists': True}
         }
-        self._path_getsize.side_effect = lambda p: files[p]['size']
-        self._path_getmtime.side_effect = lambda p: files[p]['time']
+        self._path_getsize.side_effect = lambda p: 0 if p not in files else files[p]['size']
+        self._path_getmtime.side_effect = lambda p: 0 if p not in files else files[p]['time']
         self._path_exists.side_effect = lambda p: files[p]['exists']
+        cache = SimpleFileCache(cache_folder='root', compressionOn=False)
 
-        cached_message = self._cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
+        cached_message = cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
 
         self._remove.assert_called_once_with('rt\\file.2')
 
 if __name__ == '__main__':
+    logging.basicConfig(stream=sys.stderr)
+    logging.getLogger("datareservoirio.storage").setLevel(logging.DEBUG)
     unittest.main()

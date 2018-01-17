@@ -2,6 +2,7 @@ import unittest
 import logging
 import sys
 import os
+import numpy as np
 import pandas as pd
 from timeit import default_timer as timer
 from mock import patch
@@ -15,22 +16,23 @@ log = logging.getLogger(__file__)
 class Test_SimpleFileCache(unittest.TestCase):
     def setUp(self):
 
-        rows = [(0, 42.0), (1, 37.0), (2, 1.54)]
-        self._data = pd.DataFrame.from_records(rows, columns=['index', 'values'])
+        self._data = pd.Series(np.arange(100000.), index=np.arange(0, 100000))
+        self._data.index.name = 'index'
+        self._data.name = 'values'
 
         self.cache = SimpleFileCache(cache_folder='reservoir_cache_integration', compressionOn=False)
-        self.cache.reset_cache()
+        # self.cache.reset_cache()
     
-    def test_reset_cache_deletes_any_file_in_cache(self):
+    def test_get_when_key_changes_cache_is_updated(self):
         rows = [(0, 1.0), (1, 2.0), (2, 3.0)]
         newdata = pd.DataFrame.from_records(rows, columns=['index', 'values'])
-        key = 'test_reset_cache_deletes_any_file_in_cache\\data'
+        key = 'test_get_when_key_changes_cache_is_updated\\data\\{}'
 
         cacheddata = self.cache.get(
             lambda: self._data,
             self._data_to_csv,
             self._csv_to_data,
-            key)
+            key.format(1))
         
         self.cache.reset_cache()
 
@@ -38,7 +40,7 @@ class Test_SimpleFileCache(unittest.TestCase):
             lambda: newdata,
             self._data_to_csv,
             self._csv_to_data,
-            key)
+            key.format(2))
 
         self.assertTrue(newcacheddata.equals(newdata))
         self.assertFalse(newcacheddata.equals(self._data))
@@ -86,28 +88,28 @@ class Test_SimpleFileCache(unittest.TestCase):
 
     def test_get_read_performance(self):
 
-        key = 'test_perf\\data'
+        key = 'test_get_read_performance\\data\\{}'
 
-        cache = SimpleFileCache(cache_root='reservoir_cache_integration', compressionOn=True)
+        cache = SimpleFileCache(cache_root='reservoir_cache_integration', compressionOn=False, max_size_MB=10)
 
         # ensure data is cached
-        cacheddata = self.cache.get(
+        cacheddata = cache.get(
             lambda: self._data,
             self._data_to_csv,
             self._csv_to_data,
             key)
 
-        iterations = 10
+        iterations = 100
         start = timer()
         for i in range(iterations):
-            self.cache.get(
+            cache.get(
                 lambda: self._data,
                 self._data_to_csv,
                 self._csv_to_data,
-                key)
+                key.format(i))
         stop = timer()
 
-        print('Average cache read: {}'.format((stop - start) / iterations))
+        print('Average cache read with cache-write: {}'.format((stop - start) / iterations))
 
 
     def _data_to_csv(self, data, stream):

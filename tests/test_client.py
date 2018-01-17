@@ -111,25 +111,25 @@ class Test_Client(unittest.TestCase):
     def test_init_with_defaults_cache_is_enabled_and_compressed(self, mock_cache):
         client = Client(self.auth)
         self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
-        mock_cache.assert_called_once_with(cache_root=None, compressionOn=True)
+        mock_cache.assert_called_once_with()
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_enabled(self, mock_cache):
         client = Client(self.auth, cache={'enabled':True})
         self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
-        mock_cache.assert_called_once_with(cache_root=None, compressionOn=True)
+        mock_cache.assert_called_once_with()
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_format_compressed_csv(self, mock_cache):
         client = Client(self.auth, cache={'format':'csv.gz'})
         self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
-        mock_cache.assert_called_once_with(cache_root=None, compressionOn=True)
+        mock_cache.assert_called_once_with(compressionOn=True)
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_format_uncompressed_csv(self, mock_cache):
         client = Client(self.auth, cache={'format':'csv'})
         self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
-        mock_cache.assert_called_once_with(cache_root=None, compressionOn=False)
+        mock_cache.assert_called_once_with(compressionOn=False)
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_invalid_cache_format_raises_exception(self, mock_cache):
@@ -139,7 +139,12 @@ class Test_Client(unittest.TestCase):
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_root(self, mock_cache):
         client = Client(self.auth, cache={'cache_root':'a:\\diskett'})
-        mock_cache.assert_called_once_with(cache_root='a:\\diskett', compressionOn=True)
+        mock_cache.assert_called_once_with(cache_root='a:\\diskett')
+
+    @patch('datareservoirio.client.SimpleFileCache')
+    def test_init_with_cache_max_size(self, mock_cache):
+        client = Client(self.auth, cache={'max_size': 10})
+        mock_cache.assert_called_once_with(max_size_MB=10)
 
     def test_token(self):
         self.assertEqual(self.client.token, self.auth.token)
