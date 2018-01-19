@@ -2,6 +2,7 @@ import unittest
 import logging
 import os
 import sys
+import warnings
 
 from datareservoirio.storage import SimpleFileCache
 
@@ -102,7 +103,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._io_open.assert_called_with(expected_file, 'rb')
         self.assertEquals(cached_message, u'Hello from cache!')
 
-    def test_get_with_maxsize_evicts_old_files(self):
+    def test_get_with_sizeoverage_evicts_old_files(self):
         self._walk.return_value = [
             ('rt', (), ('file.1', 'file.2', 'file.3')),
         ]
@@ -122,6 +123,33 @@ class Test_SimpleFileCache(unittest.TestCase):
         cached_message = cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
 
         self._remove.assert_called_once_with('rt\\file.2')
+
+    def test_get_when_evict_old_file_fail_triggers_userwarning(self):
+        self._walk.return_value = [
+            ('rt', (), ('file.1', 'file.2', 'file.3')),
+        ]
+        files = {
+            'app\\root': {'exists': True},
+            'app\\root\\v1': {'exists': True},
+            'app\\root\\v1\\file.0': {'exists': False},
+            'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True}, 
+            'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20.0, 'exists': True},
+            'rt\\file.3': {'size': 3000, 'time': 50.0, 'exists': True}
+        }
+        self._path_getsize.side_effect = lambda p: 0 if p not in files else files[p]['size']
+        self._path_getmtime.side_effect = lambda p: 0 if p not in files else files[p]['time']
+        self._path_exists.side_effect = lambda p: files[p]['exists']
+        self._remove.side_effect = Exception('someone is locking the file!')
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter('always')
+            cache = SimpleFileCache(cache_folder='root')
+
+            cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
+
+            self._remove.assert_called_once_with('rt\\file.2')
+            self.assertIs(w[0].category, UserWarning)
+
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stderr)

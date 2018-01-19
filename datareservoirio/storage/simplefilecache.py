@@ -7,6 +7,7 @@ import logging
 import shutil
 import tempfile
 import threading
+import warnings
 
 from ..log import LogWriter
 
@@ -105,6 +106,7 @@ class SimpleFileCache:
             for this cache element.
 
         """
+
         if not tokens or tokens is None or tokens.count == 0:
             raise ValueError('Expects one or more tokens that identify the data element')
 
@@ -143,10 +145,9 @@ class SimpleFileCache:
             return self._read_from_cache(filepath, deserialize_data)
 
     def _evict_entry_root(self, root):
-        log.debug('Clearing out {}'.format(root))
+        log.debug('Resetting {}'.format(root))
         shutil.rmtree(root)
         if not os.path.exists(root):
-            log.debug('Recreating {}'.format(root))
             os.makedirs(root)
 
     def _evict_from_cache(self):
@@ -219,7 +220,7 @@ class EvictBySizeAndAge:
                     try:
                         os.remove(e)
                     except Exception as error:
-                        log.warning('Could not evict {}, exception: '.format(e, error))
+                        warnings.warn('Could not evict {}. Exception: {}'.format(e, error))
 
             return totalsizeMB - sizeMB
         return totalsizeMB

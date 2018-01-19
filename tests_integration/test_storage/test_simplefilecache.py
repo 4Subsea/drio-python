@@ -4,7 +4,8 @@ import sys
 import os
 import numpy as np
 import pandas as pd
-from timeit import default_timer as timer
+from random import random
+from timeit import timeit
 from mock import patch
 
 import datareservoirio
@@ -73,19 +74,6 @@ class Test_SimpleFileCache(unittest.TestCase):
 
         self.assertTrue(cacheddata.equals(self._data))
 
-    def test_get_with_compression(self):
-        key = 'test_get_without_compression\\data'
-
-        cache = SimpleFileCache(cache_root=_CACHE_ROOT, enable_compression=True)
-
-        cacheddata = self.cache.get(
-            lambda: self._data,
-            self._data_to_csv,
-            self._csv_to_data,
-            key)
-
-        self.assertTrue(cacheddata.equals(self._data))
-
     def test_get_read_performance(self):
 
         key = 'test_get_read_performance\\data\\{}'
@@ -99,17 +87,17 @@ class Test_SimpleFileCache(unittest.TestCase):
             self._csv_to_data,
             key)
 
-        iterations = 100
-        start = timer()
-        for i in range(iterations):
+        def _action():
             cache.get(
                 lambda: self._data,
                 self._data_to_csv,
                 self._csv_to_data,
-                key.format(i))
-        stop = timer()
+                key.format(random()*1000))
 
-        print('Average cache read with cache-write: {}'.format((stop - start) / iterations))
+        iterations = 5
+        usedtime = timeit(stmt=_action, number=iterations)
+
+        print('Average cache read with cache-write: {}'.format(usedtime/ iterations))
 
 
     def _data_to_csv(self, data, stream):
