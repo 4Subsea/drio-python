@@ -17,7 +17,7 @@ from tests_integration._auth import USER
 datareservoirio.globalsettings.environment.set_test()
 
 
-class Test_TimeSeriesApi(unittest.TestCase):
+class Test_Client(unittest.TestCase):
 
     @classmethod
     @patch('getpass.getpass', return_value=USER.PASSWORD)
@@ -35,7 +35,8 @@ class Test_TimeSeriesApi(unittest.TestCase):
         cls.df_3.name = 'values'
 
     def setUp(self):
-        self.client = datareservoirio.Client(self.auth, cache={'format':'csv', 'max_size': 100.})
+        cache_config ={'format':'csv', 'max_size': 100., 'cache_root':'./_cache/test_client'}
+        self.client = datareservoirio.Client(self.auth, cache=cache_config)
 
     def test_ping(self):
         self.client.ping()

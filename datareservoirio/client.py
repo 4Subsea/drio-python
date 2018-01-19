@@ -35,8 +35,8 @@ class Client(object):
     cache: dict
         Configuration object for controlling the timeseries cache.
         'enabled': set to False will disable caching. Default is True.
-        'format': default 'csv.gz', set to 'csv' to disable gzip compression.
-        'max_size': max size of cache in megabytes, defaults to 1024 MB.
+        'format': 'msgpack' or 'csv'. Default is 'msgpack'.
+        'max_size': max size of cache in megabytes. Default is 1024 MB.
         'cache_root': cache storage location, defaults to %LOCALAPPDATA%\\reservoir_cache
 
     """
@@ -46,25 +46,25 @@ class Client(object):
         self._timeseries_api = TimeSeriesAPI()
         self._files_api = FilesAPI()
 
-        enableCache = True
+        enable_cache = True
+        cache_format = 'msgpack'
         cache_params = {}
         if cache != None:
             if 'enabled' in cache:
-                enableCache = cache['enabled']
+                enable_cache = cache['enabled']
             if 'format' in cache:
-                cacheFormat = cache['format']
-                if cacheFormat not in ('csv.gz', 'csv'):
-                    raise ValueError('Supported cache formats: csv, csv.gz')
-                cache_params['enable_compression'] = cacheFormat == 'csv.gz'
+                cache_format = cache['format']
+                if cache_format not in ('csv', 'msgpack'):
+                    raise ValueError('Supported cache formats: csv, msgpack')
             if 'cache_root' in cache:
                 cache_params['cache_root'] = cache['cache_root']
             if 'max_size' in cache:
                 cache_params['max_size_MB'] = cache['max_size']
 
         downloader = None
-        if enableCache:
+        if enable_cache:
             cache = SimpleFileCache(**cache_params)
-            downloader = CachedDownloadStrategy(cache)
+            downloader = CachedDownloadStrategy(cache, format=cache_format)
         else:
             downloader = AlwaysDownloadStrategy()
 

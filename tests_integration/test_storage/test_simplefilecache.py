@@ -12,6 +12,7 @@ from datareservoirio.storage import SimpleFileCache
 
 log = logging.getLogger(__file__)
 
+_CACHE_ROOT = './_cache/test_simplefilecache'
 
 class Test_SimpleFileCache(unittest.TestCase):
     def setUp(self):
@@ -20,7 +21,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._data.index.name = 'index'
         self._data.name = 'values'
 
-        self.cache = SimpleFileCache(cache_folder='reservoir_cache_integration', enable_compression=False)
+        self.cache = SimpleFileCache(cache_root=_CACHE_ROOT)
     
     def test_get_when_key_changes_cache_is_updated(self):
         rows = [(0, 1.0), (1, 2.0), (2, 3.0)]
@@ -72,10 +73,10 @@ class Test_SimpleFileCache(unittest.TestCase):
 
         self.assertTrue(cacheddata.equals(self._data))
 
-    def test_get_without_compression(self):
+    def test_get_with_compression(self):
         key = 'test_get_without_compression\\data'
 
-        cache = SimpleFileCache(cache_root='reservoir_cache_integration', enable_compression=False)
+        cache = SimpleFileCache(cache_root=_CACHE_ROOT, enable_compression=True)
 
         cacheddata = self.cache.get(
             lambda: self._data,
@@ -89,7 +90,7 @@ class Test_SimpleFileCache(unittest.TestCase):
 
         key = 'test_get_read_performance\\data\\{}'
 
-        cache = SimpleFileCache(cache_root='reservoir_cache_integration', enable_compression=False, max_size_MB=10)
+        cache = SimpleFileCache(cache_root=_CACHE_ROOT, max_size_MB=10)
 
         # ensure data is cached
         cacheddata = cache.get(

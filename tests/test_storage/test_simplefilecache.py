@@ -14,7 +14,6 @@ except:
 class Test_SimpleFileCache(unittest.TestCase):
     def setUp(self):
         self._io_open_patch = patch('datareservoirio.storage.simplefilecache.io.open')
-        self._gzip_open_patch = patch('datareservoirio.storage.simplefilecache.gzip.open')
         self._path_exists_patch = patch('datareservoirio.storage.simplefilecache.os.path.exists')
         self._makedirs_patch = patch('datareservoirio.storage.simplefilecache.os.makedirs')
         self._rename_patch = patch('datareservoirio.storage.simplefilecache.os.rename')
@@ -26,7 +25,6 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._rmtree_patch = patch('datareservoirio.storage.simplefilecache.shutil.rmtree')
 
         self._io_open = self._io_open_patch.start()
-        self._gzip_open = self._gzip_open_patch.start()
         self._path_exists = self._path_exists_patch.start()
         self._makedirs = self._makedirs_patch.start()
         self._rename = self._rename_patch.start()
@@ -38,11 +36,10 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._rmtree = self._rmtree_patch.start()
         self.addCleanup(self._unpatch)
 
-        self._cache = SimpleFileCache(cache_folder='root', enable_compression=False)
+        self._cache = SimpleFileCache(cache_folder='root')
 
     def _unpatch(self):
         self._io_open_patch.stop()
-        self._gzip_open_patch.stop()
         self._path_exists_patch.stop()
         self._makedirs_patch.stop()
         self._rename_patch.stop()
@@ -55,12 +52,12 @@ class Test_SimpleFileCache(unittest.TestCase):
 
     def test_init_with_cache_root_initializes_root_folder(self):
         self._path_exists.return_value = False
-        cache = SimpleFileCache(cache_root = 'root\\folder', enable_compression=False)
+        cache = SimpleFileCache(cache_root = 'root\\folder')
         self._makedirs.assert_called_once_with('root\\folder')
 
     def test_init_with_cache_root_ignores_cache_folder_parameter(self):
         self._path_exists.return_value = False
-        cache = SimpleFileCache(cache_root = 'root', cache_folder='whatevver', enable_compression=False)
+        cache = SimpleFileCache(cache_root = 'root', cache_folder='whatevver')
         self._makedirs.assert_called_once_with('root')
 
     def test_reset_cache(self):
@@ -81,10 +78,10 @@ class Test_SimpleFileCache(unittest.TestCase):
 
         self.assertEquals(cached_message, message)
 
-    def test_get_uncompressed_without_cached_data_writes_to_cache(self):
+    def test_get_without_cached_data_writes_to_cache(self):
         self._path_exists.return_value = False
-        expected_tmp_file = 'app\\root\\v1raw\\a\\b\\file.csv.uncommitted'
-        expected_file = 'app\\root\\v1raw\\a\\b\\file.csv'
+        expected_tmp_file = 'app\\root\\v1\\a\\b\\file.csv.uncommitted'
+        expected_file = 'app\\root\\v1\\a\\b\\file.csv'
 
         self._cache.get(lambda: 'Hello!', lambda data, stream: '', 
                         lambda stream: '', 'a', 'b', 'file.csv')
@@ -92,22 +89,10 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._io_open.assert_called_with(expected_tmp_file, 'wb')
         self._rename.assert_called_with(expected_tmp_file, expected_file)
 
-    def test_get_compressed_without_cached_data_deflates_to_cache(self):
-        self._path_exists.return_value = False
-        self._cache._enable_compression = True
-        expected_tmp_file = 'app\\root\\v1gz\\a\\b\\file.csv.uncommitted'
-        expected_file = 'app\\root\\v1gz\\a\\b\\file.csv'
-
-        self._cache.get(lambda: 'Hello!', lambda data, stream: '', 
-                        lambda stream: '', 'a', 'b', 'file.csv')
-
-        self._gzip_open.assert_called_with(expected_tmp_file, 'wb')
-        self._rename.assert_called_with(expected_tmp_file, expected_file)
-
-    def test_get_uncompressed_with_data_in_cache_calls_deserializer(self):
+    def test_get_with_data_in_cache_calls_deserializer(self):
         self._path_exists.return_value = True
         self._path_getsize.return_value = 10
-        expected_file = 'app\\root\\v1raw\\a\\b\\file.csv'
+        expected_file = 'app\\root\\v1\\a\\b\\file.csv'
 
         cached_message = self._cache.get(
             lambda: 'Hello!',
@@ -117,27 +102,14 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._io_open.assert_called_with(expected_file, 'rb')
         self.assertEquals(cached_message, u'Hello from cache!')
 
-    def test_get_compressed_with_data_in_cache_inflates_from_cache(self):
-        self._path_exists.return_value = True
-        self._path_getsize.return_value = 10
-        self._cache._enable_compression = True
-
-        cached_message = self._cache.get(
-            lambda: 'Hello!',
-            lambda data, stream: '',
-            lambda stream: 'Hello from cache!', 'a', 'b', 'file.csv')
-
-        self._gzip_open.assert_called_with('app\\root\\v1gz\\a\\b\\file.csv', 'rb')
-        self.assertEquals(cached_message, u'Hello from cache!')
-
     def test_get_with_maxsize_evicts_old_files(self):
         self._walk.return_value = [
             ('rt', (), ('file.1', 'file.2', 'file.3')),
         ]
         files = {
             'app\\root': {'exists': True},
-            'app\\root\\v1raw': {'exists': True},
-            'app\\root\\v1raw\\file.0': {'exists': False},
+            'app\\root\\v1': {'exists': True},
+            'app\\root\\v1\\file.0': {'exists': False},
             'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True}, 
             'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20.0, 'exists': True},
             'rt\\file.3': {'size': 3000, 'time': 50.0, 'exists': True}
@@ -145,7 +117,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_getsize.side_effect = lambda p: 0 if p not in files else files[p]['size']
         self._path_getmtime.side_effect = lambda p: 0 if p not in files else files[p]['time']
         self._path_exists.side_effect = lambda p: files[p]['exists']
-        cache = SimpleFileCache(cache_folder='root', enable_compression=False)
+        cache = SimpleFileCache(cache_folder='root')
 
         cached_message = cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
 

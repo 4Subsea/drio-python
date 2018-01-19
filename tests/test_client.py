@@ -107,29 +107,38 @@ class Test_Client(unittest.TestCase):
         client = Client(self.auth, cache={'enabled':False})
         mock_dl.assert_called_once_with()
 
+    @patch('datareservoirio.client.CachedDownloadStrategy')
     @patch('datareservoirio.client.SimpleFileCache')
-    def test_init_with_defaults_cache_is_enabled_and_compressed(self, mock_cache):
+    def test_init_with_defaults_cache_is_enabled_and_format_msgpack(self, mock_cache, mock_dl):
         client = Client(self.auth)
-        self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
+
+        kwargs = mock_dl.call_args[1]
+        self.assertIn('format', kwargs)
+        self.assertEquals(kwargs['format'], 'msgpack')
         mock_cache.assert_called_once_with()
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_enabled(self, mock_cache):
         client = Client(self.auth, cache={'enabled':True})
-        self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
         mock_cache.assert_called_once_with()
 
+    @patch('datareservoirio.client.CachedDownloadStrategy')
     @patch('datareservoirio.client.SimpleFileCache')
-    def test_init_with_cache_format_compressed_csv(self, mock_cache):
-        client = Client(self.auth, cache={'format':'csv.gz'})
-        self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
-        mock_cache.assert_called_once_with(enable_compression=True)
-
-    @patch('datareservoirio.client.SimpleFileCache')
-    def test_init_with_cache_format_uncompressed_csv(self, mock_cache):
+    def test_init_with_cache_format_csv(self, mock_cache, mock_dl):
         client = Client(self.auth, cache={'format':'csv'})
-        self.assertIsInstance(client._storage._downloader, CachedDownloadStrategy)
-        mock_cache.assert_called_once_with(enable_compression=False)
+
+        kwargs = mock_dl.call_args[1]
+        self.assertIn('format', kwargs)
+        self.assertEquals(kwargs['format'], 'csv')
+
+    @patch('datareservoirio.client.CachedDownloadStrategy')
+    @patch('datareservoirio.client.SimpleFileCache')
+    def test_init_with_cache_format_msgpack(self, mock_cache, mock_dl):
+        client = Client(self.auth, cache={'format':'msgpack'})
+
+        kwargs = mock_dl.call_args[1]
+        self.assertIn('format', kwargs)
+        self.assertEquals(kwargs['format'], 'msgpack')
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_invalid_cache_format_raises_exception(self, mock_cache):

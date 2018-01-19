@@ -16,7 +16,7 @@ from .simplefilecache import SimpleFileCache
 logger = logging.getLogger(__name__)
 log = LogWriter(logger)
 
-class BaseDownloadStrategy:
+class BaseDownloadStrategy(object):
     """
     Handle downloading of Data Reservoir chunks.
     
@@ -57,35 +57,79 @@ class AlwaysDownloadStrategy(BaseDownloadStrategy):
 
 class CachedDownloadStrategy(BaseDownloadStrategy):
     """
-    Timeseries download strategy that will cache files in the current account's local APPDATA folder.
+    Data Reservoir timeseries chunk download strategy with local disk caching.
     
-    Parameters
-    ---------
-    cache : cls
-        Cache implementation, defaults to SimpleFileCache.
+    Files will be cached in the current account's local APPDATA folder.
+    Chunks in the cache will be organized according to file format and blob location
+    within the remote Azure Storage.
 
     """
 
-    def __init__(self, cache=None):
-        self._cache = cache if cache != None else SimpleFileCache()
+    class MsgPackFormat(object):
+        """Serialize dataframe to/from the msgpack format."""
+
+        @property
+        def file_extension(self):
+            return 'mp'
+
+        def serialize(self, dataframe, stream):
+            dataframe.to_msgpack(stream)
+
+        def deserialize(self, stream):
+            return pd.read_msgpack(stream)
+
+    class CsvFormat(object):
+        """Serialize dataframe to/from the csv format."""
+
+        @property
+        def file_extension(self):
+            return 'csv'
+
+        def serialize(self, dataframe, stream):
+            dataframe.to_csv(stream, header=True)
+
+        def deserialize(self, stream):
+            return pd.read_csv(stream, index_col=0)
+
+    def __init__(self, cache=None, format='msgpack'):
+        """
+        Initialize a dataframe download strategy using a cache implementation and a serialization format.
+
+        Parameters
+        ---------
+        :param: cls cache
+            Cache implementation, defaults to SimpleFileCache.
+        :param: str format
+            Serialization format of the files stored in cache. Supports 'msgpack' and 'csv'. Default is 'msgpack'.
+
+        """
+        if format == 'msgpack':
+            self._format = self.MsgPackFormat()
+        elif format == 'csv':
+            self._format = self.CsvFormat()
+        else:
+            raise ValueError('Unsupported format ' + format)
+
+        self._cache = cache if cache is not None else SimpleFileCache()
 
     def _download_chunk(self, chunk):
-        host = chunk['Account']
-        container = chunk['Container']
+        key0 = self._format.file_extension
+        key1 = chunk['Account']
+        key2 = chunk['Container']
         path = chunk['Path']
-        md5 = base64.b64encode(chunk['ContentMd5'])
+        file = base64.b64encode(chunk['ContentMd5'])
 
         return self._cache.get(
             lambda: self._blob_to_series(chunk),
             self._serialize_series,
             self._deserialize_series,
-            host, container, path, md5)
+            key0, key1, key2, path, file)
 
     def _serialize_series(self, series, stream):
-        series.to_csv(stream, header=False)
+        self._format.serialize(series, stream)
 
     def _deserialize_series(self, stream):
-        return pd.read_csv(stream, header=None, names=['index', 'values'], index_col=0)
+        return self._format.deserialize(stream)
 
     @staticmethod
     def _blob_to_series(blob_params):

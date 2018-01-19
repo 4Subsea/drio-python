@@ -3,11 +3,12 @@ import logging
 import sys
 import pandas as pd
 from mock import patch
+from timeit import timeit
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.storage import Storage, CachedDownloadStrategy
+from datareservoirio.storage import Storage, SimpleFileCache, CachedDownloadStrategy
 
 from tests_integration._auth import USER
 
@@ -27,24 +28,29 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
 
     def setUp(self):
         self.timeseries_api = TimeSeriesAPI()
-        self.strategy = CachedDownloadStrategy()
-        self.strategy._cache.reset_cache()
+        self._cache = SimpleFileCache(cache_root='./_cache/test_cacheddownloadstrategy')
 
-    def test_get(self):
+    def test_get_with_msgpack_format(self):
+        strategy = CachedDownloadStrategy(cache=self._cache, format='msgpack')
         chunks = self.timeseries_api.download_days(
             self.auth.token, TIMESERIESID,
-            1513468800000000000, 1513814400000000000)
+            1513468800000000000, 1513814500000000000)
+        iterations=100
 
-        series = self.strategy.get(chunks)
+        usedtime = timeit(stmt=lambda: strategy.get(chunks), number=iterations)
 
-        self.assertIsNotNone(series)
-        self.assertFalse(series.empty)
-        log.debug(series)
+        print('Average cache read with msgpack: {}'.format(usedtime/iterations))
 
+    def test_get_with_csv_format(self):
+        strategy = CachedDownloadStrategy(cache=self._cache, format='csv')
+        chunks = self.timeseries_api.download_days(
+            self.auth.token, TIMESERIESID,
+            1513468800000000000, 1513814500000000000)
+        iterations=100
+
+        usedtime = timeit(stmt=lambda: strategy.get(chunks), number=iterations)
+
+        print('Average cache read with csv: {}'.format(usedtime/iterations))
 
 if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stderr)
-    logging.getLogger(__file__).setLevel(logging.DEBUG)
-    logging.getLogger("datareservoirio.storage").setLevel(logging.DEBUG)
-    logging.getLogger("datareservoirio.storage.storage_engine").setLevel(logging.DEBUG)
     unittest.main()
