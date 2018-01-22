@@ -4,4 +4,4 @@
 
 class USER:
     NAME = 'reservoir-integrationtest@4subsea.com'
-    PASSWORD = 'ogsxFTmhBwk3VUrXq4Hp'
+    PASSWORD = 'rai1VcnCcdjcEgmvYemu'
