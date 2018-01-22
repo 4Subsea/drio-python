@@ -132,12 +132,30 @@ class Test_TimeSeriesAPI(unittest.TestCase):
                                      data=expected_body, **self.api._defaults)
 
     @patch('datareservoirio.rest_api.timeseries.TokenAuth')
-    def test__download_days(self, mock_token):
+    def test__download_days_base(self, mock_token):
         timeseries_id = 't666'
         start = -1000
         end = 6660000
 
-        result = self.api._download_days(self.token, timeseries_id, start, end)
+        result = self.api._download_days_base(self.token, timeseries_id, start, end)
+
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{ts_id}/download/days'.format(
+            ts_id=timeseries_id)
+        expected_header = {'Authorization': 'Bearer abcdef'}
+        expected_params = {'start': start, 'end': end}
+
+        mock_get = self.api._session.get
+        mock_get.assert_called_with(expected_uri, auth=mock_token(),
+                                    params=expected_params,
+                                    **self.api._defaults)
+
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
+    def test__download_days_cached(self, mock_token):
+        timeseries_id = 't666'
+        start = -1000
+        end = 6660000
+
+        result = self.api._download_days_cached(self.token, timeseries_id, start, end)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
@@ -156,7 +174,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         start = 10*nanoseconds_day
         end = 21*nanoseconds_day - 1
 
-        with patch.object(self.api, '_download_days') as mock_download_days:
+        with patch.object(self.api, '_download_days_cached') as mock_download_days:
             mock_download_days.return_value = Mock()
             result = self.api.download_days(self.token, timeseries_id,
                                             start+102, end-102933)
@@ -172,7 +190,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         end = 21*nanoseconds_day
         end_expected = 22*nanoseconds_day - 1
 
-        with patch.object(self.api, '_download_days') as mock_download_days:
+        with patch.object(self.api, '_download_days_cached') as mock_download_days:
             mock_download_days.return_value = Mock()
             result = self.api.download_days(self.token, timeseries_id,
                                             start, end)

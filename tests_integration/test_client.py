@@ -35,8 +35,7 @@ class Test_Client(unittest.TestCase):
         cls.df_3.name = 'values'
 
     def setUp(self):
-        cache_config ={'format':'csv', 'max_size': 100., 'cache_root':'./_cache/test_client'}
-        self.client = datareservoirio.Client(self.auth, cache=cache_config)
+        self.client = datareservoirio.Client(self.auth, cache=False)
 
     def test_ping(self):
         self.client.ping()
@@ -158,6 +157,7 @@ class Test_Client(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stderr)
-    logging.getLogger("datareservoirio.storage").setLevel(logging.DEBUG)
+    logger = logging.getLogger("datareservoirio")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
     unittest.main()

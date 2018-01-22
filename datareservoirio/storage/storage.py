@@ -2,9 +2,6 @@ from __future__ import absolute_import
 
 import logging
 import sys
-from concurrent.futures import ThreadPoolExecutor
-
-import pandas as pd
 
 from ..log import LogWriter
 from .downloadstrategy import CachedDownloadStrategy
@@ -15,16 +12,23 @@ if sys.version_info.major == 3:
 elif sys.version_info.major == 2:
     from urlparse import urlparse
 
+
 logger = logging.getLogger(__name__)
 log = LogWriter(logger)
 
 
 class Storage(object):
-    """Handle download and upload of timeseries data in the Data Reservoir storage."""
+    """
+    Handle download and upload of timeseries data in the Data Reservoir
+    storage.
+    """
 
-    def __init__(self, authenticator, timeseries_api, files_api, downloadStrategy=None, uploadStrategy=None):
+    def __init__(self, authenticator, timeseries_api, files_api,
+                 downloader=CachedDownloadStrategy(),
+                 uploader=UploadStrategy()):
         """
-        Initialize service for working with timeseries data in Azure Blob Storage.
+        Initialize service for working with timeseries data in Azure Blob
+        Storage.
 
         Parameters
         ----------
@@ -34,17 +38,17 @@ class Storage(object):
             Instance of timeseries API.
         files_api: FilesAPI
             Instance of files API.
-        downloadStrategy: cls
+        downloader: cls
             A strategy instance for handling downloads.
-        uploadStrategy: cls
+        uploader: cls
             A strategy instance for handling uploads.
 
         """
         self._authenticator = authenticator
         self._timeseries_api = timeseries_api
         self._files_api = files_api
-        self._downloader = downloadStrategy if downloadStrategy != None else CachedDownloadStrategy()
-        self._uploader = uploadStrategy if uploadStrategy != None else UploadStrategy()
+        self._downloader = downloader
+        self._uploader = uploader
 
     @property
     def token(self):
@@ -52,15 +56,17 @@ class Storage(object):
 
     def put(self, series):
         """
-        Put a data range into storage
+        Put a data range into storage.
 
         Parameters
         ----------
-        series
+        series : pandas.Series
             pandas Series to store
 
-        returns
-            the unique file id as stored in the reservoir
+        Returns
+        -------
+            The unique file id as stored in the reservoir
+
         """
         upload_params = self._files_api.upload(self.token)
         file_id = upload_params['FileId']
@@ -72,7 +78,7 @@ class Storage(object):
 
     def get(self, timeseries_id, start, end):
         """
-        Get a range of data for a timeseries
+        Get a range of data for a timeseries.
 
         Parameters
         ----------
@@ -82,10 +88,11 @@ class Storage(object):
             Start time of the range, in nanoseconds since EPOCH
         end: long
             End time of the range, in nanoseconds since EPOCH
-        """
 
+        """
         log.debug("getting day file inventory")
-        response = self._timeseries_api.download_days(self.token, timeseries_id, start, end)
+        response = self._timeseries_api.download_days(
+            self.token, timeseries_id, start, end)
 
         df = self._downloader.get(response)
 

@@ -18,7 +18,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_exists_patch = patch('datareservoirio.storage.simplefilecache.os.path.exists')
         self._makedirs_patch = patch('datareservoirio.storage.simplefilecache.os.makedirs')
         self._rename_patch = patch('datareservoirio.storage.simplefilecache.os.rename')
-        self._environ_patch = patch.dict('datareservoirio.storage.simplefilecache.os.environ', {'LOCALAPPDATA': 'app'})
+        self._user_cache_dir_patch = patch('datareservoirio.storage.simplefilecache.user_cache_dir')
         self._walk_patch = patch('datareservoirio.storage.simplefilecache.os.walk')
         self._path_getsize_patch = patch('datareservoirio.storage.simplefilecache.os.path.getsize')
         self._path_getmtime_patch = patch('datareservoirio.storage.simplefilecache.os.path.getmtime')
@@ -29,7 +29,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_exists = self._path_exists_patch.start()
         self._makedirs = self._makedirs_patch.start()
         self._rename = self._rename_patch.start()
-        self._environ = self._environ_patch.start()
+        self._user_cache_dir = self._user_cache_dir_patch.start()
         self._walk = self._walk_patch.start()
         self._path_getsize = self._path_getsize_patch.start()
         self._path_getmtime = self._path_getmtime_patch.start()
@@ -37,6 +37,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._rmtree = self._rmtree_patch.start()
         self.addCleanup(self._unpatch)
 
+        self._user_cache_dir.return_value = 'app\\root'
         self._cache = SimpleFileCache(cache_folder='root')
 
     def _unpatch(self):
@@ -44,7 +45,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_exists_patch.stop()
         self._makedirs_patch.stop()
         self._rename_patch.stop()
-        self._environ_patch.stop()
+        self._user_cache_dir_patch.stop()
         self._walk_patch.stop()
         self._path_getsize_patch.stop()
         self._path_getmtime_patch.stop()
@@ -53,17 +54,18 @@ class Test_SimpleFileCache(unittest.TestCase):
 
     def test_init_with_cache_root_initializes_root_folder(self):
         self._path_exists.return_value = False
-        cache = SimpleFileCache(cache_root = 'root\\folder')
-        self._makedirs.assert_called_once_with('root\\folder')
+        cache = SimpleFileCache(cache_root='root\\folder')
+        self._makedirs.assert_called_once_with(os.path.abspath('root\\folder'))
 
     def test_init_with_cache_root_ignores_cache_folder_parameter(self):
         self._path_exists.return_value = False
-        cache = SimpleFileCache(cache_root = 'root', cache_folder='whatevver')
-        self._makedirs.assert_called_once_with('root')
+        cache = SimpleFileCache(cache_root='root', cache_folder='whatevver')
+        self._makedirs.assert_called_once_with(os.path.abspath('root'))
 
     def test_reset_cache(self):
         self._cache.reset_cache()
-        self._rmtree.assert_called_once_with('app\\root')
+        self._user_cache_dir.assert_called_once_with('root')
+        self._rmtree.assert_called_once_with(os.path.abspath('app\\root'))
 
     def test_get_without_tokenparameters_throws(self):
         with self.assertRaises(Exception):
@@ -81,10 +83,10 @@ class Test_SimpleFileCache(unittest.TestCase):
 
     def test_get_without_cached_data_writes_to_cache(self):
         self._path_exists.return_value = False
-        expected_tmp_file = 'app\\root\\v1\\a\\b\\file.csv.uncommitted'
-        expected_file = 'app\\root\\v1\\a\\b\\file.csv'
+        expected_tmp_file = os.path.abspath('app\\root\\v1\\a\\b\\file.csv.uncommitted')
+        expected_file = os.path.abspath('app\\root\\v1\\a\\b\\file.csv')
 
-        self._cache.get(lambda: 'Hello!', lambda data, stream: '', 
+        self._cache.get(lambda: 'Hello!', lambda data, stream: '',
                         lambda stream: '', 'a', 'b', 'file.csv')
 
         self._io_open.assert_called_with(expected_tmp_file, 'wb')
@@ -93,7 +95,7 @@ class Test_SimpleFileCache(unittest.TestCase):
     def test_get_with_data_in_cache_calls_deserializer(self):
         self._path_exists.return_value = True
         self._path_getsize.return_value = 10
-        expected_file = 'app\\root\\v1\\a\\b\\file.csv'
+        expected_file = os.path.abspath('app\\root\\v1\\a\\b\\file.csv')
 
         cached_message = self._cache.get(
             lambda: 'Hello!',
@@ -108,13 +110,14 @@ class Test_SimpleFileCache(unittest.TestCase):
             ('rt', (), ('file.1', 'file.2', 'file.3')),
         ]
         files = {
-            'app\\root': {'exists': True},
-            'app\\root\\v1': {'exists': True},
-            'app\\root\\v1\\file.0': {'exists': False},
+            os.path.abspath('app\\root'): {'exists': True},
+            os.path.abspath('app\\root\\v1'): {'exists': True},
+            os.path.abspath('app\\root\\v1\\file.0'): {'exists': False},
             'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True}, 
             'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20.0, 'exists': True},
             'rt\\file.3': {'size': 3000, 'time': 50.0, 'exists': True}
         }
+
         self._path_getsize.side_effect = lambda p: 0 if p not in files else files[p]['size']
         self._path_getmtime.side_effect = lambda p: 0 if p not in files else files[p]['time']
         self._path_exists.side_effect = lambda p: files[p]['exists']
@@ -129,9 +132,9 @@ class Test_SimpleFileCache(unittest.TestCase):
             ('rt', (), ('file.1', 'file.2', 'file.3')),
         ]
         files = {
-            'app\\root': {'exists': True},
-            'app\\root\\v1': {'exists': True},
-            'app\\root\\v1\\file.0': {'exists': False},
+            os.path.abspath('app\\root'): {'exists': True},
+            os.path.abspath('app\\root\\v1'): {'exists': True},
+            os.path.abspath('app\\root\\v1\\file.0'): {'exists': False},
             'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True}, 
             'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20.0, 'exists': True},
             'rt\\file.3': {'size': 3000, 'time': 50.0, 'exists': True}

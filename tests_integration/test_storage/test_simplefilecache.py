@@ -6,14 +6,13 @@ import numpy as np
 import pandas as pd
 from random import random
 from timeit import timeit
-from mock import patch
 
-import datareservoirio
 from datareservoirio.storage import SimpleFileCache
 
 log = logging.getLogger(__file__)
 
 _CACHE_ROOT = './_cache/test_simplefilecache'
+
 
 class Test_SimpleFileCache(unittest.TestCase):
     def setUp(self):
@@ -78,7 +77,7 @@ class Test_SimpleFileCache(unittest.TestCase):
 
         key = 'test_get_read_performance\\data\\{}'
 
-        cache = SimpleFileCache(cache_root=_CACHE_ROOT, max_size_MB=10)
+        cache = SimpleFileCache(cache_root=_CACHE_ROOT, max_size=10)
 
         # ensure data is cached
         cacheddata = cache.get(
@@ -108,7 +107,7 @@ class Test_SimpleFileCache(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stderr)
-    logging.getLogger(__file__).setLevel(logging.DEBUG)
-    logging.getLogger("datareservoirio.storage").setLevel(logging.DEBUG)
+    logger = logging.getLogger("datareservoirio")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
     unittest.main()

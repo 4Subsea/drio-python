@@ -40,9 +40,9 @@ class Test_AlwaysDownloadStrategy(unittest.TestCase):
         self.assertFalse(series.empty)
         log.debug(series)
 
+
 if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stderr)
-    logging.getLogger(__file__).setLevel(logging.DEBUG)
-    logging.getLogger("datareservoirio.storage").setLevel(logging.DEBUG)
-    logging.getLogger("datareservoirio.storage.storage_engine").setLevel(logging.DEBUG)
+    logger = logging.getLogger("datareservoirio")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
     unittest.main()

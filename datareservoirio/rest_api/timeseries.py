@@ -66,8 +66,9 @@ def _make_request_hash(args, kwargs):
 class TimeSeriesAPI(BaseAPI):
     """Python wrapper for reservoir-api.4subsea.net/api/timeseries."""
 
-    def __init__(self):
+    def __init__(self, cache=True):
         super(TimeSeriesAPI, self).__init__()
+        self._cache = cache
 
     def create(self, token, file_id):
         """
@@ -213,10 +214,16 @@ class TimeSeriesAPI(BaseAPI):
         nanoseconds_day = 86400000000000
         start = (start//nanoseconds_day)*nanoseconds_day
         end = ((end//nanoseconds_day) + 1)*nanoseconds_day - 1
-        return self._download_days(token, timeseries_id, start, end)
+
+        download_days = (self._download_days_cached
+                         if self._cache else self._download_days_base)
+        return download_days(token, timeseries_id, start, end)
 
     @request_cache(timeout=180)
-    def _download_days(self, token, timeseries_id, start, end):
+    def _download_days_cached(self, *args):
+        return self._download_days_base(*args)
+
+    def _download_days_base(self, token, timeseries_id, start, end):
         """
         Return timeseries data with start/stop.
         Internal low level function to allow for higher level operations on

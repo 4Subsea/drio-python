@@ -1,14 +1,13 @@
 import unittest
 import logging
-import sys
-import pandas as pd
-from mock import patch
 from timeit import timeit
+from mock import patch
+from functools import partial
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.storage import Storage, SimpleFileCache, CachedDownloadStrategy
+from datareservoirio.storage import SimpleFileCache, CachedDownloadStrategy
 
 from tests_integration._auth import USER
 
@@ -37,7 +36,7 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
             1513468800000000000, 1513814500000000000)
         iterations=100
 
-        usedtime = timeit(stmt=lambda: strategy.get(chunks), number=iterations)
+        usedtime = timeit(stmt=partial(strategy.get, chunks), number=iterations)
 
         print('Average cache read with msgpack: {}'.format(usedtime/iterations))
 
@@ -52,5 +51,9 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
 
         print('Average cache read with csv: {}'.format(usedtime/iterations))
 
+
 if __name__ == '__main__':
+    logger = logging.getLogger("datareservoirio")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler())
     unittest.main()

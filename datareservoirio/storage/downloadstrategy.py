@@ -1,51 +1,92 @@
 from __future__ import absolute_import
 
-import os
-import logging
-import sys
 import base64
-import shutil
+import logging
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 import pandas as pd
 
 from ..log import LogWriter
-from .storage_engine import AzureBlobService
 from .simplefilecache import SimpleFileCache
+from .storage_engine import AzureBlobService
 
 logger = logging.getLogger(__name__)
 log = LogWriter(logger)
 
+
 class BaseDownloadStrategy(object):
     """
     Handle downloading of Data Reservoir chunks.
-    
+
     Multiple chunks will be downloaded in parallel using ThreadPoolExecutor.
     """
 
+    _memory_cache = (0, None)
+
     def get(self, response):
+        # short-circuit if same as last one
+        chunks_hash = self._get_chunks_hash(response)
+        chunks_hash_cached, df_cached = self._memory_cache
+        if chunks_hash == chunks_hash_cached:
+            return df_cached
+
         filechunks = [f['Chunks'] for f in response['Files']]
 
         with ThreadPoolExecutor(max_workers=8) as executor:
-            filedatas = executor.map(self._download_chunks_as_dataframe, filechunks)
-            df = pd.DataFrame(columns=['index', 'values'])
+            filedatas = executor.map(self._download_chunks_as_dataframe,
+                                     filechunks)
+
+            try:
+                df = next(filedatas)
+            except IndexError:
+                return pd.DataFrame()
+
             for fd in filedatas:
-                if not fd.empty:
-                    df = fd.combine_first(df)
-            return df
+                    df = self._combine_first(fd, df)
+            self._memory_cache = (chunks_hash, df)
+
+        return df
 
     def _download_chunks_as_dataframe(self, chunks):
         if not chunks:
-            return pd.DataFrame(columns=['index', 'values'])
+            return pd.DataFrame()
 
         with ThreadPoolExecutor(max_workers=32) as executor:
             filechunks = executor.map(self._download_chunk, chunks)
             df_chunks = pd.concat(filechunks)
             df_chunks.sort_index(inplace=True)
             return df_chunks
-    
+
     def _download_chunk(self, chunk):
         raise Exception('_download_chunk must be overridden in subclass')
+
+    @staticmethod
+    def _combine_first(calling, other):
+        """
+        Faster combine first for most common scenarios and fall back to general
+        purpose pandas combine_first for advanced cases.
+        """
+        if calling.empty or other.empty:
+            return calling
+
+        late_start = max([calling.index.values[0], other.index.values[0]])
+        early_end = min([calling.index.values[-1], other.index.values[-1]])
+
+        if late_start > early_end:  # no overlap
+            df_combined = pd.concat((calling, other))
+        elif (calling.index.values == other.index.values).all():  # exact overlap
+            df_combined = calling
+        else:  # partial overlap - expensive
+            df_combined = calling.combine_first(other)
+
+        return df_combined
+
+    @staticmethod
+    def _get_chunks_hash(response):
+        chunks_all = [chunk['ContentMd5'] for f in response['Files']
+                      for chunk in f['Chunks']]
+        return hash(''.join(chunks_all))
 
 
 class AlwaysDownloadStrategy(BaseDownloadStrategy):
@@ -58,7 +99,7 @@ class AlwaysDownloadStrategy(BaseDownloadStrategy):
 class CachedDownloadStrategy(BaseDownloadStrategy):
     """
     Data Reservoir timeseries chunk download strategy with local disk caching.
-    
+
     Files will be cached in the current account's local APPDATA folder.
     Chunks in the cache will be organized according to file format and blob location
     within the remote Azure Storage.
@@ -91,16 +132,18 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
         def deserialize(self, stream):
             return pd.read_csv(stream, index_col=0)
 
-    def __init__(self, cache=None, format='msgpack'):
+    def __init__(self, cache=SimpleFileCache(), format='msgpack'):
         """
-        Initialize a dataframe download strategy using a cache implementation and a serialization format.
+        Initialize a dataframe download strategy using a cache implementation
+        and a serialization format.
 
         Parameters
         ---------
         :param: cls cache
             Cache implementation, defaults to SimpleFileCache.
         :param: str format
-            Serialization format of the files stored in cache. Supports 'msgpack' and 'csv'. Default is 'msgpack'.
+            Serialization format of the files stored in cache. Supports
+            'msgpack' and 'csv'. Default is 'msgpack'.
 
         """
         if format == 'msgpack':
@@ -108,22 +151,22 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
         elif format == 'csv':
             self._format = self.CsvFormat()
         else:
-            raise ValueError('Unsupported format ' + format)
+            raise ValueError('Unsupported format {}'.format(format))
 
-        self._cache = cache if cache is not None else SimpleFileCache()
+        self._cache = cache
 
     def _download_chunk(self, chunk):
         key0 = self._format.file_extension
         key1 = chunk['Account']
         key2 = chunk['Container']
         path = chunk['Path']
-        file = base64.b64encode(chunk['ContentMd5'])
+        file_ = base64.b64encode(chunk['ContentMd5'])
 
         return self._cache.get(
-            lambda: self._blob_to_series(chunk),
+            partial(self._blob_to_series, chunk),
             self._serialize_series,
             self._deserialize_series,
-            key0, key1, key2, path, file)
+            key0, key1, key2, path, file_)
 
     def _serialize_series(self, series, stream):
         self._format.serialize(series, stream)

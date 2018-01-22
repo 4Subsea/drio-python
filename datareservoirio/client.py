@@ -1,19 +1,15 @@
 from __future__ import absolute_import
 
-import json
 import logging
-import sys
 import time
 import timeit
 
-import numpy as np
 import pandas as pd
-import requests
-from concurrent.futures import ThreadPoolExecutor
 
 from .log import LogWriter
-from .rest_api import FilesAPI, TimeSeriesAPI
-from .storage import Storage, CachedDownloadStrategy, AlwaysDownloadStrategy, SimpleFileCache
+from .rest_api import timeseries, FilesAPI, TimeSeriesAPI
+from .storage import (AlwaysDownloadStrategy, CachedDownloadStrategy,
+                      SimpleFileCache, Storage)
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
@@ -25,46 +21,42 @@ _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
 class Client(object):
     """
-    Client handles requests, data uploads, and data downloads from the 4Subsea data reservoir.
+    Client handles requests, data uploads, and data downloads from the 4Subsea
+    data reservoir.
 
     Parameters
     ---------
     auth : cls
-        An authenticator class with :attr:`token` attribute that provides a valid
-        token to the 4Subsea data reservoir.
-    cache: dict
+        An authenticator class with :attr:`token` attribute that provides a
+        valid token to the 4Subsea data reservoir.
+    cache : bool
+        Enable caching (default).
+    cache_opt : dict, optional
         Configuration object for controlling the timeseries cache.
-        'enabled': set to False will disable caching. Default is True.
         'format': 'msgpack' or 'csv'. Default is 'msgpack'.
         'max_size': max size of cache in megabytes. Default is 1024 MB.
-        'cache_root': cache storage location, defaults to %LOCALAPPDATA%\\reservoir_cache
+        'cache_root': cache storage location, defaults to
+        %LOCALAPPDATA%\\reservoir_cache
 
     """
+    CACHE_DEFAULT = {'format': 'msgpack', 'max_size': 1024, 'cache_root': None}
 
-    def __init__(self, auth, cache=None):
+    def __init__(self, auth, cache=True, cache_opt=CACHE_DEFAULT):
         self._authenticator = auth
-        self._timeseries_api = TimeSeriesAPI()
+        self._timeseries_api = TimeSeriesAPI(cache=cache)
         self._files_api = FilesAPI()
 
-        enable_cache = True
-        cache_format = 'msgpack'
-        cache_params = {}
-        if cache != None:
-            if 'enabled' in cache:
-                enable_cache = cache['enabled']
-            if 'format' in cache:
-                cache_format = cache['format']
-                if cache_format not in ('csv', 'msgpack'):
-                    raise ValueError('Supported cache formats: csv, msgpack')
-            if 'cache_root' in cache:
-                cache_params['cache_root'] = cache['cache_root']
-            if 'max_size' in cache:
-                cache_params['max_size_MB'] = cache['max_size']
+        if cache:
+            cache_default = self.CACHE_DEFAULT.copy()
+            if set(cache_default.keys()).issuperset(cache_opt):
+                cache_default.update(cache_opt)
+                cache_opt = cache_default
+            else:
+                raise ValueError('cache_opt contains unknown keywords.')
 
-        downloader = None
-        if enable_cache:
-            cache = SimpleFileCache(**cache_params)
-            downloader = CachedDownloadStrategy(cache, format=cache_format)
+            cache_format = cache_opt.pop('format')
+            downloader = CachedDownloadStrategy(SimpleFileCache(**cache_opt),
+                                                format=cache_format)
         else:
             downloader = AlwaysDownloadStrategy()
 
@@ -72,13 +64,13 @@ class Client(object):
             self._authenticator,
             self._timeseries_api,
             self._files_api,
-            downloadStrategy=downloader)
+            downloader=downloader)
 
     @property
     def token(self):
         """
         Your token that is sent to the data reservoir with every request you
-        make. There is no password stored in the token, it only provides access 
+        make. There is no password stored in the token, it only provides access
         for a limited amount of time and only to the data reservoir.
         """
         return self._authenticator.token

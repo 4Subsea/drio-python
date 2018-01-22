@@ -1,7 +1,5 @@
-import base64
 import unittest
 
-import numpy as np
 import pandas as pd
 
 from datareservoirio.storage import Storage
@@ -26,14 +24,15 @@ class Test_Storage(unittest.TestCase):
             self._auth,
             self._timeseries_api,
             self._files_api,
-            downloadStrategy=self.downloader,
-            uploadStrategy=self.uploader)
+            downloader=self.downloader,
+            uploader=self.uploader)
 
     def test_constructor(self):
         storage = Storage(self._auth, self._timeseries_api, self._files_api)
 
     def test_get(self):
-        data = pd.DataFrame(data={'values': [1, 2, 3, 4]}, index=[1, 2, 3, 4], columns=['index', 'values'])
+        data = pd.DataFrame(data={'values': [1, 2, 3, 4]}, index=[1, 2, 3, 4],
+                            columns=['index', 'values'])
         self.downloader.get.return_value = data
 
         df = self.storage.get(self.tid, 1, 10)
@@ -41,7 +40,7 @@ class Test_Storage(unittest.TestCase):
         self.assertTrue(df.equals(data))
 
     def test_put(self):
-        self._files_api.upload.return_value = {'FileId':'42'}
+        self._files_api.upload.return_value = {'FileId': '42'}
 
         fileId = self.storage.put('data')
 

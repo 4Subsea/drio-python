@@ -1,15 +1,10 @@
-import json
 import unittest
 
 import numpy as np
 import pandas as pd
-import requests
 
 import datareservoirio
-import datareservoirio.globalsettings as gs
-from datareservoirio import Authenticator, Client
-from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.storage import CachedDownloadStrategy, AlwaysDownloadStrategy, SimpleFileCache
+from datareservoirio import Client
 
 try:
     from unittest.mock import Mock, MagicMock, patch, PropertyMock
@@ -101,10 +96,10 @@ class Test_Client(unittest.TestCase):
         self.assertIsInstance(self.client._timeseries_api, Mock)
         self.assertIsInstance(self.client._files_api, Mock)
         self.assertIsInstance(self.client._storage, Mock)
-    
+
     @patch('datareservoirio.client.AlwaysDownloadStrategy')
     def test_init_with_cache_disabled(self, mock_dl):
-        client = Client(self.auth, cache={'enabled':False})
+        client = Client(self.auth, cache=False)
         mock_dl.assert_called_once_with()
 
     @patch('datareservoirio.client.CachedDownloadStrategy')
@@ -114,18 +109,22 @@ class Test_Client(unittest.TestCase):
 
         kwargs = mock_dl.call_args[1]
         self.assertIn('format', kwargs)
-        self.assertEquals(kwargs['format'], 'msgpack')
-        mock_cache.assert_called_once_with()
+        self.assertEqual(kwargs['format'], 'msgpack')
+        cache_defalts = Client.CACHE_DEFAULT.copy()
+        cache_defalts.pop('format')
+        mock_cache.assert_called_once_with(**cache_defalts)
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_enabled(self, mock_cache):
-        client = Client(self.auth, cache={'enabled':True})
-        mock_cache.assert_called_once_with()
+        client = Client(self.auth, cache=True)
+        cache_defaults = client.CACHE_DEFAULT.copy()
+        cache_defaults.pop('format')
+        mock_cache.assert_called_once_with(**cache_defaults)
 
     @patch('datareservoirio.client.CachedDownloadStrategy')
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_format_csv(self, mock_cache, mock_dl):
-        client = Client(self.auth, cache={'format':'csv'})
+        client = Client(self.auth, cache=True, cache_opt={'format': 'csv'})
 
         kwargs = mock_dl.call_args[1]
         self.assertIn('format', kwargs)
@@ -143,17 +142,17 @@ class Test_Client(unittest.TestCase):
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_invalid_cache_format_raises_exception(self, mock_cache):
         with self.assertRaises(ValueError):
-            Client(self.auth, cache={'format':'bogusformat'})
+            Client(self.auth, cache=True, cache_opt={'format': 'bogusformat'})
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_root(self, mock_cache):
-        client = Client(self.auth, cache={'cache_root':'a:\\diskett'})
-        mock_cache.assert_called_once_with(cache_root='a:\\diskett')
+        client = Client(self.auth, cache=True, cache_opt={'cache_root':'a:\\diskett'})
+        mock_cache.assert_called_once_with(cache_root='a:\\diskett', max_size=1024)
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_max_size(self, mock_cache):
-        client = Client(self.auth, cache={'max_size': 10})
-        mock_cache.assert_called_once_with(max_size_MB=10)
+        client = Client(self.auth, cache=True, cache_opt={'max_size': 10})
+        mock_cache.assert_called_once_with(cache_root=None, max_size=10)
 
     def test_token(self):
         self.assertEqual(self.client.token, self.auth.token)
@@ -320,6 +319,7 @@ class Test_TimeSeriesClient_verify_prep_dataframe(unittest.TestCase):
     def test_not_a_series(self):
         with self.assertRaises(ValueError):
             self.client._verify_and_prepare_series('this is wrong input')
+
 
 if __name__ == '__main__':
     unittest.main()

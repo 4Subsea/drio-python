@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from datareservoirio.storage import CachedDownloadStrategy, SimpleFileCache
+from datareservoirio.storage.downloadstrategy import BaseDownloadStrategy
 
 try:
     from unittest.mock import patch, Mock
@@ -14,27 +15,29 @@ except:
 
 class Test_CachedDownloadStrategy(unittest.TestCase):
     def setUp(self):
-        self._blob_to_series_patch = patch('datareservoirio.storage.CachedDownloadStrategy._blob_to_series')
+        self._blob_to_series_patch = patch(
+            'datareservoirio.storage.CachedDownloadStrategy._blob_to_series')
         self._blob_to_series = self._blob_to_series_patch.start()
         self.addCleanup(self._unpatch)
         self._cache = Mock()
 
-        self._df = pd.DataFrame(data=[{'1':42},{'2':32}], columns=['index', 'values'])
+        self._df = pd.DataFrame(
+            data=[{'1': 42}, {'2': 32}], columns=['index', 'values'])
         self._files = {
             "Files": [
                 {
-                "Index": 0,
-                "FileId": '42',
-                "Chunks": [
-                    {
-                    "Account": "acc",
-                    "SasKey": "sas",
-                    "Container": "cnt",
-                    "Path": "pth",
-                    "Endpoint": "ep",
-                    "ContentMd5": "md5"
-                    }
-                ]
+                    "Index": 0,
+                    "FileId": '42',
+                    "Chunks": [
+                        {
+                            "Account": "acc",
+                            "SasKey": "sas",
+                            "Container": "cnt",
+                            "Path": "pth",
+                            "Endpoint": "ep",
+                            "ContentMd5": "md5"
+                        }
+                    ]
                 }
             ]
         }
@@ -91,6 +94,40 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
 
         self.assertTrue(sr.equals(self._df))
 
+
+class Test_BaseDownloadStrategy(unittest.TestCase):
+    def test__combine_first_no_overlap(self):
+        df1 = pd.DataFrame([0., 1., 2., 3.], index=[0, 1, 2, 3])
+        df2 = pd.DataFrame([10., 11., 12., 13.], index=[6, 7, 8, 9])
+        df_expected = df1.combine_first(df2)
+        df_out = BaseDownloadStrategy._combine_first(df1, df2)
+        pd.testing.assert_frame_equal(df_expected, df_out)
+
+    def test__combine_first_exact_overlap(self):
+        df1 = pd.DataFrame([0., 1., 2., 3.], index=[0, 1, 2, 3])
+        df2 = pd.DataFrame([10., 11., 12., 13.], index=[0, 1, 2, 3])
+        df_expected = df1.combine_first(df2)
+        df_out = BaseDownloadStrategy._combine_first(df1, df2)
+        pd.testing.assert_frame_equal(df_expected, df_out)
+
+    def test__combine_first_partial_overlap(self):
+        df1 = pd.DataFrame([0., 1., 2., 3.], index=[0, 1, 2, 3])
+        df2 = pd.DataFrame([10., 11., 12., 13.], index=[2, 3, 4, 5])
+        df_expected = df1.combine_first(df2)
+        df_out = BaseDownloadStrategy._combine_first(df1, df2)
+        pd.testing.assert_frame_equal(df_expected, df_out)
+
+    def test__get_chunks_hash(self):
+        response = {'Files': [
+            {'Chunks': [
+                {'ContentMd5': 'abc123'},
+                {'ContentMd5': 'def456'}]},
+            {'Chunks': [
+                {'ContentMd5': 'ghi789'}]}
+            ]}
+        hash_out = BaseDownloadStrategy._get_chunks_hash(response)
+        hash_expected = hash('abc123def456ghi789')
+        self.assertEqual(hash_out, hash_expected)
 
 if __name__ == '__main__':
     unittest.main()
