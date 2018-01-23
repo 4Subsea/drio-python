@@ -234,6 +234,7 @@ def _win_path_to_bytes(path):
 
 def _win_path(path):
     r"""Pretend '\\?\' to long Windows path."""
+    path = os.path.abspath(path)
     if (len(path) + 1) >= 260:
         if path.startswith('\\\\'):
             raise IOError('long UNC paths not supported')
