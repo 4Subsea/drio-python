@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import base64
 import logging
@@ -40,7 +40,7 @@ class BaseDownloadStrategy(object):
             try:
                 df = next(filedatas)
             except IndexError:
-                return pd.DataFrame()
+                return pd.DataFrame(columns=['values'])
 
             for fd in filedatas:
                     df = self._combine_first(fd, df)
@@ -50,7 +50,7 @@ class BaseDownloadStrategy(object):
 
     def _download_chunks_as_dataframe(self, chunks):
         if not chunks:
-            return pd.DataFrame()
+            return pd.DataFrame(columns=['values'])
 
         with ThreadPoolExecutor(max_workers=32) as executor:
             filechunks = executor.map(self._download_chunk, chunks)
@@ -70,12 +70,19 @@ class BaseDownloadStrategy(object):
         if calling.empty or other.empty:
             return calling
 
-        late_start = max([calling.index.values[0], other.index.values[0]])
-        early_end = min([calling.index.values[-1], other.index.values[-1]])
+        calling_index = calling.index.values
+        other_index = other.index.values
+
+        late_start = max([calling_index[0], other_index[0]])
+        early_end = min([calling_index[-1], other_index[-1]])
 
         if late_start > early_end:  # no overlap
-            df_combined = pd.concat((calling, other))
-        elif (calling.index.values == other.index.values).all():  # exact overlap
+            if calling_index[0] < late_start:
+                df_combined = pd.concat((calling, other))
+            else:
+                df_combined = pd.concat((other, calling))
+        elif (len(calling_index) == len(other_index) and
+              (calling_index == other_index).all()):  # exact overlap
             df_combined = calling
         else:  # partial overlap - expensive
             df_combined = calling.combine_first(other)

@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
 import logging
 import time
@@ -7,7 +7,7 @@ import timeit
 import pandas as pd
 
 from .log import LogWriter
-from .rest_api import timeseries, FilesAPI, TimeSeriesAPI
+from .rest_api import FilesAPI, TimeSeriesAPI
 from .storage import (AlwaysDownloadStrategy, CachedDownloadStrategy,
                       SimpleFileCache, Storage)
 

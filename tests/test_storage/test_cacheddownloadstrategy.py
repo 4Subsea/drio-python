@@ -103,6 +103,13 @@ class Test_BaseDownloadStrategy(unittest.TestCase):
         df_out = BaseDownloadStrategy._combine_first(df1, df2)
         pd.testing.assert_frame_equal(df_expected, df_out)
 
+    def test__combine_first_no_overlap_reversed_order(self):
+        df2 = pd.DataFrame([0., 1., 2., 3.], index=[0, 1, 2, 3])
+        df1 = pd.DataFrame([10., 11., 12., 13.], index=[6, 7, 8, 9])
+        df_expected = df1.combine_first(df2)
+        df_out = BaseDownloadStrategy._combine_first(df1, df2)
+        pd.testing.assert_frame_equal(df_expected, df_out)
+
     def test__combine_first_exact_overlap(self):
         df1 = pd.DataFrame([0., 1., 2., 3.], index=[0, 1, 2, 3])
         df2 = pd.DataFrame([10., 11., 12., 13.], index=[0, 1, 2, 3])
