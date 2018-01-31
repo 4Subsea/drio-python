@@ -3,6 +3,9 @@ from __future__ import absolute_import, division, print_function
 import logging
 import sys
 
+import numpy as np
+import pandas as pd
+
 from ..log import LogWriter
 from .downloadstrategy import CachedDownloadStrategy
 from .uploadstrategy import UploadStrategy
@@ -94,9 +97,18 @@ class Storage(object):
         response = self._timeseries_api.download_days(
             self.token, timeseries_id, start, end)
 
-        df = self._downloader.get(response)
+        series = self._downloader.get(response)
 
-        if not df.empty:
-            df = df.loc[start:end]
+        # at this point, an entirely new object w/o reference
+        # to internal objects is created.
+        if series.empty:
+            return pd.Series()
+        return self._create_series(series, start, end)
 
-        return df
+    def _create_series(self, series, start, end):
+        """Create a new pandas Series w/o internal references"""
+        index_bool = (series.index.values >= start) &\
+                     (series.index.values <= end)
+        index = series.index.values[index_bool]  # enforces copy
+        values = series.values[index_bool]  # enforces copy
+        return pd.Series(data=values, index=index)

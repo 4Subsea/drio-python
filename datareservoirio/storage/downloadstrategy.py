@@ -4,6 +4,7 @@ import base64
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+from itertools import imap
 
 import pandas as pd
 
@@ -22,41 +23,27 @@ class BaseDownloadStrategy(object):
     Multiple chunks will be downloaded in parallel using ThreadPoolExecutor.
     """
 
-    _memory_cache = (0, None)
-
     def get(self, response):
-        # short-circuit if same as last one
-        chunks_hash = self._get_chunks_hash(response)
-        chunks_hash_cached, df_cached = self._memory_cache
-        if chunks_hash == chunks_hash_cached:
-            return df_cached
-
         filechunks = [f['Chunks'] for f in response['Files']]
+        filedatas = imap(self._download_chunks_as_dataframe, filechunks)
 
-        with ThreadPoolExecutor(max_workers=8) as executor:
-            filedatas = executor.map(self._download_chunks_as_dataframe,
-                                     filechunks)
+        try:
+            series = next(filedatas)
+        except IndexError:
+            return pd.Series()
 
-            try:
-                df = next(filedatas)
-            except IndexError:
-                return pd.DataFrame(columns=['values'])
-
-            for fd in filedatas:
-                    df = self._combine_first(fd, df)
-            self._memory_cache = (chunks_hash, df)
-
-        return df
+        for fd in filedatas:
+                series = self._combine_first(fd, series)
+        return series
 
     def _download_chunks_as_dataframe(self, chunks):
         if not chunks:
-            return pd.DataFrame(columns=['values'])
+            return pd.Series()
 
-        with ThreadPoolExecutor(max_workers=32) as executor:
+        with ThreadPoolExecutor() as executor:
             filechunks = executor.map(self._download_chunk, chunks)
-            df_chunks = pd.concat(filechunks)
-            df_chunks.sort_index(inplace=True)
-            return df_chunks
+        series_chunks = pd.concat(filechunks)
+        return series_chunks
 
     def _download_chunk(self, chunk):
         raise Exception('_download_chunk must be overridden in subclass')
@@ -153,6 +140,8 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
             'msgpack' and 'csv'. Default is 'msgpack'.
 
         """
+        super(CachedDownloadStrategy, self).__init__()
+
         if format == 'msgpack':
             self._format = self.MsgPackFormat()
         elif format == 'csv':
@@ -161,6 +150,18 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
             raise ValueError('Unsupported format {}'.format(format))
 
         self._cache = cache
+        self._memory_cache = (hash(None), None)
+
+    def get(self, response):
+        # short-circuit if same as last one
+        chunks_hash = self._get_chunks_hash(response)
+        chunks_hash_cached, series_cached = self._memory_cache
+        if chunks_hash == chunks_hash_cached:
+            return series_cached
+
+        series = super(CachedDownloadStrategy, self).get(response)
+        self._memory_cache = (chunks_hash, series)
+        return series
 
     def _download_chunk(self, chunk):
         key0 = self._format.file_extension

@@ -26,11 +26,11 @@ class Test_Client(unittest.TestCase):
                            'expiresOn': np.datetime64('2050-01-01 00:00:00', 's')}
 
         self.client = Client(self.auth)
-        self.client._files_api = Mock()
-        self.client._timeseries_api = Mock()
-        self._storage = self.client._storage = Mock()
+        self.client._files_api = Mock()  # should use patch
+        self.client._timeseries_api = Mock()  # should use patch
+        self._storage = self.client._storage = Mock()  # should use patch
 
-        self.dummy_df = pd.DataFrame({'a': np.arange(1e3)}, index=np.array(
+        self.dummy_df = pd.Series(np.arange(1e3), index=np.array(
             np.arange(1e3), dtype='datetime64[ns]'))
 
         self.timeseries_id = 'abc-123-xyz'
@@ -44,13 +44,11 @@ class Test_Client(unittest.TestCase):
 
         self.response = Mock()
         self.response.text = u'1,1\n2,2\n3,3\n4,4'
-        self.response_df = pd.DataFrame(data={'values': [1, 2, 3, 4]}, index=[
-                                        1, 2, 3, 4], columns=['index', 'values'])
-        self.dataframe_with_10_rows = pd.DataFrame(data={'values': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=[
-                                                   1, 2, 3, 4, 5, 6, 7, 8, 9, 10], columns=['index', 'values'])
-        self.dataframe_with_10_rows_csv = self.dataframe_with_10_rows.to_csv(
-            header=False)
-        self.response_df.index.name = 'index'
+
+        self.series_with_10_rows = pd.Series(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                                             index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        self.series_with_10_rows_csv = self.series_with_10_rows.to_csv(header=False)
+
         self.download_days_response = {
             'Files':
                 [
@@ -236,29 +234,29 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(response, expected_response)
 
     def test_get_with_defaults(self):
-        self._storage.get.return_value = self.dataframe_with_10_rows
+        self._storage.get.return_value = self.series_with_10_rows
 
         response = self.client.get(self.timeseries_id)
 
         self.client._storage.get.assert_called_once_with(
             self.timeseries_id, datareservoirio.client._START_DEFAULT, datareservoirio.client._END_DEFAULT)
         pd.util.testing.assert_series_equal(
-            response, self.dataframe_with_10_rows['values'])
+            response, self.series_with_10_rows)
 
-    def test_get_with_convert_date_returns_dataframe(self):
+    def test_get_with_convert_date_returns_series(self):
         start = pd.to_datetime(1, dayfirst=True, unit='ns').value
         end = pd.to_datetime(10, dayfirst=True, unit='ns').value
-        self.client._storage.get.return_value = self.dataframe_with_10_rows
+        self.client._storage.get.return_value = self.series_with_10_rows
 
         response = self.client.get(
             self.timeseries_id, start, end, convert_date=True)
 
         self.client._storage.get.assert_called_once_with(self.timeseries_id, start, end)
         pd.util.testing.assert_series_equal(
-            response, self.dataframe_with_10_rows['values'])
+            response, self.series_with_10_rows)
 
     def test_get_with_start_stop_as_str_calls_storagewithnanonsinceepoch(self):
-        self._storage.get.return_value = self.dataframe_with_10_rows
+        self._storage.get.return_value = self.series_with_10_rows
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',
@@ -268,17 +266,17 @@ class Test_Client(unittest.TestCase):
             self.timeseries_id, 1, 4)
 
     def test_get_with_emptytimeseries_return_empty(self):
-        self._storage.get.return_value = pd.DataFrame(columns=['index', 'values'])
+        self._storage.get.return_value = pd.Series()
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',
                                    end='1970-01-01 00:00:00.000000004', raise_empty=False)
 
-        response_expected = pd.Series(name='values')
+        response_expected = pd.Series()
         pd.testing.assert_series_equal(response, response_expected, check_dtype=False)
 
     def test_get_with_raise_empty_throws(self):
-        self._storage.get.return_value = pd.DataFrame(columns=['index', 'values'])
+        self._storage.get.return_value = pd.Series()
 
         with self.assertRaises(ValueError):
             self.client.get(self.timeseries_id, start='1970-01-01 00:00:00.000000001',
@@ -293,7 +291,7 @@ class Test_Client(unittest.TestCase):
                                        end='1970-01-01 00:00:00.000000001')
 
 
-class Test_TimeSeriesClient_verify_prep_dataframe(unittest.TestCase):
+class Test_TimeSeriesClient_verify_prep_series(unittest.TestCase):
 
     def setUp(self):
         self.client = Client(Mock())

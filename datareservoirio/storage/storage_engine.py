@@ -24,9 +24,12 @@ logwriter = LogWriter(logger)
 
 
 class AzureBlobService(BlockBlobService):
-    """Sub-class of BlockBlobService that handle upload/download of Pandas dataframes to/from Azure Blob Storage"""
+    """
+    Sub-class of BlockBlobService that handle upload/download of Pandas Series
+    to/from Azure Blob Storage.
+    """
 
-    MAX_DOWNLOAD_CONCURRENT_BLOCKS = 32
+    MAX_DOWNLOAD_CONCURRENT_BLOCKS = 4  # benchmark shows no difference?
     MAX_CHUNK_GET_SIZE = 8 * 1024 * 1024
     MAX_SINGLE_GET_SIZE = MAX_CHUNK_GET_SIZE
 
@@ -69,8 +72,8 @@ class AzureBlobService(BlockBlobService):
 
             binary_content.seek(0)
             with TextIOWrapper(binary_content, encoding='utf-8') as text_content:
-                series = pd.read_csv(text_content, header=None,
-                                     names=['index', 'values'], index_col=0)
+                series = pd.read_csv(
+                    text_content, header=None, index_col=0).iloc[:, 0]
         time_end = timeit.default_timer()
         logwriter.debug('Blob download took {} seconds'
                         .format(time_end - time_start), 'get_content')

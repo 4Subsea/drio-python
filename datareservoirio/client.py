@@ -213,8 +213,8 @@ class Client(object):
             If True, the index is converted to numpy.datetime64[ns]. Default is
             False, index is returned as nanoseconds since epoch.
         raise_empty : bool
-            If True, raise ValueError if no data exist in the provided interval. Otherwise,
-            return an empty pandas.Series (default).
+            If True, raise ValueError if no data exist in the provided
+            interval. Otherwise, return an empty pandas.Series (default).
 
         Returns
         -------
@@ -235,19 +235,19 @@ class Client(object):
         time_start = timeit.default_timer()
 
         logwriter.debug("Getting timeseries range")
-        df = self._storage.get(timeseries_id, start, end)
+        series = self._storage.get(timeseries_id, start, end)
 
-        if df.empty and raise_empty:  # may become empty after slicing
+        if series.empty and raise_empty:  # may become empty after slicing
             raise ValueError('can\'t find data in the given interval')
 
         if convert_date:
-            df.index = pd.to_datetime(df.index)
+            series.index = pd.to_datetime(series.index)
 
         time_end = timeit.default_timer()
-        logwriter.info('Gownload timeseries dataframe took {} seconds'
+        logwriter.info('Download timeseries dataframe took {} seconds'
                        .format(time_end - time_start), 'get')
 
-        return df['values']
+        return series
 
     def _verify_and_prepare_series(self, series):
         logwriter.debug("checking arguments", "_check_arguments_create")
