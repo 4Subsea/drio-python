@@ -135,8 +135,6 @@ class SimpleFileCache(object):
     def _get_cache_filepath_for(self, *tokens):
         fileroot = os.path.normpath(
             os.path.join(self.cache_root, self._cache_hive, *tokens))
-        if WINDOWS:
-            fileroot = _win_path(fileroot)
         return fileroot
 
     def _put_data_to_cache(self, data, filepath, serialize_data):
@@ -184,6 +182,8 @@ class SimpleFileCache(object):
 
     def _write_to_cache(self, data, filepath, serialize_data):
         pre_filepath = filepath + '.uncommitted'
+        if WINDOWS:
+            pre_filepath = _win_path(pre_filepath)
         with io.open(pre_filepath, 'wb') as file_:
 
             try:
@@ -197,6 +197,8 @@ class SimpleFileCache(object):
         return _file_size_in_megabytes(filepath)
 
     def _read_from_cache(self, filepath, deserialize_data):
+        if WINDOWS:
+            filepath = _win_path(filepath)
         with io.open(filepath, 'rb') as file_:
             return deserialize_data(file_)
 
