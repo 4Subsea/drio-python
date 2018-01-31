@@ -25,14 +25,8 @@ class Test_Client(unittest.TestCase):
         cls.auth = Authenticator(USER.NAME)
 
         cls.df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
-        cls.df_1.index.name = 'index'
-        cls.df_1.name = 'values'
         cls.df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
-        cls.df_2.index.name = 'index'
-        cls.df_2.name = 'values'
         cls.df_3 = pd.Series(np.arange(50.), index=np.arange(125, 175))
-        cls.df_3.index.name = 'index'
-        cls.df_3.name = 'values'
 
     def setUp(self):
         self.client = datareservoirio.Client(self.auth, cache=False)
@@ -43,8 +37,6 @@ class Test_Client(unittest.TestCase):
     def test_create_get_delete(self):
         rng = pd.date_range('1970-01-01', periods=100, freq='ns')
         df = pd.Series(np.arange(100.), index=rng)
-        df.index.name = 'index'
-        df.name = 'values'
         response = self.client.create(df)
         info = self.client.info(response['TimeSeriesId'])
 
@@ -116,8 +108,6 @@ class Test_Client(unittest.TestCase):
         # 10 days @ 10Hz
         df = pd.Series(np.arange(10 * 864000.),
                        index=np.arange(0, 10 * 864000))
-        df.index.name = 'index'
-        df.name = 'values'
 
         start = timer()
         response = self.client.create(df)
@@ -143,14 +133,8 @@ class Test_Client_CacheEnable(unittest.TestCase):
         cls.auth = Authenticator(USER.NAME)
 
         cls.df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
-        cls.df_1.index.name = 'index'
-        cls.df_1.name = 'values'
         cls.df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
-        cls.df_2.index.name = 'index'
-        cls.df_2.name = 'values'
         cls.df_3 = pd.Series(np.arange(50.), index=np.arange(125, 175))
-        cls.df_3.index.name = 'index'
-        cls.df_3.name = 'values'
 
     def setUp(self):
         self.client = datareservoirio.Client(self.auth, cache=True)
@@ -161,8 +145,6 @@ class Test_Client_CacheEnable(unittest.TestCase):
     def test_create_get_delete(self):
         rng = pd.date_range('1970-01-01', periods=100, freq='ns')
         df = pd.Series(np.arange(100.), index=rng)
-        df.index.name = 'index'
-        df.name = 'values'
         response = self.client.create(df)
         info = self.client.info(response['TimeSeriesId'])
 
@@ -234,8 +216,6 @@ class Test_Client_CacheEnable(unittest.TestCase):
         # 10 days @ 10Hz
         df = pd.Series(np.arange(10 * 864000.),
                        index=np.arange(0, 10 * 864000))
-        df.index.name = 'index'
-        df.name = 'values'
 
         start = timer()
         response = self.client.create(df)
