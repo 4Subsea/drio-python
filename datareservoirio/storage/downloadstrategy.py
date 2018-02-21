@@ -29,7 +29,7 @@ class BaseDownloadStrategy(object):
 
         try:
             series = next(filedatas)
-        except IndexError:
+        except StopIteration:
             return pd.Series()
 
         for fd in filedatas:

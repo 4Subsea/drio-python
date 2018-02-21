@@ -42,6 +42,8 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
             ]
         }
 
+        self._files_empty = {"Files": []}
+
         self._blob_to_series.return_value = self._df
         self._cache.get.return_value = self._df
 
@@ -93,6 +95,11 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
         sr = self._dl.get(self._files)
 
         self.assertTrue(sr.equals(self._df))
+
+    def test_get_empty(self):
+        sr = self._dl.get(self._files_empty)
+
+        self.assertTrue(sr.equals(pd.Series()))
 
 
 class Test_BaseDownloadStrategy(unittest.TestCase):
