@@ -15,7 +15,7 @@ setup(name='datareservoirio',
           'numpy',
           'pandas>=0.20.2',
           'requests',
-          'futures'
+          'futures; python_version == "2.7"'
       ],
       include_package_data=True,
       zip_safe=False)

@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import getpass
 import logging
+import threading
 
 import adal
 
@@ -79,8 +80,9 @@ class AdalAuthenticator(object):
         return self._token()
 
     def _token(self):
-        self._token_cache = self.context.acquire_token(
-            self.params.resource, self.username, self.params.client_id)
+        with threading.Lock():
+            self._token_cache = self.context.acquire_token(
+                self.params.resource, self.username, self.params.client_id)
 
         logwriter.debug("token retrieved - expires {}"
                         .format(self._token_cache['expiresOn']), "_token")
