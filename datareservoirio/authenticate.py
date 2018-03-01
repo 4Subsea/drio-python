@@ -71,6 +71,8 @@ class AdalAuthenticator(object):
         self.username = username
         password = self._get_pass()
 
+        self._token_lock = threading.Lock()
+
         self.context.acquire_token_with_username_password(
             self.params.resource, self.username, password,
             self.params.client_id)
@@ -80,7 +82,7 @@ class AdalAuthenticator(object):
         return self._token()
 
     def _token(self):
-        with threading.Lock():
+        with self._token_lock:
             self._token_cache = self.context.acquire_token(
                 self.params.resource, self.username, self.params.client_id)
 
