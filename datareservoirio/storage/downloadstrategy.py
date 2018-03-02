@@ -40,7 +40,7 @@ class BaseDownloadStrategy(object):
         if not chunks:
             return pd.Series()
 
-        with ThreadPoolExecutor()) as executor:
+        with ThreadPoolExecutor() as executor:
             filechunks = executor.map(self._download_verified_chunk, chunks)
         series_chunks = pd.concat(filechunks)
         return series_chunks
