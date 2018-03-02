@@ -118,31 +118,6 @@ class TimeSeriesAPI(BaseAPI):
         response = self._post(uri, data=body, auth=TokenAuth(token))
         return response.json()
 
-    def list(self, token):
-        """
-        List all existing entries.
-
-        Parameters
-        ----------
-        token : dict
-            token recieved from authenticator
-
-        Return
-        ------
-        list of dict
-            list of dictionaries containing information about timeseries
-            entries in the reservoir
-
-        See also
-        -----
-        TimeSeriesAPI.info()
-        """
-        logwriter.debug("called with <token>")
-
-        uri = self._api_base_url + 'TimeSeries/list'
-        response = self._get(uri, auth=TokenAuth(token))
-        return response.json()
-
     def info(self, token, timeseries_id):
         """
         Information about a timeseries entry.

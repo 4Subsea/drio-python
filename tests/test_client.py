@@ -222,16 +222,6 @@ class Test_Client(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             self.client.append(df, self.timeseries_id)
 
-    def test_list_all_methods_called(self):
-        expected_response = ['ts1', 'ts2', 'ts3']
-        self.client._timeseries_api.list.return_value = expected_response
-
-        response = self.client.list()
-
-        self.client._timeseries_api.list.assert_called_once_with(
-            self.auth.token)
-        self.assertListEqual(response, expected_response)
-
     def test_info_all_methods_called(self):
         expected_response = {'abc': 123}
         self.client._timeseries_api.info.return_value = expected_response

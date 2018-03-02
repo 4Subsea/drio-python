@@ -50,21 +50,6 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         self.api._session = Mock()
 
     @patch('datareservoirio.rest_api.timeseries.TokenAuth')
-    def test_list(self, mock_token):
-        mock_post = self.api._session.get
-
-        mock_post.return_value = Mock()
-        mock_post.return_value.text = u'{}'
-
-        result = self.api.list(self.token)
-
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/TimeSeries/list'
-        expected_header = {'Authorization': 'Bearer abcdef'}
-
-        mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
-                                          **self.api._defaults)
-
-    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_info(self, mock_token):
         mock_get = self.api._session.get
 

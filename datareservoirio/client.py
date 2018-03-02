@@ -157,17 +157,6 @@ class Client(object):
         response = self._timeseries_api.add(self.token, series_id, file_id)
         return response
 
-    def list(self):
-        """
-        Lists all available timeseries in the reservoir. 
-
-        Returns
-        -------
-        list
-            All timeseries ids in the reservoir.
-        """
-        return self._timeseries_api.list(self.token)
-
     def info(self, timeseries_id):
         """
         Retrieves basic information about one timeseries.
