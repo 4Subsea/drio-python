@@ -47,11 +47,13 @@ class BaseDownloadStrategy(object):
 
     def _download_verified_chunk(self, chunk):
         """
-        Download chunk as pandas Series and ensure the series 
-        does not contain duplicates.
+        Download chunk as pandas Series and ensure the series does not contain
+        duplicates.
         """
         df = self._download_chunk(chunk)
-        return df[~df.index.duplicated(keep='last')]
+        if not df.index.is_unique:
+            return df[~df.index.duplicated(keep='last')]
+        return df
 
     def _download_chunk(self, chunk):
         raise Exception('_download_chunk must be overridden in subclass')
