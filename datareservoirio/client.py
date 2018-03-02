@@ -261,6 +261,11 @@ class Client(object):
             logwriter.error("index dtype is {}".format(series.index.dtype))
             raise ValueError('allowed dtypes are datetime64[ns] and int64')
 
+        if series.index.duplicated(keep=False).any():
+            logwriter.error("index contains duplicate timestamp values")
+            raise ValueError('index values must be unique timestamps')
+
+
     def _wait_until_file_ready(self, file_id):
         # wait for server side processing
         while True:

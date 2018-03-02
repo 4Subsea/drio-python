@@ -183,6 +183,15 @@ class Test_Client(unittest.TestCase):
         self.assertDictEqual(response, expected_response)
 
     @patch('time.sleep')
+    def test_create_when_timeseries_have_duplicate_indicies_throws(self, mock_sleep):
+        self._storage.put = Mock(return_value=self.dummy_params['FileId'])
+        self.client._wait_until_file_ready = Mock(return_value='Ready')
+        df = pd.Series([0., 1., 2., 3.1, 3.2, 3.3, 4.], index=[0, 1, 2, 3, 3, 3, 4])
+
+        with self.assertRaises(ValueError) as context:
+            self.client.create(df)
+
+    @patch('time.sleep')
     def test_append_all_methods_called(self, mock_sleep):
         self.client._verify_and_prepare_series = Mock(return_value=None)
         self._storage.put = Mock(
@@ -202,6 +211,16 @@ class Test_Client(unittest.TestCase):
         self.client._timeseries_api.add.assert_called_once_with(
             self.auth.token, self.timeseries_id, self.dummy_params['FileId'])
         self.assertDictEqual(response, expected_response)
+
+
+    @patch('time.sleep')
+    def test_append_when_timeseries_have_duplicate_indicies_throws(self, mock_sleep):
+        self._storage.put = Mock(return_value=self.dummy_params['FileId'])
+        self.client._wait_until_file_ready = Mock(return_value='Ready')
+        df = pd.Series([0., 1., 2., 3.1, 3.2, 3.3, 4.], index=[0, 1, 2, 3, 3, 3, 4])
+
+        with self.assertRaises(ValueError) as context:
+            self.client.append(df, self.timeseries_id)
 
     def test_list_all_methods_called(self):
         expected_response = ['ts1', 'ts2', 'ts3']

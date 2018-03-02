@@ -40,10 +40,18 @@ class BaseDownloadStrategy(object):
         if not chunks:
             return pd.Series()
 
-        with ThreadPoolExecutor() as executor:
-            filechunks = executor.map(self._download_chunk, chunks)
+        with ThreadPoolExecutor()) as executor:
+            filechunks = executor.map(self._download_verified_chunk, chunks)
         series_chunks = pd.concat(filechunks)
         return series_chunks
+
+    def _download_verified_chunk(self, chunk):
+        """
+        Download chunk as pandas Series and ensure the series 
+        does not contain duplicates.
+        """
+        df = self._download_chunk(chunk)
+        return df[~df.index.duplicated(keep='last')]
 
     def _download_chunk(self, chunk):
         raise Exception('_download_chunk must be overridden in subclass')

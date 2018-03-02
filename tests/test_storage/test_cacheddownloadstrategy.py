@@ -101,8 +101,12 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
 
         self.assertTrue(sr.equals(pd.Series()))
 
+class FakedDownloadStrategy(BaseDownloadStrategy):
+    def _download_chunk(self, chunk):
+        return "dummy"
 
 class Test_BaseDownloadStrategy(unittest.TestCase):
+
     def test__combine_first_no_overlap(self):
         df1 = pd.Series([0., 1., 2., 3.], index=[0, 1, 2, 3])
         df2 = pd.Series([10., 11., 12., 13.], index=[6, 7, 8, 9])
@@ -142,6 +146,19 @@ class Test_BaseDownloadStrategy(unittest.TestCase):
         hash_out = BaseDownloadStrategy._get_chunks_hash(response)
         hash_expected = hash('abc123def456ghi789')
         self.assertEqual(hash_out, hash_expected)
+
+    def test__download_verified_chunk(self):
+        chunk = { }
+        df = pd.Series([0., 1., 2., 3.1, 3.2, 3.3, 4.], index=[0, 1, 2, 3, 3, 3, 4])
+        df_expected = pd.Series([0., 1., 2., 3.3, 4.], index=[0, 1, 2, 3, 4])
+
+        ds = FakedDownloadStrategy()
+        ds._download_chunk = Mock(name='_download_chunk')
+        ds._download_chunk.return_value = df
+
+        df_out = ds._download_verified_chunk(chunk)
+
+        pd.testing.assert_series_equal(df_expected, df_out)
 
 
 if __name__ == '__main__':
