@@ -38,14 +38,19 @@ class BaseAPI(object):
         self._api_base_url = globalsettings.environment.api_base_url
 
         self._session = requests.Session()
-        retry_status = frozenset([413, 429, 500, 502, 503, 504])
 
-        persist = Retry(total=10, backoff_factor=0.5,
-                        status_forcelist=retry_status, raise_on_status=False)
+        # Attention: Be careful when extending the list of retry_status!
+        retry_status = frozenset([413, 429, 500, 502, 503, 504])
+        method_whitelist = frozenset(['HEAD', 'TRACE', 'GET', 'POST', 'PUT',
+                                      'OPTIONS', 'DELETE'])
+
+        persist = Retry(
+            total=10, backoff_factor=0.5, method_whitelist=method_whitelist,
+            status_forcelist=retry_status, raise_on_status=False)
         self._session.mount(self._api_base_url,
                             HTTPAdapter(max_retries=persist))
 
-        self._defaults = {'timeout': 120.0}
+        self._defaults = {'timeout': 30.0}
 
     @_response_logger
     def _get(self, *args, **kwargs):

@@ -97,10 +97,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
         with self.assertRaises(HTTPError):
             info_post = self.api.info(*token_tsid)
 
-    def test_list(self):
-        response = self.api.list(self.token_fileid[0][0])
-        self.assertTrue(isinstance(response, list))
-
     def test_create_add_overlap_data_delete(self):
         response = self.api.create(*self.token_fileid[0])
         token_tsid = (self.auth.token, response['TimeSeriesId'])

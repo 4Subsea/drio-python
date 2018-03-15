@@ -55,10 +55,6 @@ class Test_Client(unittest.TestCase):
 
         self.client.delete(response['TimeSeriesId'])
 
-    def test_list(self):
-        response = self.client.list()
-        self.assertTrue(isinstance(response, list))
-
     def test_delete(self):
         response = self.client.create(self.df_3)
         info_pre = self.client.info(response['TimeSeriesId'])
@@ -162,10 +158,6 @@ class Test_Client_CacheEnable(unittest.TestCase):
         pd.util.testing.assert_series_equal(df, df_recieved)
 
         self.client.delete(response['TimeSeriesId'])
-
-    def test_list(self):
-        response = self.client.list()
-        self.assertTrue(isinstance(response, list))
 
     def test_delete(self):
         response = self.client.create(self.df_3)
