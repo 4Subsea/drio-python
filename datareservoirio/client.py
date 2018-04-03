@@ -12,7 +12,7 @@ from .storage import (AlwaysDownloadStrategy, CachedDownloadStrategy,
                       SimpleFileCache, Storage)
 
 logger = logging.getLogger(__name__)
-logwriter = LogWriter(logger)
+log = LogWriter(logger)
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
@@ -82,39 +82,45 @@ class Client(object):
         """
         return self._files_api.ping(self.token)
 
-    def create(self, series):
+    def create(self, series=None):
         """
-        Create a new series in the reservoir from a pandas.Series.
+        Create a new series in the reservoir from a pandas.Series. If no data
+        is provided, an empty series is created.
 
         Parameters
         ----------
-        series : pandas.Series
+        series : pandas.Series or None
             Series with index (as numpy.datetime64 (with nanosecond precision)
             or integer array).
 
         Returns
         -------
         dict
-            The response from the reservoir
+            The response from the reservoir containing the unique id of the
+            newly created series.
         """
+        if series is None:
+            response = self._timeseries_api.create(self.token)
+            return response
+
         self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
         file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
-        logwriter.info('Fileupload took {} seconds'
+        log.info('Upload took {} seconds'
                        .format(time_upload - time_start), 'create')
 
         status = self._wait_until_file_ready(file_id)
         time_process = timeit.default_timer()
-        logwriter.info('Processing serverside took {} seconds'
+        log.info('Processing took {} seconds'
                        .format(time_process - time_upload), 'create')
         if status == "Failed":
             return status
 
-        response = self._timeseries_api.create(self.token, file_id)
+        response = self._timeseries_api.create_with_data(self.token, file_id)
         time_end = timeit.default_timer()
-        logwriter.info('Done, total time spent: {} seconds ({} minutes)'
+        log.info('Done. Total time spent: {} seconds ({} minutes)'
                        .format(time_end - time_start, (time_end - time_start) / 60.), 'create')
         return response
 
@@ -140,18 +146,18 @@ class Client(object):
         time_start = timeit.default_timer()
         file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
-        logwriter.info('Upload took {} seconds'
+        log.info('Upload took {} seconds'
                        .format(time_upload - time_start), 'append')
 
         status = self._wait_until_file_ready(file_id)
         time_process = timeit.default_timer()
-        logwriter.info('Processing serverside took {} seconds'
+        log.info('Processing serverside took {} seconds'
                        .format(time_process - time_upload), 'append')
         if status == "Failed":
             return status
 
         time_end = timeit.default_timer()
-        logwriter.info('Done, total time spent: {} seconds ({} minutes)'
+        log.info('Done, total time spent: {} seconds ({} minutes)'
                        .format(time_end - time_start, (time_end - time_start) / 60.), 'append')
 
         response = self._timeseries_api.add(self.token, series_id, file_id)
@@ -223,7 +229,7 @@ class Client(object):
 
         time_start = timeit.default_timer()
 
-        logwriter.debug("Getting timeseries range")
+        log.debug("Getting timeseries range")
         series = self._storage.get(timeseries_id, start, end)
 
         if series.empty and raise_empty:  # may become empty after slicing
@@ -233,32 +239,32 @@ class Client(object):
             series.index = pd.to_datetime(series.index)
 
         time_end = timeit.default_timer()
-        logwriter.info('Download timeseries dataframe took {} seconds'
+        log.info('Download timeseries dataframe took {} seconds'
                        .format(time_end - time_start), 'get')
 
         return series
 
     def _verify_and_prepare_series(self, series):
-        logwriter.debug("checking arguments", "_check_arguments_create")
+        log.debug("checking arguments", "_check_arguments_create")
 
         if not isinstance(series, pd.Series):
-            logwriter.error("series type is {}".format(type(series)))
+            log.error("series type is {}".format(type(series)))
             raise ValueError('series must be a pandas Series')
 
         if not (pd.api.types.is_datetime64_ns_dtype(series.index) or
                 pd.api.types.is_int64_dtype(series.index)):
-            logwriter.error("index dtype is {}".format(series.index.dtype))
+            log.error("index dtype is {}".format(series.index.dtype))
             raise ValueError('allowed dtypes are datetime64[ns] and int64')
 
         if not series.index.is_unique:
-            logwriter.error("index contains duplicate timestamp values")
+            log.error("index contains duplicate timestamp values")
             raise ValueError('index values must be unique timestamps')
 
     def _wait_until_file_ready(self, file_id):
         # wait for server side processing
         while True:
             status = self._get_file_status(file_id)
-            logwriter.debug("status is {}".format(status), "create")
+            log.debug("status is {}".format(status), "create")
 
             if status == "Ready":
                 return "Ready"

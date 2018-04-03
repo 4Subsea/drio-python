@@ -1,4 +1,5 @@
 import time
+import uuid
 import unittest
 
 import requests
@@ -48,6 +49,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api = TimeSeriesAPI()
         self.api._session = Mock()
+        self.api._api_base_url = 'https://drio/api/'
 
     @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_info(self, mock_token):
@@ -58,7 +60,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         result = self.api.info(self.token, "someId")
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/someId'
+        expected_uri = 'https://drio/api/timeseries/someId'
         expected_header = {'Authorization': 'Bearer abcdef'}
 
         mock_get.assert_called_once_with(expected_uri, auth=mock_token(),
@@ -74,23 +76,53 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         result = self.api.delete(self.token, timeseries_id)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/123456'
+        expected_uri = 'https://drio/api/timeseries/123456'
         expected_header = {'Authorization': 'Bearer abcdef'}
 
         mock_delete.assert_called_with(expected_uri, auth=mock_token(),
                                        **self.api._defaults)
 
     @patch('datareservoirio.rest_api.timeseries.TokenAuth')
-    def test_create(self, mock_token):
+    def test_create_with_timeseries_id(self, mock_token):
+        ts_id = 'ebaebc1e-35f6-49b5-a6cf-3cc07177a691'
+
+        mock_put = self.api._session.put
+        mock_put.return_value = Mock()
+        mock_put.return_value.text = u'{TimeSeriesId:\'ebaebc1e-35f6-49b5-a6cf-3cc07177a691\'}'
+
+        result = self.api.create(self.token, timeseries_id=ts_id)
+
+        expected_uri = 'https://drio/api/timeseries/ebaebc1e-35f6-49b5-a6cf-3cc07177a691'
+        expected_header = {'Authorization': 'Bearer abcdef'}
+
+        mock_put.assert_called_with(expected_uri, data=None, auth=mock_token(), **self.api._defaults)
+
+    @patch('datareservoirio.rest_api.timeseries.uuid4')
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
+    def test_create_without_timeseries_id(self, mock_token, mock_uuid):
+        mock_uuid.return_value = u'aaabbbcc-35f6-49b5-a6cf-3cc07177a691'
+        mock_put = self.api._session.put
+        mock_put.return_value = Mock()
+        mock_put.return_value.text = u'{TimeSeriesId:\'aaabbbcc-35f6-49b5-a6cf-3cc07177a691\'}'
+
+        result = self.api.create(self.token)
+
+        expected_uri = 'https://drio/api/timeseries/aaabbbcc-35f6-49b5-a6cf-3cc07177a691'
+        expected_header = {'Authorization': 'Bearer abcdef'}
+
+        mock_put.assert_called_with(expected_uri, data=None, auth=mock_token(), **self.api._defaults)
+
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
+    def test_create_with_file(self, mock_token):
         file_id = 666
 
         mock_post = self.api._session.post
         mock_post.return_value = Mock()
         mock_post.return_value.text = u'{}'
 
-        result = self.api.create(self.token, file_id)
+        result = self.api.create_with_data(self.token, file_id)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/create'
+        expected_uri = 'https://drio/api/timeseries/create'
         expected_header = {'Authorization': 'Bearer abcdef'}
 
         expected_body = {"FileId": file_id}
@@ -109,7 +141,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         result = self.api.add(self.token, timeseries_id, file_id)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/add'
+        expected_uri = 'https://drio/api/timeseries/add'
         expected_header = {'Authorization': 'Bearer abcdef'}
         expected_body = {"TimeSeriesId": timeseries_id, "FileId": file_id}
 
@@ -124,7 +156,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         result = self.api._download_days_base(self.token, timeseries_id, start, end)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{ts_id}/download/days'.format(
+        expected_uri = 'https://drio/api/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
         expected_header = {'Authorization': 'Bearer abcdef'}
         expected_params = {'start': start, 'end': end}
@@ -142,7 +174,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         result = self.api._download_days_cached(self.token, timeseries_id, start, end)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{ts_id}/download/days'.format(
+        expected_uri = 'https://drio/api/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
         expected_header = {'Authorization': 'Bearer abcdef'}
         expected_params = {'start': start, 'end': end}
@@ -192,7 +224,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         result = self.api.attach_metadata(self.token, timeseries_id,
                                           meta_list)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{}/attachMetadata'.format(timeseries_id)
+        expected_uri = 'https://drio/api/timeseries/{}/attachMetadata'.format(timeseries_id)
 
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      json=meta_list, **self.api._defaults)
@@ -206,7 +238,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         result = self.api.detach_metadata(self.token, timeseries_id,
                                           meta_list)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/timeseries/{}/detachMetadata'.format(timeseries_id)
+        expected_uri = 'https://drio/api/timeseries/{}/detachMetadata'.format(timeseries_id)
 
         mock_delete.assert_called_with(expected_uri, auth=mock_token(),
                                        json=meta_list, **self.api._defaults)

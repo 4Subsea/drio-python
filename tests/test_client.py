@@ -162,23 +162,31 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(response, {'status': 'pong'})
 
     @patch('time.sleep')
-    def test_create_all_methods_called(self, mock_sleep):
-        self.client._verify_and_prepare_series = Mock(return_value=None)
+    def test_create_without_data(self, mock_sleep):
+        expected_response = {'abc': 123}
+        self.client._timeseries_api.create.return_value = expected_response
+
+        response = self.client.create()
+
+        self.client._timeseries_api.create.assert_called_once_with(
+            self.auth.token)
+        self.assertDictEqual(response, expected_response)
+
+    @patch('time.sleep')
+    def test_create_with_data(self, mock_sleep):
         self._storage.put = Mock(
             return_value=self.dummy_params['FileId'])
         self.client._wait_until_file_ready = Mock(return_value='Ready')
 
         expected_response = {'abc': 123}
-        self.client._timeseries_api.create.return_value = expected_response
+        self.client._timeseries_api.create_with_data.return_value = expected_response
 
         response = self.client.create(self.dummy_df)
 
-        self.client._verify_and_prepare_series.assert_called_once_with(
-            self.dummy_df)
         self._storage.put.assert_called_once_with(self.dummy_df)
         self.client._wait_until_file_ready.assert_called_once_with(
             self.dummy_params['FileId'])
-        self.client._timeseries_api.create.assert_called_once_with(
+        self.client._timeseries_api.create_with_data.assert_called_once_with(
             self.auth.token, self.dummy_params['FileId'])
         self.assertDictEqual(response, expected_response)
 

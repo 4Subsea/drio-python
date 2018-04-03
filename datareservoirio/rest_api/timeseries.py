@@ -4,12 +4,13 @@ from datetime import datetime, timedelta
 import logging
 from functools import update_wrapper
 from threading import RLock as Lock
+from uuid import uuid4
 
 from ..log import LogWriter
 from .base import BaseAPI, TokenAuth
 
 logger = logging.getLogger(__name__)
-logwriter = LogWriter(logger)
+log = LogWriter(logger)
 
 
 def request_cache(timeout=180):
@@ -34,19 +35,19 @@ def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=2):
 
         request_signature = _make_request_hash(args[skip_argpos:], kwargs)
 
-        logwriter.debug('attempting to access request cache')
+        log.debug('attempting to access request cache')
         result, timestamp_cache = cache.get(request_signature,
                                             (sentinel, None))
 
         if (result is sentinel or
                 (timestamp_cache + timedelta(seconds=timeout) < timestamp)):
-            logwriter.debug('request cache invalid - acquiring from source')
+            log.debug('request cache invalid - acquiring from source')
             result = func(*args, **kwargs)
 
             with Lock():  # altering cache is not thread-safe
                 cache[request_signature] = (result, timestamp)
                 if len(cache) > maxsize:
-                    logwriter.debug('request cache full - pop out oldest item')
+                    log.debug('request cache full - pop out oldest item')
                     key = sorted(cache, key=lambda x: cache.get(x)[-1])[0]
                     del cache[key]
         return result
@@ -70,7 +71,7 @@ class TimeSeriesAPI(BaseAPI):
         super(TimeSeriesAPI, self).__init__()
         self._cache = cache
 
-    def create(self, token, file_id):
+    def create(self, token, timeseries_id=None):
         """
         Create timeseries entry.
 
@@ -78,15 +79,40 @@ class TimeSeriesAPI(BaseAPI):
         ----------
         token : dict
             token recieved from authenticator
-        file_id : str
-            id of file (Files API) to be tied to timeseries entry.
+        timeseries_id : str or None
+            id of the timeseries (Timeseries API) to create.
+            if None, a unique id will be generated.
 
         Return
         ------
         dict
             http response.text loaded as json
         """
-        logwriter.debug("called with <token>, {}".format(file_id), "create")
+        log.debug('called with <token>, {}'.format(timeseries_id), 'create')
+        if timeseries_id is None:
+            timeseries_id = str(uuid4())
+
+        uri = '{}timeseries/{}'.format(self._api_base_url, timeseries_id)
+        response = self._put(uri, data=None, auth=TokenAuth(token))
+        return response.json()
+
+    def create_with_data(self, token, file_id=None):
+        """
+        Create timeseries entry with data from a file.
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        file_id : str
+            id of file (Files API) to be added to the timeseries.
+
+        Return
+        ------
+        dict
+            http response.text loaded as json
+        """
+        log.debug("called with <token>, {}".format(file_id), "create")
 
         uri = self._api_base_url + 'timeseries/create'
         body = {"FileId": file_id}
@@ -110,7 +136,7 @@ class TimeSeriesAPI(BaseAPI):
         -----
         Refer to API documentation wrt apppend, overlap, and overwrite behavior
         """
-        logwriter.debug("called with <token>, {}, {}".format(
+        log.debug("called with <token>, {}, {}".format(
             timeseries_id, file_id), "add")
 
         uri = self._api_base_url + 'timeseries/add'
@@ -135,7 +161,7 @@ class TimeSeriesAPI(BaseAPI):
             dictionary containing information about a timeseries
             entry in the reservoir
         """
-        logwriter.debug("called with <token>, {}".format(timeseries_id))
+        log.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/' + timeseries_id
         response = self._get(uri, auth=TokenAuth(token))
@@ -152,7 +178,7 @@ class TimeSeriesAPI(BaseAPI):
         timeseries_id : str
             id of the target timeseries
         """
-        logwriter.debug("called with <token>, {}".format(timeseries_id))
+        log.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/' + timeseries_id
         response = self._delete(uri, auth=TokenAuth(token))
@@ -183,7 +209,7 @@ class TimeSeriesAPI(BaseAPI):
         ----
         Requests are divided into n-sub requests per day.
         """
-        logwriter.debug("called with <token>, {}, {}, {}".format(
+        log.debug("called with <token>, {}, {}, {}".format(
             timeseries_id, start, end))
 
         nanoseconds_day = 86400000000000
@@ -220,7 +246,7 @@ class TimeSeriesAPI(BaseAPI):
         json
             a list of files, each having a list of Azure Storage compatible chunk urls
         """
-        logwriter.debug("called with <token>, {}, {}, {}".format(
+        log.debug("called with <token>, {}, {}, {}".format(
             timeseries_id, start, end))
 
         uri = self._api_base_url + 'timeseries/{}/download/days'.format(timeseries_id)
@@ -247,7 +273,7 @@ class TimeSeriesAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {}, {}".format(
+        log.debug("called with <token>, {}, {}".format(
             timeseries_id, metadata_id_list), "attach_metadata")
 
         uri = self._api_base_url + \
@@ -275,7 +301,7 @@ class TimeSeriesAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {}, {}".format(
+        log.debug("called with <token>, {}, {}".format(
             timeseries_id, metadata_id_list), "attach_metadata")
 
         uri = self._api_base_url + \

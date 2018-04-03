@@ -70,8 +70,21 @@ class Test_TimeSeriesApi(unittest.TestCase):
     def setUp(self):
         self.api = TimeSeriesAPI()
 
+    def test_create_delete(self):
+        response = self.api.create(self.auth.token)
+        token_tsid = (self.auth.token, response['TimeSeriesId'])
+        info = self.api.info(*token_tsid)
+
+        self.assertEqual(response['TimeSeriesId'], info['TimeSeriesId'])
+        self.assertEqual(None, info['TimeOfFirstSample'])
+        self.assertEqual(None, info['TimeOfLastSample'])
+
+        data_files = self.api.download_days(self.auth.token, response[
+                             'TimeSeriesId'], -1000, 1000)
+        self.api.delete(*token_tsid)
+
     def test_create_data_delete(self):
-        response = self.api.create(*self.token_fileid[0])
+        response = self.api.create_with_data(*self.token_fileid[0])
         token_tsid = (self.auth.token, response['TimeSeriesId'])
         info = self.api.info(*token_tsid)
 
@@ -98,7 +111,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
             info_post = self.api.info(*token_tsid)
 
     def test_create_add_overlap_data_delete(self):
-        response = self.api.create(*self.token_fileid[0])
+        response = self.api.create_with_data(*self.token_fileid[0])
         token_tsid = (self.auth.token, response['TimeSeriesId'])
         response = self.api.add(self.auth.token, response[
                                 'TimeSeriesId'], self.token_fileid[1][1])
@@ -116,7 +129,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         print info
 
     def test_create_add_nooverlap_data_delete(self):
-        response = self.api.create(*self.token_fileid[0])
+        response = self.api.create_with_data(*self.token_fileid[0])
         token_tsid = (self.auth.token, response['TimeSeriesId'])
         response = self.api.add(self.auth.token, response[
                                 'TimeSeriesId'], self.token_fileid[2][1])
@@ -132,7 +145,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         print info
 
     def test_attach_detach_meta(self):
-        response = self.api.create(*self.token_fileid[0])
+        response = self.api.create_with_data(*self.token_fileid[0])
         token_tsid = (self.auth.token, response['TimeSeriesId'])
         print response
         self.api.attach_metadata(*token_tsid,

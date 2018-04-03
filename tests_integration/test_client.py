@@ -34,6 +34,25 @@ class Test_Client(unittest.TestCase):
     def test_ping(self):
         self.client.ping()
 
+    def test_create_empty_series_get_then_delete(self):
+        response = self.client.create()
+        ts_id = response['TimeSeriesId']
+        info = self.client.info(ts_id)
+
+        # self.assertEqual(0, response['TimeOfFirstSample'])
+        # self.assertEqual(info['TimeOfFirstSample'],
+        #                  response['TimeOfFirstSample'])        
+
+        # self.assertEqual(99, response['TimeOfLastSample'])
+        # self.assertEqual(info['TimeOfLastSample'],
+        #                  response['TimeOfLastSample'])
+
+        df_recieved = self.client.get(ts_id, convert_date=True)
+
+        self.client.delete(ts_id)
+
+        self.assertEqual(0, len(df_recieved.index))
+
     def test_create_get_delete(self):
         rng = pd.date_range('1970-01-01', periods=100, freq='ns')
         df = pd.Series(np.arange(100.), index=rng)
