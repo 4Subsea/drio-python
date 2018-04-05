@@ -27,6 +27,7 @@ def request_cache(timeout=180):
 
 
 def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=2):
+    cache_lock = Lock()  # lock used to protect cache during modifications
     sentinel = object()  # unique object used to signal cache misses
     cache = {}
 
@@ -44,7 +45,7 @@ def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=2):
             log.debug('request cache invalid - acquiring from source')
             result = func(*args, **kwargs)
 
-            with Lock():  # altering cache is not thread-safe
+            with cache_lock:  # altering cache is now thread-safe
                 cache[request_signature] = (result, timestamp)
                 if len(cache) > maxsize:
                     log.debug('request cache full - pop out oldest item')
