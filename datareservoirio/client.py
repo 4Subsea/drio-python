@@ -36,7 +36,8 @@ class Client(object):
         'format': 'msgpack' or 'csv'. Default is 'msgpack'.
         'max_size': max size of cache in megabytes. Default is 1024 MB.
         'cache_root': cache storage location, defaults to
-        %LOCALAPPDATA%\\reservoir_cache
+        %LOCALAPPDATA%\\reservoir_cache in Windows, or similar in other
+        platforms.
 
     """
     CACHE_DEFAULT = {'format': 'msgpack', 'max_size': 1024, 'cache_root': None}
@@ -89,9 +90,9 @@ class Client(object):
 
         Parameters
         ----------
-        series : pandas.Series or None
+        series : pandas.Series, optional
             Series with index (as numpy.datetime64 (with nanosecond precision)
-            or integer array).
+            or integer array). Default is None.
 
         Returns
         -------
@@ -109,19 +110,19 @@ class Client(object):
         file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
         log.info('Upload took {} seconds'
-                       .format(time_upload - time_start), 'create')
+                 .format(time_upload - time_start), 'create')
 
         status = self._wait_until_file_ready(file_id)
         time_process = timeit.default_timer()
         log.info('Processing took {} seconds'
-                       .format(time_process - time_upload), 'create')
+                 .format(time_process - time_upload), 'create')
         if status == "Failed":
             return status
 
         response = self._timeseries_api.create_with_data(self.token, file_id)
         time_end = timeit.default_timer()
         log.info('Done. Total time spent: {} seconds ({} minutes)'
-                       .format(time_end - time_start, (time_end - time_start) / 60.), 'create')
+                 .format(time_end - time_start, (time_end - time_start) / 60.), 'create')
         return response
 
     def append(self, series, series_id):
@@ -147,18 +148,18 @@ class Client(object):
         file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
         log.info('Upload took {} seconds'
-                       .format(time_upload - time_start), 'append')
+                 .format(time_upload - time_start), 'append')
 
         status = self._wait_until_file_ready(file_id)
         time_process = timeit.default_timer()
         log.info('Processing serverside took {} seconds'
-                       .format(time_process - time_upload), 'append')
+                 .format(time_process - time_upload), 'append')
         if status == "Failed":
             return status
 
         time_end = timeit.default_timer()
         log.info('Done, total time spent: {} seconds ({} minutes)'
-                       .format(time_end - time_start, (time_end - time_start) / 60.), 'append')
+                 .format(time_end - time_start, (time_end - time_start) / 60.), 'append')
 
         response = self._timeseries_api.add(self.token, series_id, file_id)
         return response
@@ -169,7 +170,7 @@ class Client(object):
 
         Returns
         -------
-        dict 
+        dict
             Available information about the timeseries. None if timeseries not 
             found.
         """
@@ -240,7 +241,7 @@ class Client(object):
 
         time_end = timeit.default_timer()
         log.info('Download timeseries dataframe took {} seconds'
-                       .format(time_end - time_start), 'get')
+                 .format(time_end - time_start), 'get')
 
         return series
 
