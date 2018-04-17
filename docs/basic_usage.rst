@@ -1,7 +1,7 @@
 Basic Usage
 ###########
 ``datareservoirio`` library comes with a ``Client`` class, which exposes all 
-relevant functionality required to upload and retrieve data from the 4Subsea data reservoir.
+relevant functionality required to upload and retrieve data from DataReservoir.io.
 
 The basic usage *workflow* is
 
@@ -43,6 +43,13 @@ The response you get is a python dictionary, it should look like this::
 
 .. warning::
 
-    And most of all. Make sure to store the ``TimeSeriesId``. This is ID is 
-    required to retrieve the timeseries from the reservoir. If this ID is not 
-    stored, the timeseries will essentially be lost.
+    Make sure to store the ``TimeSeriesId``. This ID is required to retrieve 
+    the timeseries from the reservoir. If this ID is not stored, the timeseries
+    will essentially be lost.
+
+.. warning::
+
+    DataReservoir.io require timestamps to be in UTC. To avoid conversion issues,
+    ensure that your data already is in UTC before creating or appending data
+    to timeseries.
+

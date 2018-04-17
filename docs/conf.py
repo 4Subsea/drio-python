@@ -321,7 +321,7 @@ epub_copyright = copyright
 
 # The unique identifier of the text. This can be a ISBN number
 # or the project homepage.
-#epub_identifier = ''
+epub_identifier = 'https://datareservoir.io'
 
 # A unique identification for the text.
 #epub_uid = ''
