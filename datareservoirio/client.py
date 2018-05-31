@@ -107,6 +107,29 @@ class Client(object):
         else:
             return sorted(self._metadata_api.metadata(self.token, namespace, key))
 
+    def timeseries_for_metadata(self, namespace, key, name):
+        """
+        Return a list of available timeseries having metadata
+        with given namespace/key/name combo
+
+        Parameters
+        ----------
+        namespace : string
+            the namespace to search in
+
+        key : string
+            the namespace key to narrow search
+
+        name : string
+            name of name/value-pair in metadata value-json
+
+        Returns
+        -------
+        list
+            dictionary containing timeseriesId and value from metadata value-json
+        """
+        return self._timeseries_api.timeseries_by_metadata(self.token, namespace, key, name)
+
     def create(self, series=None):
         """
         Create a new series in the reservoir from a pandas.Series. If no data

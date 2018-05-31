@@ -176,6 +176,16 @@ class Test_Client(unittest.TestCase):
 
         self.assertSequenceEqual(response, ['anot', 'camp'])
 
+    def test_timeseries_for_metadata(self):
+        self.client._timeseries_api.timeseries_by_metadata.return_value = {'something':
+                                                                           'thething',
+                                                                           'else':
+                                                                           'doesnt fly'}
+        
+        response = self.client.timeseries_for_metadata('ns', 'key', 'name')
+
+        self.assertSequenceEqual(response, {'something': 'thething',
+                                            'else': 'doesnt fly'})
 
     @patch('time.sleep')
     def test_create_without_data(self, mock_sleep):
