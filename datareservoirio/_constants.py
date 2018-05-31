@@ -9,7 +9,7 @@ RESOURCE_DEV = '99f4668d-2f20-4fbb-bd7e-36498904c835'
 CLIENT_ID = 'a946277d-6f78-43ab-be34-be689c4dd3e0'
 
 TENANT_ID = 'cdf4cf3d-de23-49cf-a9b0-abd2b675f253'
-AUTHORITY = 'https://login.microsoftonline.com/{}/'.format(TENANT_ID)
+AUTHORITY = 'https://login.microsoftonline.com/{}'.format(TENANT_ID)
 
 
 ENV_TEST = 'TEST'
