@@ -6,5 +6,6 @@
 
    basic_usage
    caching
+   metadata
    api
    developer

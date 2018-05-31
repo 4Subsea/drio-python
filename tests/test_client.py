@@ -26,9 +26,10 @@ class Test_Client(unittest.TestCase):
                            'expiresOn': np.datetime64('2050-01-01 00:00:00', 's')}
 
         self.client = Client(self.auth)
-        self.client._files_api = Mock()  # should use patch
-        self.client._timeseries_api = Mock()  # should use patch
-        self._storage = self.client._storage = Mock()  # should use patch
+        self.client._files_api = Mock()
+        self.client._timeseries_api = Mock()
+        self.client._metadata_api = Mock()
+        self._storage = self.client._storage = Mock()
 
         self.dummy_df = pd.Series(np.arange(1e3), index=np.array(
             np.arange(1e3), dtype='datetime64[ns]'))
@@ -160,6 +161,13 @@ class Test_Client(unittest.TestCase):
 
         response = self.client.ping()
         self.assertEqual(response, {'status': 'pong'})
+
+    def test_metadata(self):
+        self.client._metadata_api.namespacekeys.return_value = ['pli', 'ihi']
+
+        response = self.client.metadata()
+
+        self.assertSequenceEqual(response, ['ihi', 'pli'])
 
     @patch('time.sleep')
     def test_create_without_data(self, mock_sleep):

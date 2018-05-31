@@ -7,7 +7,7 @@ import timeit
 import pandas as pd
 
 from .log import LogWriter
-from .rest_api import FilesAPI, TimeSeriesAPI
+from .rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
 from .storage import (AlwaysDownloadStrategy, CachedDownloadStrategy,
                       SimpleFileCache, Storage)
 
@@ -46,6 +46,7 @@ class Client(object):
         self._authenticator = auth
         self._timeseries_api = TimeSeriesAPI(cache=cache)
         self._files_api = FilesAPI()
+        self._metadata_api = MetadataAPI()
 
         if cache:
             cache_default = self.CACHE_DEFAULT.copy()
@@ -82,6 +83,12 @@ class Client(object):
         reservoir.
         """
         return self._files_api.ping(self.token)
+
+    def metadata(self):
+        """
+        Return a list of available metadata namespace/key combinations.
+        """
+        return sorted(self._metadata_api.namespacekeys(self.token))
 
     def create(self, series=None):
         """

@@ -58,6 +58,20 @@ class Test_MetadataAPI(unittest.TestCase):
         self.api._session = Mock()
 
     @patch('datareservoirio.rest_api.metadata.TokenAuth')
+    def test_namespacekeys_with_namespaces_returns_list(self, mock_token):
+        mock_get = self.api._session.get
+        mock_get.return_value = Mock()
+        mock_get.return_value.text = '["system.reservoir", "system.campaigns"]'
+
+        self.api.namespacekeys(self.token)
+
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/namespacekeys'
+
+        mock_get.assert_called_once_with(expected_uri,
+                                         auth=mock_token(),
+                                         **self.api._defaults)
+
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_get(self, mock_token):
         mock_post = self.api._session.get
 

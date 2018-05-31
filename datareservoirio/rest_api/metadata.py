@@ -15,6 +15,24 @@ class MetadataAPI(BaseAPI):
     def __init__(self):
         super(MetadataAPI, self).__init__()
 
+    def namespacekeys(self, token):
+        """
+        Return a list of available metadata namespace/key combinations
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+
+        Return
+        ------
+        list
+            response.json()
+        """
+        uri = self._api_base_url + 'metadata/namespacekeys'
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
+
     def create(self, token, metadata_json):
         """
         Create a metadata entry.
