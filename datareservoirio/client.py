@@ -83,12 +83,29 @@ class Client(object):
         reservoir.
         """
         return self._files_api.ping(self.token)
-
-    def metadata(self):
+   
+    def metadata(self, namespace=None, key=None):
         """
         Return a list of available metadata namespace/key combinations.
+
+        Parameters
+        ----------
+        namespace : string
+            the namespace to search in
+
+        key : string
+            the namespace key to narrow search
+
+        Returns
+        -------
+        list
+            the names found in metadata value-json for given ns/key
         """
-        return sorted(self._metadata_api.namespacekeys(self.token))
+
+        if namespace is None:
+            return sorted(self._metadata_api.namespacekeys(self.token))
+        else:
+            return sorted(self._metadata_api.metadata(self.token, namespace, key))
 
     def create(self, series=None):
         """

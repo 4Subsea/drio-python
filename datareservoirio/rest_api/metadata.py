@@ -33,6 +33,29 @@ class MetadataAPI(BaseAPI):
         response = self._get(uri, auth=TokenAuth(token))
         return response.json()
 
+    def metadata(self, token, namespace, key):
+        """
+        Return a list of names in metadata value-json with given
+        namespace and key
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        namespace : string
+            the metadata namespace
+        key : string
+            the key in the namespace
+
+        Return
+        ------
+        list
+            response.json()
+        """
+        uri = self._api_base_url + 'metadata/' + namespace + '/' + key
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
+
     def create(self, token, metadata_json):
         """
         Create a metadata entry.

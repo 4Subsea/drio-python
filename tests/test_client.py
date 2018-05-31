@@ -169,6 +169,14 @@ class Test_Client(unittest.TestCase):
 
         self.assertSequenceEqual(response, ['ihi', 'pli'])
 
+    def test_metadata_with_nskey(self):
+        self.client._metadata_api.metadata.return_value = ['camp', 'anot']
+
+        response = self.client.metadata('namesp', 'thekey')
+
+        self.assertSequenceEqual(response, ['anot', 'camp'])
+
+
     @patch('time.sleep')
     def test_create_without_data(self, mock_sleep):
         expected_response = {'abc': 123}

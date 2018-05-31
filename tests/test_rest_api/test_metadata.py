@@ -72,6 +72,22 @@ class Test_MetadataAPI(unittest.TestCase):
                                          **self.api._defaults)
 
     @patch('datareservoirio.rest_api.metadata.TokenAuth')
+    def test_names_for_nskeycombo_returns_list(self, mock_token):
+        mock_get = self.api._session.get
+        mock_get.return_value = Mock()
+        mock_get.return_value.text = '["VesselName", "CampaignName"]'
+
+        self.api.metadata(self.token, 'namesp', 'mykey')
+
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/namesp/mykey'
+
+        mock_get.assert_called_once_with(expected_uri,
+                                         auth=mock_token(),
+                                         **self.api._defaults)
+
+
+
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_get(self, mock_token):
         mock_post = self.api._session.get
 
