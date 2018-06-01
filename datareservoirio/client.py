@@ -237,7 +237,7 @@ class Client(object):
         """
         return self._timeseries_api.delete(self.token, timeseries_id)
 
-    def get(self, timeseries_id, start=None, end=None, convert_date=False,
+    def get(self, timeseries_id, start=None, end=None, convert_date=True,
             raise_empty=False):
         """
         Retrieves a timeseries from the data reservoir.
@@ -253,7 +253,7 @@ class Client(object):
             stop time (inclusive) of the timeseries given as anything
             pandas.to_datetime is able to parse.
         convert_date : bool
-            If True, the index is converted to numpy.datetime64[ns]. Default is
+            If True (default), the index is converted to numpy.datetime64[ns]. If
             False, index is returned as nanoseconds since epoch.
         raise_empty : bool
             If True, raise ValueError if no data exist in the provided
