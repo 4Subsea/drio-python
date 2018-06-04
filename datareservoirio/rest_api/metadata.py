@@ -2,6 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 
+import requests
+from requests.exceptions import HTTPError
+import sys
 from ..log import LogWriter
 from .base import BaseAPI, TokenAuth
 
@@ -55,6 +58,44 @@ class MetadataAPI(BaseAPI):
         uri = self._api_base_url + 'metadata/' + namespace + '/' + key
         response = self._get(uri, auth=TokenAuth(token))
         return response.json()
+
+    def add_metadata(self, token, timeseries_id, nskey, valuepairs, overwrite):
+        """
+        add a metadata entry for given timeseries id and nskey with given values
+
+        Parameters
+        ==========
+        token : dict
+            token recieved from authenticator
+        timeseries_id
+            The timeseries id to attach the metadata to
+        nskey
+            The namespace and key to set for the metadata.
+            Must contain at least one '.'
+        valuepairs
+            the actual metadata as name/value pairs
+        overwrite
+            indicate if existing metadata for nskey-combo should be overwritte
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+
+        uri = (self._api_base_url + 'metadata/add?timeseriesId={}&'
+               'namespaceAndKey={}&overwrite={}'
+               .format(timeseries_id, nskey, str(overwrite)))
+        try:
+            response = self._post(uri, json=valuepairs, auth=TokenAuth(token))
+            return response.json()
+        except HTTPError:
+            response = 'Metadata exists, please add \'True\' in method-call to overwrite'
+        except:
+            e = sys.exc_info()[0]
+            return 'Unexpected error....: ' + e
+        
+        return response
 
     def create(self, token, metadata_json):
         """

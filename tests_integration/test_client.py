@@ -41,7 +41,7 @@ class Test_Client(unittest.TestCase):
 
         # self.assertEqual(0, response['TimeOfFirstSample'])
         # self.assertEqual(info['TimeOfFirstSample'],
-        #                  response['TimeOfFirstSample'])        
+        #                  response['TimeOfFirstSample'])
 
         # self.assertEqual(99, response['TimeOfLastSample'])
         # self.assertEqual(info['TimeOfLastSample'],

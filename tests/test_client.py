@@ -1,7 +1,6 @@
 import unittest
 import numpy as np
 import pandas as pd
-
 import datareservoirio
 from datareservoirio import Client
 
@@ -182,7 +181,7 @@ class Test_Client(unittest.TestCase):
                                                                            'thething',
                                                                            'else':
                                                                            'doesnt fly'}
-        
+
         response = self.client.find_timeseries('ns', 'key', 'name')
 
         self.assertSequenceEqual(response, {'something': 'thething',
@@ -193,13 +192,28 @@ class Test_Client(unittest.TestCase):
             {'1bf9d2b1-b544-4756-94b3-c60f67f8d112', '6ff4a077-06af-460a-82db-2a7fac53d443',
              '5c5bf184-941a-4a86-8154-9918a66d2e4f'}
         )
-        
+
         response = self.client.find_timeseries('ns', 'key', 'name', 'value')
 
         self.assertSequenceEqual(response, {'1bf9d2b1-b544-4756-94b3-c60f67f8d112',
                                             '6ff4a077-06af-460a-82db-2a7fac53d443',
                                             '5c5bf184-941a-4a86-8154-9918a66d2e4f'})
 
+    def test_add_metadata(self):
+
+        returnDict = {'Key': 'metatest', 'Created': '2018-06-04T09:04:57.420998+00:00',
+                      'LastModified': None, 'CreatedByEmail': 'ihi@4subsea.com',
+                      'Namespace': 'thefirst', 'Value': {'MetaName': 'The meta value'},
+                      'LastModifiedByEmail': None, 'TimeSeries': [],
+                      'Id': 'fbd96bf3-0cbd-41ec-7fbd-08d5c9fa3eba'}
+        self.client._metadata_api.add_metadata.return_value = returnDict
+
+        response = self.client.add_metadata('1bf9d2b1-b544-4756-94b3-c60f67f8d112',
+                                            'some.thing', {'one': 'thing', 'another': 'thing'})
+
+        self.assertDictEqual(response, returnDict)
+
+   
     @patch('time.sleep')
     def test_create_without_data(self, mock_sleep):
         expected_response = {'abc': 123}

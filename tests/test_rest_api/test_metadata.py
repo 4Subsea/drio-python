@@ -1,7 +1,7 @@
 import unittest
 
 import requests
-
+from requests.exceptions import HTTPError
 import datareservoirio
 from datareservoirio.rest_api import MetadataAPI
 
@@ -85,7 +85,38 @@ class Test_MetadataAPI(unittest.TestCase):
                                          auth=mock_token(),
                                          **self.api._defaults)
 
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
+    def test_add_metadata_nonexisting(self, mock_token):
+        mock_post = self.api._session.post
+        valuePairs = {'theguid1': 'value1', 'theguid2': 'value2'}
 
+        response = self.api.add_metadata(self.token, self.metadata_id,
+                                         'nsandkey', valuePairs, False)
+
+        expected_uri = ('https://reservoir-api-qa.4subsea.net/api/metadata/add?'
+                        'timeseriesId={}&namespaceAndKey=nsandkey&overwrite={}'
+                        .format(self.metadata_id, 'False'))
+        expected_body = valuePairs
+
+        mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
+                                          json=expected_body, **self.api._defaults)
+
+    def test_add_metadata_whenthrows(self):
+        self.api._session.post.side_effect = Exception()
+
+        with self.assertRaises(Exception):
+            self.api.add_metadata(self.token, '1bf9d2b1-b544-4756-94b3-c60f67f8d112',
+                                  'some.thing', {'one': 'thing', 'another': 'thing'}, False)
+
+    def test_add_metadata_whenthrows_returnsstring(self):
+        self.api._session.post.side_effect = HTTPError()
+
+        response = self.api.add_metadata('1bf9d2b1-b544-4756-94b3-c60f67f8d112', self.token,
+                                         'some.thing', {'one': 'thing', 'another': 'thing'},
+                                         False)
+
+        self.assertEqual(response, ('Metadata exists, please add \'True\' in method-call '
+                                    'to overwrite'))
 
     @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_get(self, mock_token):

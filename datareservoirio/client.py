@@ -5,11 +5,15 @@ import time
 import timeit
 
 import pandas as pd
+from urllib2 import HTTPError
 
 from .log import LogWriter
 from .rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
 from .storage import (AlwaysDownloadStrategy, CachedDownloadStrategy,
                       SimpleFileCache, Storage)
+
+import datareservoirio
+datareservoirio.globalsettings.environment.set_test()
 
 logger = logging.getLogger(__name__)
 log = LogWriter(logger)
@@ -83,7 +87,7 @@ class Client(object):
         reservoir.
         """
         return self._files_api.ping(self.token)
-   
+
     def metadata(self, namespace=None, key=None):
         """
         Return a list of available metadata namespace/key combinations.
@@ -135,6 +139,32 @@ class Client(object):
         else:
             return self._timeseries_api.timeseries_by_metadatavalue(self.token, namespace,
                                                                     key, name, value)
+
+    def add_metadata(self, timeseries_id, nskey, valuepairs, overwrite=False):
+        """
+        add a metadata entry for given timeseries id and nskey with given values
+
+        Parameters
+        ==========
+        timeseries_id
+            The timeseries id to attach the metadata to
+        nskey
+            The namespace and key to set for the metadata.
+            Must contain at least one '.'
+        valuepairs
+            the actual metadata as name/value pairs
+        overwrite
+            indicate if existing metadata for nskey-combo should be overwritte
+            defaults to false
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        
+        return self._metadata_api.add_metadata(self.token, timeseries_id, nskey,
+                                               valuepairs, overwrite)
 
     def create(self, series=None):
         """
@@ -224,7 +254,7 @@ class Client(object):
         Returns
         -------
         dict
-            Available information about the timeseries. None if timeseries not 
+            Available information about the timeseries. None if timeseries not
             found.
         """
         return self._timeseries_api.info(self.token, timeseries_id)
