@@ -107,7 +107,7 @@ class Client(object):
         else:
             return sorted(self._metadata_api.metadata(self.token, namespace, key))
 
-    def timeseries_for_metadata(self, namespace, key, name):
+    def find_timeseries(self, namespace, key, name, value=None):
         """
         Return a list of available timeseries having metadata
         with given namespace/key/name combo
@@ -128,7 +128,13 @@ class Client(object):
         list
             dictionary containing timeseriesId and value from metadata value-json
         """
-        return self._timeseries_api.timeseries_by_metadata(self.token, namespace, key, name)
+
+        if value is None:
+            return self._timeseries_api.timeseries_by_metadata(self.token, namespace,
+                                                               key, name)
+        else:
+            return self._timeseries_api.timeseries_by_metadatavalue(self.token, namespace,
+                                                                    key, name, value)
 
     def create(self, series=None):
         """

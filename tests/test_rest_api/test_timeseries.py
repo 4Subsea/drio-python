@@ -244,7 +244,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
                                        json=meta_list, **self.api._defaults)
 
     @patch('datareservoirio.rest_api.timeseries.TokenAuth')
-    def test_timeseries_for_nskeyname(self, mock_token):
+    def test_timeseries_by_metadata(self, mock_token):
         mock_get = self.api._session.get
         mock_get.return_value = Mock()
         mock_get.return_value.text = '["someguid":"VesselName", "Someguid":"CampaignName"]'
@@ -252,6 +252,20 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         self.api.timeseries_by_metadata(self.token, 'tns', 'tkey', 'tname')
 
         expected_uri = 'https://drio/api/timeseries/tns/tkey/tname'
+
+        mock_get.assert_called_once_with(expected_uri,
+                                         auth=mock_token(),
+                                         **self.api._defaults)
+
+    @patch('datareservoirio.rest_api.timeseries.TokenAuth')
+    def test_timeseries_by_metadata_with_value(self, mock_token):
+        mock_get = self.api._session.get
+        mock_get.return_value = Mock()
+        mock_get.return_value.text = '["someguid", "Someguid"]'
+
+        self.api.timeseries_by_metadatavalue(self.token, 'tns', 'tkey', 'tname', 'theValue')
+
+        expected_uri = 'https://drio/api/timeseries/tns/tkey/tname/theValue'
 
         mock_get.assert_called_once_with(expected_uri,
                                          auth=mock_token(),

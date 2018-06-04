@@ -183,10 +183,22 @@ class Test_Client(unittest.TestCase):
                                                                            'else':
                                                                            'doesnt fly'}
         
-        response = self.client.timeseries_for_metadata('ns', 'key', 'name')
+        response = self.client.find_timeseries('ns', 'key', 'name')
 
         self.assertSequenceEqual(response, {'something': 'thething',
                                             'else': 'doesnt fly'})
+
+    def test_timeseries_for_metadata_value(self):
+        self.client._timeseries_api.timeseries_by_metadatavalue.return_value = (
+            {'1bf9d2b1-b544-4756-94b3-c60f67f8d112', '6ff4a077-06af-460a-82db-2a7fac53d443',
+             '5c5bf184-941a-4a86-8154-9918a66d2e4f'}
+        )
+        
+        response = self.client.find_timeseries('ns', 'key', 'name', 'value')
+
+        self.assertSequenceEqual(response, {'1bf9d2b1-b544-4756-94b3-c60f67f8d112',
+                                            '6ff4a077-06af-460a-82db-2a7fac53d443',
+                                            '5c5bf184-941a-4a86-8154-9918a66d2e4f'})
 
     @patch('time.sleep')
     def test_create_without_data(self, mock_sleep):

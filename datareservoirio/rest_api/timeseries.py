@@ -326,8 +326,8 @@ class TimeSeriesAPI(BaseAPI):
         key : string
             key in metadata
         name : string
-            name in name/value-pair found in metadata value-json 
-    
+            name in name/value-pair found in metadata value-json
+
         Return
         ======
         dict
@@ -336,5 +336,34 @@ class TimeSeriesAPI(BaseAPI):
         """
 
         uri = self._api_base_url + 'timeseries/' + namespace + '/' + key + '/' + name
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
+
+    def timeseries_by_metadatavalue(self, token, namespace, key, name, value):
+        """
+        Gets a list of timeseriesIDs with metadata value for given name,
+        in namespace/key combo
+
+        Parameters
+        ==========
+            token : dict
+            token recieved from authenticator
+        namespace : string
+            namespace in metadata
+        key : string
+            key in metadata
+        name : string
+            name in name/value-pair found in metadata value-json
+        value : string
+            value in name/value-pair found in metadata value-json
+
+        Return
+        ======
+        dict
+            response.json() containing timeseriesID
+        """
+
+        uri = (self._api_base_url + 'timeseries/' +
+               namespace + '/' + key + '/' + name + '/' + value)
         response = self._get(uri, auth=TokenAuth(token))
         return response.json()
