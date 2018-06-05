@@ -3,17 +3,12 @@ from __future__ import absolute_import, division, print_function
 import logging
 import time
 import timeit
-
 import pandas as pd
-from urllib2 import HTTPError
 
 from .log import LogWriter
 from .rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
 from .storage import (AlwaysDownloadStrategy, CachedDownloadStrategy,
                       SimpleFileCache, Storage)
-
-import datareservoirio
-datareservoirio.globalsettings.environment.set_test()
 
 logger = logging.getLogger(__name__)
 log = LogWriter(logger)
@@ -162,7 +157,7 @@ class Client(object):
         dict
             response.json()
         """
-        
+
         return self._metadata_api.add_metadata(self.token, timeseries_id, nskey,
                                                valuepairs, overwrite)
 
