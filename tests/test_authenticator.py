@@ -1,4 +1,3 @@
-import datetime
 import unittest
 
 import numpy as np
@@ -8,9 +7,9 @@ import datareservoirio.authenticate as adalw
 import datareservoirio._constants as consts
 
 try:
-    from unittest.mock import patch, Mock
-except:
-    from mock import patch, Mock
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 def setUpModule():
@@ -67,11 +66,11 @@ class TestAdalAuthenticator(unittest.TestCase):
 
     @patch('datareservoirio.authenticate.adal.AuthenticationContext')
     def test_authenticate_calls_authorizationContext_with_correct_authority(self, mock):
-        authenticator = adalw.AdalAuthenticator('username')
+        adalw.AdalAuthenticator(u'username')
         mock.assert_called_once_with(consts.AUTHORITY, api_version=None)
 
     def test_authenticate_calls_authorize_method_with_correct_params(self):
-        authenticator = adalw.AdalAuthenticator('username_01')
+        adalw.AdalAuthenticator(u'username_01')
 
         self.assertEqual(
             datareservoirio.globalsettings.environment.get(), consts.ENV_QA)

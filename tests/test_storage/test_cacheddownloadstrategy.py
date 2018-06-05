@@ -1,7 +1,4 @@
-import base64
 import unittest
-
-import numpy as np
 import pandas as pd
 
 from datareservoirio.storage import CachedDownloadStrategy, SimpleFileCache
@@ -9,7 +6,7 @@ from datareservoirio.storage.downloadstrategy import BaseDownloadStrategy
 
 try:
     from unittest.mock import patch, Mock
-except:
+except ImportError:
     from mock import patch, Mock
 
 
@@ -24,25 +21,25 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
         self._df = pd.DataFrame(
             data=[{'1': 42}, {'2': 32}], columns=['index', 'values'])
         self._files = {
-            "Files": [
+            'Files': [
                 {
-                    "Index": 0,
-                    "FileId": '42',
-                    "Chunks": [
+                    'Index': 0,
+                    'FileId': '42',
+                    'Chunks': [
                         {
-                            "Account": "acc",
-                            "SasKey": "sas",
-                            "Container": "cnt",
-                            "Path": "pth",
-                            "Endpoint": "ep",
-                            "ContentMd5": "md5"
+                            'Account': 'acc',
+                            'SasKey': 'sas',
+                            'Container': 'cnt',
+                            'Path': 'pth',
+                            'Endpoint': 'ep',
+                            'ContentMd5': 'md5/+hash=='
                         }
                     ]
                 }
             ]
         }
 
-        self._files_empty = {"Files": []}
+        self._files_empty = {'Files': []}
 
         self._blob_to_series.return_value = self._df
         self._cache.get.return_value = self._df
@@ -67,28 +64,28 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
     def test_init_default_serialization_is_msgpack(self):
         dl = CachedDownloadStrategy(cache=self._cache)
 
-        sr = dl.get(self._files)
+        dl.get(self._files)
 
         calls = self._cache.get.call_args[0]
-        self.assertIn('bWQ1', calls)
+        self.assertIn('bWQ1LytoYXNoPT0=', calls)
         self.assertIn('mp', calls)
 
     def test_init_msgpack_serialization_md5file_have_mp_postfix(self):
         dl = CachedDownloadStrategy(cache=self._cache, format='msgpack')
 
-        sr = dl.get(self._files)
+        dl.get(self._files)
 
         calls = self._cache.get.call_args[0]
-        self.assertIn('bWQ1', calls)
+        self.assertIn('bWQ1LytoYXNoPT0=', calls)
         self.assertIn('mp', calls)
 
     def test_init_csv_serialization_md5file_have_csv_postfix(self):
         dl = CachedDownloadStrategy(cache=self._cache, format='csv')
 
-        sr = dl.get(self._files)
+        dl.get(self._files)
 
         calls = self._cache.get.call_args[0]
-        self.assertIn('bWQ1', calls)
+        self.assertIn('bWQ1LytoYXNoPT0=', calls)
         self.assertIn('csv', calls)
 
     def test_get(self):
@@ -101,9 +98,11 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
 
         self.assertTrue(sr.equals(pd.Series()))
 
+
 class FakedDownloadStrategy(BaseDownloadStrategy):
     def _download_chunk(self, chunk):
-        return "dummy"
+        return 'dummy'
+
 
 class Test_BaseDownloadStrategy(unittest.TestCase):
 

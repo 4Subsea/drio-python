@@ -1,13 +1,16 @@
 import unittest
 import logging
-import sys
-import pandas as pd
-from mock import patch
+import requests
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.storage import Storage, AlwaysDownloadStrategy
+from datareservoirio.storage import AlwaysDownloadStrategy
 
 from tests_integration._auth import USER
 
@@ -26,8 +29,12 @@ class Test_AlwaysDownloadStrategy(unittest.TestCase):
         cls.auth = Authenticator(USER.NAME)
 
     def setUp(self):
-        self.timeseries_api = TimeSeriesAPI()
-        self.strategy = AlwaysDownloadStrategy()
+        self._session = requests.Session()
+        self.timeseries_api = TimeSeriesAPI(session=self._session)
+        self.strategy = AlwaysDownloadStrategy(session=self._session)
+
+    def tearDown(self):
+        self._session.close()
 
     def test_get(self):
         chunks = self.timeseries_api.download_days(

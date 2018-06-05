@@ -2,7 +2,11 @@ import logging
 import pprint
 import time
 import unittest
-from mock import patch
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 import numpy as np
 import pandas as pd
@@ -29,6 +33,9 @@ class Test_ClientUploadDownload(unittest.TestCase):
 
     def setUp(self):
         self.client = datareservoirio.Client(self.auth)
+
+    def tearDown(self):
+        self.client.__exit__()
 
     def test_upload_download_1day(self):
         self._test_upload_download_days(1)

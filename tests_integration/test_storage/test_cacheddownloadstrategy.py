@@ -1,8 +1,13 @@
 import unittest
 import logging
+import requests
 from timeit import timeit
-from mock import patch
 from functools import partial
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
@@ -26,26 +31,34 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
         cls.auth = Authenticator(USER.NAME)
 
     def setUp(self):
-        self.timeseries_api = TimeSeriesAPI()
+        self._session = requests.Session()
+        self.timeseries_api = TimeSeriesAPI(session=self._session)
         self._cache = SimpleFileCache(cache_root='./_cache/test_cacheddownloadstrategy')
 
+    def tearDown(self):
+        self._session.close()
+
     def test_get_with_msgpack_format(self):
-        strategy = CachedDownloadStrategy(cache=self._cache, format='msgpack')
+        strategy = CachedDownloadStrategy(cache=self._cache,
+                                          format='msgpack',
+                                          session=self._session)
         chunks = self.timeseries_api.download_days(
             self.auth.token, TIMESERIESID,
             1513468800000000000, 1513814500000000000)
-        iterations=100
+        iterations = 100
 
         usedtime = timeit(stmt=partial(strategy.get, chunks), number=iterations)
 
         print('Average cache read with msgpack: {}'.format(usedtime/iterations))
 
     def test_get_with_csv_format(self):
-        strategy = CachedDownloadStrategy(cache=self._cache, format='csv')
+        strategy = CachedDownloadStrategy(cache=self._cache,
+                                          format='csv',
+                                          session=self._session)
         chunks = self.timeseries_api.download_days(
             self.auth.token, TIMESERIESID,
             1513468800000000000, 1513814500000000000)
-        iterations=100
+        iterations = 100
 
         usedtime = timeit(stmt=lambda: strategy.get(chunks), number=iterations)
 

@@ -33,26 +33,31 @@ class AzureBlobService(BlockBlobService):
     MAX_CHUNK_GET_SIZE = 8 * 1024 * 1024
     MAX_SINGLE_GET_SIZE = MAX_CHUNK_GET_SIZE
 
-    def __init__(self, params):
+    def __init__(self, params, session=None):
         """
         Initiate transfer service to Azure Blob Storage.
 
         Parameters
         ----------
-        params : dict
+        :param: dict params
             Dict must include:
 
-                * "Account"
-                * "SasKey"
-                * "Container" (container_name)
-                * "Path" (blob_name)
+                * 'Account'
+                * 'SasKey'
+                * 'Container' (container_name)
+                * 'Path' (blob_name)
+        :param: requests.Session session
+            If specified, passed to the underlying BlockBlobService so that an existing
+            request session can be reused.
         """
 
+        self._account = params['Account']
+        self._sas_key = params['SasKey']
         self.container_name = params['Container']
         self.blob_name = params['Path']
 
         super(AzureBlobService, self).__init__(
-            params['Account'], sas_token=params['SasKey'])
+            self._account, sas_token=self._sas_key, request_session=session)
 
     def get_blob_to_series(self):
         """Download content of the current blob to DataFrame"""
@@ -65,7 +70,7 @@ class AzureBlobService(BlockBlobService):
                 self.container_name, self.blob_name, stream=binary_content,
                 max_connections=self.MAX_DOWNLOAD_CONCURRENT_BLOCKS,
                 progress_callback=lambda current, total: logwriter.info(
-                    " {0:.1f}% downloaded ({1:.1f} of {2:.1f} MB)".format(
+                    ' {0:.1f}% downloaded ({1:.1f} of {2:.1f} MB)'.format(
                         (current / total) * 100,
                         current / (1024*1024),
                         total / (1024*1024))))
@@ -117,7 +122,7 @@ class AzureBlobService(BlockBlobService):
                 blocks.append(block)
                 block_id += 1
 
-                logwriter.debug("put block {} for blob {}".format(
+                logwriter.debug('put block {} for blob {}'.format(
                     block.id, self.blob_name), 'put_block')
                 self.put_block_retry(self.container_name, self.blob_name,
                                      block_data.encode('ascii'), block.id)
@@ -126,7 +131,7 @@ class AzureBlobService(BlockBlobService):
             block = self._make_block(block_id)
             blocks.append(block)
 
-            logwriter.debug("put block {} for blob {}".format(
+            logwriter.debug('put block {} for blob {}'.format(
                 block.id, self.blob_name), 'put_block')
             self.put_block_retry(self.container_name, self.blob_name,
                                  block_data.encode('ascii'), block.id)
@@ -134,21 +139,22 @@ class AzureBlobService(BlockBlobService):
         self.put_block_list(self.container_name, self.blob_name, blocks)
 
     def put_block_retry(self, *args, **kwargs):
-        '''put_block with some retry - hotfix'''
+        """put_block with some retry - hotfix"""
         count = 0
         while count <= 5:
             try:
                 self.put_block(*args, **kwargs)
                 return None
             except AzureException as ex:
-                logwriter.debug("raise AzureException", "put_block")
+                logwriter.debug('raise AzureException', 'put_block')
                 count += 1
+                if count > 5:
+                    raise ex
                 sleep(1 * count)
-        raise ex
 
     def _make_block(self, block_id):
         base64_block_id = self._b64encode(block_id)
-        logwriter.debug("block id {} blockidbase64 {}"
+        logwriter.debug('block id {} blockidbase64 {}'
                         .format(block_id, base64_block_id), '_make_block')
         return BlobBlock(id=base64_block_id)
 

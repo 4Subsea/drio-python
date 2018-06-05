@@ -17,27 +17,29 @@ logwriter = LogWriter(logger)
 def _response_logger(func):
     @wraps(func)
     def func_wrapper(*args, **kwargs):
-        logwriter.debug("request initiated")
+        logwriter.debug('request initiated')
         response = func(*args, **kwargs)
-        logwriter.debug("response recieved")
+        logwriter.debug('response recieved')
 
-        logwriter.debug("request url: {}".format(response.request.url))
-        logwriter.debug("status code: {}".format(response.status_code))
+        logwriter.debug('request url: {}'.format(response.request.url))
+        logwriter.debug('status code: {}'.format(response.status_code))
         try:
-            logwriter.debug("response text: {}".format(response.text))
-        except:
-            logwriter.debug("response text: failed encoding")
+            logwriter.debug('response text: {}'.format(response.text))
+        except ValueError:
+            logwriter.debug('response text: failed encoding')
         return response
     return func_wrapper
 
 
 class BaseAPI(object):
-    '''Base class for reservoir REST API'''
+    """Base class for reservoir REST API"""
 
-    def __init__(self):
+    def __init__(self, session=None):
         self._api_base_url = globalsettings.environment.api_base_url
 
-        self._session = requests.Session()
+        self._session = session
+        if session is None:
+            self._session = requests.Session()
 
         # Attention: Be careful when extending the list of retry_status!
         retry_status = frozenset([413, 429, 500, 502, 503, 504])
@@ -82,7 +84,7 @@ class BaseAPI(object):
 
 
 class TokenAuth(requests.auth.AuthBase):
-    '''Authenticator class for reservoir REST API'''
+    """Authenticator class for reservoir REST API"""
     def __init__(self, token):
         self.token = token
 
@@ -93,6 +95,6 @@ class TokenAuth(requests.auth.AuthBase):
 
 
 def _update_kwargs(kwargs, defaults):
-    '''Append defaults to keyword arguments'''
+    """Append defaults to keyword arguments"""
     for key in defaults:
         kwargs.setdefault(key, defaults[key])

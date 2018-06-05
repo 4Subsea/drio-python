@@ -1,6 +1,9 @@
 import unittest
 
-from mock import Mock, patch
+try:
+    from unittest.mock import patch, Mock
+except ImportError:
+    from mock import patch, Mock
 
 from datareservoirio.rest_api.base import (
     BaseAPI, TokenAuth, _update_kwargs)
@@ -9,8 +12,8 @@ from datareservoirio.rest_api.base import (
 class Test_BaseAPI(unittest.TestCase):
 
     def setUp(self):
-        self.api = BaseAPI()
-        self.api._session = Mock()
+        self._session = Mock()
+        self.api = BaseAPI(session=self._session)
 
     def test__post(self):
         mock_post = self.api._session.post

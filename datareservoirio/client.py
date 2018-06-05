@@ -3,12 +3,13 @@ from __future__ import absolute_import, division, print_function
 import logging
 import time
 import timeit
+import requests
 import pandas as pd
 
 from .log import LogWriter
 from .rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
 from .storage import (AlwaysDownloadStrategy, CachedDownloadStrategy,
-                      SimpleFileCache, Storage)
+                      SimpleFileCache, Storage, UploadStrategy)
 
 logger = logging.getLogger(__name__)
 log = LogWriter(logger)
@@ -42,30 +43,43 @@ class Client(object):
     CACHE_DEFAULT = {'format': 'msgpack', 'max_size': 1024, 'cache_root': None}
 
     def __init__(self, auth, cache=True, cache_opt=CACHE_DEFAULT):
+        self._session = requests.Session()
         self._authenticator = auth
-        self._timeseries_api = TimeSeriesAPI(cache=cache)
-        self._files_api = FilesAPI()
-        self._metadata_api = MetadataAPI()
+        self._timeseries_api = TimeSeriesAPI(cache=cache, session=self._session)
+        self._files_api = FilesAPI(session=self._session)
+        self._metadata_api = MetadataAPI(session=self._session)
+        self._enable_cache = cache
 
-        if cache:
+        if self._enable_cache:
             cache_default = self.CACHE_DEFAULT.copy()
             if set(cache_default.keys()).issuperset(cache_opt):
                 cache_default.update(cache_opt)
-                cache_opt = cache_default
+                self._cache_opt = cache_default
+                self._cache_format = self._cache_opt.pop('format')
             else:
                 raise ValueError('cache_opt contains unknown keywords.')
 
-            cache_format = cache_opt.pop('format')
-            downloader = CachedDownloadStrategy(SimpleFileCache(**cache_opt),
-                                                format=cache_format)
+        if self._enable_cache:
+            downloader = CachedDownloadStrategy(SimpleFileCache(**self._cache_opt),
+                                                format=self._cache_format,
+                                                session=self._session)
         else:
-            downloader = AlwaysDownloadStrategy()
+            downloader = AlwaysDownloadStrategy(session=self._session)
+
+        uploader = UploadStrategy(session=self._session)
 
         self._storage = Storage(
             self._authenticator,
             self._timeseries_api,
             self._files_api,
-            downloader=downloader)
+            downloader=downloader,
+            uploader=uploader)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self._session.close()
 
     @property
     def token(self):

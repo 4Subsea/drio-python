@@ -3,7 +3,7 @@ import logging
 
 try:
     from unittest.mock import Mock
-except:
+except ImportError:
     from mock import Mock
 
 import numpy as np

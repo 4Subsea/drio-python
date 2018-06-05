@@ -10,12 +10,10 @@ logwriter = LogWriter(logger)
 
 
 class FilesAPI(BaseAPI):
-    """
-    Python wrapper for reservoir-api.4subsea.net/api/files
-    """
+    """Python wrapper for reservoir-api.4subsea.net/api/files."""
 
-    def __init__(self):
-        super(FilesAPI, self).__init__()
+    def __init__(self, session=None):
+        super(FilesAPI, self).__init__(session=session)
 
     def upload(self, token):
         """
@@ -32,14 +30,14 @@ class FilesAPI(BaseAPI):
             Parameters requried by the uploader service
         """
 
-        logwriter.debug("called with <token>", "upload")
+        logwriter.debug('called with <token>', 'upload')
 
         uri = self._api_base_url + 'Files/upload'
         response = self._post(uri, auth=TokenAuth(token))
 
-        for key, value in response.json().iteritems():
-            logwriter.debug("parameter received - {key}: {value}"
-                            .format(key=key, value=value), "upload")
+        for key, value in response.json().items():
+            logwriter.debug('parameter received - {key}: {value}'
+                            .format(key=key, value=value), 'upload')
         return response.json()
 
     def commit(self, token, file_id):
@@ -58,7 +56,7 @@ class FilesAPI(BaseAPI):
         str
             HTTP status code
         """
-        logwriter.debug("called with <token>, {}".format(file_id), "commit")
+        logwriter.debug('called with <token>, {}'.format(file_id), 'commit')
 
         uri = self._api_base_url + 'Files/commit'
         body = {'FileId': file_id}
@@ -81,7 +79,7 @@ class FilesAPI(BaseAPI):
         str
             csv with data
         """
-        logwriter.debug("called with <token>, {}".format(file_id), "bytes")
+        logwriter.debug('called with <token>, {}'.format(file_id), u'bytes')
 
         uri = self._api_base_url + 'files/{}/bytes'.format(file_id)
 
@@ -102,9 +100,9 @@ class FilesAPI(BaseAPI):
         Return
         ------
         str
-            "Unitialized", "Processing", "Ready", or "Failed"
+            'Unitialized', 'Processing', 'Ready', or 'Failed'
         """
-        logwriter.debug("called with <token>, {}".format(file_id), "status")
+        logwriter.debug('called with <token>, {}'.format(file_id), 'status')
 
         uri = self._api_base_url + 'files/{}/status'.format(file_id)
         response = self._get(uri, auth=TokenAuth(token))
@@ -124,7 +122,7 @@ class FilesAPI(BaseAPI):
         dict
             pong
         """
-        logwriter.debug("called <token>", "ping")
+        logwriter.debug('called <token>', 'ping')
 
         uri = self._api_base_url + 'ping'
         response = self._get(uri, auth=TokenAuth(token))

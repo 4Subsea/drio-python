@@ -5,9 +5,9 @@ import datareservoirio
 from datareservoirio import Client
 
 try:
-    from unittest.mock import Mock, MagicMock, patch, PropertyMock
-except:
-    from mock import Mock, MagicMock, patch, PropertyMock
+    from unittest.mock import Mock, patch
+except ImportError:
+    from mock import Mock, patch
 
 
 # Test should not make calls to the API, but just in case!
@@ -98,60 +98,58 @@ class Test_Client(unittest.TestCase):
 
     @patch('datareservoirio.client.AlwaysDownloadStrategy')
     def test_init_with_cache_disabled(self, mock_dl):
-        client = Client(self.auth, cache=False)
-        mock_dl.assert_called_once_with()
+        with Client(self.auth, cache=False):
+            assert mock_dl.call_count == 1
 
     @patch('datareservoirio.client.CachedDownloadStrategy')
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_defaults_cache_is_enabled_and_format_msgpack(self, mock_cache, mock_dl):
-        client = Client(self.auth)
-
-        kwargs = mock_dl.call_args[1]
-        self.assertIn('format', kwargs)
-        self.assertEqual(kwargs['format'], 'msgpack')
-        cache_defalts = Client.CACHE_DEFAULT.copy()
-        cache_defalts.pop('format')
-        mock_cache.assert_called_once_with(**cache_defalts)
+        with Client(self.auth):
+            kwargs = mock_dl.call_args[1]
+            self.assertIn('format', kwargs)
+            self.assertEqual(kwargs['format'], 'msgpack')
+            cache_defalts = Client.CACHE_DEFAULT.copy()
+            cache_defalts.pop('format')
+            mock_cache.assert_called_once_with(**cache_defalts)
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_enabled(self, mock_cache):
-        client = Client(self.auth, cache=True)
-        cache_defaults = client.CACHE_DEFAULT.copy()
-        cache_defaults.pop('format')
-        mock_cache.assert_called_once_with(**cache_defaults)
+        with Client(self.auth, cache=True):
+            cache_defaults = Client.CACHE_DEFAULT.copy()
+            cache_defaults.pop('format')
+            mock_cache.assert_called_once_with(**cache_defaults)
 
     @patch('datareservoirio.client.CachedDownloadStrategy')
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_format_csv(self, mock_cache, mock_dl):
-        client = Client(self.auth, cache=True, cache_opt={'format': 'csv'})
-
-        kwargs = mock_dl.call_args[1]
-        self.assertIn('format', kwargs)
-        self.assertEquals(kwargs['format'], 'csv')
+        with Client(self.auth, cache=True, cache_opt={'format': 'csv'}):
+            kwargs = mock_dl.call_args[1]
+            self.assertIn('format', kwargs)
+            self.assertEqual(kwargs['format'], 'csv')
 
     @patch('datareservoirio.client.CachedDownloadStrategy')
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_format_msgpack(self, mock_cache, mock_dl):
-        client = Client(self.auth, cache={'format':'msgpack'})
-
-        kwargs = mock_dl.call_args[1]
-        self.assertIn('format', kwargs)
-        self.assertEquals(kwargs['format'], 'msgpack')
+        with Client(self.auth, cache={'format': 'msgpack'}):
+            kwargs = mock_dl.call_args[1]
+            self.assertIn('format', kwargs)
+            self.assertEqual(kwargs['format'], 'msgpack')
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_invalid_cache_format_raises_exception(self, mock_cache):
         with self.assertRaises(ValueError):
-            Client(self.auth, cache=True, cache_opt={'format': 'bogusformat'})
+            with Client(self.auth, cache=True, cache_opt={'format': 'bogusformat'}):
+                pass
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_root(self, mock_cache):
-        client = Client(self.auth, cache=True, cache_opt={'cache_root':'a:\\diskett'})
-        mock_cache.assert_called_once_with(cache_root='a:\\diskett', max_size=1024)
+        with Client(self.auth, cache=True, cache_opt={'cache_root': 'a:\\diskett'}):
+            mock_cache.assert_called_once_with(cache_root='a:\\diskett', max_size=1024)
 
     @patch('datareservoirio.client.SimpleFileCache')
     def test_init_with_cache_max_size(self, mock_cache):
-        client = Client(self.auth, cache=True, cache_opt={'max_size': 10})
-        mock_cache.assert_called_once_with(cache_root=None, max_size=10)
+        with Client(self.auth, cache=True, cache_opt={'max_size': 10}):
+            mock_cache.assert_called_once_with(cache_root=None, max_size=10)
 
     def test_token(self):
         self.assertEqual(self.client.token, self.auth.token)
@@ -249,7 +247,7 @@ class Test_Client(unittest.TestCase):
         self.client._wait_until_file_ready = Mock(return_value='Ready')
         df = pd.Series([0., 1., 2., 3.1, 3.2, 3.3, 4.], index=[0, 1, 2, 3, 3, 3, 4])
 
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             self.client.create(df)
 
     @patch('time.sleep')
@@ -273,14 +271,13 @@ class Test_Client(unittest.TestCase):
             self.auth.token, self.timeseries_id, self.dummy_params['FileId'])
         self.assertDictEqual(response, expected_response)
 
-
     @patch('time.sleep')
     def test_append_when_timeseries_have_duplicate_indicies_throws(self, mock_sleep):
         self._storage.put = Mock(return_value=self.dummy_params['FileId'])
         self.client._wait_until_file_ready = Mock(return_value='Ready')
         df = pd.Series([0., 1., 2., 3.1, 3.2, 3.3, 4.], index=[0, 1, 2, 3, 3, 3, 4])
 
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(ValueError):
             self.client.append(df, self.timeseries_id)
 
     def test_info_all_methods_called(self):
@@ -347,9 +344,9 @@ class Test_Client(unittest.TestCase):
     def test_get_with_start_stop_as_str_calls_storagewithnanonsinceepoch(self):
         self._storage.get.return_value = self.series_with_10_rows
 
-        response = self.client.get(self.timeseries_id,
-                                   start='1970-01-01 00:00:00.000000001',
-                                   end='1970-01-01 00:00:00.000000004')
+        self.client.get(self.timeseries_id,
+                        start='1970-01-01 00:00:00.000000001',
+                        end='1970-01-01 00:00:00.000000004')
 
         self.client._storage.get.assert_called_once_with(
             self.timeseries_id, 1, 4)
@@ -361,7 +358,8 @@ class Test_Client(unittest.TestCase):
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',
-                                   end='1970-01-01 00:00:00.000000004', raise_empty=False)
+                                   end='1970-01-01 00:00:00.000000004', 
+                                   raise_empty=False)
 
         pd.testing.assert_series_equal(response, response_expected, check_dtype=False)
 
@@ -369,16 +367,18 @@ class Test_Client(unittest.TestCase):
         self._storage.get.return_value = pd.Series()
 
         with self.assertRaises(ValueError):
-            self.client.get(self.timeseries_id, start='1970-01-01 00:00:00.000000001',
-                            end='1970-01-01 00:00:00.000000004', raise_empty=True)
+            self.client.get(self.timeseries_id,
+                            start='1970-01-01 00:00:00.000000001',
+                            end='1970-01-01 00:00:00.000000004',
+                            raise_empty=True)
 
     def test_get_start_stop_exception(self):
         self.client._timeseries_api.data.return_value = self.response
 
         with self.assertRaises(ValueError):
-            response = self.client.get(self.timeseries_id,
-                                       start='1970-01-01 00:00:00.000000004',
-                                       end='1970-01-01 00:00:00.000000001')
+            self.client.get(self.timeseries_id,
+                            start='1970-01-01 00:00:00.000000004',
+                            end='1970-01-01 00:00:00.000000001')
 
 
 class Test_TimeSeriesClient_verify_prep_series(unittest.TestCase):

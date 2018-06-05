@@ -7,9 +7,9 @@ import warnings
 from datareservoirio.storage import SimpleFileCache
 
 try:
-    from unittest.mock import patch, Mock, MagicMock
-except:
-    from mock import patch, Mock, MagicMock
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 
 class Test_SimpleFileCache(unittest.TestCase):
@@ -54,12 +54,12 @@ class Test_SimpleFileCache(unittest.TestCase):
 
     def test_init_with_cache_root_initializes_root_folder(self):
         self._path_exists.return_value = False
-        cache = SimpleFileCache(cache_root='root\\folder')
+        SimpleFileCache(cache_root='root\\folder')
         self._makedirs.assert_called_once_with(os.path.abspath('root\\folder'))
 
     def test_init_with_cache_root_ignores_cache_folder_parameter(self):
         self._path_exists.return_value = False
-        cache = SimpleFileCache(cache_root='root', cache_folder='whatevver')
+        SimpleFileCache(cache_root='root', cache_folder='whatevver')
         self._makedirs.assert_called_once_with(os.path.abspath('root'))
 
     def test_reset_cache(self):
@@ -79,7 +79,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         cached_message = self._cache.get(lambda: message, lambda data, stream: '',
                                          lambda stream: '', 'folder', 'file.csv')
 
-        self.assertEquals(cached_message, message)
+        self.assertEqual(cached_message, message)
 
     def test_get_without_cached_data_writes_to_cache(self):
         self._path_exists.return_value = False
@@ -103,7 +103,7 @@ class Test_SimpleFileCache(unittest.TestCase):
             lambda stream: 'Hello from cache!', 'a', 'b', 'file.csv')
 
         self._io_open.assert_called_with(expected_file, 'rb')
-        self.assertEquals(cached_message, u'Hello from cache!')
+        self.assertEqual(cached_message, u'Hello from cache!')
 
     def test_get_with_sizeoverage_evicts_old_files(self):
         self._walk.return_value = [
@@ -123,7 +123,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_exists.side_effect = lambda p: files[p]['exists']
         cache = SimpleFileCache(cache_folder='root')
 
-        cached_message = cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
+        cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
 
         self._remove.assert_called_once_with('rt\\file.2')
 

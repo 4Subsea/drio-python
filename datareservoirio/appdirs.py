@@ -10,7 +10,7 @@ import sys
 
 
 # windows detection, covers cpython and ironpython
-WINDOWS = (sys.platform.startswith("win") or
+WINDOWS = (sys.platform.startswith('win') or
            (sys.platform == 'cli' and os.name == 'nt'))
 
 
@@ -30,26 +30,26 @@ def user_cache_dir(appname):
     """
     Return full path to the user-specific cache dir for this application.
 
-        "appname" is the name of application.
+        `appname` is the name of application.
 
     Typical user cache directories are:
         macOS:      ~/Library/Caches/<AppName>
         Unix:       ~/.cache/<AppName> (XDG default)
-        Windows:    C:\Users\<username>\AppData\Local\<AppName>\Cache
+        Windows:    C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
 
     On Windows the only suggestion in the MSDN docs is that local settings go
     in the `CSIDL_LOCAL_APPDATA` directory. This is identical to the
     non-roaming app data dir (the default returned by `user_data_dir`). Apps
     typically put cache data somewhere *under* the given dir here. Some
     examples:
-        ...\Mozilla\Firefox\Profiles\<ProfileName>\Cache
-        ...\Acme\SuperApp\Cache\1.0
+        ...\\Mozilla\\Firefox\\Profiles\\<ProfileName>\\Cache
+        ...\\Acme\\SuperApp\\Cache\\1.0
 
-    OPINION: This function appends "Cache" to the `CSIDL_LOCAL_APPDATA` value.
+    OPINION: This function appends `Cache` to the `CSIDL_LOCAL_APPDATA` value.
     """
     if WINDOWS:
         # Get the base path
-        path = os.path.normpath(_get_win_folder("CSIDL_LOCAL_APPDATA"))
+        path = os.path.normpath(_get_win_folder('CSIDL_LOCAL_APPDATA'))
 
         # When using Python 2, return paths as bytes on Windows like we do on
         # other operating systems. See helper function docs for more details.
@@ -57,16 +57,16 @@ def user_cache_dir(appname):
             path = _win_path_to_bytes(path)
 
         # Add our app name and Cache directory to it
-        path = os.path.join(path, appname, "Cache")
-    elif sys.platform == "darwin":
+        path = os.path.join(path, appname, 'Cache')
+    elif sys.platform == 'darwin':
         # Get the base path
-        path = expanduser("~/Library/Caches")
+        path = expanduser('~/Library/Caches')
 
         # Add our app name to it
         path = os.path.join(path, appname)
     else:
         # Get the base path
-        path = os.getenv("XDG_CACHE_HOME", expanduser("~/.cache"))
+        path = os.getenv('XDG_CACHE_HOME', expanduser('~/.cache'))
 
         # Add our app name to it
         path = os.path.join(path, appname)
@@ -78,9 +78,9 @@ def user_data_dir(appname, roaming=False):
     """
     Return full path to the user-specific data dir for this application.
 
-        "appname" is the name of application.
+        'appname' is the name of application.
             If None, just the system directory is returned.
-        "roaming" (boolean, default False) can be set True to use the Windows
+        'roaming' (boolean, default False) can be set True to use the Windows
             roaming appdata directory. That means that for users on a Windows
             network setup for roaming profiles, this user data will be
             sync'd on login. See
@@ -100,12 +100,12 @@ def user_data_dir(appname, roaming=False):
         Win 7  (roaming):       C:\\Users\<username>\AppData\Roaming\<AppName>
 
     For Unix, we follow the XDG spec and support $XDG_DATA_HOME.
-    That means, by default "~/.local/share/<AppName>".
+    That means, by default '~/.local/share/<AppName>'.
     """
     if WINDOWS:
-        const = roaming and "CSIDL_APPDATA" or "CSIDL_LOCAL_APPDATA"
+        const = roaming and 'CSIDL_APPDATA' or 'CSIDL_LOCAL_APPDATA'
         path = os.path.join(os.path.normpath(_get_win_folder(const)), appname)
-    elif sys.platform == "darwin":
+    elif sys.platform == 'darwin':
         path = os.path.join(
             expanduser('~/Library/Application Support/'),
             appname,
@@ -119,7 +119,7 @@ def user_data_dir(appname, roaming=False):
         )
     else:
         path = os.path.join(
-            os.getenv('XDG_DATA_HOME', expanduser("~/.local/share")),
+            os.getenv('XDG_DATA_HOME', expanduser('~/.local/share')),
             appname,
         )
 
@@ -129,9 +129,9 @@ def user_data_dir(appname, roaming=False):
 def user_config_dir(appname, roaming=True):
     """Return full path to the user-specific config dir for this application.
 
-        "appname" is the name of application.
+        'appname' is the name of application.
             If None, just the system directory is returned.
-        "roaming" (boolean, default True) can be set False to not use the
+        'roaming' (boolean, default True) can be set False to not use the
             Windows roaming appdata directory. That means that for users on a
             Windows network setup for roaming profiles, this user data will be
             sync'd on login. See
@@ -144,14 +144,14 @@ def user_config_dir(appname, roaming=True):
         Win *:                  same as user_data_dir
 
     For Unix, we follow the XDG spec and support $XDG_CONFIG_HOME.
-    That means, by default "~/.config/<AppName>".
+    That means, by default '~/.config/<AppName>'.
     """
     if WINDOWS:
         path = user_data_dir(appname, roaming=roaming)
-    elif sys.platform == "darwin":
+    elif sys.platform == 'darwin':
         path = user_data_dir(appname)
     else:
-        path = os.getenv('XDG_CONFIG_HOME', expanduser("~/.config"))
+        path = os.getenv('XDG_CONFIG_HOME', expanduser('~/.config'))
         path = os.path.join(path, appname)
 
     return path
@@ -168,14 +168,14 @@ def _get_win_folder_from_registry(csidl_name):
     import _winreg
 
     shell_folder_name = {
-        "CSIDL_APPDATA": "AppData",
-        "CSIDL_COMMON_APPDATA": "Common AppData",
-        "CSIDL_LOCAL_APPDATA": "Local AppData",
+        'CSIDL_APPDATA': 'AppData',
+        'CSIDL_COMMON_APPDATA': 'Common AppData',
+        'CSIDL_LOCAL_APPDATA': 'Local AppData',
     }[csidl_name]
 
     key = _winreg.OpenKey(
         _winreg.HKEY_CURRENT_USER,
-        r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+        r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
     )
     directory, _type = _winreg.QueryValueEx(key, shell_folder_name)
     return directory
@@ -183,9 +183,9 @@ def _get_win_folder_from_registry(csidl_name):
 
 def _get_win_folder_with_ctypes(csidl_name):
     csidl_const = {
-        "CSIDL_APPDATA": 26,
-        "CSIDL_COMMON_APPDATA": 35,
-        "CSIDL_LOCAL_APPDATA": 28,
+        'CSIDL_APPDATA': 26,
+        'CSIDL_COMMON_APPDATA': 35,
+        'CSIDL_LOCAL_APPDATA': 28,
     }[csidl_name]
 
     buf = ctypes.create_unicode_buffer(1024)

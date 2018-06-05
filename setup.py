@@ -5,6 +5,7 @@ setup(name='datareservoirio',
       version='0.0.1',
       license='Proprietary',
       description='Python client for 4Subsea datareservoir.io',
+      keywords='drio datareservoir timeseries saas',
       url='http://www.4subsea.com/python/datareservoirio',
       author='4Subsea',
       author_email='support@4subsea.com',
@@ -15,7 +16,9 @@ setup(name='datareservoirio',
           'numpy',
           'pandas>=0.23.0',
           'requests',
-          'futures;python_version=="2.7"'
+          'six',
+          'futures; python_version == "2.7"',
+          'future; python_version == "2.7"'
       ],
       include_package_data=True,
       zip_safe=False)

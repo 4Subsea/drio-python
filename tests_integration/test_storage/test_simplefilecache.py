@@ -1,9 +1,9 @@
 import unittest
 import logging
-import sys
 import os
 import numpy as np
 import pandas as pd
+import codecs
 from random import random
 from timeit import timeit
 
@@ -22,18 +22,18 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._data.name = 'values'
 
         self.cache = SimpleFileCache(cache_root=_CACHE_ROOT)
-    
+
     def test_get_when_key_changes_cache_is_updated(self):
         rows = [(0, 1.0), (1, 2.0), (2, 3.0)]
         newdata = pd.DataFrame.from_records(rows, columns=['index', 'values'])
         key = 'test_get_when_key_changes_cache_is_updated\\data\\{}'
 
-        cacheddata = self.cache.get(
+        self.cache.get(
             lambda: self._data,
             self._data_to_csv,
             self._csv_to_data,
             key.format(1))
-        
+
         self.cache.reset_cache()
 
         newcacheddata = self.cache.get(
@@ -46,8 +46,6 @@ class Test_SimpleFileCache(unittest.TestCase):
         self.assertFalse(newcacheddata.equals(self._data))
 
     def test_get_when_serializer_throws_does_not_create_cache_file(self):
-        rows = [(0, 1.0), (1, 2.0), (2, 3.0)]
-        newdata = pd.DataFrame.from_records(rows, columns=['index', 'values'])
         key = 'test_get_when_serializer_throws_does_not_create_cache_file\\data'
 
         try:
@@ -80,7 +78,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         cache = SimpleFileCache(cache_root=_CACHE_ROOT, max_size=10)
 
         # ensure data is cached
-        cacheddata = cache.get(
+        cache.get(
             lambda: self._data,
             self._data_to_csv,
             self._csv_to_data,
@@ -96,14 +94,15 @@ class Test_SimpleFileCache(unittest.TestCase):
         iterations = 5
         usedtime = timeit(stmt=_action, number=iterations)
 
-        print('Average cache read with cache-write: {}'.format(usedtime/ iterations))
-
+        print('Average cache read with cache-write: {}'.format(usedtime / iterations))
 
     def _data_to_csv(self, data, stream):
-         data.to_csv(stream, header=False)
+        with codecs.getwriter('utf-8')(stream) as sw:
+            data.to_csv(sw, header=False, encoding='ascii')
 
     def _csv_to_data(self, stream):
-        return pd.read_csv(stream, header=None, names=['index', 'values'], index_col=0)
+        with codecs.getreader('utf-8')(stream) as sr:
+            return pd.read_csv(sr, header=None, names=['index', 'values'], index_col=0, encoding='ascii')
 
 
 if __name__ == '__main__':

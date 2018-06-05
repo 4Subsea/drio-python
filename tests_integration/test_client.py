@@ -1,13 +1,16 @@
 import pprint
 import logging
-import sys
 import unittest
 from timeit import default_timer as timer
 
 import numpy as np
 import pandas as pd
 import requests
-from mock import patch
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
@@ -31,13 +34,15 @@ class Test_Client(unittest.TestCase):
     def setUp(self):
         self.client = datareservoirio.Client(self.auth, cache=False)
 
+    def tearDown(self):
+        self.client.__exit__()
+
     def test_ping(self):
         self.client.ping()
 
     def test_create_empty_series_get_then_delete(self):
         response = self.client.create()
         ts_id = response['TimeSeriesId']
-        info = self.client.info(ts_id)
 
         # self.assertEqual(0, response['TimeOfFirstSample'])
         # self.assertEqual(info['TimeOfFirstSample'],
@@ -94,7 +99,7 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(174, info['TimeOfLastSample'])
 
 
-        data_recieved = self.client.get(info['TimeSeriesId'])
+        data_recieved = self.client.get(info['TimeSeriesId'], convert_date=False)
         data_sent = self.df_1
         data_sent = data_sent.append(self.df_3)
 
@@ -112,7 +117,7 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(0, info['TimeOfFirstSample'])
         self.assertEqual(174, info['TimeOfLastSample'])
 
-        data_recieved = self.client.get(info['TimeSeriesId'])
+        data_recieved = self.client.get(info['TimeSeriesId'], convert_date=False)
         data_sent = self.df_3
         data_sent = data_sent.combine_first(self.df_2)
         data_sent = data_sent.combine_first(self.df_1)
@@ -154,6 +159,9 @@ class Test_Client_CacheEnable(unittest.TestCase):
     def setUp(self):
         self.client = datareservoirio.Client(self.auth, cache=True)
 
+    def tearDown(self):
+        self.client.__exit__()
+
     def test_ping(self):
         self.client.ping()
 
@@ -180,11 +188,11 @@ class Test_Client_CacheEnable(unittest.TestCase):
 
     def test_delete(self):
         response = self.client.create(self.df_3)
-        info_pre = self.client.info(response['TimeSeriesId'])
+
         self.client.delete(response['TimeSeriesId'])
 
         with self.assertRaises(requests.exceptions.HTTPError):
-            info_post = self.client.info(response['TimeSeriesId'])
+            self.client.info(response['TimeSeriesId'])
 
     def test_create_append_nooverlap_get_delete(self):
         response = self.client.create(self.df_1)
@@ -197,8 +205,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
         self.assertEqual(0, info['TimeOfFirstSample'])
         self.assertEqual(174, info['TimeOfLastSample'])
 
-
-        data_recieved = self.client.get(info['TimeSeriesId'])
+        data_recieved = self.client.get(info['TimeSeriesId'], convert_date=False)
         data_sent = self.df_1
         data_sent = data_sent.append(self.df_3)
 
@@ -216,7 +223,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
         self.assertEqual(0, info['TimeOfFirstSample'])
         self.assertEqual(174, info['TimeOfLastSample'])
 
-        data_recieved = self.client.get(info['TimeSeriesId'])
+        data_recieved = self.client.get(info['TimeSeriesId'], convert_date=False)
         data_sent = self.df_3
         data_sent = data_sent.combine_first(self.df_2)
         data_sent = data_sent.combine_first(self.df_1)
@@ -242,6 +249,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
 
         pprint.pprint(info)
         self.client.delete(response['TimeSeriesId'])
+
 
 if __name__ == '__main__':
     logger = logging.getLogger("datareservoirio")

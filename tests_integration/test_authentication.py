@@ -1,7 +1,11 @@
 import unittest
 from timeit import default_timer as timer
 
-from mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
 from adal.adal_error import AdalError
 
 from datareservoirio.authenticate import Authenticator

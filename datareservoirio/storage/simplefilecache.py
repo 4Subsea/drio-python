@@ -184,8 +184,8 @@ class SimpleFileCache(object):
         pre_filepath = filepath + '.uncommitted'
         if WINDOWS:
             pre_filepath = _win_path(pre_filepath)
-        with io.open(pre_filepath, 'wb') as file_:
 
+        with io.open(pre_filepath, 'wb') as file_:
             try:
                 serialize_data(data, file_)
             except Exception as error:
@@ -199,6 +199,7 @@ class SimpleFileCache(object):
     def _read_from_cache(self, filepath, deserialize_data):
         if WINDOWS:
             filepath = _win_path(filepath)
+
         with io.open(filepath, 'rb') as file_:
             return deserialize_data(file_)
 

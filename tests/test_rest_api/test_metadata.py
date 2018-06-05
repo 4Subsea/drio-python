@@ -1,5 +1,4 @@
 import unittest
-
 import requests
 from requests.exceptions import HTTPError
 import datareservoirio
@@ -7,7 +6,7 @@ from datareservoirio.rest_api import MetadataAPI
 
 try:
     from unittest.mock import patch, Mock
-except:
+except ImportError:
     from mock import patch, Mock
 
 
@@ -54,8 +53,8 @@ class Test_MetadataAPI(unittest.TestCase):
         self.token = {'accessToken': 'abcdef'}
         self.metadata_id = 'metadata_id'
 
-        self.api = MetadataAPI()
-        self.api._session = Mock()
+        self._session = Mock()
+        self.api = MetadataAPI(session=self._session)
 
     @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_namespacekeys_with_namespaces_returns_list(self, mock_token):

@@ -60,7 +60,7 @@ def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=2):
 def _make_request_hash(args, kwargs):
     """Hash request signature."""
     key = args
-    for kwarg in kwargs.iteritems():
+    for kwarg in kwargs.items():
         key += kwarg
     return hash(key)
 
@@ -68,8 +68,8 @@ def _make_request_hash(args, kwargs):
 class TimeSeriesAPI(BaseAPI):
     """Python wrapper for reservoir-api.4subsea.net/api/timeseries."""
 
-    def __init__(self, cache=True):
-        super(TimeSeriesAPI, self).__init__()
+    def __init__(self, cache=True, session=None):
+        super(TimeSeriesAPI, self).__init__(session=session)
         self._cache = cache
 
     def create(self, token, timeseries_id=None):
@@ -116,7 +116,7 @@ class TimeSeriesAPI(BaseAPI):
         log.debug("called with <token>, {}".format(file_id), "create")
 
         uri = self._api_base_url + 'timeseries/create'
-        body = {"FileId": file_id}
+        body = {'FileId': file_id}
         response = self._post(uri, data=body, auth=TokenAuth(token))
         return response.json()
 
@@ -137,11 +137,11 @@ class TimeSeriesAPI(BaseAPI):
         -----
         Refer to API documentation wrt apppend, overlap, and overwrite behavior
         """
-        log.debug("called with <token>, {}, {}".format(
-            timeseries_id, file_id), "add")
+        log.debug('called with <token>, {}, {}'.format(
+            timeseries_id, file_id), 'add')
 
         uri = self._api_base_url + 'timeseries/add'
-        body = {"TimeSeriesId": timeseries_id, "FileId": file_id}
+        body = {'TimeSeriesId': timeseries_id, 'FileId': file_id}
         response = self._post(uri, data=body, auth=TokenAuth(token))
         return response.json()
 
@@ -162,7 +162,7 @@ class TimeSeriesAPI(BaseAPI):
             dictionary containing information about a timeseries
             entry in the reservoir
         """
-        log.debug("called with <token>, {}".format(timeseries_id))
+        log.debug('called with <token>, {}'.format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/' + timeseries_id
         response = self._get(uri, auth=TokenAuth(token))
@@ -179,10 +179,10 @@ class TimeSeriesAPI(BaseAPI):
         timeseries_id : str
             id of the target timeseries
         """
-        log.debug("called with <token>, {}".format(timeseries_id))
+        log.debug('called with <token>, {}'.format(timeseries_id))
 
         uri = self._api_base_url + 'timeseries/' + timeseries_id
-        response = self._delete(uri, auth=TokenAuth(token))
+        self._delete(uri, auth=TokenAuth(token))
         return
 
     def download_days(self, token, timeseries_id, start, end):
@@ -210,7 +210,7 @@ class TimeSeriesAPI(BaseAPI):
         ----
         Requests are divided into n-sub requests per day.
         """
-        log.debug("called with <token>, {}, {}, {}".format(
+        log.debug('called with <token>, {}, {}, {}'.format(
             timeseries_id, start, end))
 
         nanoseconds_day = 86400000000000
@@ -247,7 +247,7 @@ class TimeSeriesAPI(BaseAPI):
         json
             a list of files, each having a list of Azure Storage compatible chunk urls
         """
-        log.debug("called with <token>, {}, {}, {}".format(
+        log.debug('called with <token>, {}, {}, {}'.format(
             timeseries_id, start, end))
 
         uri = self._api_base_url + 'timeseries/{}/download/days'.format(timeseries_id)
@@ -274,8 +274,8 @@ class TimeSeriesAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug("called with <token>, {}, {}".format(
-            timeseries_id, metadata_id_list), "attach_metadata")
+        log.debug('called with <token>, {}, {}'.format(
+            timeseries_id, metadata_id_list), 'attach_metadata')
 
         uri = self._api_base_url + \
             'timeseries/{}/attachMetadata'.format(timeseries_id)
@@ -302,8 +302,8 @@ class TimeSeriesAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug("called with <token>, {}, {}".format(
-            timeseries_id, metadata_id_list), "attach_metadata")
+        log.debug('called with <token>, {}, {}'.format(
+            timeseries_id, metadata_id_list), 'attach_metadata')
 
         uri = self._api_base_url + \
             'timeseries/{}/detachMetadata'.format(timeseries_id)

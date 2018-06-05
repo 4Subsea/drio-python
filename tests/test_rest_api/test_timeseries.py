@@ -1,7 +1,5 @@
 import time
-import uuid
 import unittest
-
 import requests
 
 import datareservoirio
@@ -12,7 +10,7 @@ from datareservoirio.rest_api.timeseries import (
 
 try:
     from unittest.mock import patch, Mock
-except:
+except ImportError:
     from mock import patch, Mock
 
 
@@ -47,9 +45,13 @@ class Test_TimeSeriesAPI(unittest.TestCase):
     def setUp(self):
         self.token = {'accessToken': 'abcdef'}
 
-        self.api = TimeSeriesAPI()
+        self._session = requests.Session()
+        self.api = TimeSeriesAPI(session=self._session)
         self.api._session = Mock()
         self.api._api_base_url = 'https://drio/api/'
+
+    def tearDown(self):
+        self._session.close()
 
     @patch('datareservoirio.rest_api.timeseries.TokenAuth')
     def test_info(self, mock_token):
@@ -58,10 +60,9 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_get.return_value = Mock()
         mock_get.return_value.text = u'{}'
 
-        result = self.api.info(self.token, "someId")
+        self.api.info(self.token, "someId")
 
         expected_uri = 'https://drio/api/timeseries/someId'
-        expected_header = {'Authorization': 'Bearer abcdef'}
 
         mock_get.assert_called_once_with(expected_uri, auth=mock_token(),
                                          **self.api._defaults)
@@ -74,10 +75,9 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_delete.return_value = Mock()
         mock_delete.return_value.status_code = 200
 
-        result = self.api.delete(self.token, timeseries_id)
+        self.api.delete(self.token, timeseries_id)
 
         expected_uri = 'https://drio/api/timeseries/123456'
-        expected_header = {'Authorization': 'Bearer abcdef'}
 
         mock_delete.assert_called_with(expected_uri, auth=mock_token(),
                                        **self.api._defaults)
@@ -90,10 +90,9 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_put.return_value = Mock()
         mock_put.return_value.text = u'{TimeSeriesId:\'ebaebc1e-35f6-49b5-a6cf-3cc07177a691\'}'
 
-        result = self.api.create(self.token, timeseries_id=ts_id)
+        self.api.create(self.token, timeseries_id=ts_id)
 
         expected_uri = 'https://drio/api/timeseries/ebaebc1e-35f6-49b5-a6cf-3cc07177a691'
-        expected_header = {'Authorization': 'Bearer abcdef'}
 
         mock_put.assert_called_with(expected_uri, data=None, auth=mock_token(), **self.api._defaults)
 
@@ -105,10 +104,9 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_put.return_value = Mock()
         mock_put.return_value.text = u'{TimeSeriesId:\'aaabbbcc-35f6-49b5-a6cf-3cc07177a691\'}'
 
-        result = self.api.create(self.token)
+        self.api.create(self.token)
 
         expected_uri = 'https://drio/api/timeseries/aaabbbcc-35f6-49b5-a6cf-3cc07177a691'
-        expected_header = {'Authorization': 'Bearer abcdef'}
 
         mock_put.assert_called_with(expected_uri, data=None, auth=mock_token(), **self.api._defaults)
 
@@ -120,11 +118,9 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_post.return_value = Mock()
         mock_post.return_value.text = u'{}'
 
-        result = self.api.create_with_data(self.token, file_id)
+        self.api.create_with_data(self.token, file_id)
 
         expected_uri = 'https://drio/api/timeseries/create'
-        expected_header = {'Authorization': 'Bearer abcdef'}
-
         expected_body = {"FileId": file_id}
 
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
@@ -139,10 +135,9 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_post.return_value = Mock()
         mock_post.return_value.text = u'{}'
 
-        result = self.api.add(self.token, timeseries_id, file_id)
+        self.api.add(self.token, timeseries_id, file_id)
 
         expected_uri = 'https://drio/api/timeseries/add'
-        expected_header = {'Authorization': 'Bearer abcdef'}
         expected_body = {"TimeSeriesId": timeseries_id, "FileId": file_id}
 
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
@@ -154,11 +149,10 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         start = -1000
         end = 6660000
 
-        result = self.api._download_days_base(self.token, timeseries_id, start, end)
+        self.api._download_days_base(self.token, timeseries_id, start, end)
 
         expected_uri = 'https://drio/api/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
-        expected_header = {'Authorization': 'Bearer abcdef'}
         expected_params = {'start': start, 'end': end}
 
         mock_get = self.api._session.get
@@ -172,11 +166,10 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         start = -1000
         end = 6660000
 
-        result = self.api._download_days_cached(self.token, timeseries_id, start, end)
+        self.api._download_days_cached(self.token, timeseries_id, start, end)
 
         expected_uri = 'https://drio/api/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
-        expected_header = {'Authorization': 'Bearer abcdef'}
         expected_params = {'start': start, 'end': end}
 
         mock_get = self.api._session.get
@@ -221,7 +214,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         meta_list = ['meta_1', 'meta_2']
         mock_post = self.api._session.post
 
-        result = self.api.attach_metadata(self.token, timeseries_id,
+        self.api.attach_metadata(self.token, timeseries_id,
                                           meta_list)
 
         expected_uri = 'https://drio/api/timeseries/{}/attachMetadata'.format(timeseries_id)
@@ -235,7 +228,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         meta_list = ['meta_1', 'meta_2']
         mock_delete = self.api._session.delete
 
-        result = self.api.detach_metadata(self.token, timeseries_id,
+        self.api.detach_metadata(self.token, timeseries_id,
                                           meta_list)
 
         expected_uri = 'https://drio/api/timeseries/{}/detachMetadata'.format(timeseries_id)
@@ -312,8 +305,10 @@ class Test__request_cache(unittest.TestCase):
 
     def test_check_cache(self):
         self.user_function(self, {'abc': 123}, 3, 5)
+
+        values = list(self.user_function._cache.values())
         self.assertEqual(len(self.user_function._cache), 1)
-        self.assertEqual(self.user_function._cache.values()[0][0], 8)
+        self.assertEqual(values[0][0], 8)
 
     def test_check_cache_expire(self):
         @request_cache(timeout=1)
@@ -322,13 +317,13 @@ class Test__request_cache(unittest.TestCase):
 
         user_function(self, {'abc': 123}, 3, 5)
         self.assertEqual(len(user_function._cache), 1)
-        timestamp_0 = user_function._cache.values()[0][1]
+        timestamp_0 = list(user_function._cache.values())[0][1]
 
         time.sleep(2)
 
         user_function(self, {'abc': 123}, 3, 5)
         self.assertEqual(len(user_function._cache), 1)
-        timestamp_1 = user_function._cache.values()[0][1]
+        timestamp_1 = list(user_function._cache.values())[0][1]
 
         self.assertGreater(timestamp_1, timestamp_0)
 

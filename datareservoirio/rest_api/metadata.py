@@ -15,8 +15,8 @@ logwriter = LogWriter(logger)
 class MetadataAPI(BaseAPI):
     """Python wrapper for reservoir-api.4subsea.net/api/metadata"""
 
-    def __init__(self):
-        super(MetadataAPI, self).__init__()
+    def __init__(self, session=None):
+        super(MetadataAPI, self).__init__(session=session)
 
     def namespacekeys(self, token):
         """
@@ -106,8 +106,8 @@ class MetadataAPI(BaseAPI):
         token : dict
             token recieved from authenticator
         metadata_json : dict
-            Dict with metadata. Must contain "Namespace" (str), "Key" (str),
-            and "Value" (dict). Subjected to validation before passed on.
+            Dict with metadata. Must contain 'Namespace' (str), 'Key' (str),
+            and 'Value' (dict). Subjected to validation before passed on.
 
         Return
         ------
@@ -115,8 +115,8 @@ class MetadataAPI(BaseAPI):
             response.json()
         """
         # json validation in here
-        logwriter.debug("called with <token>, {}".format(
-            metadata_json), "create")
+        logwriter.debug('called with <token>, {}'.format(
+            metadata_json), 'create')
 
         uri = self._api_base_url + 'metadata/create'
         response = self._post(uri, json=metadata_json, auth=TokenAuth(token))
@@ -133,8 +133,8 @@ class MetadataAPI(BaseAPI):
         metadata_id : str
             id of metadata
         metadata_json : dict
-            Dict with metadata. Must contain "Namespace" (str), "Key" (str),
-            and "Value" (dict). Subjected to validation before passed on.
+            Dict with metadata. Must contain 'Namespace' (str), 'Key' (str),
+            and 'Value' (dict). Subjected to validation before passed on.
 
         Return
         ------
@@ -142,8 +142,8 @@ class MetadataAPI(BaseAPI):
             response.json()
         """
         # json validation in here
-        logwriter.debug("called with <token>, {}, {}".format(
-            metadata_id, metadata_json), "reset")
+        logwriter.debug('called with <token>, {}, {}'.format(
+            metadata_id, metadata_json), 'reset')
 
         uri = self._api_base_url + 'metadata/{}'.format(metadata_id)
         response = self._put(uri, json=metadata_json, auth=TokenAuth(token))
@@ -160,11 +160,11 @@ class MetadataAPI(BaseAPI):
         metadata_id : str
             id of metadata
         """
-        logwriter.debug("called with <token>, {}".format(
-            metadata_id), "delete")
+        logwriter.debug('called with <token>, {}'.format(
+            metadata_id), 'delete')
 
         uri = self._api_base_url + 'metadata/{}'.format(metadata_id)
-        response = self._delete(uri, auth=TokenAuth(token))
+        self._delete(uri, auth=TokenAuth(token))
         return
 
     def get(self, token, metadata_id):
@@ -183,7 +183,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {}".format(metadata_id), 'get')
+        logwriter.debug('called with <token>, {}'.format(metadata_id), u'get')
 
         uri = self._api_base_url + 'metadata/' + metadata_id
         response = self._get(uri, auth=TokenAuth(token))
@@ -205,7 +205,7 @@ class MetadataAPI(BaseAPI):
         list of dicts
             response.json()
         """
-        logwriter.debug("called with <token>", 'list')
+        logwriter.debug('called with <token>', 'list')
 
         uri = self._api_base_url + 'metadata/list'
         response = self._get(uri, auth=TokenAuth(token))
@@ -220,8 +220,8 @@ class MetadataAPI(BaseAPI):
         token : dict
             token recieved from authenticator
         search_json : dict
-            Dict with search data. Must contain "Namespace" (str), "Key" (str),
-            and "Conjunctive" (bool). Subjected to validation before passed on.
+            Dict with search data. Must contain 'Namespace' (str), 'Key' (str),
+            and 'Conjunctive' (bool). Subjected to validation before passed on.
 
         Return
         ------
@@ -229,7 +229,7 @@ class MetadataAPI(BaseAPI):
             response.json()
         """
         # json validation here
-        logwriter.debug("called with <token>, {}".format(
+        logwriter.debug('called with <token>, {}'.format(
             search_json), 'search')
 
         uri = self._api_base_url + 'metadata/search'
@@ -254,8 +254,8 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {}, {}".format(
-            metadata_id, series_id_list), "attach_series")
+        logwriter.debug('called with <token>, {}, {}'.format(
+            metadata_id, series_id_list), 'attach_series')
 
         uri = self._api_base_url + \
             'metadata/{}/attachTimeSeries'.format(metadata_id)
@@ -281,8 +281,8 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {}, {}".format(
-            metadata_id, series_id_list), "detach_series")
+        logwriter.debug('called with <token>, {}, {}'.format(
+            metadata_id, series_id_list), 'detach_series')
 
         uri = self._api_base_url + \
             'metadata/{}/detachTimeSeries'.format(metadata_id)

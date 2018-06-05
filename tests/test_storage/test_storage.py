@@ -1,13 +1,12 @@
 import unittest
-
 import pandas as pd
 
 from datareservoirio.storage import Storage
 
 try:
-    from unittest.mock import patch, Mock
-except:
-    from mock import patch, Mock
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
 
 
 class Test_Storage(unittest.TestCase):
@@ -28,7 +27,7 @@ class Test_Storage(unittest.TestCase):
             uploader=self.uploader)
 
     def test_constructor(self):
-        storage = Storage(self._auth, self._timeseries_api, self._files_api)
+        Storage(self._auth, self._timeseries_api, self._files_api)
 
     def test_get(self):
         data = pd.Series([1, 2, 3, 4], index=[1, 2, 3, 4])
@@ -43,7 +42,7 @@ class Test_Storage(unittest.TestCase):
 
         fileId = self.storage.put('data')
 
-        self.assertEquals(fileId, '42')
+        self.assertEqual(fileId, '42')
 
     def test__create_series(self):
         series = pd.Series(data=[0, 2, 4, 8, 16, 32, 64],

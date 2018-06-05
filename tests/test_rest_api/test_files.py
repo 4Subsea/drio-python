@@ -1,4 +1,3 @@
-import json
 import unittest
 
 import requests
@@ -8,11 +7,11 @@ from datareservoirio.rest_api import FilesAPI
 
 try:
     from unittest.mock import patch, Mock
-except:
+except ImportError:
     from mock import patch, Mock
 
 
-response_upload = """{
+response_upload = r"""{
   "FileId": "a file id",
   "Account": "the account",
   "SasKey": "the key",
@@ -44,15 +43,15 @@ class Test_FilesAPI(unittest.TestCase):
         self.token = {'accessToken': 'abcdef'}
         self.dummy_header = {'Authorization': 'Bearer abcdef'}
 
-        self.api = FilesAPI()
-        self.api._session = Mock()
+        self._session = Mock()
+        self.api = FilesAPI(session=self._session)
 
     @patch('datareservoirio.rest_api.files.TokenAuth')
     def test_upload(self, mock_token):
         mock_post = self.api._session.post
 
         response = Mock()
-        response_upload = {"test": "abs"}
+        response_upload = {'test': 'abs'}
         response.json.return_value = response_upload
         mock_post.return_value = response
 

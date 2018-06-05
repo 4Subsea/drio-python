@@ -2,9 +2,11 @@ from __future__ import absolute_import, division, print_function
 
 import base64
 import logging
+import codecs
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from itertools import imap
+from builtins import map
+from builtins import str
 
 import pandas as pd
 
@@ -25,7 +27,7 @@ class BaseDownloadStrategy(object):
 
     def get(self, response):
         filechunks = [f['Chunks'] for f in response['Files']]
-        filedatas = imap(self._download_chunks_as_dataframe, filechunks)
+        filedatas = map(self._download_chunks_as_dataframe, filechunks)
 
         try:
             series = next(filedatas)
@@ -96,8 +98,12 @@ class BaseDownloadStrategy(object):
 class AlwaysDownloadStrategy(BaseDownloadStrategy):
     """Timeseries download strategy that will always download from the backend storage."""
 
+    def __init__(self, session=None):
+        self._session = session
+
     def _download_chunk(self, chunk):
-        return AzureBlobService(chunk).get_blob_to_series()
+        service = AzureBlobService(chunk, session=self._session)
+        return service.get_blob_to_series()
 
 
 class CachedDownloadStrategy(BaseDownloadStrategy):
@@ -126,17 +132,23 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
     class CsvFormat(object):
         """Serialize dataframe to/from the csv format."""
 
+        def __init__(self):
+            self._reader_factory = codecs.getreader('utf-8')
+            self._writer_factory = codecs.getwriter('utf-8')
+
         @property
         def file_extension(self):
             return 'csv'
 
         def serialize(self, dataframe, stream):
-            dataframe.to_csv(stream, header=True)
+            with self._writer_factory(stream) as sw:
+                dataframe.to_csv(sw, header=True, encoding='ascii')
 
         def deserialize(self, stream):
-            return pd.read_csv(stream, index_col=0)
+            with self._reader_factory(stream) as sr:
+                return pd.read_csv(sr, index_col=0, encoding='ascii')
 
-    def __init__(self, cache=SimpleFileCache(), format='msgpack'):
+    def __init__(self, cache=SimpleFileCache(), format='msgpack', session=None):
         """
         Initialize a dataframe download strategy using a cache implementation
         and a serialization format.
@@ -148,7 +160,8 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
         :param: str format
             Serialization format of the files stored in cache. Supports
             'msgpack' and 'csv'. Default is 'msgpack'.
-
+        :param: requests.Session session
+            Request session to reuse when making requests to Storage
         """
         super(CachedDownloadStrategy, self).__init__()
 
@@ -161,6 +174,7 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
 
         self._cache = cache
         self._memory_cache = (hash(None), None)
+        self._session = session
 
     def get(self, response):
         # short-circuit if same as last one
@@ -178,7 +192,7 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
         key1 = chunk['Account']
         key2 = chunk['Container']
         path = chunk['Path']
-        file_ = base64.b64encode(chunk['ContentMd5'])
+        file_ = self._encode_for_path_safety(chunk['ContentMd5'])
 
         return self._cache.get(
             partial(self._blob_to_series, chunk),
@@ -192,6 +206,10 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
     def _deserialize_series(self, stream):
         return self._format.deserialize(stream)
 
+    def _blob_to_series(self, blob_params):
+        service = AzureBlobService(blob_params, session=self._session)
+        return service.get_blob_to_series()
+
     @staticmethod
-    def _blob_to_series(blob_params):
-        return AzureBlobService(blob_params).get_blob_to_series()
+    def _encode_for_path_safety(value):
+        return str(base64.urlsafe_b64encode(str(value).encode()).decode())
