@@ -93,7 +93,7 @@ class TimeSeriesAPI(BaseAPI):
         if timeseries_id is None:
             timeseries_id = str(uuid4())
 
-        uri = '{}timeseries/{}'.format(self._api_base_url, timeseries_id)
+        uri = self._api_base_url + 'timeseries/{}'.format(timeseries_id)
         response = self._put(uri, data=None, auth=TokenAuth(token))
         return response.json()
 
@@ -122,6 +122,8 @@ class TimeSeriesAPI(BaseAPI):
 
     def add(self, token, timeseries_id, file_id):
         """
+        TODO: refactor method name -> append.
+
         Append timeseries data to an existing entry.
 
         Parameters
@@ -256,6 +258,42 @@ class TimeSeriesAPI(BaseAPI):
         response = self._get(uri, params=params, auth=TokenAuth(token))
         return response.json()
 
+    def search(self, token, namespace, key, name, value=None):
+        """
+        TODO: Extend functionality - powered by MetadataAPI search.
+
+        Find timeseries with metadata for given namespace/key/name/value
+        combination.
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        namespace : str
+            namespace in metadata
+        key : str
+            key in metadata
+        name : str
+            name in name/value-pair found in metadata value-json
+        value : str, optional
+            value in name/value-pair found in metadata value-json
+
+        Return
+        ======
+        dict or list
+            response.json() containing timeseriesID
+        """
+        args_update = []
+        for arg in [namespace, key, name, value]:
+            if not arg:
+                break
+            else:
+                args_update.append(arg)
+
+        uri = self._api_base_url + 'timeseries/' + '/'.join(args_update)
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
+
     def attach_metadata(self, token, timeseries_id, metadata_id_list):
         """
         Attach a list of metadata entries to a series.
@@ -310,60 +348,4 @@ class TimeSeriesAPI(BaseAPI):
 
         response = self._delete(uri, json=metadata_id_list,
                                 auth=TokenAuth(token))
-        return response.json()
-
-    def timeseries_by_metadata(self, token, namespace, key, name):
-        """
-        Gets a list of timeseriesIDs with metadata value for given name,
-        in namespace/key combo
-
-        Parameters
-        ==========
-            token : dict
-            token recieved from authenticator
-        namespace : string
-            namespace in metadata
-        key : string
-            key in metadata
-        name : string
-            name in name/value-pair found in metadata value-json
-
-        Return
-        ======
-        dict
-            response.json() containing timeseriesID and value from mathing
-            name/value pair
-        """
-
-        uri = self._api_base_url + 'timeseries/' + namespace + '/' + key + '/' + name
-        response = self._get(uri, auth=TokenAuth(token))
-        return response.json()
-
-    def timeseries_by_metadatavalue(self, token, namespace, key, name, value):
-        """
-        Gets a list of timeseriesIDs with metadata value for given name,
-        in namespace/key combo
-
-        Parameters
-        ==========
-            token : dict
-            token recieved from authenticator
-        namespace : string
-            namespace in metadata
-        key : string
-            key in metadata
-        name : string
-            name in name/value-pair found in metadata value-json
-        value : string
-            value in name/value-pair found in metadata value-json
-
-        Return
-        ======
-        dict
-            response.json() containing timeseriesID
-        """
-
-        uri = (self._api_base_url + 'timeseries/' +
-               namespace + '/' + key + '/' + name + '/' + value)
-        response = self._get(uri, auth=TokenAuth(token))
         return response.json()

@@ -1,7 +1,6 @@
 import unittest
-import requests
-from requests.exceptions import HTTPError
 import datareservoirio
+import datareservoirio.rest_api.metadata as metadata
 from datareservoirio.rest_api import MetadataAPI
 
 try:
@@ -11,9 +10,10 @@ except ImportError:
 
 
 dummy_meta = {
-    "Namespace": "string",
-    "Key": "string",
-    "Value": {}
+    "Namespace": "hello",
+    "Key": "world",
+    "Value": {'Norway': 'hei',
+              'Klingon': 'grabah'}
 }
 
 dummy_response = """
@@ -53,104 +53,17 @@ class Test_MetadataAPI(unittest.TestCase):
         self.token = {'accessToken': 'abcdef'}
         self.metadata_id = 'metadata_id'
 
-        self._session = Mock()
-        self.api = MetadataAPI(session=self._session)
-
-    @patch('datareservoirio.rest_api.metadata.TokenAuth')
-    def test_namespacekeys_with_namespaces_returns_list(self, mock_token):
-        mock_get = self.api._session.get
-        mock_get.return_value = Mock()
-        mock_get.return_value.text = '["system.reservoir", "system.campaigns"]'
-
-        self.api.namespacekeys(self.token)
-
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/namespacekeys'
-
-        mock_get.assert_called_once_with(expected_uri,
-                                         auth=mock_token(),
-                                         **self.api._defaults)
-
-    @patch('datareservoirio.rest_api.metadata.TokenAuth')
-    def test_names_for_nskeycombo_returns_list(self, mock_token):
-        mock_get = self.api._session.get
-        mock_get.return_value = Mock()
-        mock_get.return_value.text = '["VesselName", "CampaignName"]'
-
-        self.api.metadata(self.token, 'namesp', 'mykey')
-
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/namesp/mykey'
-
-        mock_get.assert_called_once_with(expected_uri,
-                                         auth=mock_token(),
-                                         **self.api._defaults)
-
-    @patch('datareservoirio.rest_api.metadata.TokenAuth')
-    def test_add_metadata_nonexisting(self, mock_token):
-        mock_post = self.api._session.post
-        valuePairs = {'theguid1': 'value1', 'theguid2': 'value2'}
-
-        response = self.api.add_metadata(self.token, self.metadata_id,
-                                         'nsandkey', valuePairs, False)
-
-        expected_uri = ('https://reservoir-api-qa.4subsea.net/api/metadata/add?'
-                        'timeseriesId={}&namespaceAndKey=nsandkey&overwrite={}'
-                        .format(self.metadata_id, 'False'))
-        expected_body = valuePairs
-
-        mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
-                                          json=expected_body, **self.api._defaults)
-
-    def test_add_metadata_whenthrows(self):
-        self.api._session.post.side_effect = Exception()
-
-        with self.assertRaises(Exception):
-            self.api.add_metadata(self.token, '1bf9d2b1-b544-4756-94b3-c60f67f8d112',
-                                  'some.thing', {'one': 'thing', 'another': 'thing'}, False)
-
-    def test_add_metadata_whenthrows_returnsstring(self):
-        self.api._session.post.side_effect = HTTPError()
-
-        response = self.api.add_metadata('1bf9d2b1-b544-4756-94b3-c60f67f8d112', self.token,
-                                         'some.thing', {'one': 'thing', 'another': 'thing'},
-                                         False)
-
-        self.assertEqual(response, ('Metadata exists, please add \'True\' in method-call '
-                                    'to overwrite'))
-
-    @patch('datareservoirio.rest_api.metadata.TokenAuth')
-    def test_get(self, mock_token):
-        mock_post = self.api._session.get
-
-        mock_post.return_value = Mock()
-        mock_post.return_value.text = u'{}'
-
-        result = self.api.get(self.token, self.metadata_id)
-
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/{}'.format(
-            self.metadata_id)
-
-        mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
-                                          **self.api._defaults)
-
-    @patch('datareservoirio.rest_api.metadata.TokenAuth')
-    def test_list(self, mock_token):
-        mock_post = self.api._session.get
-
-        mock_post.return_value = Mock()
-        mock_post.return_value.text = u'{}'
-
-        result = self.api.list(self.token)
-
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/list'
-
-        mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
-                                          **self.api._defaults)
+        self.api = MetadataAPI()
+        mock_session = patch.object(self.api, '_session')
+        mock_session.start()
+        self.addCleanup(mock_session.stop)
 
     @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_create(self, mock_token):
         mock_post = self.api._session.post
 
-        result = self.api.create(self.token, dummy_meta)
+        self.api.create(self.token, 'hello', 'world',
+                        Norway='hei', Klingon='grabah')
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/create'
 
@@ -163,7 +76,8 @@ class Test_MetadataAPI(unittest.TestCase):
     def test_update(self, mock_token):
         mock_post = self.api._session.put
 
-        result = self.api.update(self.token, self.metadata_id, dummy_meta)
+        self.api.update(self.token, self.metadata_id, 'hello', 'world',
+                        Norway='hei', Klingon='grabah')
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/{}'.format(
             self.metadata_id)
@@ -174,10 +88,25 @@ class Test_MetadataAPI(unittest.TestCase):
                                      json=expected_body, **self.api._defaults)
 
     @patch('datareservoirio.rest_api.metadata.TokenAuth')
+    def test_get(self, mock_token):
+        mock_post = self.api._session.get
+
+        mock_post.return_value = Mock()
+        mock_post.return_value.text = u'{}'
+
+        self.api.get(self.token, self.metadata_id)
+
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/{}'.format(
+            self.metadata_id)
+
+        mock_post.assert_called_once_with(expected_uri, auth=mock_token(),
+                                          **self.api._defaults)
+
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
     def test_delete(self, mock_token):
         mock_post = self.api._session.delete
 
-        result = self.api.delete(self.token, self.metadata_id)
+        self.api.delete(self.token, self.metadata_id)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/{}'.format(
             self.metadata_id)
@@ -190,11 +119,12 @@ class Test_MetadataAPI(unittest.TestCase):
         search_json = {
             "Namespace": "hello",
             "Key": "world",
-            "Conjunctive": True
+            "Value": {},
+            "Conjunctive": False
         }
         mock_post = self.api._session.post
 
-        result = self.api.search(self.token, search_json)
+        self.api.search(self.token, 'hello', 'world', conjunctive=False)
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/search'
 
@@ -202,30 +132,86 @@ class Test_MetadataAPI(unittest.TestCase):
                                      json=search_json, **self.api._defaults)
 
     @patch('datareservoirio.rest_api.metadata.TokenAuth')
-    def test_attach_series(self, mock_token):
-        series_list = ['series_1', 'series_2']
-        mock_post = self.api._session.post
+    def test_namespaces_returns_list(self, mock_token):
+        mock_response = Mock()
+        mock_response.json = Mock(return_value=['system_1.reservoir',
+                                                'system_1.campaigns',
+                                                'system_2.disco'])
 
-        result = self.api.attach_series(self.token, self.metadata_id,
-                                        series_list)
+        self.api._session.get.return_value = mock_response
+        namespaces_out = self.api.namespaces(self.token)
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/{}/attachTimeSeries'.format(self.metadata_id)
+        namespaces_expected = ['system_1', 'system_2']
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/namespacekeys'
 
-        mock_post.assert_called_with(expected_uri, auth=mock_token(),
-                                     json=series_list, **self.api._defaults)
+        self.api._session.get.assert_called_once_with(
+            expected_uri, auth=mock_token(), **self.api._defaults)
+        self.assertListEqual(namespaces_out, sorted(namespaces_expected))
 
     @patch('datareservoirio.rest_api.metadata.TokenAuth')
-    def test_detach_series(self, mock_token):
-        series_list = ['series_1', 'series_2']
-        mock_delete = self.api._session.delete
+    def test_keys_returns_list(self, mock_token):
+        mock_response = Mock()
+        mock_response.json = Mock(return_value=['system_1.reservoir',
+                                                'system_1.campaigns',
+                                                'system_2.disco'])
 
-        result = self.api.detach_series(self.token, self.metadata_id,
-                                        series_list)
+        self.api._session.get.return_value = mock_response
+        keys_out = self.api.keys(self.token, 'system_1')
 
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/{}/detachTimeSeries'.format(self.metadata_id)
+        keys_expected = ['reservoir', 'campaigns']
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/namespacekeys'
 
-        mock_delete.assert_called_with(expected_uri, auth=mock_token(),
-                                       json=series_list, **self.api._defaults)
+        self.api._session.get.assert_called_once_with(
+            expected_uri, auth=mock_token(), **self.api._defaults)
+        self.assertListEqual(keys_out, sorted(keys_expected))
+
+    @patch('datareservoirio.rest_api.metadata.TokenAuth')
+    def test_names_returns_list(self, mock_token):
+        mock_response = Mock()
+        mock_response.json = Mock(return_value=['VesselName', 'CampaignName'])
+
+        self.api._session.get.return_value = mock_response
+        names_out = self.api.names(self.token, 'namesp', 'mykey')
+
+        names_expected = ['VesselName', 'CampaignName']
+        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/metadata/namesp/mykey'
+
+        self.api._session.get.assert_called_once_with(
+            expected_uri, auth=mock_token(),  **self.api._defaults)
+        self.assertListEqual(names_out, sorted(names_expected))
+
+
+class Test__unpack_namespacekeys(unittest.TestCase):
+    def test_unpack(self):
+        namespacekeys = [
+            'foo.bar',
+            'animal.zebra',
+            'car.part.wheel',
+            None,
+            'hello.world',
+            'animal.lion'
+        ]
+        output_dict = metadata._unpack_namespacekeys(namespacekeys)
+        expected_dict = {
+            'foo': ['bar'],
+            'animal': ['zebra', 'lion'],
+            'car.part': ['wheel'],
+            'hello': ['world']}
+
+        self.assertDictEqual(output_dict, expected_dict)
+
+
+class Test__assemble_metadata_json(unittest.TestCase):
+    def test_assemble(self):
+        output_dict = metadata._assemble_metadatajson(
+            'hello', 'world', Norway='hei', Klingon='grabah')
+        expected_dict = {
+            'Namespace': 'hello',
+            'Key': 'world',
+            'Value': {'Norway': 'hei', 'Klingon': 'grabah'}
+            }
+
+        self.assertDictEqual(output_dict, expected_dict)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import logging
 import time
 import timeit
+
 import requests
 import pandas as pd
 
@@ -97,84 +98,6 @@ class Client(object):
         """
         return self._files_api.ping(self.token)
 
-    def metadata(self, namespace=None, key=None):
-        """
-        Return a list of available metadata namespace/key combinations.
-
-        Parameters
-        ----------
-        namespace : string
-            the namespace to search in
-
-        key : string
-            the namespace key to narrow search
-
-        Returns
-        -------
-        list
-            the names found in metadata value-json for given ns/key
-        """
-
-        if namespace is None:
-            return sorted(self._metadata_api.namespacekeys(self.token))
-        else:
-            return sorted(self._metadata_api.metadata(self.token, namespace, key))
-
-    def find_timeseries(self, namespace, key, name, value=None):
-        """
-        Return a list of available timeseries having metadata
-        with given namespace/key/name combo
-
-        Parameters
-        ----------
-        namespace : string
-            the namespace to search in
-
-        key : string
-            the namespace key to narrow search
-
-        name : string
-            name of name/value-pair in metadata value-json
-
-        Returns
-        -------
-        list
-            dictionary containing timeseriesId and value from metadata value-json
-        """
-
-        if value is None:
-            return self._timeseries_api.timeseries_by_metadata(self.token, namespace,
-                                                               key, name)
-        else:
-            return self._timeseries_api.timeseries_by_metadatavalue(self.token, namespace,
-                                                                    key, name, value)
-
-    def add_metadata(self, timeseries_id, nskey, valuepairs, overwrite=False):
-        """
-        add a metadata entry for given timeseries id and nskey with given values
-
-        Parameters
-        ==========
-        timeseries_id
-            The timeseries id to attach the metadata to
-        nskey
-            The namespace and key to set for the metadata.
-            Must contain at least one '.'
-        valuepairs
-            the actual metadata as name/value pairs
-        overwrite
-            indicate if existing metadata for nskey-combo should be overwritte
-            defaults to false
-
-        Return
-        ------
-        dict
-            response.json()
-        """
-
-        return self._metadata_api.add_metadata(self.token, timeseries_id, nskey,
-                                               valuepairs, overwrite)
-
     def create(self, series=None):
         """
         Create a new series in the reservoir from a pandas.Series. If no data
@@ -256,7 +179,7 @@ class Client(object):
         response = self._timeseries_api.add(self.token, series_id, file_id)
         return response
 
-    def info(self, timeseries_id):
+    def info(self, series_id):
         """
         Retrieves basic information about one timeseries.
 
@@ -266,9 +189,38 @@ class Client(object):
             Available information about the timeseries. None if timeseries not
             found.
         """
-        return self._timeseries_api.info(self.token, timeseries_id)
+        return self._timeseries_api.info(self.token, series_id)
 
-    def delete(self, timeseries_id):
+    def search(self, namespace, key, name, value=None):
+        """
+        TODO: Extend functionality - powered by TimeseriesAPI and MetadataAPI
+        search.
+
+        Find available series having metadata with given
+        namespace/key/name/value combination.
+
+        Parameters
+        ----------
+        namespace : str
+            The namespace to search in
+        key : str
+            The key to narrow search
+        name: str
+            name to narrow search further
+        value: str, optional
+            Value to narrow search further. Default (None) will include all.
+
+        Returns
+        -------
+        dict or list
+            Available information about the timeseries. If ``value`` is passed,
+            a dict is returned -> ``{timeseries_id: value}``. Otherwise, a
+            plain list with timeseries_id is returned.
+        """
+        return self._timeseries_api.search(self.token, namespace, key, name,
+                                           value)
+
+    def delete(self, series_id):
         """
         Parameters
         ----------
@@ -280,16 +232,16 @@ class Client(object):
         int
             http status code. 200 is OK
         """
-        return self._timeseries_api.delete(self.token, timeseries_id)
+        return self._timeseries_api.delete(self.token, series_id)
 
-    def get(self, timeseries_id, start=None, end=None, convert_date=True,
+    def get(self, series_id, start=None, end=None, convert_date=True,
             raise_empty=False):
         """
         Retrieves a timeseries from the data reservoir.
 
         Parameters
         ----------
-        timeseries_id : str
+        series_id : str
             id of the timeseries to download
         start : optional
             start time (inclusive) of the timeseries given as anything
@@ -323,7 +275,7 @@ class Client(object):
         time_start = timeit.default_timer()
 
         log.debug("Getting timeseries range")
-        series = self._storage.get(timeseries_id, start, end)
+        series = self._storage.get(series_id, start, end)
 
         if series.empty and raise_empty:  # may become empty after slicing
             raise ValueError('can\'t find data in the given interval')
@@ -336,6 +288,174 @@ class Client(object):
                  .format(time_end - time_start), 'get')
 
         return series
+
+    def set_metadata(self, series_id, metadata_id=None, namespace=None,
+                     key=None, **namevalues):
+        """
+        Set metadata entries to a series. Metadata can be set from an existing
+        or created.
+
+        Parameters
+        ----------
+        series_id : str
+            The identifier of the existing series
+        metadata_id : str, optional
+            The identifier of the existing metadata entries. If passed, other 
+            metadata related arguments are ignored.
+        namespace : str, optional
+            Metadata namespace.
+        key : str, mandatory if namespace is passed.
+            Metadata key.
+        namevalues : keyword arguments
+            Metadata name-value pairs
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        if not metadata_id and not namespace:
+            raise ValueError('one of metadata_id or namespace is mandatory')
+        elif not metadata_id and namespace:
+            if not key:
+                raise ValueError('key is mandatory if namespace is passed')
+            response_create = self._metadata_api.create(
+                self.token, namespace, key, **namevalues)
+            metadata_id = response_create['Id']
+
+        response = self._timeseries_api.attach_metadata(
+            self.token, series_id, metadata_id)
+        return response
+
+    def remove_metadata(self, series_id, metadata_id):
+        """
+        Remove a metadata entry from a series. Note that metadata entries are
+        not deleted, but the link between series and metadata is broken.
+
+        Parameters
+        ----------
+        series_id : str
+            The identifier of the existing series
+        metadata_ids : str
+            The identifier of the existing metadata entry.
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        response = self._timeseries_api.detach_metadata(
+            self.token, series_id, [metadata_id])
+        return response
+
+    def metadata_create(self, namespace, key, **namevalues):
+        """
+        Create a new metadata entry in datareservoir.io.
+
+        Parameters
+        ----------
+        namespace : str
+            Metadata namespace
+        key : str
+            Metadata key
+        namevalues : keyword arguments
+            Metadata name-value pairs
+
+        Returns
+        -------
+        dict
+            The response from datareservoir.io containing the unique id of the
+            newly created metadata.
+        """
+        response = self._metadata_api.create(self.token, namespace, key, 
+                                             **namevalues)
+        return response
+
+    def metadata_update(self, metadata_id, namespace, key, **namevalues):
+        """
+        Update/Overwrite an existing metadata entry in datareservoir.io.
+
+        Parameters
+        ----------
+        metadata_id : str
+            The identifier of existing metadata
+        namespace : str
+            Metadata namespace
+        key : str
+            Metadata key
+        namevalues : keyword arguments
+            Metadata name-value pairs
+
+        Returns
+        -------
+        dict
+            The response from datareservoir.io containing the unique id of the
+            updated metadata.
+        """
+        response = self._metadata_api.update(
+            self.token, metadata_id, namespace, key, **namevalues)
+        return response
+
+    def metadata_get(self, metadata_id):
+        """
+        Retrieve a metedata entry.
+
+        Parameters
+        ----------
+        metadata_id : str
+            The identifier of existing metadata
+
+        Returns
+        -------
+        dict
+            Metadata entry.
+        """
+        response = self._metadata_api.get(self.token, metadata_id)
+        return response
+
+    def metadata_browse(self, namespace=None, key=None):
+        """
+        Browse available metadata namespace/key/names combinations.
+
+        Parameters
+        ----------
+        namespace : string
+            The namespace to search in
+        key : string
+            the namespace key to narrow search
+
+        Returns
+        -------
+        list
+            The namespaces/keys/names found
+        """
+
+        if not namespace:
+            return self._metadata_api.namespaces(self.token)
+        elif not key:
+            return self._metadata_api.keys(self.token, namespace)
+        else:
+            return self._metadata_api.names(self.token, namespace, key)
+
+    def metadata_search(self, namespace, key, conjunctive=True):
+        """
+        Find metadata entries given namespace/key/name-value combination.
+
+        namespace : string
+            The namespace to search in
+        key : string
+            The key to narrow search
+        namevalues : keyword arguments
+            Name/value pairs to narrow search further
+
+        Returns
+        -------
+        dict
+            Metadata entries that matches the search.
+        """
+        response = self._metadata_api.search(self.token, namespace, key,
+                                             conjunctive)
+        return response
 
     def _verify_and_prepare_series(self, series):
         log.debug("checking arguments", "_check_arguments_create")
