@@ -5,8 +5,11 @@ import logging
 import codecs
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from builtins import map
-from builtins import str
+
+try:
+    from itertools import imap as map
+except ImportError:
+    pass
 
 import pandas as pd
 

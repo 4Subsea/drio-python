@@ -37,9 +37,7 @@ class BaseAPI(object):
     def __init__(self, session=None):
         self._api_base_url = globalsettings.environment.api_base_url
 
-        self._session = session
-        if session is None:
-            self._session = requests.Session()
+        self._session = requests.Session() if session is None else session
 
         # Attention: Be careful when extending the list of retry_status!
         retry_status = frozenset([413, 429, 500, 502, 503, 504])
