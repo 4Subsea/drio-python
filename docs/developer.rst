@@ -2,7 +2,7 @@ Developer
 =========
 
 Environments
-###########
+############
 DataReservoir.io have ``Dev``, ``Test``, ``QA`` and ``Production`` environments.
 
 #. Dev is the local environment on a DataReservoir.io developer machine.
