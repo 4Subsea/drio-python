@@ -214,8 +214,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         meta_list = ['meta_1', 'meta_2']
         mock_post = self.api._session.post
 
-        self.api.attach_metadata(self.token, timeseries_id,
-                                          meta_list)
+        self.api.attach_metadata(self.token, timeseries_id, meta_list)
 
         expected_uri = 'https://drio/api/timeseries/{}/attachMetadata'.format(timeseries_id)
 
@@ -228,8 +227,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         meta_list = ['meta_1', 'meta_2']
         mock_delete = self.api._session.delete
 
-        self.api.detach_metadata(self.token, timeseries_id,
-                                          meta_list)
+        self.api.detach_metadata(self.token, timeseries_id, meta_list)
 
         expected_uri = 'https://drio/api/timeseries/{}/detachMetadata'.format(timeseries_id)
 

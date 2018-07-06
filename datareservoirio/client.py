@@ -324,7 +324,7 @@ class Client(object):
             metadata_id = response_create['Id']
 
         response = self._timeseries_api.attach_metadata(
-            self.token, series_id, metadata_id)
+            self.token, series_id, [metadata_id])
         return response
 
     def remove_metadata(self, series_id, metadata_id):

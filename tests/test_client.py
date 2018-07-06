@@ -431,6 +431,11 @@ class Test_Client(unittest.TestCase):
         self.client._metadata_api.search.assert_called_once_with(
             self.client.token, 'test_namespace', 'test_key', False)
 
+    def test_set_metadata_with_metadataid_calls_attachmetadata_with_idsinarray(self):
+        self.client.set_metadata(series_id='series-id-1', metadata_id='meta-id-2')
+        self.client._timeseries_api.attach_metadata.assert_called_once_with(
+            self.client.token, 'series-id-1', ['meta-id-2'])
+
     def test_remove_metadata(self):
         response = self.client.remove_metadata(
             'series_123', 'meta_abc')
