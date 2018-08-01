@@ -70,6 +70,7 @@ class TimeSeriesAPI(BaseAPI):
 
     def __init__(self, cache=True, session=None):
         super(TimeSeriesAPI, self).__init__(session=session)
+        self._root = self._api_base_url + 'timeseries/'
         self._cache = cache
 
     def create(self, token, timeseries_id=None):
@@ -93,7 +94,7 @@ class TimeSeriesAPI(BaseAPI):
         if timeseries_id is None:
             timeseries_id = str(uuid4())
 
-        uri = self._api_base_url + 'timeseries/{}'.format(timeseries_id)
+        uri = self._root + timeseries_id
         response = self._put(uri, data=None, auth=TokenAuth(token))
         return response.json()
 
@@ -115,7 +116,7 @@ class TimeSeriesAPI(BaseAPI):
         """
         log.debug("called with <token>, {}".format(file_id), "create")
 
-        uri = self._api_base_url + 'timeseries/create'
+        uri = self._root + 'create'
         body = {'FileId': file_id}
         response = self._post(uri, data=body, auth=TokenAuth(token))
         return response.json()
@@ -142,7 +143,7 @@ class TimeSeriesAPI(BaseAPI):
         log.debug('called with <token>, {}, {}'.format(
             timeseries_id, file_id), 'add')
 
-        uri = self._api_base_url + 'timeseries/add'
+        uri = self._root + 'add'
         body = {'TimeSeriesId': timeseries_id, 'FileId': file_id}
         response = self._post(uri, data=body, auth=TokenAuth(token))
         return response.json()
@@ -166,7 +167,7 @@ class TimeSeriesAPI(BaseAPI):
         """
         log.debug('called with <token>, {}'.format(timeseries_id))
 
-        uri = self._api_base_url + 'timeseries/' + timeseries_id
+        uri = self._root + timeseries_id
         response = self._get(uri, auth=TokenAuth(token))
         return response.json()
 
@@ -183,7 +184,7 @@ class TimeSeriesAPI(BaseAPI):
         """
         log.debug('called with <token>, {}'.format(timeseries_id))
 
-        uri = self._api_base_url + 'timeseries/' + timeseries_id
+        uri = self._root + timeseries_id
         self._delete(uri, auth=TokenAuth(token))
         return
 
@@ -252,7 +253,7 @@ class TimeSeriesAPI(BaseAPI):
         log.debug('called with <token>, {}, {}, {}'.format(
             timeseries_id, start, end))
 
-        uri = self._api_base_url + 'timeseries/{}/download/days'.format(timeseries_id)
+        uri = self._root + '{}/download/days'.format(timeseries_id)
         params = {'start': start, 'end': end}
 
         response = self._get(uri, params=params, auth=TokenAuth(token))
@@ -290,7 +291,7 @@ class TimeSeriesAPI(BaseAPI):
             else:
                 args_update.append(arg)
 
-        uri = self._api_base_url + 'timeseries/' + '/'.join(args_update)
+        uri = self._root + '/'.join(args_update)
         response = self._get(uri, auth=TokenAuth(token))
         return response.json()
 
@@ -315,11 +316,9 @@ class TimeSeriesAPI(BaseAPI):
         log.debug('called with <token>, {}, {}'.format(
             timeseries_id, metadata_id_list), 'attach_metadata')
 
-        uri = self._api_base_url + \
-            'timeseries/{}/attachMetadata'.format(timeseries_id)
+        uri = self._root + '{}/metadata'.format(timeseries_id)
 
-        response = self._post(uri, json=metadata_id_list,
-                              auth=TokenAuth(token))
+        response = self._put(uri, json=metadata_id_list, auth=TokenAuth(token))
         return response.json()
 
     def detach_metadata(self, token, timeseries_id, metadata_id_list):
@@ -341,11 +340,9 @@ class TimeSeriesAPI(BaseAPI):
             response.json()
         """
         log.debug('called with <token>, {}, {}'.format(
-            timeseries_id, metadata_id_list), 'attach_metadata')
+            timeseries_id, metadata_id_list), 'detach_metadata')
 
-        uri = self._api_base_url + \
-            'timeseries/{}/detachMetadata'.format(timeseries_id)
+        uri = self._root + '{}/metadata'.format(timeseries_id)
 
-        response = self._delete(uri, json=metadata_id_list,
-                                auth=TokenAuth(token))
+        response = self._delete(uri, json=metadata_id_list, auth=TokenAuth(token))
         return response.json()

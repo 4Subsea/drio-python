@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
-from collections import defaultdict
 
 from ..log import LogWriter
 from .base import BaseAPI, TokenAuth
@@ -15,66 +14,7 @@ class MetadataAPI(BaseAPI):
 
     def __init__(self, session=None):
         super(MetadataAPI, self).__init__(session=session)
-
-    def create(self, token, namespace, key, **namevalues):
-        """
-        Create a metadata entry.
-
-        Parameters
-        ----------
-        token : dict
-            token recieved from authenticator
-        namespace : str
-            Metadata namespace
-        key : str
-            Metadata key
-        namevalues : keyword arguments
-            Metadata name-value pairs
-
-        Return
-        ------
-        dict
-            response.json()
-        """
-        logwriter.debug("called with <token>, {}, {}, {}".format(
-            namespace, key, namevalues), "create")
-
-        metadata_json = _assemble_metadatajson(namespace, key, **namevalues)
-
-        uri = self._api_base_url + 'metadata/create'
-        response = self._post(uri, json=metadata_json, auth=TokenAuth(token))
-        return response.json()
-
-    def update(self, token, metadata_id, namespace, key, **namevalues):
-        """
-        Update an existing metadata entry. Overwrites `Value` object.
-
-        Parameters
-        ----------
-        token : dict
-            token recieved from authenticator
-        metadata_id : str
-            id of metadata
-        namespace : str
-            Metadata namespace
-        key : str
-            Metadata key
-        namevalues : keyword arguments
-            Metadata name-value pairs
-
-        Return
-        ------
-        dict
-            response.json()
-        """
-        logwriter.debug("called with <token>, {}, {}, {}".format(
-            namespace, key, namevalues), "update")
-
-        metadata_json = _assemble_metadatajson(namespace, key, **namevalues)
-
-        uri = self._api_base_url + 'metadata/{}'.format(metadata_id)
-        response = self._put(uri, json=metadata_json, auth=TokenAuth(token))
-        return response.json()
+        self._root = self._api_base_url + 'metadata/'
 
     def delete(self, token, metadata_id):
         """
@@ -90,13 +30,13 @@ class MetadataAPI(BaseAPI):
         logwriter.debug('called with <token>, {}'.format(
             metadata_id), 'delete')
 
-        uri = self._api_base_url + 'metadata/{}'.format(metadata_id)
+        uri = self._root + '{}'.format(metadata_id)
         self._delete(uri, auth=TokenAuth(token))
         return
 
-    def get(self, token, metadata_id):
+    def get_by_id(self, token, metadata_id):
         """
-        Retrieve a metadata entry.
+        Retrieve a metadata entry by its unique identifier.
 
         Parameters
         ----------
@@ -112,8 +52,94 @@ class MetadataAPI(BaseAPI):
         """
         logwriter.debug('called with <token>, {}'.format(metadata_id), u'get')
 
-        uri = self._api_base_url + 'metadata/' + metadata_id
+        uri = self._root + metadata_id
         response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
+
+    def get(self, token, namespace, key):
+        """
+        Retrieve a metadata entry.
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        namespace : str
+            Metadata namespace
+        key : str
+            Metadata key
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        logwriter.debug('called with <token>, {} {}'.format(
+            namespace, key), u'get')
+
+        uri = self._root + namespace + '/' + key
+        response = self._get(uri, auth=TokenAuth(token))
+        return response.json()
+
+    def put_by_id(self, token, metadata_id, **namevalues):
+        """
+        Create or update an existing metadata entry. Overwrites `Value` object.
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        metadata_id : str
+            id of metadata
+        namevalues : keyword arguments
+            Metadata name-value pairs
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        logwriter.debug("called with <token>, {}, {}".format(
+            metadata_id, namevalues), "put")
+
+        metadata_json = {'Value': namevalues}
+
+        uri = self._root + metadata_id
+        response = self._put(uri, json=metadata_json, auth=TokenAuth(token))
+        return response.json()
+
+    def put(self, token, namespace, key, overwrite, **namevalues):
+        """
+        Create or update an existing metadata entry. Overwrites `Value` object.
+
+        Parameters
+        ----------
+        token : dict
+            token recieved from authenticator
+        namespace : str
+            Metadata namespace
+        key : str
+            Metadata key
+        overwrite : bool
+            True if any existing metadata should be overwritten. If false, an error will be
+            thrown if the namespace/key combination already exists.
+        namevalues : keyword arguments
+            Metadata name-value pairs
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        logwriter.debug("called with <token>, {}, {}, {}, {}".format(
+            namespace, key, overwrite, namevalues), "put")
+
+        metadata_json = {'Value': namevalues}
+
+        uri = self._root + '{}/{}?overwrite={}'.format(
+            namespace, key, 'true' if overwrite else 'false')
+
+        response = self._put(uri, json=metadata_json, auth=TokenAuth(token))
         return response.json()
 
     def namespaces(self, token):
@@ -129,18 +155,11 @@ class MetadataAPI(BaseAPI):
         ------
         list
             response.json()
-
-        Note
-        ----
-        This is an temporary implementation. Most of the logic should happend
-        server side.
         """
-        uri = self._api_base_url + 'metadata/namespacekeys'
+        uri = self._root + 'namespaces'
         response = self._get(uri, auth=TokenAuth(token))
 
-        namespacekeys = _unpack_namespacekeys(response.json())  # temporary solution
-        namespaces = [ns for ns in namespacekeys.keys()]
-        return sorted(namespaces)
+        return sorted(response.json())
 
     def keys(self, token, namespace):
         """
@@ -157,39 +176,10 @@ class MetadataAPI(BaseAPI):
         ------
         list
             response.json()
-
-        Note
-        ----
-        This is an temporary implementation. Most of the logic should happend
-        server side.
         """
-        uri = self._api_base_url + 'metadata/namespacekeys'
+        uri = self._root + namespace
         response = self._get(uri, auth=TokenAuth(token))
 
-        namespacekeys = _unpack_namespacekeys(response.json())  # temporary solution
-        keys = namespacekeys.get(namespace, [])
-        return sorted(keys)
-
-    def names(self, token, namespace, key):
-        """
-        Return a list of metadata names given namespace and key.
-
-        Parameters
-        ----------
-        token : dict
-            token recieved from authenticator
-        namespace : str
-            Metadata namespace
-        key : str
-            Metadata key
-
-        Return
-        ------
-        list
-            response.json()
-        """
-        uri = self._api_base_url + 'metadata/' + namespace + '/' + key
-        response = self._get(uri, auth=TokenAuth(token))
         return sorted(response.json())
 
     def search(self, token, namespace, key, conjunctive=True):
@@ -217,22 +207,9 @@ class MetadataAPI(BaseAPI):
         search_json = _assemble_metadatajson(namespace, key)
         search_json['Conjunctive'] = conjunctive
 
-        uri = self._api_base_url + 'metadata/search'
+        uri = self._root + 'search'
         response = self._post(uri, json=search_json, auth=TokenAuth(token))
         return response.json()
-
-
-def _unpack_namespacekeys(namespacekeys):
-    """Parse and unpack namespacekeys into dict -> {namespace: key}"""
-    namespacekeys_dict = defaultdict(list)
-    for nskey in namespacekeys:
-        if nskey is None:
-            continue
-        namespace_key = nskey.split('.')
-        namespace = '.'.join(namespace_key[0:-1])
-        key = namespace_key[-1]
-        namespacekeys_dict[namespace].append(key)
-    return namespacekeys_dict
 
 
 def _assemble_metadatajson(namespace, key, **namevalues):

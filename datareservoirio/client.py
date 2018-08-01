@@ -292,15 +292,15 @@ class Client(object):
     def set_metadata(self, series_id, metadata_id=None, namespace=None,
                      key=None, **namevalues):
         """
-        Set metadata entries to a series. Metadata can be set from an existing
-        or created.
+        Set metadata entries on a series. Metadata can be set from existing values
+        or new metadata can be created.
 
         Parameters
         ----------
         series_id : str
             The identifier of the existing series
         metadata_id : str, optional
-            The identifier of the existing metadata entries. If passed, other 
+            The identifier of the existing metadata entries. If passed, other
             metadata related arguments are ignored.
         namespace : str, optional
             Metadata namespace.
@@ -318,7 +318,7 @@ class Client(object):
             raise ValueError('one of metadata_id or namespace is mandatory')
         elif not metadata_id and namespace:
             if not key:
-                raise ValueError('key is mandatory if namespace is passed')
+                raise ValueError('key is mandatory when namespace is passed')
             response_create = self._metadata_api.create(
                 self.token, namespace, key, **namevalues)
             metadata_id = response_create['Id']
@@ -348,9 +348,11 @@ class Client(object):
             self.token, series_id, [metadata_id])
         return response
 
-    def metadata_create(self, namespace, key, **namevalues):
+    def metadata_set(self, namespace, key, **namevalues):
         """
-        Create a new metadata entry in datareservoir.io.
+        Create or update a metadata entry. If the namespace/key combination does not already
+        exist, a new entry will be created. If the combination already exist, the entry
+        will be updated with the specified namevalues.
 
         Parameters
         ----------
@@ -365,38 +367,13 @@ class Client(object):
         -------
         dict
             The response from datareservoir.io containing the unique id of the
-            newly created metadata.
+            new or updated metadata.
         """
-        response = self._metadata_api.create(self.token, namespace, key, 
-                                             **namevalues)
+        response = self._metadata_api.put(
+            self.token, namespace, key, True, **namevalues)
         return response
 
-    def metadata_update(self, metadata_id, namespace, key, **namevalues):
-        """
-        Update/Overwrite an existing metadata entry in datareservoir.io.
-
-        Parameters
-        ----------
-        metadata_id : str
-            The identifier of existing metadata
-        namespace : str
-            Metadata namespace
-        key : str
-            Metadata key
-        namevalues : keyword arguments
-            Metadata name-value pairs
-
-        Returns
-        -------
-        dict
-            The response from datareservoir.io containing the unique id of the
-            updated metadata.
-        """
-        response = self._metadata_api.update(
-            self.token, metadata_id, namespace, key, **namevalues)
-        return response
-
-    def metadata_get(self, metadata_id):
+    def metadata_get(self, metadata_id=None, namespace=None, key=None):
         """
         Retrieve a metedata entry.
 
@@ -404,13 +381,23 @@ class Client(object):
         ----------
         metadata_id : str
             The identifier of existing metadata
+        namespace : str
+            Metadata namespace. Ignored if metadata_id is set.
+        key : str
+            Metadata key. Ignored if metadata_id is set.
 
         Returns
         -------
         dict
             Metadata entry.
         """
-        response = self._metadata_api.get(self.token, metadata_id)
+        if metadata_id:
+            response = self._metadata_api.get_by_id(self.token, metadata_id)
+        elif namespace and key:
+            response = self._metadata_api.get(self.token, namespace, key)
+        else:
+            raise ValueError('key is mandatory when namespace is passed')
+
         return response
 
     def metadata_browse(self, namespace=None, key=None):

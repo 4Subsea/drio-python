@@ -162,7 +162,6 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(response, {'status': 'pong'})
 
 
-
     # def test_metadata(self):
     #     self.client._metadata_api.namespacekeys.return_value = ['pli', 'ihi']
 
@@ -383,50 +382,60 @@ class Test_Client(unittest.TestCase):
                             end='1970-01-01 00:00:00.000000001')
 
     def test_search(self):
-        response = self.client.search('test_namespace', 'test_key', 'test_name', 123)
+        self.client.search('test_namespace', 'test_key', 'test_name', 123)
         self.client._timeseries_api.search.assert_called_once_with(
             self.client.token, 'test_namespace', 'test_key', 'test_name', 123)
 
-    def test_metadata_create(self):
-        self.client._metadata_api.create.return_value = {'Id': '123abc'}
+    def test_metadata_get_with_id(self):
+        self.client._metadata_api.get_by_id.return_value = {'Id': '123abc'}
 
-        response = self.client.metadata_create('hello', 'world', test='ohyeah!')
+        response = self.client.metadata_get(metadata_id='123rdrs')
         self.assertEqual(response, {'Id': '123abc'})
 
-    def test_metadata_update(self):
-        self.client._metadata_api.update.return_value = {'Id': '123abc'}
+    def test_metadata_get_with_namespace_and_key(self):
+        self.client._metadata_api.get.return_value = {'Id': 'lookupbynsandkey'}
 
-        response = self.client.metadata_update('123rdrs', 'hello', 'world', test='ohyeah!')
-        self.assertEqual(response, {'Id': '123abc'})
+        response = self.client.metadata_get(namespace='ns', key='k')
+        self.assertEqual(response, {'Id': 'lookupbynsandkey'})
 
-    def test_metadata_get(self):
-        self.client._metadata_api.get.return_value = {'Id': '123abc'}
+    def test_metadata_get_without_params_throws(self):
+        with self.assertRaises(ValueError):
+            self.client.metadata_get()
 
-        response = self.client.metadata_get('123rdrs')
+    def test_metadata_get_with_id_and_namespace_and_key_uses_id(self):
+        self.client._metadata_api.get_by_id.return_value = {'Id': 'lookupbyid'}
+
+        response = self.client.metadata_get(metadata_id='123rdrs', namespace='ns', key='k')
+        self.assertEqual(response, {'Id': 'lookupbyid'})
+
+    def test_metadata_set(self):
+        self.client._metadata_api.put.return_value = {'Id': '123abc'}
+
+        response = self.client.metadata_set('hello', 'world', test='ohyeah!')
         self.assertEqual(response, {'Id': '123abc'})
 
     def test_metadata_browse_namespace(self):
-        response = self.client.metadata_browse()
+        self.client.metadata_browse()
         self.client._metadata_api.namespaces.assert_called_once_with(
             self.client.token)
 
     def test_metadata_browse_keys(self):
-        response = self.client.metadata_browse(namespace='test_namespace')
+        self.client.metadata_browse(namespace='test_namespace')
         self.client._metadata_api.keys.assert_called_once_with(
             self.client.token, 'test_namespace')
 
     def test_metadata_browse_names(self):
-        response = self.client.metadata_browse(namespace='test_namespace', key='test_key')
+        self.client.metadata_browse(namespace='test_namespace', key='test_key')
         self.client._metadata_api.names.assert_called_once_with(
             self.client.token, 'test_namespace', 'test_key')
 
     def test_metadata_search_conjunctive_true(self):
-        response = self.client.metadata_search(namespace='test_namespace', key='test_key')
+        self.client.metadata_search(namespace='test_namespace', key='test_key')
         self.client._metadata_api.search.assert_called_once_with(
             self.client.token, 'test_namespace', 'test_key', True)
 
     def test_metadata_search_conjunctive_false(self):
-        response = self.client.metadata_search(
+        self.client.metadata_search(
             namespace='test_namespace', key='test_key', conjunctive=False)
         self.client._metadata_api.search.assert_called_once_with(
             self.client.token, 'test_namespace', 'test_key', False)
@@ -437,7 +446,7 @@ class Test_Client(unittest.TestCase):
             self.client.token, 'series-id-1', ['meta-id-2'])
 
     def test_remove_metadata(self):
-        response = self.client.remove_metadata(
+        self.client.remove_metadata(
             'series_123', 'meta_abc')
         self.client._timeseries_api.detach_metadata.assert_called_once_with(
             self.client.token, 'series_123', ['meta_abc'])

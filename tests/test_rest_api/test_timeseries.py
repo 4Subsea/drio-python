@@ -48,7 +48,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         self._session = requests.Session()
         self.api = TimeSeriesAPI(session=self._session)
         self.api._session = Mock()
-        self.api._api_base_url = 'https://drio/api/'
+        self.api._root = 'https://root/timeseries/'
 
     def tearDown(self):
         self._session.close()
@@ -62,7 +62,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.info(self.token, "someId")
 
-        expected_uri = 'https://drio/api/timeseries/someId'
+        expected_uri = 'https://root/timeseries/someId'
 
         mock_get.assert_called_once_with(expected_uri, auth=mock_token(),
                                          **self.api._defaults)
@@ -77,7 +77,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.delete(self.token, timeseries_id)
 
-        expected_uri = 'https://drio/api/timeseries/123456'
+        expected_uri = 'https://root/timeseries/123456'
 
         mock_delete.assert_called_with(expected_uri, auth=mock_token(),
                                        **self.api._defaults)
@@ -92,7 +92,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.create(self.token, timeseries_id=ts_id)
 
-        expected_uri = 'https://drio/api/timeseries/ebaebc1e-35f6-49b5-a6cf-3cc07177a691'
+        expected_uri = 'https://root/timeseries/ebaebc1e-35f6-49b5-a6cf-3cc07177a691'
 
         mock_put.assert_called_with(expected_uri, data=None, auth=mock_token(), **self.api._defaults)
 
@@ -106,7 +106,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.create(self.token)
 
-        expected_uri = 'https://drio/api/timeseries/aaabbbcc-35f6-49b5-a6cf-3cc07177a691'
+        expected_uri = 'https://root/timeseries/aaabbbcc-35f6-49b5-a6cf-3cc07177a691'
 
         mock_put.assert_called_with(expected_uri, data=None, auth=mock_token(), **self.api._defaults)
 
@@ -120,7 +120,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.create_with_data(self.token, file_id)
 
-        expected_uri = 'https://drio/api/timeseries/create'
+        expected_uri = 'https://root/timeseries/create'
         expected_body = {"FileId": file_id}
 
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
@@ -137,7 +137,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.add(self.token, timeseries_id, file_id)
 
-        expected_uri = 'https://drio/api/timeseries/add'
+        expected_uri = 'https://root/timeseries/add'
         expected_body = {"TimeSeriesId": timeseries_id, "FileId": file_id}
 
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
@@ -151,7 +151,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api._download_days_base(self.token, timeseries_id, start, end)
 
-        expected_uri = 'https://drio/api/timeseries/{ts_id}/download/days'.format(
+        expected_uri = 'https://root/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
         expected_params = {'start': start, 'end': end}
 
@@ -168,7 +168,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api._download_days_cached(self.token, timeseries_id, start, end)
 
-        expected_uri = 'https://drio/api/timeseries/{ts_id}/download/days'.format(
+        expected_uri = 'https://root/timeseries/{ts_id}/download/days'.format(
             ts_id=timeseries_id)
         expected_params = {'start': start, 'end': end}
 
@@ -212,11 +212,11 @@ class Test_TimeSeriesAPI(unittest.TestCase):
     def test_attach_metadata(self, mock_token):
         timeseries_id = 't666'
         meta_list = ['meta_1', 'meta_2']
-        mock_post = self.api._session.post
+        mock_post = self.api._session.put
 
         self.api.attach_metadata(self.token, timeseries_id, meta_list)
 
-        expected_uri = 'https://drio/api/timeseries/{}/attachMetadata'.format(timeseries_id)
+        expected_uri = 'https://root/timeseries/{}/metadata'.format(timeseries_id)
 
         mock_post.assert_called_with(expected_uri, auth=mock_token(),
                                      json=meta_list, **self.api._defaults)
@@ -229,7 +229,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.detach_metadata(self.token, timeseries_id, meta_list)
 
-        expected_uri = 'https://drio/api/timeseries/{}/detachMetadata'.format(timeseries_id)
+        expected_uri = 'https://root/timeseries/{}/metadata'.format(timeseries_id)
 
         mock_delete.assert_called_with(expected_uri, auth=mock_token(),
                                        json=meta_list, **self.api._defaults)
@@ -240,7 +240,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.search(self.token, 'tns', 'tkey', 'tname', None)
 
-        expected_uri = 'https://drio/api/timeseries/tns/tkey/tname'
+        expected_uri = 'https://root/timeseries/tns/tkey/tname'
 
         mock_get.assert_called_once_with(expected_uri,
                                          auth=mock_token(),
@@ -252,7 +252,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.search(self.token, 'tns', 'tkey', 'tname', 'theValue')
 
-        expected_uri = 'https://drio/api/timeseries/tns/tkey/tname/theValue'
+        expected_uri = 'https://root/timeseries/tns/tkey/tname/theValue'
 
         mock_get.assert_called_once_with(expected_uri,
                                          auth=mock_token(),
