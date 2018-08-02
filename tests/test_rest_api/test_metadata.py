@@ -158,7 +158,7 @@ class Test_MetadataAPI(unittest.TestCase):
         namespaces_out = self.api.namespaces(self.token)
 
         namespaces_expected = ['system_1', 'system_2']
-        expected_uri = 'https://root/metadata/namespaces'
+        expected_uri = 'https://root/metadata/'
 
         self.api._session.get.assert_called_once_with(
             expected_uri, auth=mock_token(), **self.api._defaults)

@@ -156,7 +156,7 @@ class MetadataAPI(BaseAPI):
         list
             response.json()
         """
-        uri = self._root + 'namespaces'
+        uri = self._root
         response = self._get(uri, auth=TokenAuth(token))
 
         return sorted(response.json())
