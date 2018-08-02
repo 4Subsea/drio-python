@@ -65,7 +65,13 @@ class Test_TimeSeriesApi(unittest.TestCase):
             }
         }
 
-        cls.meta_respons = cls.metaapi.create(cls.auth.token, cls.meta_1)
+        meta_1_value = {
+            'Value': {
+                'Ding': 'Dong'
+            }
+        }
+        cls.meta_respons = cls.metaapi.put(
+            cls.auth.token, 'namespace_string_1', 'key_string_1', meta_1_value)
 
     @classmethod
     def tearDownClass(cls):
@@ -149,8 +155,8 @@ class Test_TimeSeriesApi(unittest.TestCase):
         print(info)
 
     def test_attach_detach_meta(self):
-        print('test_attach_detach_meta testing testing:')
-        response = self.api.create_with_data(*self.token_fileid[0])
+        print('test_attach_detach_meta testing:')
+        response = self.api.create(self.auth.token)
         token_tsid = (self.auth.token, response['TimeSeriesId'])
         meta_id = self.meta_respons['Id']
         print(response)
@@ -158,12 +164,12 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.api.attach_metadata(*token_tsid, metadata_id_list=[meta_id])
 
         response = self.api.info(*token_tsid)
-        self.assertEqual(response['Metadata'][1]['Id'], meta_id)
+        self.assertEqual(len([m for m in response['Metadata'] if m['Id'] == meta_id]), 1)
 
         self.api.detach_metadata(*token_tsid, metadata_id_list=[meta_id])
 
         response = self.api.info(*token_tsid)
-        self.assertNotEqual(response['Metadata'][0]['Id'], meta_id)
+        self.assertEqual(len([m for m in response['Metadata'] if m['Id'] == meta_id]), 0)
 
         self.api.delete(*token_tsid)
 
