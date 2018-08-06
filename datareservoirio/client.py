@@ -414,7 +414,8 @@ class Client(object):
         Returns
         -------
         list
-            The namespaces/keys/names found
+            The namespaces or keys found. Or if both namespace and key is present, the
+            specific metadata for the namespace/key combination
         """
 
         if not namespace:
@@ -422,7 +423,8 @@ class Client(object):
         elif not key:
             return self._metadata_api.keys(self.token, namespace)
         else:
-            return self._metadata_api.names(self.token, namespace, key)
+            response = self._metadata_api.get(self.token, namespace, key)
+            return response['Value']
 
     def metadata_search(self, namespace, key, conjunctive=True):
         """

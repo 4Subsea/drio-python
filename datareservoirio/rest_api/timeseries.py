@@ -253,7 +253,7 @@ class TimeSeriesAPI(BaseAPI):
         log.debug('called with <token>, {}, {}, {}'.format(
             timeseries_id, start, end))
 
-        uri = self._root + '{}/download/days'.format(timeseries_id)
+        uri = self._root + '{}/data/days'.format(timeseries_id)
         params = {'start': start, 'end': end}
 
         response = self._get(uri, params=params, auth=TokenAuth(token))
@@ -291,7 +291,7 @@ class TimeSeriesAPI(BaseAPI):
             else:
                 args_update.append(arg)
 
-        uri = self._root + '/'.join(args_update)
+        uri = self._root + 'search/' + '/'.join(args_update)
         response = self._get(uri, auth=TokenAuth(token))
         return response.json()
 

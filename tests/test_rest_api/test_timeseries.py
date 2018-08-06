@@ -151,7 +151,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api._download_days_base(self.token, timeseries_id, start, end)
 
-        expected_uri = 'https://root/timeseries/{ts_id}/download/days'.format(
+        expected_uri = 'https://root/timeseries/{ts_id}/data/days'.format(
             ts_id=timeseries_id)
         expected_params = {'start': start, 'end': end}
 
@@ -168,7 +168,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api._download_days_cached(self.token, timeseries_id, start, end)
 
-        expected_uri = 'https://root/timeseries/{ts_id}/download/days'.format(
+        expected_uri = 'https://root/timeseries/{ts_id}/data/days'.format(
             ts_id=timeseries_id)
         expected_params = {'start': start, 'end': end}
 
@@ -240,7 +240,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.search(self.token, 'tns', 'tkey', 'tname', None)
 
-        expected_uri = 'https://root/timeseries/tns/tkey/tname'
+        expected_uri = 'https://root/timeseries/search/tns/tkey/tname'
 
         mock_get.assert_called_once_with(expected_uri,
                                          auth=mock_token(),
@@ -252,7 +252,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.search(self.token, 'tns', 'tkey', 'tname', 'theValue')
 
-        expected_uri = 'https://root/timeseries/tns/tkey/tname/theValue'
+        expected_uri = 'https://root/timeseries/search/tns/tkey/tname/theValue'
 
         mock_get.assert_called_once_with(expected_uri,
                                          auth=mock_token(),
