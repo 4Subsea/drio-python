@@ -425,8 +425,10 @@ class Test_Client(unittest.TestCase):
             self.client.token, 'test_namespace')
 
     def test_metadata_browse_names(self):
+        self.client._metadata_api.get.return_value = {'Value': '{}'}
+
         self.client.metadata_browse(namespace='test_namespace', key='test_key')
-        self.client._metadata_api.names.assert_called_once_with(
+        self.client._metadata_api.get.assert_called_once_with(
             self.client.token, 'test_namespace', 'test_key')
 
     def test_metadata_search_conjunctive_true(self):
