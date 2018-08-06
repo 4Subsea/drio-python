@@ -82,8 +82,11 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.api = TimeSeriesAPI(session=self._session)
 
     def test_get_with_nonexisting_timeseries(self):
-        self.api.download_days(self.auth.token, '05cbaeda-a5ad-430e-b640-46023488258b', -1000, 1000)
-        
+        with self.assertRaises(requests.exceptions.HTTPError) as e:
+            self.api.download_days(
+                self.auth.token, '05cbaeda-a5ad-430e-b640-46023488258b', -1000, 1000)
+        self.assertEqual(e.exception.response.status_code, 404)
+
     def test_create_delete(self):
         response = self.api.create(self.auth.token)
         token_tsid = (self.auth.token, response['TimeSeriesId'])
