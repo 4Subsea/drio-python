@@ -319,8 +319,8 @@ class Client(object):
         elif not metadata_id and namespace:
             if not key:
                 raise ValueError('key is mandatory when namespace is passed')
-            response_create = self._metadata_api.create(
-                self.token, namespace, key, **namevalues)
+            response_create = self._metadata_api.put(
+                self.token, namespace, key, True, **namevalues)
             metadata_id = response_create['Id']
 
         response = self._timeseries_api.attach_metadata(
