@@ -32,6 +32,31 @@ class Test_ClientMetadata(unittest.TestCase):
 
         self.assertEqual(response['Id'], '56e62c95-2cfa-4c61-2997-08d5fb8f513a')
 
+    def test_set_metadata_with_overwrite(self):
+        ts_id = '6f64c5a8-bd28-4ca8-9df5-ffed0a0259b4'
+        ns = 'system.integrationtest'
+        key = 'test_set_metadata.{}'.format(ts_id)
+        self.client._timeseries_api.create(self.auth.token, ts_id)
+        self.client._metadata_api.put(self.auth.token, namespace=ns, key=key, overwrite=True, Data=42)
+
+        self.client.set_metadata(ts_id, namespace=ns, key=key, overwrite=True, Data=37)
+
+        response = self.client.metadata_get(namespace=ns, key=key)
+        self.assertEqual(response['Value']['Data'], 37)
+
+    def test_set_metadata_without_overwrite_throws(self):
+        ts_id = '3c0b0936-1325-4f2b-a32c-d4b1ac80f4f8'
+        ns = 'system.integrationtest'
+        key = 'test_set_metadata.{}'.format(ts_id)
+        self.client._timeseries_api.create(self.auth.token, ts_id)
+        self.client._metadata_api.put(self.auth.token, namespace=ns, key=key, overwrite=True, Data=101)
+
+        with self.assertRaises(ValueError):
+            self.client.set_metadata(ts_id, namespace=ns, key=key, Data=37)
+
+        response = self.client.metadata_get(namespace=ns, key=key)
+        self.assertEqual(response['Value']['Data'], 101)
+
     def test_metadata_get(self):
         ns = 'system.integrationtest'
         key = 'test_metadata_get.76cde00e-1224-47ac-9095-b3f1450c476d'
@@ -65,7 +90,6 @@ class Test_ClientMetadata(unittest.TestCase):
 
         response = self.client.metadata_browse(namespace=ns, key=key)
 
-        print response
         self.assertEqual(len([m for m in response if m == 'Country']), 1)
 
 

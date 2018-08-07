@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import pandas as pd
 import datareservoirio
+import requests
 from datareservoirio import Client
 
 try:
@@ -449,9 +450,27 @@ class Test_Client(unittest.TestCase):
             series_id='series-id-1', namespace='meta-ns-1', key='meta-key-1', Data=42)
 
         self.client._metadata_api.put.assert_called_once_with(
-            self.client.token, 'meta-ns-1', 'meta-key-1', True, Data=42)
+            self.client.token, 'meta-ns-1', 'meta-key-1', False, Data=42)
         self.client._timeseries_api.attach_metadata.assert_called_once_with(
             self.client.token, 'series-id-1', ['meta-id-2'])
+
+    def test_set_metadata_with_overwrite_false_throws(self):
+        response = requests.Response()
+        response.status_code = 409
+        self.client._metadata_api.put.side_effect = requests.exceptions.HTTPError(response=response)
+
+        with self.assertRaises(ValueError):
+            self.client.set_metadata(
+                series_id='series-id-1', namespace='meta-ns-1', key='meta-key-1', Data=42)
+
+    def test_set_metadata_with_overwrite_true(self):
+        self.client._metadata_api.put.return_value = {'Id': 'meta-id-2'}
+
+        self.client.set_metadata(
+            series_id='series-id-1', namespace='meta-ns-1', key='meta-key-1', overwrite=True, Data=42)
+
+        self.client._metadata_api.put.assert_called_once_with(
+            self.client.token, 'meta-ns-1', 'meta-key-1', True, Data=42)
 
     def test_set_metadata_with_metadataid_calls_attachmetadata_with_idsinarray(self):
         self.client.set_metadata(series_id='series-id-1', metadata_id='meta-id-2')

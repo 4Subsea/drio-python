@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import logging
 import time
 import timeit
-
 import requests
 import pandas as pd
 
@@ -290,7 +289,7 @@ class Client(object):
         return series
 
     def set_metadata(self, series_id, metadata_id=None, namespace=None,
-                     key=None, **namevalues):
+                     key=None, overwrite=False, **namevalues):
         """
         Set metadata entries on a series. Metadata can be set from existing values
         or new metadata can be created.
@@ -306,6 +305,10 @@ class Client(object):
             Metadata namespace.
         key : str, mandatory if namespace is passed.
             Metadata key.
+        overwrite: bool, optional
+            If true, and namespace+key corresponds to existing metadata, the value of the
+            metadata will be overwritten. If false, a ValueError will be raised if the
+            metadata already exist.
         namevalues : keyword arguments
             Metadata name-value pairs
 
@@ -319,9 +322,15 @@ class Client(object):
         elif not metadata_id and namespace:
             if not key:
                 raise ValueError('key is mandatory when namespace is passed')
-            response_create = self._metadata_api.put(
-                self.token, namespace, key, True, **namevalues)
-            metadata_id = response_create['Id']
+            try:
+                response_create = self._metadata_api.put(
+                    self.token, namespace, key, overwrite, **namevalues)
+                metadata_id = response_create['Id']
+            except requests.exceptions.HTTPError as err:
+                if err.response.status_code == 409:
+                    raise ValueError('Metadata already exist. Specify overwrite=True to confirm overwriting the metadata')
+                else:
+                    raise
 
         response = self._timeseries_api.attach_metadata(
             self.token, series_id, [metadata_id])
