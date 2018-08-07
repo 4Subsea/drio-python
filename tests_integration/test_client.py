@@ -81,11 +81,11 @@ class Test_Client(unittest.TestCase):
 
     def test_delete(self):
         response = self.client.create(self.df_3)
-        info_pre = self.client.info(response['TimeSeriesId'])
-        self.client.delete(response['TimeSeriesId'])
+        ts_id = response['TimeSeriesId']
+        self.client.delete(ts_id)
 
         with self.assertRaises(requests.exceptions.HTTPError):
-            info_post = self.client.info(response['TimeSeriesId'])
+            self.client.info(ts_id)
 
     def test_create_append_nooverlap_get_delete(self):
         response = self.client.create(self.df_1)
@@ -97,7 +97,6 @@ class Test_Client(unittest.TestCase):
 
         self.assertEqual(0, info['TimeOfFirstSample'])
         self.assertEqual(174, info['TimeOfLastSample'])
-
 
         data_recieved = self.client.get(info['TimeSeriesId'], convert_date=False)
         data_sent = self.df_1

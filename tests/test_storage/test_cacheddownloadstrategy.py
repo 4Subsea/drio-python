@@ -147,7 +147,7 @@ class Test_BaseDownloadStrategy(unittest.TestCase):
         self.assertEqual(hash_out, hash_expected)
 
     def test__download_verified_chunk(self):
-        chunk = { }
+        chunk = {}
         df = pd.Series([0., 1., 2., 3.1, 3.2, 3.3, 4.], index=[0, 1, 2, 3, 3, 3, 4])
         df_expected = pd.Series([0., 1., 2., 3.3, 4.], index=[0, 1, 2, 3, 4])
 

@@ -162,58 +162,6 @@ class Test_Client(unittest.TestCase):
         response = self.client.ping()
         self.assertEqual(response, {'status': 'pong'})
 
-
-    # def test_metadata(self):
-    #     self.client._metadata_api.namespacekeys.return_value = ['pli', 'ihi']
-
-    #     response = self.client.metadata()
-
-    #     self.assertSequenceEqual(response, ['ihi', 'pli'])
-
-    # def test_metadata_with_nskey(self):
-    #     self.client._metadata_api.metadata.return_value = ['camp', 'anot']
-
-    #     response = self.client.metadata('namesp', 'thekey')
-
-    #     self.assertSequenceEqual(response, ['anot', 'camp'])
-
-    # def test_timeseries_for_metadata(self):
-    #     self.client._timeseries_api.timeseries_by_metadata.return_value = {'something':
-    #                                                                        'thething',
-    #                                                                        'else':
-    #                                                                        'doesnt fly'}
-
-    #     response = self.client.find_timeseries('ns', 'key', 'name')
-
-    #     self.assertSequenceEqual(response, {'something': 'thething',
-    #                                         'else': 'doesnt fly'})
-
-    # def test_timeseries_for_metadata_value(self):
-    #     self.client._timeseries_api.timeseries_by_metadatavalue.return_value = (
-    #         {'1bf9d2b1-b544-4756-94b3-c60f67f8d112', '6ff4a077-06af-460a-82db-2a7fac53d443',
-    #          '5c5bf184-941a-4a86-8154-9918a66d2e4f'}
-    #     )
-
-    #     response = self.client.find_timeseries('ns', 'key', 'name', 'value')
-
-    #     self.assertSequenceEqual(response, {'1bf9d2b1-b544-4756-94b3-c60f67f8d112',
-    #                                         '6ff4a077-06af-460a-82db-2a7fac53d443',
-    #                                         '5c5bf184-941a-4a86-8154-9918a66d2e4f'})
-
-    # def test_add_metadata(self):
-
-    #     returnDict = {'Key': 'metatest', 'Created': '2018-06-04T09:04:57.420998+00:00',
-    #                   'LastModified': None, 'CreatedByEmail': 'ihi@4subsea.com',
-    #                   'Namespace': 'thefirst', 'Value': {'MetaName': 'The meta value'},
-    #                   'LastModifiedByEmail': None, 'TimeSeries': [],
-    #                   'Id': 'fbd96bf3-0cbd-41ec-7fbd-08d5c9fa3eba'}
-    #     self.client._metadata_api.add_metadata.return_value = returnDict
-
-    #     response = self.client.add_metadata('1bf9d2b1-b544-4756-94b3-c60f67f8d112',
-    #                                         'some.thing', {'one': 'thing', 'another': 'thing'})
-
-    #     self.assertDictEqual(response, returnDict)
-
     @patch('time.sleep')
     def test_create_without_data(self, mock_sleep):
         expected_response = {'abc': 123}
@@ -360,7 +308,7 @@ class Test_Client(unittest.TestCase):
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',
-                                   end='1970-01-01 00:00:00.000000004', 
+                                   end='1970-01-01 00:00:00.000000004',
                                    raise_empty=False)
 
         pd.testing.assert_series_equal(response, response_expected, check_dtype=False)
