@@ -184,8 +184,6 @@ class MetadataAPI(BaseAPI):
 
     def search(self, token, namespace, key, conjunctive=True):
         """
-        TODO: Extend functionality for more powerful search experience.
-
         Search for metadata entries.
 
         Parameters

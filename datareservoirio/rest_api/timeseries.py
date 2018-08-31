@@ -123,8 +123,6 @@ class TimeSeriesAPI(BaseAPI):
 
     def add(self, token, timeseries_id, file_id):
         """
-        TODO: refactor method name -> append.
-
         Append timeseries data to an existing entry.
 
         Parameters
@@ -138,7 +136,7 @@ class TimeSeriesAPI(BaseAPI):
 
         Notes
         -----
-        Refer to API documentation wrt apppend, overlap, and overwrite behavior
+        Refer to API documentation wrt append, overlap, and overwrite behavior
         """
         log.debug('called with <token>, {}, {}'.format(
             timeseries_id, file_id), 'add')
@@ -261,8 +259,6 @@ class TimeSeriesAPI(BaseAPI):
 
     def search(self, token, namespace, key, name, value=None):
         """
-        TODO: Extend functionality - powered by MetadataAPI search.
-
         Find timeseries with metadata for given namespace/key/name/value
         combination.
 

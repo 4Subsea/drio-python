@@ -192,9 +192,6 @@ class Client(object):
 
     def search(self, namespace, key, name, value=None):
         """
-        TODO: Extend functionality - powered by TimeseriesAPI and MetadataAPI
-        search.
-
         Find available series having metadata with given
         namespace/key/name/value combination.
 
