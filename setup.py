@@ -1,15 +1,24 @@
 from setuptools import setup, find_packages
 
 
+# read the contents of your README file
+from os import path
+with open(path.join(path.abspath(path.dirname(__file__)), 'README.rst'),
+          encoding='utf-8') as f:
+    long_description = f.read()
+
+
 setup(name='datareservoirio',
       version='0.0.1',
-      license='Proprietary',
-      description='Python client for 4Subsea datareservoir.io',
-      keywords='drio datareservoir timeseries saas',
+      license='MIT',
+      description='Python client for DataReservoir.io',
+      long_description=long_description,
+      long_description_content_type='text/x-rst',
+      keywords='drio datareservoir timeseries storage database saas',
       url='http://www.4subsea.com/python/datareservoirio',
       author='4Subsea',
       author_email='support@4subsea.com',
-      packages=find_packages(exclude=['tests', 'integrationtests', 'packages']),
+      packages=find_packages(exclude=['tests', 'tests_integration']),
       install_requires=[
           'adal>=1.0.0',
           'azure-storage-blob>=1.1.0',
@@ -21,4 +30,11 @@ setup(name='datareservoirio',
           'future; python_version == "2.7"'
       ],
       include_package_data=True,
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'License :: OSI Approved :: MIT License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.6'
+      ],
       zip_safe=False)
