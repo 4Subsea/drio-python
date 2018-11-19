@@ -3,7 +3,4 @@ datareservoirio
 
 Python client for DataReservoir.io
 
-
-.. code:: shell
-
-    pip install datareservoirio
+DataReservoir.io is a timeseries storage service in the cloud.
