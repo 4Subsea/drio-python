@@ -3,8 +3,7 @@ from setuptools import setup, find_packages
 
 # read the contents of your README file
 from os import path
-with open(path.join(path.abspath(path.dirname(__file__)), 'README.rst'),
-          encoding='utf-8') as f:
+with open(path.join(path.abspath(path.dirname(__file__)), 'README.rst')) as f:
     long_description = f.read()
 
 
