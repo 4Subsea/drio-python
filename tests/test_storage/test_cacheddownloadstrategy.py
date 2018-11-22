@@ -53,10 +53,6 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
         with self.assertRaises(ValueError):
             CachedDownloadStrategy(self._cache, format='bogusformat')
 
-    def test_init_default_uses_simplefilecache(self):
-        dl = CachedDownloadStrategy()
-        self.assertIsInstance(dl._cache, SimpleFileCache)
-
     def test_init_with_cache(self):
         dl = CachedDownloadStrategy(cache=self._cache)
         self.assertIsInstance(dl._cache, Mock)

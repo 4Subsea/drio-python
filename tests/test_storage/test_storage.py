@@ -12,10 +12,10 @@ except ImportError:
 class Test_Storage(unittest.TestCase):
     def setUp(self):
         self._auth = Mock()
-        self._timeseries_api = Mock()  # Should use patch
-        self._files_api = Mock()  # Should use patch
-        self.downloader = Mock()  # Should use patch
-        self.uploader = Mock()  # Should use patch
+        self._timeseries_api = Mock()
+        self._files_api = Mock()
+        self.downloader = Mock()
+        self.uploader = Mock()
 
         self.tid = 'abc-123-xyz'
 
@@ -25,9 +25,6 @@ class Test_Storage(unittest.TestCase):
             self._files_api,
             downloader=self.downloader,
             uploader=self.uploader)
-
-    def test_constructor(self):
-        Storage(self._auth, self._timeseries_api, self._files_api)
 
     def test_get(self):
         data = pd.Series([1, 2, 3, 4], index=[1, 2, 3, 4])

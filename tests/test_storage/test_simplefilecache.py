@@ -4,7 +4,9 @@ import os
 import sys
 import warnings
 
-from datareservoirio.storage import SimpleFileCache
+from datareservoirio.storage.simplefilecache import (
+    EvictBySizeAndAge,
+    SimpleFileCache)
 
 try:
     from unittest.mock import patch
@@ -23,6 +25,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_getsize_patch = patch('datareservoirio.storage.simplefilecache.os.path.getsize')
         self._path_getmtime_patch = patch('datareservoirio.storage.simplefilecache.os.path.getmtime')
         self._remove_patch = patch('datareservoirio.storage.simplefilecache.os.remove')
+        self._rmdir_patch = patch('datareservoirio.storage.simplefilecache.os.rmdir')
         self._rmtree_patch = patch('datareservoirio.storage.simplefilecache.shutil.rmtree')
 
         self._io_open = self._io_open_patch.start()
@@ -34,6 +37,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_getsize = self._path_getsize_patch.start()
         self._path_getmtime = self._path_getmtime_patch.start()
         self._remove = self._remove_patch.start()
+        self._rmdir = self._rmdir_patch.start()
         self._rmtree = self._rmtree_patch.start()
         self.addCleanup(self._unpatch)
 
@@ -50,6 +54,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         self._path_getsize_patch.stop()
         self._path_getmtime_patch.stop()
         self._remove_patch.stop()
+        self._rmdir_patch.stop()
         self._rmtree_patch.stop()
 
     def test_init_with_cache_root_initializes_root_folder(self):
@@ -86,11 +91,19 @@ class Test_SimpleFileCache(unittest.TestCase):
         expected_tmp_file = os.path.abspath('app\\root\\v1\\a\\b\\file.csv.uncommitted')
         expected_file = os.path.abspath('app\\root\\v1\\a\\b\\file.csv')
 
-        self._cache.get(lambda: 'Hello!', lambda data, stream: '',
+        self._cache.get(lambda: range(60*24 + 1), lambda data, stream: '',
                         lambda stream: '', 'a', 'b', 'file.csv')
 
         self._io_open.assert_called_with(expected_tmp_file, 'wb')
         self._rename.assert_called_with(expected_tmp_file, expected_file)
+
+    def test_get_without_cached_data_too_short_for_cache(self):
+        self._path_exists.return_value = False
+        self._cache.get(lambda: range(60*24), lambda data, stream: '',
+                        lambda stream: '', 'a', 'b', 'file.csv')
+
+        self._io_open.assert_not_called()
+        self._rename.assert_not_called()
 
     def test_get_with_data_in_cache_calls_deserializer(self):
         self._path_exists.return_value = True
@@ -113,7 +126,7 @@ class Test_SimpleFileCache(unittest.TestCase):
             os.path.abspath('app\\root'): {'exists': True},
             os.path.abspath('app\\root\\v1'): {'exists': True},
             os.path.abspath('app\\root\\v1\\file.0'): {'exists': False},
-            'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True}, 
+            'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True},
             'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20.0, 'exists': True},
             'rt\\file.3': {'size': 3000, 'time': 50.0, 'exists': True}
         }
@@ -126,6 +139,7 @@ class Test_SimpleFileCache(unittest.TestCase):
         cache.get(lambda: '', lambda data, stream: '', lambda stream: '', 'file.0')
 
         self._remove.assert_called_once_with('rt\\file.2')
+        self._rmdir.assert_called_once_with('rt')
 
     def test_get_when_evict_old_file_fail_triggers_userwarning(self):
         self._walk.return_value = [
@@ -135,7 +149,7 @@ class Test_SimpleFileCache(unittest.TestCase):
             os.path.abspath('app\\root'): {'exists': True},
             os.path.abspath('app\\root\\v1'): {'exists': True},
             os.path.abspath('app\\root\\v1\\file.0'): {'exists': False},
-            'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True}, 
+            'rt\\file.1': {'size': 1000, 'time': 10.0, 'exists': True},
             'rt\\file.2': {'size': 2 * 1024 * 1024 * 1024, 'time': 20.0, 'exists': True},
             'rt\\file.3': {'size': 3000, 'time': 50.0, 'exists': True}
         }
@@ -152,6 +166,33 @@ class Test_SimpleFileCache(unittest.TestCase):
 
             self._remove.assert_called_once_with('rt\\file.2')
             self.assertIs(w[0].category, UserWarning)
+
+
+class Test_EvictBySizeAndAge(unittest.TestCase):
+    def setUp(self):
+        self._walk_patch = patch('datareservoirio.storage.simplefilecache.os.walk')
+        self._rmdir_patch = patch('datareservoirio.storage.simplefilecache.os.rmdir')
+
+        self._walk = self._walk_patch.start()
+        self._rmdir = self._rmdir_patch.start()
+        self.addCleanup(self._unpatch)
+
+    def _unpatch(self):
+        self._walk_patch.stop()
+        self._rmdir_patch.stop()
+
+    def test_init(self):
+        EvictBySizeAndAge()
+
+    def test_evicts_empty_folder(self):
+        self._walk.return_value = [
+            ('rt_empty', (), ()),
+        ]
+
+        evicter = EvictBySizeAndAge()
+        evicter.evict('', 1024)
+
+        self._rmdir.assert_called_once_with('rt_empty')
 
 
 if __name__ == '__main__':
