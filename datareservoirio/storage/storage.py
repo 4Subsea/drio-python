@@ -24,9 +24,8 @@ class Storage(object):
     storage.
     """
 
-    def __init__(self, authenticator, timeseries_api, files_api,
-                 downloader=CachedDownloadStrategy(),
-                 uploader=UploadStrategy()):
+    def __init__(self, authenticator, timeseries_api, files_api, downloader,
+                 uploader):
         """
         Initialize service for working with timeseries data in Azure Blob
         Storage.

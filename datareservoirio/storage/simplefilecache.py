@@ -126,7 +126,8 @@ class SimpleFileCache(object):
         if data is None:
             log.debug('Cache miss on {}'.format(filepath))
             data = get_data()
-            self._put_data_to_cache(data, filepath, serialize_data)
+            if len(data) > 60*24:
+                self._put_data_to_cache(data, filepath, serialize_data)
         else:
             log.debug('Cache hit on {}'.format(filepath))
 
@@ -208,21 +209,34 @@ class EvictBySizeAndAge(object):
     """
     Cache eviction based on total size of a folder.
 
-    When a max size is reached, the oldest files will
-    be deleted until total size is below the maximum.
-    Files will be considered the same age when created within the same hour,
-    so that the largest file created within one hour will be evicted before small files.
+    When a max size is reached, the oldest files will be deleted until total
+    size is below the maximum. Files will be considered the same age when
+    created within the same hour, so that the largest file created within one
+    hour will be evicted before small files.
     """
 
     def evict(self, folder, max_size_mb):
-        """Evict potential files from `folder` based on total file size and maximum file size."""
-        entries = [{
-            'filepath': filepath,
-            'size': _file_size_in_megabytes(filepath),
-            'time': _file_lastmodified_time(filepath) // (60 * 60)}
-            for filepath in [os.path.join(root, filename)
-                             for root, _, filenames in os.walk(folder)
-                             for filename in filenames]]
+        """
+        Evict potential files from `folder` based on total file size and
+        maximum file size.
+        """
+        entries = []
+        for root, dirs, filenames in os.walk(folder):
+            if not dirs and not filenames:
+                log.info('Trying to evict empty root from storage: {}'.format(root))
+                try:
+                    os.rmdir(root)
+                except Exception as error:
+                    warnings.warn('Could not evict {}. Exception: {}'.format(root, error))
+                continue
+
+            for filename in filenames:
+                filepath = os.path.join(root, filename)
+                entries.append({
+                    'filepath': filepath,
+                    'size': _file_size_in_megabytes(filepath),
+                    'time': _file_lastmodified_time(filepath) // (60 * 60)
+                    })
 
         totalsize_mb = sum(e['size'] for e in entries)
         overage_mb = totalsize_mb - max_size_mb
@@ -246,6 +260,7 @@ class EvictBySizeAndAge(object):
                     log.info('Trying to evict {} from storage'.format(e))
                     try:
                         os.remove(e)
+                        os.rmdir(os.path.dirname(e))
                     except Exception as error:
                         warnings.warn('Could not evict {}. Exception: {}'.format(e, error))
 

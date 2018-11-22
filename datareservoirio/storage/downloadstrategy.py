@@ -14,7 +14,6 @@ except ImportError:
 import pandas as pd
 
 from ..log import LogWriter
-from .simplefilecache import SimpleFileCache
 from .storage_engine import AzureBlobService
 
 logger = logging.getLogger(__name__)
@@ -151,7 +150,7 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
             with self._reader_factory(stream) as sr:
                 return pd.read_csv(sr, index_col=0, encoding='ascii')
 
-    def __init__(self, cache=SimpleFileCache(), format='msgpack', session=None):
+    def __init__(self, cache, format='msgpack', session=None):
         """
         Initialize a dataframe download strategy using a cache implementation
         and a serialization format.
@@ -159,7 +158,7 @@ class CachedDownloadStrategy(BaseDownloadStrategy):
         Parameters
         ---------
         :param: cls cache
-            Cache implementation, defaults to SimpleFileCache.
+            Cache implementation, see SimpleFileCache.
         :param: str format
             Serialization format of the files stored in cache. Supports
             'msgpack' and 'csv'. Default is 'msgpack'.

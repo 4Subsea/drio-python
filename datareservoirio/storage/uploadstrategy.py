@@ -10,17 +10,18 @@ log = LogWriter(logger)
 
 
 class UploadStrategy(object):
-    """Timeseries upload strategy that will upload Pandas dataframes to Azure Blob Storage."""
+    """
+    Timeseries upload strategy that will upload Pandas dataframes to Azure
+    Blob Storage.
 
+    Parameters
+    ----------
+    session : requests.Session
+        If specified, passed to the underlying BlockBlobService so that an
+        existing request session can be reused.
+
+    """
     def __init__(self, session=None):
-        """
-        Initiate transfer service to Azure Blob Storage.
-
-        :param: requests.Session session
-            If specified, passed to the underlying BlockBlobService so that an existing
-            request session can be reused.
-
-        """
         self._session = session
 
     def put(self, blob_params, series):

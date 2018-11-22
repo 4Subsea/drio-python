@@ -8,7 +8,7 @@ from .authenticate import Authenticator
 from . import globalsettings  # wierd bug. must be called last?
 
 
-# __version__ = pkg_resources.get_distribution('datareservoirio').version
+__version__ = pkg_resources.get_distribution('datareservoirio').version
 
 
 def set_log_level(lvl):
