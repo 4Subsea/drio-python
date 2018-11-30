@@ -67,13 +67,7 @@ class Test_FilesApi(unittest.TestCase):
                     self.auth.token, file_id)
                 counter += 1
 
-            response = self.api.bytes(self.auth.token, file_id)
-            response_txt = StringIO(response)
-            df_recieved = pd.read_csv(response_txt, header=None,
-                                      names=['time', 'values'], index_col=0)
-            response_txt.close()
-
-            pd.util.testing.assert_series_equal(df, df_recieved['values'])
+            self.assertLess(counter, 15, 'Processing did not complete with Ready status')
 
 
 if __name__ == '__main__':

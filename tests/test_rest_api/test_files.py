@@ -88,15 +88,6 @@ class Test_FilesAPI(unittest.TestCase):
         mock_get.assert_called_with(expected_uri, auth=mock_token(),
                                     **self.api._defaults)
 
-    @patch('datareservoirio.rest_api.files.TokenAuth')
-    def test_bytes(self, mock_token):
-        mock_get = self.api._session.get
-
-        self.api.bytes(self.token, 'fileid')
-
-        expected_uri = 'https://reservoir-api-qa.4subsea.net/api/files/fileid/bytes'
-        mock_get.assert_called_with(expected_uri, auth=mock_token(),
-                                    **self.api._defaults)
 
 if __name__ == '__main__':
     unittest.main()

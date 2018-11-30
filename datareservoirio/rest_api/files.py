@@ -63,29 +63,6 @@ class FilesAPI(BaseAPI):
         response = self._post(uri, data=body, auth=TokenAuth(token))
         return response.status_code
 
-    def bytes(self, token, file_id):
-        """
-        Return file as csv.
-
-        Parameters
-        ----------
-        token : dict
-            authentication token
-        file_id : str
-            id of file (Files API) to be commit.
-
-        Return
-        ------
-        str
-            csv with data
-        """
-        logwriter.debug('called with <token>, {}'.format(file_id), u'bytes')
-
-        uri = self._api_base_url + 'files/{}/bytes'.format(file_id)
-
-        response = self._get(uri, auth=TokenAuth(token))
-        return response.text
-
     def status(self, token, file_id):
         """
         Probe file status.
