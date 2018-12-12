@@ -190,6 +190,7 @@ class Test_EvictBySizeAndAge(unittest.TestCase):
         ]
 
         evicter = EvictBySizeAndAge()
+        evicter.CLEANUP = True
         evicter.evict('', 1024)
 
         self._rmdir.assert_called_once_with('rt_empty')

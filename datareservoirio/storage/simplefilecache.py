@@ -77,6 +77,7 @@ class SimpleFileCache(object):
             os.makedirs(self.cache_root)
 
         self._evict_from_cache()
+        EvictBySizeAndAge.CLEANUP = False
 
     @property
     def _cache_hive(self):
@@ -176,7 +177,8 @@ class SimpleFileCache(object):
             log.debug('Analyzing storage for eviction. Max size {} in {}'.format(
                 self._max_size_MB, self.cache_root))
 
-            self._current_size = self._evicter.evict(self.cache_root, self._max_size_MB)
+            self._current_size = self._evicter.evict(
+                self.cache_root, self._max_size_MB)
 
             log.debug('Storage analyzed. Current size: {} in {}'.format(
                 self._current_size, self.cache_root))
@@ -214,6 +216,7 @@ class EvictBySizeAndAge(object):
     created within the same hour, so that the largest file created within one
     hour will be evicted before small files.
     """
+    CLEANUP = True
 
     def evict(self, folder, max_size_mb):
         """
@@ -222,7 +225,7 @@ class EvictBySizeAndAge(object):
         """
         entries = []
         for root, dirs, filenames in os.walk(folder):
-            if not dirs and not filenames:
+            if self.CLEANUP and not dirs and not filenames:
                 log.info('Trying to evict empty root from storage: {}'.format(root))
                 try:
                     os.rmdir(root)
