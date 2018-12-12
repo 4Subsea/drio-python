@@ -27,6 +27,6 @@ Write-Host "Copying Python library from $PythonSource to $PyPiLocation"
 & "xcopy" "$PythonSource" "$PyPiLocation" /Y /I
 
 Write-Host "Copying Python documentation from $PythonDocSource to $DocLocation"
-& "$AzCopyTool" /Z:azjournal /V:azlog.txt /Source:"$PythonDocSource" /Dest:"$DocLocation" /DestKey:"$DocLocationKey" /S
+& "$AzCopyTool" /Z:azjournal /V:azlog.txt /Source:"$PythonDocSource" /Dest:"$DocLocation" /DestKey:"$DocLocationKey" /S /Y
 
 Write-Host "Done copying package files";
