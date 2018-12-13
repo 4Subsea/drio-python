@@ -25,7 +25,7 @@ class Test_Client(unittest.TestCase):
     @classmethod
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USER.NAME)
+        cls.auth = Authenticator(USER.NAME, auth_force=True)
 
         cls.df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
         cls.df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
@@ -147,19 +147,19 @@ class Test_Client(unittest.TestCase):
 class Test_Client_CacheEnable(unittest.TestCase):
 
     @classmethod
-    @patch('getpass.getpass', return_value=USER.PASSWORD)
+    
     def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USER.NAME)
-
         cls.df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
         cls.df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
         cls.df_3 = pd.Series(np.arange(50.), index=np.arange(125, 175))
 
+    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUp(self):
+        self.auth = Authenticator(USER.NAME, auth_force=True)
         self.client = datareservoirio.Client(self.auth, cache=True)
 
     def tearDown(self):
-        self.client.__exit__()
+        self.auth.close()
 
     def test_ping(self):
         self.client.ping()
@@ -251,7 +251,4 @@ class Test_Client_CacheEnable(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger("datareservoirio")
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler())
     unittest.main()

@@ -106,7 +106,4 @@ class Test_SimpleFileCache(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger("datareservoirio")
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler())
     unittest.main()

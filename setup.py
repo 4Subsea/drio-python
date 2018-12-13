@@ -19,11 +19,12 @@ setup(name='datareservoirio',
       author_email='support@4subsea.com',
       packages=find_packages(exclude=['tests', 'tests_integration']),
       install_requires=[
-          'adal>=1.0.0',
           'azure-storage-blob>=1.1.0',
           'numpy',
+          'oauthlib',
           'pandas>=0.23.0',
           'requests',
+          'requests-oauthlib',
           'six',
           'futures; python_version == "2.7"',
           'future; python_version == "2.7"'

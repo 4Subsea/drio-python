@@ -3,27 +3,33 @@ from __future__ import absolute_import, division, print_function
 import logging
 
 from ..log import LogWriter
-from .base import BaseAPI, TokenAuth
+from .base import BaseAPI
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
 
 class MetadataAPI(BaseAPI):
-    """Python wrapper for reservoir-api.4subsea.net/api/metadata"""
+    """
+    Python wrapper for reservoir-api.4subsea.net/api/metadata
 
-    def __init__(self, session=None):
-        super(MetadataAPI, self).__init__(session=session)
+    Parameters
+    ----------
+    session : subclass of ``requests.session``
+        Authorized session instance which appends a valid bearer token to all
+        HTTP calls.
+
+    """
+    def __init__(self, session):
+        super(MetadataAPI, self).__init__(session)
         self._root = self._api_base_url + 'metadata/'
 
-    def delete(self, token, metadata_id):
+    def delete(self, metadata_id):
         """
         Delete an existing metadata entry.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         metadata_id : str
             id of metadata
         """
@@ -31,17 +37,15 @@ class MetadataAPI(BaseAPI):
             metadata_id), 'delete')
 
         uri = self._root + '{}'.format(metadata_id)
-        self._delete(uri, auth=TokenAuth(token))
+        self._delete(uri)
         return
 
-    def get_by_id(self, token, metadata_id):
+    def get_by_id(self, metadata_id):
         """
         Retrieve a metadata entry by its unique identifier.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         metadata_id : str
             id of metadata
 
@@ -53,17 +57,15 @@ class MetadataAPI(BaseAPI):
         logwriter.debug('called with <token>, {}'.format(metadata_id), u'get')
 
         uri = self._root + metadata_id
-        response = self._get(uri, auth=TokenAuth(token))
+        response = self._get(uri)
         return response.json()
 
-    def get(self, token, namespace, key):
+    def get(self, namespace, key):
         """
         Retrieve a metadata entry.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         namespace : str
             Metadata namespace
         key : str
@@ -78,17 +80,15 @@ class MetadataAPI(BaseAPI):
             namespace, key), u'get')
 
         uri = self._root + namespace + '/' + key
-        response = self._get(uri, auth=TokenAuth(token))
+        response = self._get(uri)
         return response.json()
 
-    def put_by_id(self, token, metadata_id, **namevalues):
+    def put_by_id(self, metadata_id, **namevalues):
         """
         Create or update an existing metadata entry. Overwrites `Value` object.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         metadata_id : str
             id of metadata
         namevalues : keyword arguments
@@ -105,17 +105,15 @@ class MetadataAPI(BaseAPI):
         metadata_json = {'Value': namevalues}
 
         uri = self._root + metadata_id
-        response = self._put(uri, json=metadata_json, auth=TokenAuth(token))
+        response = self._put(uri, json=metadata_json)
         return response.json()
 
-    def put(self, token, namespace, key, overwrite, **namevalues):
+    def put(self, namespace, key, overwrite, **namevalues):
         """
         Create or update an existing metadata entry. Overwrites `Value` object.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         namespace : str
             Metadata namespace
         key : str
@@ -139,17 +137,12 @@ class MetadataAPI(BaseAPI):
         uri = self._root + '{}/{}?overwrite={}'.format(
             namespace, key, 'true' if overwrite else 'false')
 
-        response = self._put(uri, json=metadata_json, auth=TokenAuth(token))
+        response = self._put(uri, json=metadata_json)
         return response.json()
 
-    def namespaces(self, token):
+    def namespaces(self):
         """
         Return a list of available metadata namespaces.
-
-        Parameters
-        ----------
-        token : dict
-            token recieved from authenticator
 
         Return
         ------
@@ -157,18 +150,16 @@ class MetadataAPI(BaseAPI):
             response.json()
         """
         uri = self._root
-        response = self._get(uri, auth=TokenAuth(token))
+        response = self._get(uri)
 
         return sorted(response.json())
 
-    def keys(self, token, namespace):
+    def keys(self, namespace):
         """
         Return a list of available metadata keys under given namespace.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         namespace : str
             Metadata namespace
 
@@ -178,21 +169,22 @@ class MetadataAPI(BaseAPI):
             response.json()
         """
         uri = self._root + namespace
-        response = self._get(uri, auth=TokenAuth(token))
+        response = self._get(uri)
 
         return sorted(response.json())
 
-    def search(self, token, namespace, key, conjunctive=True):
+    def search(self, namespace, key, conjunctive=True):
         """
         Search for metadata entries.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
-        search_json : dict
-            Dict with search data. Must contain "Namespace" (str), "Key" (str),
-            and "Conjunctive" (bool). Subjected to validation before passed on.
+        namespace : str
+            Metadata namespace.
+        key : str
+            Metadata key.
+        conjunctive : bool
+            Whether to perform a conjunctive search or not. Deafault is True.
 
         Return
         ------
@@ -206,7 +198,7 @@ class MetadataAPI(BaseAPI):
         search_json['Conjunctive'] = conjunctive
 
         uri = self._root + 'search'
-        response = self._post(uri, json=search_json, auth=TokenAuth(token))
+        response = self._post(uri, json=search_json)
         return response.json()
 
 

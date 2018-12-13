@@ -21,8 +21,6 @@ class Test_Client(unittest.TestCase):
     @patch('datareservoirio.client.SimpleFileCache')
     def setUp(self, mock_cache):
         self.auth = Mock()
-        self.auth.token = {'accessToken': 'abcdef',
-                           'expiresOn': np.datetime64('2050-01-01 00:00:00', 's')}
 
         self.client = Client(self.auth)
         self.client._files_api = Mock()
@@ -92,7 +90,6 @@ class Test_Client(unittest.TestCase):
 
     def test_init(self):
         self.assertIsInstance(self.client, datareservoirio.Client)
-        self.assertIsInstance(self.client._authenticator, Mock)
         self.assertIsInstance(self.client._timeseries_api, Mock)
         self.assertIsInstance(self.client._metadata_api, Mock)
         self.assertIsInstance(self.client._files_api, Mock)
@@ -153,9 +150,6 @@ class Test_Client(unittest.TestCase):
         with Client(self.auth, cache=True, cache_opt={'max_size': 10}):
             mock_cache.assert_called_once_with(cache_root=None, max_size=10)
 
-    def test_token(self):
-        self.assertEqual(self.client.token, self.auth.token)
-
     def test_ping_request(self):
         self.client._files_api.ping.return_value = {'status': 'pong'}
 
@@ -169,8 +163,7 @@ class Test_Client(unittest.TestCase):
 
         response = self.client.create()
 
-        self.client._timeseries_api.create.assert_called_once_with(
-            self.auth.token)
+        self.client._timeseries_api.create.assert_called_once_with()
         self.assertDictEqual(response, expected_response)
 
     @patch('time.sleep')
@@ -187,8 +180,7 @@ class Test_Client(unittest.TestCase):
         self._storage.put.assert_called_once_with(self.dummy_df)
         self.client._wait_until_file_ready.assert_called_once_with(
             self.dummy_params['FileId'])
-        self.client._timeseries_api.create_with_data.assert_called_once_with(
-            self.auth.token, self.dummy_params['FileId'])
+        self.client._timeseries_api.create_with_data.assert_called_once_with(self.dummy_params['FileId'])
         self.assertDictEqual(response, expected_response)
 
     @patch('time.sleep')
@@ -218,7 +210,7 @@ class Test_Client(unittest.TestCase):
         self.client._wait_until_file_ready.assert_called_once_with(
             self.dummy_params['FileId'])
         self.client._timeseries_api.add.assert_called_once_with(
-            self.auth.token, self.timeseries_id, self.dummy_params['FileId'])
+            self.timeseries_id, self.dummy_params['FileId'])
         self.assertDictEqual(response, expected_response)
 
     @patch('time.sleep')
@@ -236,8 +228,7 @@ class Test_Client(unittest.TestCase):
 
         response = self.client.info(self.timeseries_id)
 
-        self.client._timeseries_api.info.assert_called_once_with(
-            self.auth.token, self.timeseries_id)
+        self.client._timeseries_api.info.assert_called_once_with(self.timeseries_id)
         self.assertDictEqual(response, expected_response)
 
     def test_delete_all_methods_called(self):
@@ -246,8 +237,7 @@ class Test_Client(unittest.TestCase):
 
         response = self.client.delete(self.timeseries_id)
 
-        self.client._timeseries_api.delete.assert_called_once_with(
-            self.auth.token, self.timeseries_id)
+        self.client._timeseries_api.delete.assert_called_once_with(self.timeseries_id)
         self.assertEqual(response, expected_response)
 
     def test_get_with_defaults(self):
@@ -333,7 +323,7 @@ class Test_Client(unittest.TestCase):
     def test_search(self):
         self.client.search('test_namespace', 'test_key', 'test_name', 123)
         self.client._timeseries_api.search.assert_called_once_with(
-            self.client.token, 'test_namespace', 'test_key', 'test_name', 123)
+            'test_namespace', 'test_key', 'test_name', 123)
 
     def test_metadata_get_with_id(self):
         self.client._metadata_api.get_by_id.return_value = {'Id': '123abc'}
@@ -365,31 +355,27 @@ class Test_Client(unittest.TestCase):
 
     def test_metadata_browse_namespace(self):
         self.client.metadata_browse()
-        self.client._metadata_api.namespaces.assert_called_once_with(
-            self.client.token)
+        self.client._metadata_api.namespaces.assert_called_once_with()
 
     def test_metadata_browse_keys(self):
         self.client.metadata_browse(namespace='test_namespace')
-        self.client._metadata_api.keys.assert_called_once_with(
-            self.client.token, 'test_namespace')
+        self.client._metadata_api.keys.assert_called_once_with('test_namespace')
 
     def test_metadata_browse_names(self):
         self.client._metadata_api.get.return_value = {'Value': '{}'}
 
         self.client.metadata_browse(namespace='test_namespace', key='test_key')
-        self.client._metadata_api.get.assert_called_once_with(
-            self.client.token, 'test_namespace', 'test_key')
+        self.client._metadata_api.get.assert_called_once_with('test_namespace', 'test_key')
 
     def test_metadata_search_conjunctive_true(self):
         self.client.metadata_search(namespace='test_namespace', key='test_key')
-        self.client._metadata_api.search.assert_called_once_with(
-            self.client.token, 'test_namespace', 'test_key', True)
+        self.client._metadata_api.search.assert_called_once_with('test_namespace', 'test_key', True)
 
     def test_metadata_search_conjunctive_false(self):
         self.client.metadata_search(
             namespace='test_namespace', key='test_key', conjunctive=False)
         self.client._metadata_api.search.assert_called_once_with(
-            self.client.token, 'test_namespace', 'test_key', False)
+            'test_namespace', 'test_key', False)
 
     def test_set_metadata_with_namespace_and_key_creates_and_attaches(self):
         self.client._metadata_api.put.return_value = {'Id': 'meta-id-2'}
@@ -398,9 +384,9 @@ class Test_Client(unittest.TestCase):
             series_id='series-id-1', namespace='meta-ns-1', key='meta-key-1', Data=42)
 
         self.client._metadata_api.put.assert_called_once_with(
-            self.client.token, 'meta-ns-1', 'meta-key-1', False, Data=42)
+            'meta-ns-1', 'meta-key-1', False, Data=42)
         self.client._timeseries_api.attach_metadata.assert_called_once_with(
-            self.client.token, 'series-id-1', ['meta-id-2'])
+            'series-id-1', ['meta-id-2'])
 
     def test_set_metadata_with_overwrite_false_throws(self):
         response = requests.Response()
@@ -418,18 +404,18 @@ class Test_Client(unittest.TestCase):
             series_id='series-id-1', namespace='meta-ns-1', key='meta-key-1', overwrite=True, Data=42)
 
         self.client._metadata_api.put.assert_called_once_with(
-            self.client.token, 'meta-ns-1', 'meta-key-1', True, Data=42)
+            'meta-ns-1', 'meta-key-1', True, Data=42)
 
     def test_set_metadata_with_metadataid_calls_attachmetadata_with_idsinarray(self):
         self.client.set_metadata(series_id='series-id-1', metadata_id='meta-id-2')
         self.client._timeseries_api.attach_metadata.assert_called_once_with(
-            self.client.token, 'series-id-1', ['meta-id-2'])
+            'series-id-1', ['meta-id-2'])
 
     def test_remove_metadata(self):
         self.client.remove_metadata(
             'series_123', 'meta_abc')
         self.client._timeseries_api.detach_metadata.assert_called_once_with(
-            self.client.token, 'series_123', ['meta_abc'])
+            'series_123', ['meta_abc'])
 
 
 class Test_TimeSeriesClient_verify_prep_series(unittest.TestCase):

@@ -22,30 +22,25 @@ if sys.version_info.major == 3:
 elif sys.version_info.major == 2:
     from cStringIO import StringIO
 
-datareservoirio.globalsettings.environment.set_test()
+datareservoirio.globalsettings.environment.set_production()
 
 
 class Test_FilesApi(unittest.TestCase):
 
-    @classmethod
     @patch('getpass.getpass', return_value=USER.PASSWORD)
-    def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USER.NAME)
-
-    def setUp(self):
-        self._session = requests.Session()
-        self.api = FilesAPI(session=self._session)
+    def setUp(self, mock_pass):
+        self.auth = Authenticator(USER.NAME, auth_force=True)
+        self.api = FilesAPI(self.auth)
 
     def tearDown(self):
-        self._session.close()
+        self.auth.close()
 
     def test_ping(self):
-        self.api.ping(self.auth.token)
+        self.api.ping()
 
     def test_upload_df_cycle(self):
-        upload_params = self.api.upload(self.auth.token)
+        upload_params = self.api.upload()
         file_id = upload_params['FileId']
-        print(upload_params)
 
         with requests.Session() as s:
             uploader = UploadStrategy(session=s)
@@ -56,15 +51,13 @@ class Test_FilesApi(unittest.TestCase):
 
             uploader.put(upload_params, df)
 
-            self.api.commit(self.auth.token, file_id)
+            self.api.commit(file_id)
 
             counter = 0
-            response = self.api.status(self.auth.token, file_id)
+            response = self.api.status(file_id)
             while response['State'] != 'Ready' and counter < 15:
-                print(counter, response['State'])
                 time.sleep(5)
-                response = self.api.status(
-                    self.auth.token, file_id)
+                response = self.api.status(file_id)
                 counter += 1
 
             self.assertLess(counter, 15, 'Processing did not complete with Ready status')

@@ -25,17 +25,16 @@ TIMESERIESID = '06C0AD81-3E81-406F-9DB0-EFD5114DD5E0'
 
 class Test_CachedDownloadStrategy(unittest.TestCase):
 
-    @classmethod
     @patch('getpass.getpass', return_value=USER.PASSWORD)
-    def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USER.NAME)
-
-    def setUp(self):
-        self._session = requests.Session()
-        self.timeseries_api = TimeSeriesAPI(session=self._session)
+    def setUp(self, mock_input):
+        self.auth = Authenticator(USER.NAME, auth_force=True)
+        self.timeseries_api = TimeSeriesAPI(session=self.auth)
         self._cache = SimpleFileCache(cache_root='./_cache/test_cacheddownloadstrategy')
 
+        self._session = requests.Session()
+
     def tearDown(self):
+        self.auth.close()
         self._session.close()
 
     def test_get_with_msgpack_format(self):
@@ -43,8 +42,7 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
                                           format='msgpack',
                                           session=self._session)
         chunks = self.timeseries_api.download_days(
-            self.auth.token, TIMESERIESID,
-            1513468800000000000, 1513814500000000000)
+            TIMESERIESID, 1513468800000000000, 1513814500000000000)
         iterations = 100
 
         usedtime = timeit(stmt=partial(strategy.get, chunks), number=iterations)
@@ -56,8 +54,7 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
                                           format='csv',
                                           session=self._session)
         chunks = self.timeseries_api.download_days(
-            self.auth.token, TIMESERIESID,
-            1513468800000000000, 1513814500000000000)
+            TIMESERIESID, 1513468800000000000, 1513814500000000000)
         iterations = 100
 
         usedtime = timeit(stmt=lambda: strategy.get(chunks), number=iterations)
@@ -66,7 +63,4 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger("datareservoirio")
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler())
     unittest.main()

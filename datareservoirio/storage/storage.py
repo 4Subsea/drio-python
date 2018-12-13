@@ -24,7 +24,7 @@ class Storage(object):
     storage.
     """
 
-    def __init__(self, authenticator, timeseries_api, files_api, downloader,
+    def __init__(self, timeseries_api, files_api, downloader,
                  uploader):
         """
         Initialize service for working with timeseries data in Azure Blob
@@ -32,8 +32,6 @@ class Storage(object):
 
         Parameters
         ----------
-        authenticator: object
-            Token provider (must support auth.token()).
         timeseries_api: TimeseriesAPI
             Instance of timeseries API.
         files_api: FilesAPI
@@ -44,15 +42,10 @@ class Storage(object):
             A strategy instance for handling uploads.
 
         """
-        self._authenticator = authenticator
         self._timeseries_api = timeseries_api
         self._files_api = files_api
         self._downloader = downloader
         self._uploader = uploader
-
-    @property
-    def token(self):
-        return self._authenticator.token
 
     def put(self, series):
         """
@@ -68,12 +61,12 @@ class Storage(object):
             The unique file id as stored in the reservoir
 
         """
-        upload_params = self._files_api.upload(self.token)
+        upload_params = self._files_api.upload()
         file_id = upload_params['FileId']
 
         self._uploader.put(upload_params, series)
 
-        self._files_api.commit(self.token, file_id)
+        self._files_api.commit(file_id)
         return file_id
 
     def get(self, timeseries_id, start, end):
@@ -91,8 +84,7 @@ class Storage(object):
 
         """
         log.debug("getting day file inventory")
-        response = self._timeseries_api.download_days(
-            self.token, timeseries_id, start, end)
+        response = self._timeseries_api.download_days(timeseries_id, start, end)
 
         series = self._downloader.get(response)
 

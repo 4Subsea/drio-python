@@ -27,8 +27,8 @@ class Client(object):
     Parameters
     ---------
     auth : cls
-        An authenticator class with :attr:`token` attribute that provides a
-        valid token to the 4Subsea data reservoir.
+        An authenterized session instance that is used in all API calls. Must
+        supply a valid bearer token to all API calls.
     cache : bool
         Enable caching (default).
     cache_opt : dict, optional
@@ -43,11 +43,11 @@ class Client(object):
     CACHE_DEFAULT = {'format': 'msgpack', 'max_size': 1024, 'cache_root': None}
 
     def __init__(self, auth, cache=True, cache_opt=CACHE_DEFAULT):
+        self._auth_session = auth
         self._session = requests.Session()
-        self._authenticator = auth
-        self._timeseries_api = TimeSeriesAPI(cache=cache, session=self._session)
-        self._files_api = FilesAPI(session=self._session)
-        self._metadata_api = MetadataAPI(session=self._session)
+        self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
+        self._files_api = FilesAPI(self._auth_session)
+        self._metadata_api = MetadataAPI(self._auth_session)
         self._enable_cache = cache
 
         if self._enable_cache:
@@ -69,7 +69,6 @@ class Client(object):
         uploader = UploadStrategy(session=self._session)
 
         self._storage = Storage(
-            self._authenticator,
             self._timeseries_api,
             self._files_api,
             downloader=downloader,
@@ -81,21 +80,12 @@ class Client(object):
     def __exit__(self, *args):
         self._session.close()
 
-    @property
-    def token(self):
-        """
-        Your token that is sent to the data reservoir with every request you
-        make. There is no password stored in the token, it only provides access
-        for a limited amount of time and only to the data reservoir.
-        """
-        return self._authenticator.token
-
     def ping(self):
         """
         With ping you can test that you have a working connection to the data
         reservoir.
         """
-        return self._files_api.ping(self.token)
+        return self._files_api.ping()
 
     def create(self, series=None):
         """
@@ -115,7 +105,7 @@ class Client(object):
             newly created series.
         """
         if series is None:
-            response = self._timeseries_api.create(self.token)
+            response = self._timeseries_api.create()
             return response
 
         self._verify_and_prepare_series(series)
@@ -133,7 +123,7 @@ class Client(object):
         if status == "Failed":
             return status
 
-        response = self._timeseries_api.create_with_data(self.token, file_id)
+        response = self._timeseries_api.create_with_data(file_id)
         time_end = timeit.default_timer()
         log.info('Done. Total time spent: {} seconds ({} minutes)'
                  .format(time_end - time_start, (time_end - time_start) / 60.), 'create')
@@ -175,7 +165,7 @@ class Client(object):
         log.info('Done, total time spent: {} seconds ({} minutes)'
                  .format(time_end - time_start, (time_end - time_start) / 60.), 'append')
 
-        response = self._timeseries_api.add(self.token, series_id, file_id)
+        response = self._timeseries_api.add(series_id, file_id)
         return response
 
     def info(self, series_id):
@@ -188,7 +178,7 @@ class Client(object):
             Available information about the timeseries. None if timeseries not
             found.
         """
-        return self._timeseries_api.info(self.token, series_id)
+        return self._timeseries_api.info(series_id)
 
     def search(self, namespace, key, name, value=None):
         """
@@ -213,7 +203,7 @@ class Client(object):
             a dict is returned -> ``{timeseries_id: value}``. Otherwise, a
             plain list with timeseries_id is returned.
         """
-        return self._timeseries_api.search(self.token, namespace, key, name,
+        return self._timeseries_api.search(namespace, key, name,
                                            value)
 
     def delete(self, series_id):
@@ -228,7 +218,7 @@ class Client(object):
         int
             http status code. 200 is OK
         """
-        return self._timeseries_api.delete(self.token, series_id)
+        return self._timeseries_api.delete(series_id)
 
     def get(self, series_id, start=None, end=None, convert_date=True,
             raise_empty=False):
@@ -321,7 +311,7 @@ class Client(object):
                 raise ValueError('key is mandatory when namespace is passed')
             try:
                 response_create = self._metadata_api.put(
-                    self.token, namespace, key, overwrite, **namevalues)
+                    namespace, key, overwrite, **namevalues)
                 metadata_id = response_create['Id']
             except requests.exceptions.HTTPError as err:
                 if err.response.status_code == 409:
@@ -329,8 +319,8 @@ class Client(object):
                 else:
                     raise
 
-        response = self._timeseries_api.attach_metadata(
-            self.token, series_id, [metadata_id])
+        response = self._timeseries_api.attach_metadata(series_id,
+                                                        [metadata_id])
         return response
 
     def remove_metadata(self, series_id, metadata_id):
@@ -350,8 +340,8 @@ class Client(object):
         dict
             response.json()
         """
-        response = self._timeseries_api.detach_metadata(
-            self.token, series_id, [metadata_id])
+        response = self._timeseries_api.detach_metadata(series_id,
+                                                        [metadata_id])
         return response
 
     def metadata_set(self, namespace, key, **namevalues):
@@ -375,8 +365,7 @@ class Client(object):
             The response from datareservoir.io containing the unique id of the
             new or updated metadata.
         """
-        response = self._metadata_api.put(
-            self.token, namespace, key, True, **namevalues)
+        response = self._metadata_api.put(namespace, key, True, **namevalues)
         return response
 
     def metadata_get(self, metadata_id=None, namespace=None, key=None):
@@ -398,9 +387,9 @@ class Client(object):
             Metadata entry.
         """
         if metadata_id:
-            response = self._metadata_api.get_by_id(self.token, metadata_id)
+            response = self._metadata_api.get_by_id(metadata_id)
         elif namespace and key:
-            response = self._metadata_api.get(self.token, namespace, key)
+            response = self._metadata_api.get(namespace, key)
         else:
             raise ValueError('key is mandatory when namespace is passed')
 
@@ -425,11 +414,11 @@ class Client(object):
         """
 
         if not namespace:
-            return self._metadata_api.namespaces(self.token)
+            return self._metadata_api.namespaces()
         elif not key:
-            return self._metadata_api.keys(self.token, namespace)
+            return self._metadata_api.keys(namespace)
         else:
-            response = self._metadata_api.get(self.token, namespace, key)
+            response = self._metadata_api.get(namespace, key)
             return response['Value']
 
     def metadata_search(self, namespace, key, conjunctive=True):
@@ -448,7 +437,7 @@ class Client(object):
         dict
             Metadata entries that matches the search.
         """
-        response = self._metadata_api.search(self.token, namespace, key,
+        response = self._metadata_api.search(namespace, key,
                                              conjunctive)
         return response
 
@@ -482,5 +471,5 @@ class Client(object):
             time.sleep(5)
 
     def _get_file_status(self, file_id):
-        response = self._files_api.status(self.token, file_id)
+        response = self._files_api.status(file_id)
         return response['State']

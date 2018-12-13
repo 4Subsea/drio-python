@@ -7,7 +7,7 @@ from threading import RLock as Lock
 from uuid import uuid4
 
 from ..log import LogWriter
-from .base import BaseAPI, TokenAuth
+from .base import BaseAPI
 
 logger = logging.getLogger(__name__)
 log = LogWriter(logger)
@@ -26,7 +26,7 @@ def request_cache(timeout=180):
     return func_wrapper
 
 
-def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=2):
+def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=1):
     cache_lock = Lock()  # lock used to protect cache during modifications
     sentinel = object()  # unique object used to signal cache misses
     cache = {}
@@ -66,21 +66,30 @@ def _make_request_hash(args, kwargs):
 
 
 class TimeSeriesAPI(BaseAPI):
-    """Python wrapper for reservoir-api.4subsea.net/api/timeseries."""
+    """
+    Python wrapper for reservoir-api.4subsea.net/api/timeseries.
 
-    def __init__(self, cache=True, session=None):
+    Parameters
+    ----------
+    session : subclass of ``requests.session``
+        Authorized session instance which appends a valid bearer token to all
+        HTTP calls.
+    cache : bool
+        Whether to cache calls and responses with expiry time. Defaults to
+        True.
+
+    """
+    def __init__(self, session, cache=True):
         super(TimeSeriesAPI, self).__init__(session=session)
         self._root = self._api_base_url + 'timeseries/'
         self._cache = cache
 
-    def create(self, token, timeseries_id=None):
+    def create(self, timeseries_id=None):
         """
         Create timeseries entry.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         timeseries_id : str or None
             id of the timeseries (Timeseries API) to create.
             if None, a unique id will be generated.
@@ -95,17 +104,15 @@ class TimeSeriesAPI(BaseAPI):
             timeseries_id = str(uuid4())
 
         uri = self._root + timeseries_id
-        response = self._put(uri, data=None, auth=TokenAuth(token))
+        response = self._put(uri, data=None)
         return response.json()
 
-    def create_with_data(self, token, file_id=None):
+    def create_with_data(self, file_id=None):
         """
         Create timeseries entry with data from a file.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         file_id : str
             id of file (Files API) to be added to the timeseries.
 
@@ -118,17 +125,15 @@ class TimeSeriesAPI(BaseAPI):
 
         uri = self._root + 'create'
         body = {'FileId': file_id}
-        response = self._post(uri, data=body, auth=TokenAuth(token))
+        response = self._post(uri, data=body)
         return response.json()
 
-    def add(self, token, timeseries_id, file_id):
+    def add(self, timeseries_id, file_id):
         """
         Append timeseries data to an existing entry.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         timeseries_id : str
             id of the target timeseries
         file_id : str
@@ -143,18 +148,16 @@ class TimeSeriesAPI(BaseAPI):
 
         uri = self._root + 'add'
         body = {'TimeSeriesId': timeseries_id, 'FileId': file_id}
-        response = self._post(uri, data=body, auth=TokenAuth(token))
+        response = self._post(uri, data=body)
         return response.json()
 
-    def info(self, token, timeseries_id):
+    def info(self, timeseries_id):
         """
         Information about a timeseries entry.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
-        timeseries_id : str
+       timeseries_id : str
             id of the target timeseries
 
         Return
@@ -166,34 +169,30 @@ class TimeSeriesAPI(BaseAPI):
         log.debug('called with <token>, {}'.format(timeseries_id))
 
         uri = self._root + timeseries_id
-        response = self._get(uri, auth=TokenAuth(token))
+        response = self._get(uri)
         return response.json()
 
-    def delete(self, token, timeseries_id):
+    def delete(self, timeseries_id):
         """
         Delete a timeseries.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         timeseries_id : str
             id of the target timeseries
         """
         log.debug('called with <token>, {}'.format(timeseries_id))
 
         uri = self._root + timeseries_id
-        self._delete(uri, auth=TokenAuth(token))
+        self._delete(uri)
         return
 
-    def download_days(self, token, timeseries_id, start, end):
+    def download_days(self, timeseries_id, start, end):
         """
         Return timeseries data with start/stop.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         timeseries_id : str
             id of the timeseries to download
         start : int long
@@ -220,13 +219,13 @@ class TimeSeriesAPI(BaseAPI):
 
         download_days = (self._download_days_cached
                          if self._cache else self._download_days_base)
-        return download_days(token, timeseries_id, start, end)
+        return download_days(timeseries_id, start, end)
 
     @request_cache(timeout=180)
     def _download_days_cached(self, *args):
         return self._download_days_base(*args)
 
-    def _download_days_base(self, token, timeseries_id, start, end):
+    def _download_days_base(self, timeseries_id, start, end):
         """
         Return timeseries data with start/stop.
         Internal low level function to allow for higher level operations on
@@ -234,8 +233,6 @@ class TimeSeriesAPI(BaseAPI):
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         timeseries_id : str
             id of the timeseries to download
         start : int long
@@ -254,18 +251,16 @@ class TimeSeriesAPI(BaseAPI):
         uri = self._root + '{}/data/days'.format(timeseries_id)
         params = {'start': start, 'end': end}
 
-        response = self._get(uri, params=params, auth=TokenAuth(token))
+        response = self._get(uri, params=params)
         return response.json()
 
-    def search(self, token, namespace, key, name, value=None):
+    def search(self, namespace, key, name, value=None):
         """
         Find timeseries with metadata for given namespace/key/name/value
         combination.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         namespace : str
             namespace in metadata
         key : str
@@ -279,6 +274,7 @@ class TimeSeriesAPI(BaseAPI):
         ======
         dict or list
             response.json() containing timeseriesID
+
         """
         args_update = []
         for arg in [namespace, key, name, value]:
@@ -288,17 +284,15 @@ class TimeSeriesAPI(BaseAPI):
                 args_update.append(arg)
 
         uri = self._root + 'search/' + '/'.join(args_update)
-        response = self._get(uri, auth=TokenAuth(token))
+        response = self._get(uri)
         return response.json()
 
-    def attach_metadata(self, token, timeseries_id, metadata_id_list):
+    def attach_metadata(self, timeseries_id, metadata_id_list):
         """
         Attach a list of metadata entries to a series.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         timeseries_id : str
             id of timeseries
         metadata_id_list : list
@@ -314,17 +308,15 @@ class TimeSeriesAPI(BaseAPI):
 
         uri = self._root + '{}/metadata'.format(timeseries_id)
 
-        response = self._put(uri, json=metadata_id_list, auth=TokenAuth(token))
+        response = self._put(uri, json=metadata_id_list)
         return response.json()
 
-    def detach_metadata(self, token, timeseries_id, metadata_id_list):
+    def detach_metadata(self, timeseries_id, metadata_id_list):
         """
         Detach a list of metadata entries from a timeseries.
 
         Parameters
         ----------
-        token : dict
-            token recieved from authenticator
         timeseries_id : str
             id of timeseries
         metadata_id_list : list
@@ -340,5 +332,5 @@ class TimeSeriesAPI(BaseAPI):
 
         uri = self._root + '{}/metadata'.format(timeseries_id)
 
-        response = self._delete(uri, json=metadata_id_list, auth=TokenAuth(token))
+        response = self._delete(uri, json=metadata_id_list)
         return response.json()

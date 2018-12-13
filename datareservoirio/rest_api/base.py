@@ -34,10 +34,10 @@ def _response_logger(func):
 class BaseAPI(object):
     """Base class for reservoir REST API"""
 
-    def __init__(self, session=None):
+    def __init__(self, session):
         self._api_base_url = globalsettings.environment.api_base_url
 
-        self._session = requests.Session() if session is None else session
+        self._session = session
 
         # Attention: Be careful when extending the list of retry_status!
         retry_status = frozenset([413, 429, 500, 502, 503, 504])

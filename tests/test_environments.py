@@ -30,15 +30,20 @@ class TestConfiguration(unittest.TestCase):
 
         self.verify_environment(consts.ENV_PROD)
 
+    def test_set_qa_environment(self):
+        gs.environment.set_qa()
+
+        self.verify_environment(consts.ENV_QA)
+
     def test_set_test_environment(self):
         gs.environment.set_test()
 
         self.verify_environment(consts.ENV_TEST)
 
-    def test_set_qa_environment(self):
-        gs.environment.set_qa()
+    def test_set_dev_environment(self):
+        gs.environment.set_dev()
 
-        self.verify_environment(consts.ENV_QA)
+        self.verify_environment(consts.ENV_DEV)
 
     def test_different_imports_refer_to_same_environment_instance(self):
         gs.environment.set_test()
@@ -64,6 +69,10 @@ class TestConfiguration(unittest.TestCase):
 class TestApiBaseURL(unittest.TestCase):
 
     def test_(self):
+        gs.environment.set_dev()
+        base_url = gs.environment.api_base_url
+        self.assertEqual(base_url, consts.API_BASE_URL_DEV)
+
         gs.environment.set_test()
         base_url = gs.environment.api_base_url
         self.assertEqual(base_url, consts.API_BASE_URL_TEST)

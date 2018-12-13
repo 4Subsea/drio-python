@@ -11,7 +11,6 @@ except ImportError:
 
 class Test_Storage(unittest.TestCase):
     def setUp(self):
-        self._auth = Mock()
         self._timeseries_api = Mock()
         self._files_api = Mock()
         self.downloader = Mock()
@@ -20,7 +19,6 @@ class Test_Storage(unittest.TestCase):
         self.tid = 'abc-123-xyz'
 
         self.storage = Storage(
-            self._auth,
             self._timeseries_api,
             self._files_api,
             downloader=self.downloader,

@@ -44,10 +44,9 @@ class Test_FilesAPI(unittest.TestCase):
         self.dummy_header = {'Authorization': 'Bearer abcdef'}
 
         self._session = Mock()
-        self.api = FilesAPI(session=self._session)
+        self.api = FilesAPI(self._session)
 
-    @patch('datareservoirio.rest_api.files.TokenAuth')
-    def test_upload(self, mock_token):
+    def test_upload(self):
         mock_post = self.api._session.post
 
         response = Mock()
@@ -55,38 +54,35 @@ class Test_FilesAPI(unittest.TestCase):
         response.json.return_value = response_upload
         mock_post.return_value = response
 
-        result = self.api.upload(self.token)
+        result = self.api.upload()
 
         mock_post.assert_called_once_with(
             'https://reservoir-api-qa.4subsea.net/api/Files/upload',
-            auth=mock_token(), **self.api._defaults)
+            **self.api._defaults)
 
         self.assertIsInstance(result, dict)
         self.assertEqual(result, response_upload)
 
-    @patch('datareservoirio.rest_api.files.TokenAuth')
-    def test_commit(self, mock_token):
+    def test_commit(self):
         mock_post = self.api._session.post
 
-        self.api.commit(self.token, 'fileid')
+        self.api.commit('fileid')
 
         mock_post.assert_called_with('https://reservoir-api-qa.4subsea.net/api/Files/commit',
-                                     data={'FileId': 'fileid'}, auth=mock_token(),
+                                     data={'FileId': 'fileid'},
                                      **self.api._defaults)
 
-    @patch('datareservoirio.rest_api.files.TokenAuth')
-    def test_status(self, mock_token):
+    def test_status(self):
         mock_get = self.api._session.get
 
         response = Mock()
         response.text = '{"test": "abc"}'
 
         mock_get.return_value = response
-        self.api.status(self.token, 'fileid')
+        self.api.status('fileid')
 
         expected_uri = 'https://reservoir-api-qa.4subsea.net/api/files/fileid/status'
-        mock_get.assert_called_with(expected_uri, auth=mock_token(),
-                                    **self.api._defaults)
+        mock_get.assert_called_with(expected_uri, **self.api._defaults)
 
 
 if __name__ == '__main__':

@@ -15,16 +15,13 @@ datareservoirio.globalsettings.environment.set_test()
 
 class Test_ClientMetadata(unittest.TestCase):
 
-    @classmethod
     @patch('getpass.getpass', return_value=USER.PASSWORD)
-    def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USER.NAME)
-
-    def setUp(self):
+    def setUp(self, mock_pass):
+        self.auth = Authenticator(USER.NAME, auth_force=True)
         self.client = datareservoirio.Client(self.auth, cache=False)
 
     def tearDown(self):
-        self.client.__exit__()
+        self.auth.close()
 
     def test_metadata_set_with_data_returns_id_of_existing_metadata(self):
         response = self.client.metadata_set(
@@ -36,8 +33,8 @@ class Test_ClientMetadata(unittest.TestCase):
         ts_id = '6f64c5a8-bd28-4ca8-9df5-ffed0a0259b4'
         ns = 'system.integrationtest'
         key = 'test_set_metadata.{}'.format(ts_id)
-        self.client._timeseries_api.create(self.auth.token, ts_id)
-        self.client._metadata_api.put(self.auth.token, namespace=ns, key=key, overwrite=True, Data=42)
+        self.client._timeseries_api.create(ts_id)
+        self.client._metadata_api.put(namespace=ns, key=key, overwrite=True, Data=42)
 
         self.client.set_metadata(ts_id, namespace=ns, key=key, overwrite=True, Data=37)
 
@@ -48,8 +45,8 @@ class Test_ClientMetadata(unittest.TestCase):
         ts_id = '3c0b0936-1325-4f2b-a32c-d4b1ac80f4f8'
         ns = 'system.integrationtest'
         key = 'test_set_metadata.{}'.format(ts_id)
-        self.client._timeseries_api.create(self.auth.token, ts_id)
-        self.client._metadata_api.put(self.auth.token, namespace=ns, key=key, overwrite=True, Data=101)
+        self.client._timeseries_api.create(ts_id)
+        self.client._metadata_api.put(namespace=ns, key=key, overwrite=True, Data=101)
 
         with self.assertRaises(ValueError):
             self.client.set_metadata(ts_id, namespace=ns, key=key, Data=37)

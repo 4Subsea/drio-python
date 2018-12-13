@@ -3,26 +3,29 @@ from __future__ import absolute_import, division, print_function
 import logging
 
 from ..log import LogWriter
-from .base import BaseAPI, TokenAuth
+from .base import BaseAPI
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
 
 class FilesAPI(BaseAPI):
-    """Python wrapper for reservoir-api.4subsea.net/api/files."""
+    """
+    Python wrapper for reservoir-api.4subsea.net/api/files.
 
-    def __init__(self, session=None):
-        super(FilesAPI, self).__init__(session=session)
+    Parameters
+    ----------
+    session : subclass of ``requests.session``
+        Authorized session instance which appends a valid bearer token to all
+        HTTP calls.
 
-    def upload(self, token):
+    """
+    def __init__(self, session):
+        super(FilesAPI, self).__init__(session)
+
+    def upload(self):
         """
         Create file entry in the reservoir.
-
-        Parameters
-        ----------
-        token : dict
-            authentication token
 
         Return
         ------
@@ -33,21 +36,19 @@ class FilesAPI(BaseAPI):
         logwriter.debug('called with <token>', 'upload')
 
         uri = self._api_base_url + 'Files/upload'
-        response = self._post(uri, auth=TokenAuth(token))
+        response = self._post(uri)
 
         for key, value in response.json().items():
             logwriter.debug('parameter received - {key}: {value}'
                             .format(key=key, value=value), 'upload')
         return response.json()
 
-    def commit(self, token, file_id):
+    def commit(self, file_id):
         """
         Commit a file.
 
         Parameters
         ----------
-        token : dict
-            authentication token
         file_id : str
             id of file (Files API) to be commit.
 
@@ -60,17 +61,15 @@ class FilesAPI(BaseAPI):
 
         uri = self._api_base_url + 'Files/commit'
         body = {'FileId': file_id}
-        response = self._post(uri, data=body, auth=TokenAuth(token))
+        response = self._post(uri, data=body)
         return response.status_code
 
-    def status(self, token, file_id):
+    def status(self, file_id):
         """
         Probe file status.
 
         Parameters
         ----------
-        token : dict
-            authentication token
         file_id : str
             id of file (Files API) to be commit.
 
@@ -82,17 +81,12 @@ class FilesAPI(BaseAPI):
         logwriter.debug('called with <token>, {}'.format(file_id), 'status')
 
         uri = self._api_base_url + 'files/{}/status'.format(file_id)
-        response = self._get(uri, auth=TokenAuth(token))
+        response = self._get(uri)
         return response.json()
 
-    def ping(self, token):
+    def ping(self):
         """
         Ping server.
-
-        Parameters
-        ----------
-        token : dict
-            authentication token
 
         Return
         ------
@@ -102,5 +96,5 @@ class FilesAPI(BaseAPI):
         logwriter.debug('called <token>', 'ping')
 
         uri = self._api_base_url + 'ping'
-        response = self._get(uri, auth=TokenAuth(token))
+        response = self._get(uri)
         return response.json()
