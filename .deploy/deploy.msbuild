@@ -92,7 +92,7 @@
       <NuSpecFilename>%(_NuspecItem.Filename).nuspec</NuSpecFilename>
       <NugetDir>$(BuildDir)\pkg</NugetDir>
       <PackageOutputDir>$(BuildDir)</PackageOutputDir>
-      <PackageDeployScript>$(DeployDir)\scripts\*.ps1</PackageDeployScript>
+      <PackageDeployScripts>$(DeployDir)\scripts\*.*</PackageDeployScripts>
       <PythonWheelFile>$(BuildDir)\*$(ReleaseVersion)*.whl</PythonWheelFile>
       <PythonDocFiles>$(BuildDir)\html\**\*</PythonDocFiles>
     </PropertyGroup>
@@ -109,7 +109,7 @@
 
     <!-- Copy all files that goes into the Octopus package into the working folder -->
     <ItemGroup>
-      <PackageSourceFiles Include="$(PackageDeployScript)" />
+      <PackageSourceFiles Include="$(PackageDeployScripts)" />
       <PackageSourceFiles Include="$(PythonWheelFile)" />
       <PackageSourceFiles Include="$(NuSpecSourceFilePath)" />
       <PackageDocFiles Include="$(PythonDocFiles)" />
