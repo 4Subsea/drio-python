@@ -14,10 +14,13 @@ setup(name='datareservoirio',
       long_description=long_description,
       long_description_content_type='text/x-rst',
       keywords='drio datareservoir timeseries storage database saas',
-      url='http://www.4subsea.com/python/datareservoirio',
+      url='https://www.datareservoir.io',
       author='4Subsea',
       author_email='support@4subsea.com',
       packages=find_packages(exclude=['tests', 'tests_integration']),
+      project_urls={
+          'Documentation': 'https://www.datareservoir.io/python/docs/latest/'
+      },
       install_requires=[
           'azure-storage-blob>=1.1.0',
           'numpy',
