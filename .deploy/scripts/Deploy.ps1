@@ -28,18 +28,18 @@ $PythonDocSource = Join-Path $Root "docs"
 
 # Create/activate python environment to work with
 Write-Host "Creating/updating deployment environment '$PythonEnvironment'"
-& "conda env update -f deployenv.yml"
+& conda env update -f deployenv.yml
 Write-Host "Activating deployment environment '$PythonEnvironment'"
-& "activate $PythonEnvironment"
+& activate $PythonEnvironment
 
 if ($PyPiRepositoryUrl) {
     # Upload to specific repository
     Write-Host "Uploading to $PyPiRepositoryUrl"
-    & "twine upload --repository-url $PyPiRepositoryUrl * -u $PyPiUser -p $PyPiPassword"
+    & twine upload --repository-url $PyPiRepositoryUrl * -u $PyPiUser -p $PyPiPassword
 }
 else {
     Write-Host "Uploading to default repository"
-    & "twine upload * -u $PyPiUser -p $PyPiPassword"
+    & twine upload * -u $PyPiUser -p $PyPiPassword
 }
 
 Write-Host "Copying Python documentation from $PythonDocSource to $DocLocation"

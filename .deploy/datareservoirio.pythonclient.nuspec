@@ -11,6 +11,7 @@
   </metadata>
   <files>
     <file src="Deploy.ps1" />
+    <file src="deployenv.yml" />
     <file src="*.whl" />
     <file src="docs\**\*.*" target="docs" />
   </files>
