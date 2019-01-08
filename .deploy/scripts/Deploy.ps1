@@ -26,16 +26,10 @@ if (!(Test-Path variable:global:DocLocation)) {
 $Root = (Get-ScriptDirectory)
 $PythonDocSource = Join-Path $Root "docs"
 
-# Create/activate python environment to work with
-Write-Host "Creating/updating deployment environment '$PythonEnvironment'"
-& conda env update -f deployenv.yml
-Write-Host "Activating deployment environment '$PythonEnvironment'"
-& activate $PythonEnvironment
-
 if ($PyPiRepositoryUrl) {
     # Upload to specific repository
     Write-Host "Uploading to $PyPiRepositoryUrl"
-    & twine upload --repository-url $PyPiRepositoryUrl * -u $PyPiUser -p $PyPiPassword
+    & twine upload --repository-url $PyPiRepositoryUrl *.whl -u $PyPiUser -p $PyPiPassword
 }
 else {
     Write-Host "Uploading to default repository"
