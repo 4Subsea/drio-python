@@ -38,6 +38,7 @@ Manage series (time series and sequences)
 Store series data
 -----------------
 ::
+
     # Create and store a simple time series 
 
     import datareservoirio as drio
