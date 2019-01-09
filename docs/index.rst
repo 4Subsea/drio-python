@@ -1,21 +1,14 @@
-Getting started
-###############
 
-Work efficiently with time series data stored in DataReservoir.io!
-
-To install from PyPI::
-
-   pip install datareservoirio
-
-And to upgrade to the latest version::
-
-   pip install --upgrade datareservoirio
+.. include:: ../README.rst
 
 .. toctree::
    :hidden:
    :maxdepth: 2
 
+   getting_started
+   data_struct
    basic_usage
-   metadata
-   caching
+   cookbook
+   advanced_config
+   support
    api

@@ -21,23 +21,21 @@ _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
 class Client(object):
     """
-    Client handles requests, data uploads, and data downloads from the 4Subsea
-    data reservoir.
+    DataReservoir.io client for user-friendly interaction.
 
     Parameters
     ---------
     auth : cls
-        An authenterized session instance that is used in all API calls. Must
-        supply a valid bearer token to all API calls.
+        An authenticated session that is used in all API calls. Must supply a
+        valid bearer token to all API calls.
     cache : bool
         Enable caching (default).
     cache_opt : dict, optional
         Configuration object for controlling the timeseries cache.
         'format': 'msgpack' or 'csv'. Default is 'msgpack'.
         'max_size': max size of cache in megabytes. Default is 1024 MB.
-        'cache_root': cache storage location, defaults to
-        %LOCALAPPDATA%\\reservoir_cache in Windows, or similar in other
-        platforms.
+        'cache_root': cache storage location. See documentation for platform
+        specific defaults.
 
     """
     CACHE_DEFAULT = {'format': 'msgpack', 'max_size': 1024, 'cache_root': None}
@@ -60,9 +58,9 @@ class Client(object):
                 raise ValueError('cache_opt contains unknown keywords.')
 
         if self._enable_cache:
-            downloader = CachedDownloadStrategy(SimpleFileCache(**self._cache_opt),
-                                                format=self._cache_format,
-                                                session=self._session)
+            downloader = CachedDownloadStrategy(
+                SimpleFileCache(**self._cache_opt), format=self._cache_format,
+                session=self._session)
         else:
             downloader = AlwaysDownloadStrategy(session=self._session)
 
@@ -82,26 +80,27 @@ class Client(object):
 
     def ping(self):
         """
-        With ping you can test that you have a working connection to the data
-        reservoir.
+        With ping you can test that you have a working connection to
+        DataReservoir.io.
+
         """
         return self._files_api.ping()
 
     def create(self, series=None):
         """
-        Create a new series in the reservoir from a pandas.Series. If no data
-        is provided, an empty series is created.
+        Create a new series in DataReservoir.io from a pandas.Series. If no
+        data is provided, an empty series is created.
 
         Parameters
         ----------
         series : pandas.Series, optional
-            Series with index (as numpy.datetime64 (with nanosecond precision)
-            or integer array). Default is None.
+            Series with index (as DatetimeIndex-like or integer array). Default
+            is None.
 
         Returns
         -------
         dict
-            The response from the reservoir containing the unique id of the
+            The response from DataReservoir.io containing the unique id of the
             newly created series.
         """
         if series is None:
@@ -144,7 +143,7 @@ class Client(object):
         Returns
         -------
         dict
-            The response from the reservoir
+            The response from DataReservoir.io.
         """
         self._verify_and_prepare_series(series)
 
@@ -170,27 +169,26 @@ class Client(object):
 
     def info(self, series_id):
         """
-        Retrieves basic information about one timeseries.
+        Retrieves basic information about a series.
 
         Returns
         -------
         dict
-            Available information about the timeseries. None if timeseries not
-            found.
+            Available information about the series. None if series not found.
         """
         return self._timeseries_api.info(series_id)
 
     def search(self, namespace, key, name, value=None):
         """
         Find available series having metadata with given
-        namespace/key/name/value combination.
+        namespace + key* + name + value (optional) combination.
 
         Parameters
         ----------
         namespace : str
             The namespace to search in
         key : str
-            The key to narrow search
+            The key to narrow search. Search is made with wildcard postfix.
         name: str
             name to narrow search further
         value: str, optional
@@ -199,12 +197,11 @@ class Client(object):
         Returns
         -------
         dict or list
-            Available information about the timeseries. If ``value`` is passed,
-            a dict is returned -> ``{timeseries_id: value}``. Otherwise, a
-            plain list with timeseries_id is returned.
+            Available information about the series. If ``value`` is passed,
+            a dict is returned -> ``{TimeSeriesId: metadata}``. Otherwise, a
+            plain list with ``TimeSeriesId`` is returned.
         """
-        return self._timeseries_api.search(namespace, key, name,
-                                           value)
+        return self._timeseries_api.search(namespace, key, name, value)
 
     def delete(self, series_id):
         """
@@ -213,10 +210,6 @@ class Client(object):
         timeseries_id : string
             The id of the timeseries to delete.
 
-        Returns
-        -------
-        int
-            http status code. 200 is OK
         """
         return self._timeseries_api.delete(series_id)
 
@@ -228,7 +221,7 @@ class Client(object):
         Parameters
         ----------
         series_id : str
-            id of the timeseries to download
+            Identifier of the series to download
         start : optional
             start time (inclusive) of the timeseries given as anything
             pandas.to_datetime is able to parse.
@@ -236,8 +229,8 @@ class Client(object):
             stop time (inclusive) of the timeseries given as anything
             pandas.to_datetime is able to parse.
         convert_date : bool
-            If True (default), the index is converted to numpy.datetime64[ns]. If
-            False, index is returned as nanoseconds since epoch.
+            If True (default), the index is converted to DatetimeIndex.
+            If False, index is returned as ascending integers.
         raise_empty : bool
             If True, raise ValueError if no data exist in the provided
             interval. Otherwise, return an empty pandas.Series (default).
@@ -245,7 +238,7 @@ class Client(object):
         Returns
         -------
         pandas.Series
-            Timeseries data
+            Series data
         """
         if not start:
             start = _START_DEFAULT
@@ -278,8 +271,8 @@ class Client(object):
     def set_metadata(self, series_id, metadata_id=None, namespace=None,
                      key=None, overwrite=False, **namevalues):
         """
-        Set metadata entries on a series. Metadata can be set from existing values
-        or new metadata can be created.
+        Set metadata entries on a series. Metadata can be set from existing
+        values or new metadata can be created.
 
         Parameters
         ----------
@@ -293,9 +286,9 @@ class Client(object):
         key : str, mandatory if namespace is passed.
             Metadata key.
         overwrite: bool, optional
-            If true, and namespace+key corresponds to existing metadata, the value of the
-            metadata will be overwritten. If false, a ValueError will be raised if the
-            metadata already exist.
+            If true, and namespace+key corresponds to existing metadata, the
+            value of the metadata will be overwritten. If false, a ValueError
+            will be raised if the metadata already exist.
         namevalues : keyword arguments
             Metadata name-value pairs
 
@@ -315,7 +308,9 @@ class Client(object):
                 metadata_id = response_create['Id']
             except requests.exceptions.HTTPError as err:
                 if err.response.status_code == 409:
-                    raise ValueError('Metadata already exist. Specify overwrite=True to confirm overwriting the metadata')
+                    raise ValueError(
+                        'Metadata already exist. Specify overwrite=True to'
+                        'confirm overwriting the metadata.')
                 else:
                     raise
 
@@ -346,9 +341,9 @@ class Client(object):
 
     def metadata_set(self, namespace, key, **namevalues):
         """
-        Create or update a metadata entry. If the namespace/key combination does not already
-        exist, a new entry will be created. If the combination already exist, the entry
-        will be updated with the specified namevalues.
+        Create or update a metadata entry. If the namespace/key combination
+        does not already exist, a new entry will be created. If the combination
+        already exist, the entry will be updated with the specified namevalues.
 
         Parameters
         ----------
@@ -362,7 +357,7 @@ class Client(object):
         Returns
         -------
         dict
-            The response from datareservoir.io containing the unique id of the
+            The response from DataReservoir.io containing the unique id of the
             new or updated metadata.
         """
         response = self._metadata_api.put(namespace, key, True, **namevalues)
@@ -408,9 +403,9 @@ class Client(object):
 
         Returns
         -------
-        list
-            The namespaces or keys found. Or if both namespace and key is present, the
-            specific metadata for the namespace/key combination
+        list or dict
+            The namespaces or keys found. Or if both namespace and key is
+            present, the specific metadata for the namespace/key combination.
         """
 
         if not namespace:

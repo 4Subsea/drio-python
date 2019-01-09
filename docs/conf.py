@@ -35,12 +35,18 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx'
 ]
 
 # Napoleon settings
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
+
+# Intershpinx mapping
+intersphinx_mapping = {
+    'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None)
+    }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -125,7 +131,7 @@ html_theme = 'alabaster'  # classic, alabaster, sphinx_rtd_theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    # 'logo': 'vlogo.png',
+    'logo': 'color_vertical_logo.png',
     'logo_name': True,
     'description': u'Python API for DataReservoir.io - all batteries included.'
 }

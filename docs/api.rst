@@ -1,31 +1,21 @@
+.. py:currentmodule:: datareservoirio
 
 API
 ###
 
-datareservoirio.Authenticator
-*********************************
+High-level
+**********
 
-.. autoclass:: datareservoirio.Authenticator
+.. autoclass:: Client
+   :members:
+   :undoc-members:
+
+.. autoclass:: Authenticator
    :members:
    :inherited-members:
 
-.. autoclass:: datareservoirio.authenticate.AdalAuthenticator
+.. autoclass:: datareservoirio.authenticate.UserCredentials
    :members:
-   :undoc-members:
-   :inherited-members:
 
-
-datareservoirio.Client
-*********************************
-
-.. autoclass:: datareservoirio.Client
+.. autoclass:: datareservoirio.authenticate.UnsafeUserCredentials
    :members:
-   :undoc-members:
-
-datareservoirio
-****************
-
-.. automodule:: datareservoirio
-   :members:
-   :undoc-members:
-   :show-inheritance:

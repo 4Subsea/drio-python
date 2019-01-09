@@ -10,7 +10,7 @@ with open(path.join(path.abspath(path.dirname(__file__)), 'README.rst')) as f:
 setup(name='datareservoirio',
       version='0.0.1',
       license='MIT',
-      description='Python client for DataReservoir.io',
+      description='DataReservoir.io Python API',
       long_description=long_description,
       long_description_content_type='text/x-rst',
       keywords='drio datareservoir timeseries storage database saas',
