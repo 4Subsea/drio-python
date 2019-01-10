@@ -132,8 +132,9 @@ html_theme = 'alabaster'  # classic, alabaster, sphinx_rtd_theme
 # documentation.
 html_theme_options = {
     'logo': 'color_vertical_logo.png',
-    'logo_name': True,
-    'description': u'Python API for DataReservoir.io - all batteries included.'
+    'logo_name': False,
+    'description': u'Python API for DataReservoir.io - all batteries included.',
+    'fixed_sidebar': True
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
