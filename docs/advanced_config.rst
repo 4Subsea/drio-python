@@ -8,7 +8,7 @@ Authentication
 The default and recommended method for authentication is using
 :py:class:`Authenticator`. You will be guided to your organizations login
 webpage, and login as usual. (We will not see or store your credentials!). Once
-authenticated, you can choose re-use your (valid) access token (i.e. not be
+authenticated, you can choose to re-use your (valid) access token (i.e. not be
 prompted to authenticate next time) or re-authenticate everytime::
 
     import datareservoirio as drio
@@ -27,8 +27,8 @@ prompted to authenticate next time) or re-authenticate everytime::
 If you require machine-to-machine/server type of authentication,
 :ref:`contact us <support>` and we will provide you the specifics.
 
-Legacy users may authenticate by providing user credential, but
-use :py:class:`authenticate.UserCredentials` or 
+Legacy users may authenticate by providing username/password credentials, using
+:py:class:`authenticate.UserCredentials` or 
 :py:class:`authenticate.UnsafeUserCredentials`. However, this possibility will
 be deprecated in the near feature.
 

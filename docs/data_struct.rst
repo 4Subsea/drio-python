@@ -33,7 +33,7 @@ series. The purpose of metadata is to enrich series data with essential
 information such as *units, origin, description, etc*. The same metadata can
 also be used to search and find series data later.
 
-`DataReservoir.io`_ employs a "schemaless" metadata storage. That is, there are
+`DataReservoir.io`_ employs a "schemaless" metadata store. That is, there are
 no minimum requirements and you can basically add anything your heart desires.
 However...
 
@@ -44,8 +44,8 @@ However...
 But, that responsibility is left to the user/app/service that uses
 `DataReservoir.io`_. Simply because one-size does not fit all!
 
-Metadata entries are orginized using ``namespace`` and ``key``. A ``namespace``
-can be though of as a table and ``key`` is the row index. Then a row can have
+Metadata entries are organized using ``namespace`` and ``key``. A ``namespace``
+can be thought of as a table and ``key`` is the row index. Then a row can have
 any number of arbitrary number of columns. (Note that rows in a table do not 
 have to share the columns!). This resembles "table storage" paradigm for those
 who are familiar with that.
@@ -54,7 +54,7 @@ Thus, a ``namespace`` and ``key`` combination uniquely defines a metadata
 entry in `DataReservoir.io`_. (That is, you can only have one entry in the
 entire system with a given ``namespace`` and ``key`` combination). In addition,
 each entry is also assigned an alias ``MetadataId`` (guid) that can be used for
-direct and convinient access.
+direct and convenient access.
 
 A table-like representation may look like this:
 

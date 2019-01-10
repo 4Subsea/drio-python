@@ -31,7 +31,7 @@ class Client(object):
     cache : bool
         Enable caching (default).
     cache_opt : dict, optional
-        Configuration object for controlling the timeseries cache.
+        Configuration object for controlling the series cache.
         'format': 'msgpack' or 'csv'. Default is 'msgpack'.
         'max_size': max size of cache in megabytes. Default is 1024 MB.
         'cache_root': cache storage location. See documentation for platform
@@ -208,7 +208,7 @@ class Client(object):
         Parameters
         ----------
         timeseries_id : string
-            The id of the timeseries to delete.
+            The id of the series to delete.
 
         """
         return self._timeseries_api.delete(series_id)
@@ -216,17 +216,17 @@ class Client(object):
     def get(self, series_id, start=None, end=None, convert_date=True,
             raise_empty=False):
         """
-        Retrieves a timeseries from the data reservoir.
+        Retrieves a series from the data reservoir.
 
         Parameters
         ----------
         series_id : str
             Identifier of the series to download
         start : optional
-            start time (inclusive) of the timeseries given as anything
+            start time (inclusive) of the series given as anything
             pandas.to_datetime is able to parse.
         end : optional
-            stop time (inclusive) of the timeseries given as anything
+            stop time (inclusive) of the series given as anything
             pandas.to_datetime is able to parse.
         convert_date : bool
             If True (default), the index is converted to DatetimeIndex.
@@ -253,7 +253,7 @@ class Client(object):
 
         time_start = timeit.default_timer()
 
-        log.debug("Getting timeseries range")
+        log.debug("Getting series range")
         series = self._storage.get(series_id, start, end)
 
         if series.empty and raise_empty:  # may become empty after slicing
@@ -263,7 +263,7 @@ class Client(object):
             series.index = pd.to_datetime(series.index)
 
         time_end = timeit.default_timer()
-        log.info('Download timeseries dataframe took {} seconds'
+        log.info('Download series dataframe took {} seconds'
                  .format(time_end - time_start), 'get')
 
         return series

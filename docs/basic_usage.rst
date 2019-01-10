@@ -1,8 +1,8 @@
 Basic Usage
 ###########
 
-:py:mod:`datareservoirio` libary provides access to `DataReservoir.io`_, and is
-a native Python experience. The following features are supported through the
+The :py:mod:`datareservoirio` library provide access to `DataReservoir.io`_,
+and is a native Python experience. The following features are supported through the
 Python API:
 
 * Manage series (time series or sequences):

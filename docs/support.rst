@@ -12,5 +12,5 @@ support@4subsea.com.
     :ref:`upgraded <install-upgrade>` to the latest version of
     :py:mod:`datareservoirio`. The issue may already be fixed.
 
-    If the issue persist, please provide us with much information as possible
-    so that we can recreate the issue and work on a fix.
+    If the issue persist, please provide us with as much information as possible
+    so that we can recreate the issue and start working on that fix.
