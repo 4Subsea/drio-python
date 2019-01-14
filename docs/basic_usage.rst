@@ -68,8 +68,10 @@ information is returned::
 .. important::
 
     ``TimeSeriesId`` is the unique identifier (guid) assigned to the series.
-    It is hihgly recommended to store it, as it can be cumbersome to find and 
-    access the series without it.
+    It is recommended that you :ref:`add some metadata to the series <set-metadata-on-series>` so that it is
+    easier to find at a later time, or at least store the ``TimeSeriesId`` for later reference.
+
+.. important::
 
     `DataReservoir.io`_ works with UTC-time. All datetime-like objects are
     converted to UTC and therefore, time zone information is lost when data is
@@ -168,6 +170,8 @@ Delete metadata entries
     # Delete metadata
     client.metadata_delete(metadata_id)
 
+
+.. _set-metadata-on-series:
 
 Set metadata on series
 ----------------------

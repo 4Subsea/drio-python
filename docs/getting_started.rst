@@ -2,7 +2,7 @@
 Getting Started
 ###############
 
-Security: Authentication and authorization
+Authentication and authorization
 ******************************************
 
 Your data may be your most valued treasure and security is no laughing matter!
