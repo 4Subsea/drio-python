@@ -119,7 +119,7 @@ You can access any data you have ``TimeSeriesId`` (and authorization) for::
 
 .. note::
 
-    :py:func:`client.get` returns :py:class:`pandas.Series`.
+    :py:func:`Client.get` returns :py:class:`pandas.Series`.
 
 
 Delete data
