@@ -1,8 +1,11 @@
+.. include:: readme_include.rst
 
-.. include:: ../README.rst
+Contents
+========
 
 .. toctree::
-   :hidden:
+   :glob:
+   :titlesonly:
    :maxdepth: 2
 
    getting_started
@@ -10,5 +13,5 @@
    basic_usage
    cookbook
    advanced_config
-   support
    api
+   support
