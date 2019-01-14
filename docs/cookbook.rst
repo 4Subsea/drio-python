@@ -20,7 +20,7 @@ It is really easy to visualize data with `Matplotlib`_::
 
     data = client.get(series_id, start='2018-02-14', end='2018-02-17')
 
-    plf.figure()
+    plt.figure()
     plt.plot(data)
 
 
