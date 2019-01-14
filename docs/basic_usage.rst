@@ -32,8 +32,8 @@ All of the above functionality are exposed as high-level methods in the
 Examples
 ********
 
-Manage series (time series and sequences)
-=========================================
+Manage series
+=============
 
 Store series data
 -----------------
