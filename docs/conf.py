@@ -195,7 +195,7 @@ html_theme_options = {
     # Currently, the supported themes are:
     # - Bootstrap 2: https://bootswatch.com/2
     # - Bootstrap 3: https://bootswatch.com/3
-    'bootswatch_theme': "sandstone",
+    'bootswatch_theme': "spacelab",
 
     # Choose Bootstrap version.
     # Values: "3" (default) or "2" (in quotes)
@@ -449,3 +449,6 @@ epub_exclude_files = ['search.html']
 
 # If false, no index is generated.
 #epub_use_index = True
+
+def setup(app):
+    app.add_stylesheet("custom.css") # also can be a full URL
