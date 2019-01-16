@@ -27,7 +27,7 @@ setup(name='datareservoirio',
           'oauthlib<3.0.0',
           'pandas>=0.23.0',
           'requests',
-          'requests-oauthlib',
+          'requests-oauthlib<=1.1.0',
           'six',
           'futures; python_version == "2.7"',
           'future; python_version == "2.7"'
