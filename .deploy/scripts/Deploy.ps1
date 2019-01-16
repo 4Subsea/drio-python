@@ -33,7 +33,7 @@ if ($PyPiRepositoryUrl) {
 }
 else {
     Write-Host "Uploading to default repository"
-    & twine upload * -u $PyPiUser -p $PyPiPassword
+    & twine upload *.whl -u $PyPiUser -p $PyPiPassword
 }
 
 Write-Host "Copying Python documentation from $PythonDocSource to $DocLocation"
