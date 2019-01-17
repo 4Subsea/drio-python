@@ -244,7 +244,8 @@ class UserCredentials(BaseAuthSession):
             'client_id': self._params.client_id,
             'resource': self._params.resource,
             'username': self.username,
-            'password': self._get_pass()
+            'password': self._get_pass(),
+            'include_client_id': True
         }
         return args, kwargs
 
