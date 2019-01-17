@@ -24,7 +24,7 @@ setup(name='datareservoirio',
       install_requires=[
           'azure-storage-blob>=1.1.0',
           'numpy',
-          'oauthlib<3.0.0',
+          'oauthlib',
           'pandas>=0.23.0',
           'requests',
           'requests-oauthlib<=1.1.0',
