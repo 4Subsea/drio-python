@@ -337,7 +337,7 @@ class TestUserCredentials(unittest.TestCase):
         self.assertDictEqual(kwargs, kwargs_exptected)
 
 
-class TestAccessTokenLoginB2C(unittest.TestCase):
+class TestAccessToken(unittest.TestCase):
 
     def setUp(self):
         self._patcher = patch(
@@ -357,10 +357,10 @@ class TestAccessTokenLoginB2C(unittest.TestCase):
         pass
 
     def test_init(self):
-        authenticate.AccessTokenLoginB2C()
+        authenticate.AccessToken()
 
     def test__prepare_fetch_token_args(self):
-        auth = authenticate.AccessTokenLoginB2C()
+        auth = authenticate.AccessToken()
         args, kwargs = auth._prepare_fetch_token_args()
 
         params = authenticate.OAuth2Parameters('QA', legacy_auth=False)
@@ -375,7 +375,7 @@ class TestAccessTokenLoginB2C(unittest.TestCase):
 
     @patch('datareservoirio.authenticate.BaseAuthSession.token')
     def test__prepare_refresh_token_args(self, mock_token):
-        auth = authenticate.AccessTokenLoginB2C()
+        auth = authenticate.AccessToken()
         mock_token.__getitem__.return_value = '123abc'
 
         args, kwargs = auth._prepare_refresh_token_args()

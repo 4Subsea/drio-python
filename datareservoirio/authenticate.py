@@ -284,7 +284,7 @@ class UnsafeUserCredentials(UserCredentials):
         return self._password
 
 
-class AccessTokenLoginB2C(BaseAuthSession):
+class AccessToken(BaseAuthSession):
     """
     Authorized session where credentials are given in browser. Authenticates
     against authority using the B2C protocol. Password is prompted when needed.
@@ -295,7 +295,7 @@ class AccessTokenLoginB2C(BaseAuthSession):
     def __init__(self, auth_force=False):
         self._params = self._get_params(legacy_auth=False)
         client = WebApplicationClient(self._params.client_id)
-        super(AccessTokenLoginB2C, self).__init__(client, auth_force=auth_force)
+        super(AccessToken, self).__init__(client, auth_force=auth_force)
 
     def _fetch_token_initial(self):
         return self.fetch_token()
@@ -321,7 +321,7 @@ class AccessTokenLoginB2C(BaseAuthSession):
 
 # Swap these when default authenticator shall use B2C
 Authenticator = UserCredentials
-# Authenticator = AccessTokenLoginB2C
+# Authenticator = AccessToken
 
 
 # Legacy support and backward compatibility
