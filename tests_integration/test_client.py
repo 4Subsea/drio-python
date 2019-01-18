@@ -147,14 +147,13 @@ class Test_Client(unittest.TestCase):
 class Test_Client_CacheEnable(unittest.TestCase):
 
     @classmethod
-    
-    def setUpClass(cls, mock_input):
+    def setUpClass(cls):
         cls.df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
         cls.df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
         cls.df_3 = pd.Series(np.arange(50.), index=np.arange(125, 175))
 
     @patch('getpass.getpass', return_value=USER.PASSWORD)
-    def setUp(self):
+    def setUp(self, mock_input):
         self.auth = Authenticator(USER.NAME, auth_force=True)
         self.client = datareservoirio.Client(self.auth, cache=True)
 
