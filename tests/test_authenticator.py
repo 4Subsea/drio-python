@@ -314,7 +314,8 @@ class TestUserCredentials(unittest.TestCase):
             'client_id': params.client_id,
             'resource': params.resource,
             'username': auth.username,
-            'password': auth._get_pass()
+            'password': auth._get_pass(),
+            'include_client_id': True
         }
 
         self.assertTupleEqual(args, args_expected)
