@@ -27,7 +27,7 @@ setup(name='datareservoirio',
           'oauthlib',
           'pandas>=0.23.0',
           'requests',
-          'requests-oauthlib<=1.1.0',
+          'requests-oauthlib',
           'six',
           'futures; python_version == "2.7"',
           'future; python_version == "2.7"'
@@ -38,6 +38,7 @@ setup(name='datareservoirio',
           'License :: OSI Approved :: MIT License',
           'Operating System :: OS Independent',
           'Programming Language :: Python :: 2.7',
-          'Programming Language :: Python :: 3.6'
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7'
       ],
       zip_safe=False)

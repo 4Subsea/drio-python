@@ -25,12 +25,12 @@ CLIENT_SECRET_PROD = '7gOrIf4b(8IH$13wea38$-x5'
 REDIRECT_URI_DEV = 'http://localhost:5824'
 REDIRECT_URI_TEST = 'https://reservoir-api-test.4subsea.net'
 REDIRECT_URI_QA = 'https://reservoir-api-qa.4subsea.net'
-REDIRECT_URI_PROD = 'https://reservoir-api-prod.4subsea.net'
+REDIRECT_URI_PROD = 'https://reservoir-api.4subsea.net'
 
 AUTHORITY_URL_DEV = 'http://localhost:5824/account'
 AUTHORITY_URL_TEST = 'https://reservoir-api-test.4subsea.net/account'
 AUTHORITY_URL_QA = 'https://reservoir-api-qa.4subsea.net/account'
-AUTHORITY_URL_PROD = 'https://reservoir-api-prod.4subsea.net/account'
+AUTHORITY_URL_PROD = 'https://reservoir-api.4subsea.net/account'
 
 TOKEN_URL_BASE = 'https://login.microsoftonline.com/4subseaid.onmicrosoft.com/' \
                  'oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_'
@@ -60,7 +60,7 @@ CLIENT_ID_LEGACY = 'a946277d-6f78-43ab-be34-be689c4dd3e0'
 RESOURCE_DEV_LEGACY = 'https://firesubsea.onmicrosoft.com/reservoir-api-dev'
 RESOURCE_TEST_LEGACY = 'https://firesubsea.onmicrosoft.com/reservoir-api-test'
 RESOURCE_QA_LEGACY = 'https://firesubsea.onmicrosoft.com/reservoir-api-qa'
-RESOURCE_PROD_LEGACY = '383e1005-3497-4b05-b08a-10e6d4b49f7d'
+RESOURCE_PROD_LEGACY = 'https://firesubsea.onmicrosoft.com/reservoir-api-prod'
 
 TENANT_ID = 'cdf4cf3d-de23-49cf-a9b0-abd2b675f253'
 AUTHORITY_URL_LEGACY = 'https://login.microsoftonline.com/{}'.format(TENANT_ID)
