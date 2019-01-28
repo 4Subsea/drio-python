@@ -61,7 +61,7 @@ class Test_AzureBlobService(unittest.TestCase):
             uploader.put_block_list.assert_called_once()
 
     def test_upload_long(self):
-        side_effect = 4 * [None]
+        side_effect = 5 * [None]
         with requests.Session() as s:
             uploader = AzureBlobService(self.upload_params, session=s)
             uploader.put_block = Mock(side_effect=side_effect)
@@ -70,12 +70,12 @@ class Test_AzureBlobService(unittest.TestCase):
             series = pd.Series(np.arange(1.001e6))
             uploader.create_blob_from_series(series)
 
-            # 4 was just found empirically + 1 error
-            self.assertEqual(uploader.put_block.call_count, 4)
+            # 5 was just found empirically
+            self.assertEqual(uploader.put_block.call_count, 5)
 
     @patch('datareservoirio.storage.storage_engine.sleep')
     def test_upload_long_w_azureexception(self, mock_sleep):
-        side_effect = 3 * [AzureException] + 4 * [None]
+        side_effect = 3 * [AzureException] + 5 * [None]
         with requests.Session() as s:
             uploader = AzureBlobService(self.upload_params, session=s)
             uploader.put_block = Mock(side_effect=side_effect)
@@ -84,12 +84,12 @@ class Test_AzureBlobService(unittest.TestCase):
             series = pd.Series(np.arange(1.001e6))
             uploader.create_blob_from_series(series)
 
-            # 4 was just found empirically + 3 error
-            self.assertEqual(uploader.put_block.call_count, 4 + 3)
+            # 5 was just found empirically + 3 error
+            self.assertEqual(uploader.put_block.call_count, 5 + 3)
 
     @patch('datareservoirio.storage.storage_engine.sleep')
     def test_upload_raise_azureexception(self, mock_sleep):
-        side_effect = 6 * [AzureException] + 4 * [None]
+        side_effect = 6 * [AzureException] + 5 * [None]
         with requests.Session() as s:
             uploader = AzureBlobService(self.upload_params, session=s)
             uploader.put_block = Mock(side_effect=side_effect)
