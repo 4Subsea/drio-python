@@ -36,10 +36,10 @@ class Test_AzureBlobService(unittest.TestCase):
             series = pd.Series(np.arange(500))
             uploader.create_blob_from_series(series)
 
-            uploader.put_block.assert_called_once_with(self.upload_params['Container'],
-                                                       self.upload_params['Path'],
-                                                       series.to_csv(header=False).encode('ascii'),
-                                                       'MDAwMDAwMDA=')
+            uploader.put_block.assert_called_once_with(
+                self.upload_params['Container'], self.upload_params['Path'],
+                series.to_csv(header=False, line_terminator='\n').encode('ascii'),
+                'MDAwMDAwMDA=')
             uploader.put_block_list.assert_called_once()
 
     def test_upload_converts_datetime64_to_int64(self):
@@ -54,14 +54,14 @@ class Test_AzureBlobService(unittest.TestCase):
             uploader.create_blob_from_series(series)
 
             series.index = series.index.astype(np.int64)
-            uploader.put_block.assert_called_once_with(self.upload_params['Container'],
-                                                       self.upload_params['Path'],
-                                                       series.to_csv(header=False).encode('ascii'),
-                                                       'MDAwMDAwMDA=')
+            uploader.put_block.assert_called_once_with(
+                self.upload_params['Container'], self.upload_params['Path'],
+                series.to_csv(header=False, line_terminator='\n').encode('ascii'),
+                'MDAwMDAwMDA=')
             uploader.put_block_list.assert_called_once()
 
     def test_upload_long(self):
-        side_effect = 5 * [None]
+        side_effect = 4 * [None]
         with requests.Session() as s:
             uploader = AzureBlobService(self.upload_params, session=s)
             uploader.put_block = Mock(side_effect=side_effect)
@@ -70,12 +70,12 @@ class Test_AzureBlobService(unittest.TestCase):
             series = pd.Series(np.arange(1.001e6))
             uploader.create_blob_from_series(series)
 
-            # 5 was just found empirically
-            self.assertEqual(uploader.put_block.call_count, 5)
+            # 4 was just found empirically
+            self.assertEqual(uploader.put_block.call_count, 4)
 
     @patch('datareservoirio.storage.storage_engine.sleep')
     def test_upload_long_w_azureexception(self, mock_sleep):
-        side_effect = 3 * [AzureException] + 5 * [None]
+        side_effect = 3 * [AzureException] + 4 * [None]
         with requests.Session() as s:
             uploader = AzureBlobService(self.upload_params, session=s)
             uploader.put_block = Mock(side_effect=side_effect)
@@ -84,12 +84,12 @@ class Test_AzureBlobService(unittest.TestCase):
             series = pd.Series(np.arange(1.001e6))
             uploader.create_blob_from_series(series)
 
-            # 5 was just found empirically + 3 error
-            self.assertEqual(uploader.put_block.call_count, 5 + 3)
+            # 4 was just found empirically + 3 error
+            self.assertEqual(uploader.put_block.call_count, 4 + 3)
 
     @patch('datareservoirio.storage.storage_engine.sleep')
     def test_upload_raise_azureexception(self, mock_sleep):
-        side_effect = 6 * [AzureException] + 5 * [None]
+        side_effect = 6 * [AzureException] + 4 * [None]
         with requests.Session() as s:
             uploader = AzureBlobService(self.upload_params, session=s)
             uploader.put_block = Mock(side_effect=side_effect)

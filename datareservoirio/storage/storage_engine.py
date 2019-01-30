@@ -104,7 +104,7 @@ class AzureBlobService(BlockBlobService):
                 chunk = chunk.copy()
                 chunk.index = chunk.index.astype('int64')
 
-            chunk.to_csv(buf, header=False)
+            chunk.to_csv(buf, header=False, line_terminator='\n')
             buf.seek(0)
 
             n_blocks = 0
