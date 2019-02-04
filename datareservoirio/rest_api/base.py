@@ -40,7 +40,7 @@ class BaseAPI(object):
         self._session = session
 
         # Attention: Be careful when extending the list of retry_status!
-        retry_status = frozenset([413, 429, 500, 502, 503, 504])
+        retry_status = frozenset([413, 429, 502, 503, 504])
         method_whitelist = frozenset(['HEAD', 'TRACE', 'GET', 'POST', 'PUT',
                                       'OPTIONS', 'DELETE'])
 
