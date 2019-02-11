@@ -27,17 +27,13 @@ setup(name='datareservoirio',
           'oauthlib',
           'pandas>=0.24.0',
           'requests',
-          'requests-oauthlib',
-          'six',
-          'futures; python_version == "2.7"',
-          'future; python_version == "2.7"'
-      ],
+          'requests-oauthlib'
+        ],
       include_package_data=True,
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'License :: OSI Approved :: MIT License',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7'
       ],

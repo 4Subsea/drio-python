@@ -1,12 +1,9 @@
 import unittest
+from unittest.mock import Mock
+
 import pandas as pd
 
 from datareservoirio.storage import Storage
-
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
 
 
 class Test_Storage(unittest.TestCase):

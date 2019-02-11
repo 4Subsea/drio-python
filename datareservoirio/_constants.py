@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import, division, print_function
-
 # COMMON
 ENV_DEV = 'DEV'
 ENV_TEST = 'TEST'

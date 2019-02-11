@@ -1,12 +1,9 @@
 import unittest
+from unittest.mock import Mock
+
 import datareservoirio
 import datareservoirio.rest_api.metadata as metadata
 from datareservoirio.rest_api import MetadataAPI
-
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
 
 
 dummy_meta = {

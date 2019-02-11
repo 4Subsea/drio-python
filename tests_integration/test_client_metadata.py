@@ -1,13 +1,8 @@
 import unittest
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
-
 from tests_integration._auth import USER
 
 datareservoirio.globalsettings.environment.set_test()

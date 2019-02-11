@@ -3,15 +3,11 @@ import logging
 import os
 import sys
 import warnings
+from unittest.mock import patch
 
 from datareservoirio.storage.simplefilecache import (
     EvictBySizeAndAge,
     SimpleFileCache)
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
 
 
 class Test_SimpleFileCache(unittest.TestCase):

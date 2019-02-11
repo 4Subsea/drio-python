@@ -1,10 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import base64
 import logging
-import sys
 import timeit
-from io import BytesIO, TextIOWrapper
+from io import BytesIO, StringIO, TextIOWrapper
 from time import sleep
 
 import pandas as pd
@@ -12,11 +9,6 @@ from azure.storage.blob import BlobBlock, BlockBlobService
 from azure.common import AzureException
 
 from ..log import LogWriter
-
-if sys.version_info.major == 3:
-    from io import StringIO
-elif sys.version_info.major == 2:
-    from cStringIO import StringIO
 
 
 logger = logging.getLogger(__name__)

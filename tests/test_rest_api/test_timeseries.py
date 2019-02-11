@@ -1,5 +1,7 @@
 import time
 import unittest
+from unittest.mock import patch, Mock
+
 import requests
 
 import datareservoirio
@@ -7,11 +9,6 @@ from datareservoirio.rest_api import TimeSeriesAPI
 from datareservoirio.rest_api.timeseries import (
     request_cache,
     _make_request_hash)
-
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
 
 
 dummy_response_add = """

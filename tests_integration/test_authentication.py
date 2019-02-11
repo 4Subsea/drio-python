@@ -1,16 +1,11 @@
 import unittest
 import warnings
 from timeit import default_timer as timer
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
 
 from datareservoirio.authenticate import Authenticator
-
 from tests_integration._auth import USER
 
 

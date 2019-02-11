@@ -1,9 +1,6 @@
 import unittest
+from unittest.mock import Mock
 
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
 
 from datareservoirio.rest_api.base import (
     BaseAPI, TokenAuth, _update_kwargs)

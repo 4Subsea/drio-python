@@ -1,14 +1,11 @@
 import unittest
+from unittest.mock import Mock, patch
+
 import numpy as np
 import pandas as pd
 import datareservoirio
 import requests
 from datareservoirio import Client
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
 
 
 # Test should not make calls to the API, but just in case!
@@ -45,7 +42,8 @@ class Test_Client(unittest.TestCase):
 
         self.series_with_10_rows = pd.Series(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                                              index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-        self.series_with_10_rows.index = pd.to_datetime(self.series_with_10_rows.index)
+        self.series_with_10_rows.index = pd.to_datetime(
+            self.series_with_10_rows.index, utc=True)
 
         self.series_with_10_rows_csv = self.series_with_10_rows.to_csv(header=False)
 
@@ -255,9 +253,9 @@ class Test_Client(unittest.TestCase):
                                       index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         series_with_dt = pd.Series(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                                    index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-        series_with_dt.index = pd.to_datetime(series_with_dt.index)
-        start = pd.to_datetime(1, dayfirst=True, unit='ns').value
-        end = pd.to_datetime(10, dayfirst=True, unit='ns').value
+        series_with_dt.index = pd.to_datetime(series_with_dt.index, utc=True)
+        start = pd.to_datetime(1, dayfirst=True, unit='ns', utc=True).value
+        end = pd.to_datetime(10, dayfirst=True, unit='ns', utc=True).value
         self.client._storage.get.return_value = series_without_dt
 
         response = self.client.get(
@@ -270,8 +268,8 @@ class Test_Client(unittest.TestCase):
     def test_get_without_convert_date_returns_series(self):
         series_without_dt = pd.Series(data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                                       index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-        start = pd.to_datetime(1, dayfirst=True, unit='ns').value
-        end = pd.to_datetime(10, dayfirst=True, unit='ns').value
+        start = pd.to_datetime(1, dayfirst=True, unit='ns', utc=True).value
+        end = pd.to_datetime(10, dayfirst=True, unit='ns', utc=True).value
         self.client._storage.get.return_value = series_without_dt
 
         response = self.client.get(
@@ -294,7 +292,7 @@ class Test_Client(unittest.TestCase):
     def test_get_with_emptytimeseries_return_empty(self):
         self._storage.get.return_value = pd.Series()
         response_expected = pd.Series()
-        response_expected.index = pd.to_datetime(response_expected.index)
+        response_expected.index = pd.to_datetime(response_expected.index, utc=True)
 
         response = self.client.get(self.timeseries_id,
                                    start='1970-01-01 00:00:00.000000001',

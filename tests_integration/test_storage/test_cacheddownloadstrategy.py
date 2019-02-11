@@ -1,19 +1,15 @@
-import unittest
 import logging
-import requests
-from timeit import timeit
+import unittest
 from functools import partial
+from timeit import timeit
+from unittest.mock import patch
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+import requests
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.storage import SimpleFileCache, CachedDownloadStrategy
-
+from datareservoirio.storage import CachedDownloadStrategy, SimpleFileCache
 from tests_integration._auth import USER
 
 datareservoirio.globalsettings.environment.set_test()

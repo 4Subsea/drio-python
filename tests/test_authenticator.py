@@ -1,20 +1,10 @@
 import unittest
+from unittest.mock import Mock, patch, MagicMock, PropertyMock, mock_open
+
 
 import datareservoirio
 from datareservoirio import authenticate
 from datareservoirio import _constants
-
-# Python 2 compatibility
-try:
-    from unittest.mock import Mock, patch, MagicMock, PropertyMock, mock_open
-except ImportError:
-    from mock import Mock, patch, MagicMock, PropertyMock, mock_open
-
-# Python 2 compatibility
-try:
-    FileNotFoundError
-except NameError:
-    FileNotFoundError = IOError
 
 
 def setUpModule():

@@ -1,20 +1,14 @@
 import pprint
-import logging
 import unittest
 from timeit import default_timer as timer
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import requests
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
-
 from tests_integration._auth import USER
 
 datareservoirio.globalsettings.environment.set_test()
@@ -59,7 +53,7 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(0, len(df_recieved.index))
 
     def test_create_get_delete(self):
-        rng = pd.date_range('1970-01-01', periods=100, freq='ns')
+        rng = pd.date_range('1970-01-01', periods=100, freq='ns', tz='utc')
         df = pd.Series(np.arange(100.), index=rng)
         response = self.client.create(df)
         info = self.client.info(response['TimeSeriesId'])
@@ -164,7 +158,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
         self.client.ping()
 
     def test_create_get_delete(self):
-        rng = pd.date_range('1970-01-01', periods=100, freq='ns')
+        rng = pd.date_range('1970-01-01', periods=100, freq='ns', tz='utc')
         df = pd.Series(np.arange(100.), index=rng)
         response = self.client.create(df)
         info = self.client.info(response['TimeSeriesId'])

@@ -1,21 +1,12 @@
 import logging
-import pprint
-import time
 import unittest
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-from requests.exceptions import HTTPError
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
-from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI
-
 from tests_integration._auth import USER
 
 datareservoirio.set_log_level('DEBUG')

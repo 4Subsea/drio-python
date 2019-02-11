@@ -1,8 +1,7 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 import time
 import timeit
+
 import requests
 import pandas as pd
 
@@ -245,8 +244,8 @@ class Client(object):
         if not end:
             end = _END_DEFAULT
 
-        start = pd.to_datetime(start, dayfirst=True, unit='ns').value
-        end = pd.to_datetime(end, dayfirst=True, unit='ns').value
+        start = pd.to_datetime(start, dayfirst=True, unit='ns', utc=True).value
+        end = pd.to_datetime(end, dayfirst=True, unit='ns', utc=True).value
 
         if start >= end:
             raise ValueError('start must be before end')
@@ -260,7 +259,7 @@ class Client(object):
             raise ValueError('can\'t find data in the given interval')
 
         if convert_date:
-            series.index = pd.to_datetime(series.index)
+            series.index = pd.to_datetime(series.index, utc=True)
 
         time_end = timeit.default_timer()
         log.info('Download series dataframe took {} seconds'

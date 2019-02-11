@@ -1,14 +1,10 @@
 import unittest
+from unittest.mock import Mock
 
 import requests
 
 import datareservoirio
 from datareservoirio.rest_api import FilesAPI
-
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
 
 
 response_upload = r"""{

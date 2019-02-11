@@ -1,13 +1,10 @@
 import unittest
+from unittest.mock import patch, Mock
+
 import pandas as pd
 
-from datareservoirio.storage import CachedDownloadStrategy, SimpleFileCache
+from datareservoirio.storage import CachedDownloadStrategy
 from datareservoirio.storage.downloadstrategy import BaseDownloadStrategy
-
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
 
 
 class Test_CachedDownloadStrategy(unittest.TestCase):

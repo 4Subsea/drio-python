@@ -1,17 +1,12 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 import sys
+from urllib.parse import urlparse
+
 import pandas as pd
 
 from ..log import LogWriter
 from .downloadstrategy import CachedDownloadStrategy
 from .uploadstrategy import UploadStrategy
-
-if sys.version_info.major == 3:
-    from urllib.parse import urlparse
-elif sys.version_info.major == 2:
-    from urlparse import urlparse
 
 
 logger = logging.getLogger(__name__)

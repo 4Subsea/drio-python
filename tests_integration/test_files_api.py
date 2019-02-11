@@ -1,26 +1,16 @@
-import sys
 import time
 import unittest
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import requests
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api.files import FilesAPI
 from datareservoirio.storage.uploadstrategy import UploadStrategy
-
 from tests_integration._auth import USER
-
-if sys.version_info.major == 3:
-    from io import StringIO
-elif sys.version_info.major == 2:
-    from cStringIO import StringIO
 
 datareservoirio.globalsettings.environment.set_production()
 

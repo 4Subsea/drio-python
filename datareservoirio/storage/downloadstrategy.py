@@ -1,15 +1,8 @@
-from __future__ import absolute_import, division, print_function
-
 import base64
 import logging
 import codecs
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-
-try:
-    from itertools import imap as map
-except ImportError:
-    pass
 
 import pandas as pd
 

@@ -1,11 +1,7 @@
 import unittest
 import logging
 import sys
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+from unittest.mock import patch
 
 import datareservoirio._constants as consts
 import datareservoirio.globalsettings as gs

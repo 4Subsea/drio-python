@@ -1,11 +1,12 @@
-import unittest
+import codecs
 import logging
 import os
-import numpy as np
-import pandas as pd
-import codecs
+import unittest
 from random import random
 from timeit import timeit
+
+import numpy as np
+import pandas as pd
 
 from datareservoirio.storage import SimpleFileCache
 

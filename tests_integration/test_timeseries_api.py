@@ -1,21 +1,16 @@
 import time
 import unittest
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import requests
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
 from requests.exceptions import HTTPError
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
-from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
+from datareservoirio.rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from datareservoirio.storage.uploadstrategy import UploadStrategy
-
 from tests_integration._auth import USER
 
 datareservoirio.globalsettings.environment.set_test()

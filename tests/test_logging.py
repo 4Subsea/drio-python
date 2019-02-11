@@ -1,10 +1,6 @@
-import unittest
 import logging
-
-try:
-    from unittest.mock import Mock
-except ImportError:
-    from mock import Mock
+import unittest
+from unittest.mock import Mock
 
 import numpy as np
 

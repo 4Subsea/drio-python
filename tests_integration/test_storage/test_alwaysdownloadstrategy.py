@@ -1,17 +1,13 @@
-import unittest
 import logging
-import requests
+import unittest
+from unittest.mock import patch
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
+import requests
 
 import datareservoirio
 from datareservoirio.authenticate import Authenticator
 from datareservoirio.rest_api import TimeSeriesAPI
 from datareservoirio.storage import AlwaysDownloadStrategy
-
 from tests_integration._auth import USER
 
 datareservoirio.globalsettings.environment.set_test()

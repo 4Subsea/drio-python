@@ -1,15 +1,12 @@
 import unittest
+from unittest.mock import patch, Mock
+
 import numpy as np
 import pandas as pd
 import requests
 
 from azure.storage.blob import BlobBlock
 from datareservoirio.storage.storage_engine import AzureBlobService, AzureException
-
-try:
-    from unittest.mock import patch, Mock
-except ImportError:
-    from mock import patch, Mock
 
 
 class Test_AzureBlobService(unittest.TestCase):
