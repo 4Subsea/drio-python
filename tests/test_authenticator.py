@@ -77,8 +77,7 @@ class TestOAuth2Parameters(unittest.TestCase):
                 _constants, 'CLIENT_SECRET_{}'.format(env)))
             self.assertEqual(params.redirect_uri, getattr(
                 _constants, 'REDIRECT_URI_{}'.format(env)))
-            self.assertEqual(params.token_url, getattr(
-                _constants, 'TOKEN_URL_{}'.format(env)))
+            self.assertEqual(params.token_url, '')
             self.assertEqual(params.scope, getattr(
                 _constants, 'SCOPE_{}'.format(env)))
 
