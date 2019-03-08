@@ -131,8 +131,7 @@ class OAuth2Parameters(SessionState):
             _constants, 'CLIENT_SECRET_{}'.format(self._environment))
         self._redirect_uri = getattr(
             _constants, 'REDIRECT_URI_{}'.format(self._environment))
-        self._token_url = getattr(
-            _constants, 'TOKEN_URL_{}'.format(self._environment))
+        self._token_url = '' # token url will be provided as part of access code
         self._scope = getattr(
             _constants, 'SCOPE_{}'.format(self._environment))
 

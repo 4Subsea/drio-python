@@ -30,11 +30,6 @@ AUTHORITY_URL_TEST = 'https://reservoir-api-test.4subsea.net/account'
 AUTHORITY_URL_QA = 'https://reservoir-api-qa.4subsea.net/account'
 AUTHORITY_URL_PROD = 'https://reservoir-api.4subsea.net/account'
 
-TOKEN_URL_BASE = 'https://login.microsoftonline.com/4subseaid.onmicrosoft.com/' \
-                 'oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_'
-TOKEN_URL_DEV = TOKEN_URL_TEST = TOKEN_URL_QA = '{}qa'.format(TOKEN_URL_BASE)
-TOKEN_URL_PROD = '{}prod'.format(TOKEN_URL_BASE)
-
 SCOPE_DEV = [
     'https://4subseaid.onmicrosoft.com/reservoir-dev/read',
     'https://4subseaid.onmicrosoft.com/reservoir-dev/write',
