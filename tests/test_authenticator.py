@@ -10,6 +10,28 @@ from datareservoirio import _constants
 def setUpModule():
     datareservoirio.globalsettings.environment.set_qa()
 
+class TestSessionState(unittest.TestCase):
+    def setUp(self):
+        self._patcher_makedirs = patch(
+            'datareservoirio.authenticate.os.makedirs')
+        self.mock_makedirs = self._patcher_makedirs.start()
+
+        self._patcher_path_exists = patch(
+            'datareservoirio.authenticate.os.path.exists')
+        self.mock_path_exists = self._patcher_path_exists.start()
+
+        self.addCleanup(self._patcher_makedirs.stop)
+        self.addCleanup(self._patcher_path_exists.stop)
+
+    def tearDown(self):
+        pass
+
+    @patch('datareservoirio.authenticate.SessionState.__init__', return_value=None)
+    @patch('datareservoirio.authenticate.user_data_dir')
+    def test_token_root(self, mock_user_data_dir, mock_init):
+        st = authenticate.SessionState()
+        st._state_root
+        mock_user_data_dir.assert_called_once_with('datareservoirio')
 
 class TestOAuth2Parameters(unittest.TestCase):
 
@@ -179,7 +201,7 @@ class TestTokenCache(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @patch('datareservoirio.authenticate.TokenCache._token_root')
+    @patch('datareservoirio.authenticate.TokenCache._state_root')
     @patch('datareservoirio.authenticate.TokenCache._scrambler_init')
     def test_init_existing_token(self, mock_scrambler, mock_token_root):
         self.mock_path_exists.return_value = True
@@ -187,7 +209,7 @@ class TestTokenCache(unittest.TestCase):
         self.mock_makedirs.assert_not_called()
         mock_scrambler.assert_called_once()
 
-    @patch('datareservoirio.authenticate.TokenCache._token_root')
+    @patch('datareservoirio.authenticate.TokenCache._state_root')
     @patch('datareservoirio.authenticate.TokenCache._scrambler_init')
     def test_init_no_token(self, mock_scrambler, mock_token_root):
         self.mock_path_exists.return_value = False
@@ -204,14 +226,7 @@ class TestTokenCache(unittest.TestCase):
         mock_dump.assert_called_once_with(dummy_input)
 
     @patch('datareservoirio.authenticate.TokenCache.__init__', return_value=None)
-    @patch('datareservoirio.authenticate.user_data_dir')
-    def test_token_root(self, mock_user_data_dir, mock_init):
-        tc = authenticate.TokenCache()
-        tc._token_root
-        mock_user_data_dir.assert_called_once_with('datareservoirio')
-
-    @patch('datareservoirio.authenticate.TokenCache.__init__', return_value=None)
-    @patch('datareservoirio.authenticate.TokenCache._token_root',
+    @patch('datareservoirio.authenticate.TokenCache._state_root',
            new_callable=PropertyMock, return_value='a\\random\\path')
     def test_token_path(self, mock_token_root, mock_init):
         expected = 'a\\random\\path\\token'
@@ -258,7 +273,7 @@ class TestTokenCache(unittest.TestCase):
 
     @patch('datareservoirio.authenticate.Fernet')
     @patch('datareservoirio.authenticate.urlsafe_b64encode', return_value='key')
-    @patch('datareservoirio.authenticate.TokenCache._token_root', return_value='a\\path')
+    @patch('datareservoirio.authenticate.TokenCache._state_root', return_value='a\\path')
     @patch('datareservoirio.authenticate.PBKDF2HMAC')
     @patch('datareservoirio.authenticate.TokenCache.__init__', return_value=None)
     def test_scrambler_init(self, mock_init, mock_PBKDF2HMAC, mock_token_root,
@@ -335,7 +350,7 @@ class TestAccessToken(unittest.TestCase):
         self.mock_init = self._patcher.start()
 
         self._patcher_input = patch(
-            'datareservoirio.authenticate.input', return_value='abc321')
+            'datareservoirio.authenticate.input', return_value='{"endpoint":"https://token-endpoint.com","code":"abc321"}')
         self.mock_input = self._patcher_input.start()
 
         datareservoirio.globalsettings.environment.set_qa()
@@ -354,7 +369,7 @@ class TestAccessToken(unittest.TestCase):
         args, kwargs = auth._prepare_fetch_token_args()
 
         params = authenticate.OAuth2Parameters('QA', legacy_auth=False)
-        args_expected = (params.token_url, )
+        args_expected = ('https://token-endpoint.com', )
         kwargs_exptected = {
             'code': 'abc321',
             'client_secret': params.client_secret
@@ -371,7 +386,7 @@ class TestAccessToken(unittest.TestCase):
         args, kwargs = auth._prepare_refresh_token_args()
 
         params = authenticate.OAuth2Parameters('QA', legacy_auth=False)
-        args_expected = (params.token_url, )
+        args_expected = ('https://token-endpoint.com', )
         kwargs_exptected = {
             'refresh_token': '123abc',
             'client_secret': _constants.CLIENT_SECRET_QA
