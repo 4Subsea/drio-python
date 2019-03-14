@@ -26,37 +26,9 @@ from .log import LogWriter
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
 
-class SessionState(object):
-    def __init__(self):
-        if not os.path.exists(self._state_root):
-            os.makedirs(self._state_root)
-        self._scrambler = None
-        self._scrambler_init()
 
-    @property
-    def scrambler(self):
-        return self._scrambler
-
-    @property
-    def _state_root(self):
-        return user_data_dir('datareservoirio')
-
-    def _scrambler_init(self):
-        machine_env = '{}|{}'.format(hex(uuid.getnode()), environment.get())
-
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=machine_env.encode('utf-8'),
-            iterations=100000,
-            backend=default_backend())
-        key = urlsafe_b64encode(kdf.derive(self._state_root.encode('utf-8')))
-        self._scrambler = Fernet(key)
-
-
-class OAuth2Parameters(SessionState):
+class OAuth2Parameters:
     def __init__(self, environment, legacy_auth=True):
-        super(OAuth2Parameters, self).__init__()
         self._environment = environment
 
         if legacy_auth:
@@ -96,25 +68,6 @@ class OAuth2Parameters(SessionState):
     def redirect_uri(self):
         return self._redirect_uri
 
-    def dump_state(self):
-        data = json.dumps(self.token_url).encode('utf-8')
-        with open(self._state_path, 'wb') as f:
-            f.write(self.scrambler.encrypt(data))
-
-    def load_state(self):
-        try:
-            with open(self._state_path, 'rb') as f:
-                data = self.scrambler.decrypt(f.read())
-        except (FileNotFoundError):
-            return
-        else:
-            self.token_url = json.loads(data.decode('utf-8'))
-            return
-
-    @property
-    def _state_path(self):
-        return os.path.join(self._state_root, 'token_url.v1')
-
     def _set_legacy(self):
         self._authority = _constants.AUTHORITY_URL_LEGACY
         self._client_id = _constants.CLIENT_ID_LEGACY
@@ -131,38 +84,66 @@ class OAuth2Parameters(SessionState):
             _constants, 'CLIENT_SECRET_{}'.format(self._environment))
         self._redirect_uri = getattr(
             _constants, 'REDIRECT_URI_{}'.format(self._environment))
-        self._token_url = '' # token url will be provided as part of access code
+        self._token_url = None  # token url will be provided as part of access code
         self._scope = getattr(
             _constants, 'SCOPE_{}'.format(self._environment))
 
 
-class TokenCache(SessionState):
+class TokenCache:
     def __init__(self):
-        super(TokenCache, self).__init__()
+        if not os.path.exists(self._token_root):
+            os.makedirs(self._token_root)
+
+        self._token_url = None
+        self._scrambler_init()
 
     def __call__(self, token):
         self.dump(token)
 
     @property
+    def _token_root(self):
+        return user_data_dir('datareservoirio')
+
+    @property
     def token_path(self):
-        return os.path.join(self._state_root, 'token')
+        return os.path.join(self._token_root,
+                            'token.{}'.format(environment.get()))
+
+    @property
+    def token_url(self):
+        return self._token_url
 
     def dump(self, token):
+        token['token_url'] = self.token_url
         data = json.dumps(token).encode('utf-8')
         with open(self.token_path, 'wb') as f:
-            f.write(self.scrambler.encrypt(data))
+            f.write(self._scrambler.encrypt(data))
 
     def load(self):
         try:
             with open(self.token_path, 'rb') as f:
-                data = self.scrambler.decrypt(f.read())
+                data = self._scrambler.decrypt(f.read())
         except (FileNotFoundError, InvalidToken):
             return None
-        else:
-            return json.loads(data.decode('utf-8'))
+
+        token = json.loads(data.decode('utf-8'))
+        self._token_url = token.pop('token_url', None)
+        return token
+
+    def _scrambler_init(self):
+        machine_env = '{}|{}'.format(hex(uuid.getnode()), environment.get())
+
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=machine_env.encode('utf-8'),
+            iterations=100000,
+            backend=default_backend())
+        key = urlsafe_b64encode(kdf.derive(self._token_root.encode('utf-8')))
+        self._scrambler = Fernet(key)
 
 
-class BaseAuthSession(OAuth2Session):
+class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
     """
     Abstract class for authorized sessions.
 
@@ -176,15 +157,18 @@ class BaseAuthSession(OAuth2Session):
         Keyword arguments passed on to ``requests_oauthlib.OAuth2Session``.
 
     """
-    __meta__ = ABCMeta
-
     def __init__(self, client, auth_force=False, **kwargs):
         self._params = getattr(self, '_params', self._get_params())
 
-        token_cache = TokenCache()
+        self._token_cache = TokenCache()
+        self._token_cache.load()
+        if self._params.token_url is None:
+            self._params.token_url = self._token_cache.token_url
+
         super(BaseAuthSession, self).__init__(
             client=client, auto_refresh_url=self._params.token_url,
-            token_updater=token_cache, token=token_cache.load(), **kwargs)
+            token_updater=self._token_cache, token=self._token_cache.load(),
+            **kwargs)
 
         if auth_force:
             token = self._fetch_token_initial()
@@ -194,7 +178,7 @@ class BaseAuthSession(OAuth2Session):
                 print('Authentication from previous session still valid.')
             except (KeyError, InvalidGrantError):
                 token = self._fetch_token_initial()
-        token_cache(token)
+        self._token_cache(token)
 
     @abstractmethod
     def _fetch_token_initial(self):
@@ -331,7 +315,7 @@ class AccessToken(BaseAuthSession):
         code = parameters['code']
 
         self._params.token_url = token_url
-        self._params.dump_state()
+        self._token_cache._token_url = token_url
 
         args = (self._params.token_url, )
         kwargs = {
@@ -341,7 +325,6 @@ class AccessToken(BaseAuthSession):
         return args, kwargs
 
     def _prepare_refresh_token_args(self):
-        self._params.load_state()
         args = (self._params.token_url, )
         kwargs = {
             'refresh_token': self.token['refresh_token'],
