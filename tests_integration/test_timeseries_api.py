@@ -8,12 +8,10 @@ import requests
 from requests.exceptions import HTTPError
 
 import datareservoirio
-from datareservoirio.authenticate import Authenticator
+from datareservoirio.authenticate import UserCredentials
 from datareservoirio.rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from datareservoirio.storage.uploadstrategy import UploadStrategy
 from tests_integration._auth import USER
-
-datareservoirio.globalsettings.environment.set_test()
 
 
 class Test_TimeSeriesApi(unittest.TestCase):
@@ -21,7 +19,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
     @classmethod
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USER.NAME, auth_force=True)
+        cls.auth = UserCredentials(USER.NAME, auth_force=True)
         cls.metaapi = MetadataAPI(session=cls.auth)
         files_api = FilesAPI(session=cls.auth)
 
@@ -76,7 +74,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUp(self, mock_input):
-        self.auth = Authenticator(USER.NAME, auth_force=True)
+        self.auth = UserCredentials(USER.NAME, auth_force=True)
         self.api = TimeSeriesAPI(session=self.auth)
 
     def tearDown(self):

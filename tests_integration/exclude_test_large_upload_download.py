@@ -6,13 +6,11 @@ import numpy as np
 import pandas as pd
 
 import datareservoirio
-from datareservoirio.authenticate import Authenticator
+from datareservoirio.authenticate import UserCredentials
 from tests_integration._auth import USER
 
 datareservoirio.set_log_level('DEBUG')
 datareservoirio.logger.addHandler(logging.FileHandler('upload.log'))
-
-datareservoirio.globalsettings.environment.set_test()
 
 
 class Test_ClientUploadDownload(unittest.TestCase):
@@ -20,7 +18,7 @@ class Test_ClientUploadDownload(unittest.TestCase):
     @classmethod
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USER.NAME)
+        cls.auth = UserCredentials(USER.NAME)
 
     def setUp(self):
         self.client = datareservoirio.Client(self.auth)

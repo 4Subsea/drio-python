@@ -8,10 +8,8 @@ import pandas as pd
 import requests
 
 import datareservoirio
-from datareservoirio.authenticate import Authenticator
+from datareservoirio.authenticate import UserCredentials
 from tests_integration._auth import USER
-
-datareservoirio.globalsettings.environment.set_test()
 
 
 class Test_Client(unittest.TestCase):
@@ -19,7 +17,7 @@ class Test_Client(unittest.TestCase):
     @classmethod
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = Authenticator(USER.NAME, auth_force=True)
+        cls.auth = UserCredentials(USER.NAME, auth_force=True)
 
         cls.df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
         cls.df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
@@ -148,7 +146,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
 
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUp(self, mock_input):
-        self.auth = Authenticator(USER.NAME, auth_force=True)
+        self.auth = UserCredentials(USER.NAME, auth_force=True)
         self.client = datareservoirio.Client(self.auth, cache=True)
 
     def tearDown(self):

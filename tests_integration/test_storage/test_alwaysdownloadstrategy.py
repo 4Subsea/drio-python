@@ -5,12 +5,10 @@ from unittest.mock import patch
 import requests
 
 import datareservoirio
-from datareservoirio.authenticate import Authenticator
+from datareservoirio.authenticate import UserCredentials
 from datareservoirio.rest_api import TimeSeriesAPI
 from datareservoirio.storage import AlwaysDownloadStrategy
 from tests_integration._auth import USER
-
-datareservoirio.globalsettings.environment.set_test()
 
 
 log = logging.getLogger(__file__)
@@ -21,7 +19,7 @@ class Test_AlwaysDownloadStrategy(unittest.TestCase):
 
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUp(self, mock_input):
-        self.auth = Authenticator(USER.NAME, auth_force=True)
+        self.auth = UserCredentials(USER.NAME, auth_force=True)
         self.timeseries_api = TimeSeriesAPI(session=self.auth)
 
         self._session = requests.Session()
