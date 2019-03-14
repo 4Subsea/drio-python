@@ -164,6 +164,12 @@ class TestBaseAuthSession(unittest.TestCase):
 
         self.mock_fetch_initial_token.assert_called_once()
 
+    @patch('datareservoirio.authenticate.TokenCache')
+    def test_exception_is_caught_if_no_cached_token_url(self, mock_cache):
+        self.mock_refresh_token.side_effect = ValueError
+        self.MochAuthClass(auth_force=False)
+
+        self.mock_fetch_initial_token.assert_called_once()
 
 class TestTokenCache(unittest.TestCase):
     def setUp(self):

@@ -176,7 +176,7 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
             try:
                 token = self.refresh_token()
                 print('Authentication from previous session still valid.')
-            except (KeyError, InvalidGrantError):
+            except (KeyError, ValueError, InvalidGrantError):
                 token = self._fetch_token_initial()
         self._token_cache(token)
 
