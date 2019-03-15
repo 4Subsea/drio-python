@@ -435,6 +435,18 @@ class Client(object):
                                              conjunctive)
         return response
 
+    def metadata_delete(self, metadata_id):
+        """
+        Delete an existing metadata entry.
+
+        Parameters
+        ----------
+        metadata_id : str
+            id of metadata
+        """
+        self._metadata_api.delete(metadata_id)
+        return
+
     def _verify_and_prepare_series(self, series):
         log.debug("checking arguments", "_check_arguments_create")
 

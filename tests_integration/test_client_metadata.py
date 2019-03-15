@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch
 
+import requests
+
 import datareservoirio
 from datareservoirio.authenticate import UserCredentials
 from tests_integration._auth import USER
@@ -81,6 +83,19 @@ class Test_ClientMetadata(unittest.TestCase):
         response = self.client.metadata_browse(namespace=ns, key=key)
 
         self.assertEqual(len([m for m in response if m == 'Country']), 1)
+
+    def test_metadata_delete_with_id(self):
+        ns = 'system.integrationtest'
+        key = 'test_metadata_get.319f8f14-5872-4862-950c-2bbacba54939'
+        response = self.client.metadata_set(
+            ns, key, Country='Norway', Language='Norwegian')
+        mid = response['Id']
+
+        self.client.metadata_delete(mid)
+
+        with self.assertRaises(requests.exceptions.HTTPError) as context:
+            self.client.metadata_get(metadata_id=mid)
+        self.assertEqual(context.exception.response.status_code, 404)
 
 
 if __name__ == '__main__':

@@ -375,6 +375,10 @@ class Test_Client(unittest.TestCase):
         self.client._metadata_api.search.assert_called_once_with(
             'test_namespace', 'test_key', False)
 
+    def test_metadata_delete(self):
+        self.client.metadata_delete('id123')
+        self.client._metadata_api.delete.assert_called_once_with('id123')
+
     def test_set_metadata_with_namespace_and_key_creates_and_attaches(self):
         self.client._metadata_api.put.return_value = {'Id': 'meta-id-2'}
 
