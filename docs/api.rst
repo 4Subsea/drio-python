@@ -10,9 +10,15 @@ High-level
    :members:
    :undoc-members:
 
+Authentication
+**************
+
 .. autoclass:: Authenticator
    :members:
    :inherited-members:
+
+.. autoclass:: datareservoirio.authenticate.AccessToken
+   :members:
 
 .. autoclass:: datareservoirio.authenticate.UserCredentials
    :members:

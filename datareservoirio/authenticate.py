@@ -232,6 +232,8 @@ class UserCredentials(BaseAuthSession):
     ----------
     username : str
         Username accepted by authority.
+    auth_force : bool
+        Force re-authenticating the session (default is False)
 
     """
 
@@ -293,10 +295,17 @@ class UnsafeUserCredentials(UserCredentials):
 
 class AccessToken(BaseAuthSession):
     """
-    Authorized session where credentials are given in browser. Authenticates
-    against authority using the B2C protocol. Authentication code is prompted when needed.
-
+    Authorized session where credentials are given in the DataReservoir.io web application.
+    When a valid code is presented, the session is authenticated and persisted. A previous session
+    will be reused as long as it is not expired. When required, a new authentication code is prompted
+    for.
+    
     Extends ``BaseAuthSession``.
+
+    Parameters
+    ----------
+    auth_force : bool
+        Force re-authenticating the session (default is False)
 
     """
     def __init__(self, auth_force=False):
