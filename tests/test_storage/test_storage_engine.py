@@ -185,7 +185,7 @@ class Test_StorageBackend(unittest.TestCase):
 
             backend.remote_put(self._dummy_params, "data")
             mock_service.assert_called_once_with(self._dummy_params)
-            mock_obj.create_blob_from_df.assert_called_once_with("data")
+            mock_obj.create_blob_from_series.assert_called_once_with("data")
 
 
 if __name__ == '__main__':
