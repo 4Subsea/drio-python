@@ -10,7 +10,7 @@ from requests.exceptions import HTTPError
 import datareservoirio
 from datareservoirio.authenticate import UserCredentials
 from datareservoirio.rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
-from datareservoirio.storage.uploadstrategy import UploadStrategy
+from datareservoirio.storage import DirectUpload
 from tests_integration._auth import USER
 
 
@@ -24,11 +24,11 @@ class Test_TimeSeriesApi(unittest.TestCase):
         files_api = FilesAPI(session=cls.auth)
 
         session = requests.Session()
-        uploader = UploadStrategy(session=session)
+        uploader = DirectUpload(session=session)
 
-        df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
-        df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
-        df_3 = pd.Series(np.arange(50.), index=np.arange(125, 175))
+        df_1 = pd.DataFrame({"values": np.arange(100.)}, index=np.arange(0, 100))
+        df_2 = pd.DataFrame({"values": np.arange(100.)}, index=np.arange(50, 150))
+        df_3 = pd.DataFrame({"values": np.arange(50.)}, index=np.arange(125, 175))
 
         df_list = [df_1, df_2, df_3]
         cls.token_fileid = []

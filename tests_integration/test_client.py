@@ -9,24 +9,26 @@ import requests
 
 import datareservoirio
 from datareservoirio.authenticate import UserCredentials
+
 from tests_integration._auth import USER
 
 
 class Test_Client(unittest.TestCase):
 
     @classmethod
-    @patch('getpass.getpass', return_value=USER.PASSWORD)
-    def setUpClass(cls, mock_input):
-        cls.auth = UserCredentials(USER.NAME, auth_force=True)
+    def setUpClass(cls):
 
         cls.df_1 = pd.Series(np.arange(100.), index=np.arange(0, 100))
         cls.df_2 = pd.Series(np.arange(100.), index=np.arange(50, 150))
         cls.df_3 = pd.Series(np.arange(50.), index=np.arange(125, 175))
 
-    def setUp(self):
+    @patch('getpass.getpass', return_value=USER.PASSWORD)
+    def setUp(self, mock_input):
+        self.auth = UserCredentials(USER.NAME, auth_force=True)
         self.client = datareservoirio.Client(self.auth, cache=False)
 
     def tearDown(self):
+        self.auth.close()
         self.client.__exit__()
 
     def test_ping(self):
@@ -35,14 +37,6 @@ class Test_Client(unittest.TestCase):
     def test_create_empty_series_get_then_delete(self):
         response = self.client.create()
         ts_id = response['TimeSeriesId']
-
-        # self.assertEqual(0, response['TimeOfFirstSample'])
-        # self.assertEqual(info['TimeOfFirstSample'],
-        #                  response['TimeOfFirstSample'])
-
-        # self.assertEqual(99, response['TimeOfLastSample'])
-        # self.assertEqual(info['TimeOfLastSample'],
-        #                  response['TimeOfLastSample'])
 
         df_recieved = self.client.get(ts_id, convert_date=True)
 
@@ -151,6 +145,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
 
     def tearDown(self):
         self.auth.close()
+        self.client.__exit__()
 
     def test_ping(self):
         self.client.ping()

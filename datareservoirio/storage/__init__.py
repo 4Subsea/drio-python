@@ -1,5 +1,3 @@
-from .storage import Storage
-from .simplefilecache import SimpleFileCache
-from .downloadstrategy import CachedDownloadStrategy, AlwaysDownloadStrategy
-from .uploadstrategy import UploadStrategy
-from .storage_engine import AzureBlobService
+from .storage import (BaseDownloader, BaseUploader, DirectDownload,
+                      DirectUpload, FileCacheDownload, Storage)
+from .storage_engine import AzureBlobService, StorageBackend

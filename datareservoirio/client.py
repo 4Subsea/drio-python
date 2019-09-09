@@ -7,8 +7,15 @@ import pandas as pd
 
 from .log import LogWriter
 from .rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
-from .storage import (AlwaysDownloadStrategy, CachedDownloadStrategy,
-                      SimpleFileCache, Storage, UploadStrategy)
+
+from .storage import (
+    DirectDownload,
+    DirectUpload,
+    FileCacheDownload,
+    Storage,
+    BaseDownloader,
+    BaseUploader,
+)
 
 logger = logging.getLogger(__name__)
 log = LogWriter(logger)
@@ -18,7 +25,7 @@ _END_DEFAULT = 9214646400000000000  # 2262-01-01
 _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
 
-class Client(object):
+class Client:
     """
     DataReservoir.io client for user-friendly interaction.
 
@@ -31,13 +38,14 @@ class Client(object):
         Enable caching (default).
     cache_opt : dict, optional
         Configuration object for controlling the series cache.
-        'format': 'msgpack' or 'csv'. Default is 'msgpack'.
+        'format': 'parquet', 'csv' or 'msgpack' (DEPRETACTED). Default is 'parquet'.
         'max_size': max size of cache in megabytes. Default is 1024 MB.
         'cache_root': cache storage location. See documentation for platform
         specific defaults.
 
     """
-    CACHE_DEFAULT = {'format': 'msgpack', 'max_size': 1024, 'cache_root': None}
+
+    CACHE_DEFAULT = {"format": "parquet", "max_size": 1024, "cache_root": None}
 
     def __init__(self, auth, cache=True, cache_opt=CACHE_DEFAULT):
         self._auth_session = auth
@@ -52,24 +60,27 @@ class Client(object):
             if set(cache_default.keys()).issuperset(cache_opt):
                 cache_default.update(cache_opt)
                 self._cache_opt = cache_default
-                self._cache_format = self._cache_opt.pop('format')
+                self._cache_format = self._cache_opt.pop("format")
             else:
-                raise ValueError('cache_opt contains unknown keywords.')
+                raise ValueError("cache_opt contains unknown keywords.")
 
         if self._enable_cache:
-            downloader = CachedDownloadStrategy(
-                SimpleFileCache(**self._cache_opt), format=self._cache_format,
-                session=self._session)
+            download_backend = FileCacheDownload(
+                session=self._session, format_=self._cache_format, **self._cache_opt
+            )
         else:
-            downloader = AlwaysDownloadStrategy(session=self._session)
+            download_backend = DirectDownload(session=self._session)
+        upload_backend = DirectUpload(session=self._session)
 
-        uploader = UploadStrategy(session=self._session)
+        downloader = BaseDownloader(download_backend)
+        uploader = BaseUploader(upload_backend)
 
         self._storage = Storage(
             self._timeseries_api,
             self._files_api,
             downloader=downloader,
-            uploader=uploader)
+            uploader=uploader,
+        )
 
     def __enter__(self):
         return self
@@ -79,8 +90,7 @@ class Client(object):
 
     def ping(self):
         """
-        With ping you can test that you have a working connection to
-        DataReservoir.io.
+        Test that you have a working connection to DataReservoir.io.
 
         """
         return self._files_api.ping()
@@ -111,20 +121,24 @@ class Client(object):
         time_start = timeit.default_timer()
         file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
-        log.info('Upload took {} seconds'
-                 .format(time_upload - time_start), 'create')
+        log.info("Upload took {} seconds".format(time_upload - time_start), "create")
 
         status = self._wait_until_file_ready(file_id)
         time_process = timeit.default_timer()
-        log.info('Processing took {} seconds'
-                 .format(time_process - time_upload), 'create')
+        log.info(
+            "Processing took {} seconds".format(time_process - time_upload), "create"
+        )
         if status == "Failed":
             return status
 
         response = self._timeseries_api.create_with_data(file_id)
         time_end = timeit.default_timer()
-        log.info('Done. Total time spent: {} seconds ({} minutes)'
-                 .format(time_end - time_start, (time_end - time_start) / 60.), 'create')
+        log.info(
+            "Done. Total time spent: {} seconds ({} minutes)".format(
+                time_end - time_start, (time_end - time_start) / 60.0
+            ),
+            "create",
+        )
         return response
 
     def append(self, series, series_id):
@@ -134,10 +148,9 @@ class Client(object):
         Parameters
         ----------
         series : pandas.Series
-            Series with index (as numpy.datetime64 (with nanosecond precision)
-            or integer array).
+            Series with index (as DatetimeIndex-like or integer array).
         series_id : string
-            the identifier of the existing series.
+            The identifier of the existing series.
 
         Returns
         -------
@@ -149,26 +162,31 @@ class Client(object):
         time_start = timeit.default_timer()
         file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
-        log.info('Upload took {} seconds'
-                 .format(time_upload - time_start), 'append')
+        log.info("Upload took {} seconds".format(time_upload - time_start), "append")
 
         status = self._wait_until_file_ready(file_id)
         time_process = timeit.default_timer()
-        log.info('Processing serverside took {} seconds'
-                 .format(time_process - time_upload), 'append')
+        log.info(
+            "Processing serverside took {} seconds".format(time_process - time_upload),
+            "append",
+        )
         if status == "Failed":
             return status
 
         time_end = timeit.default_timer()
-        log.info('Done, total time spent: {} seconds ({} minutes)'
-                 .format(time_end - time_start, (time_end - time_start) / 60.), 'append')
+        log.info(
+            "Done, total time spent: {} seconds ({} minutes)".format(
+                time_end - time_start, (time_end - time_start) / 60.0
+            ),
+            "append",
+        )
 
         response = self._timeseries_api.add(series_id, file_id)
         return response
 
     def info(self, series_id):
         """
-        Retrieves basic information about a series.
+        Retrieve basic information about a series.
 
         Returns
         -------
@@ -204,18 +222,21 @@ class Client(object):
 
     def delete(self, series_id):
         """
+        Delete a series from DataReservoir.io.
+
         Parameters
         ----------
-        timeseries_id : string
+        series_id : string
             The id of the series to delete.
 
         """
         return self._timeseries_api.delete(series_id)
 
-    def get(self, series_id, start=None, end=None, convert_date=True,
-            raise_empty=False):
+    def get(
+        self, series_id, start=None, end=None, convert_date=True, raise_empty=False
+    ):
         """
-        Retrieves a series from the data reservoir.
+        Retrieve a series from DataReservoir.io.
 
         Parameters
         ----------
@@ -244,11 +265,11 @@ class Client(object):
         if not end:
             end = _END_DEFAULT
 
-        start = pd.to_datetime(start, dayfirst=True, unit='ns', utc=True).value
-        end = pd.to_datetime(end, dayfirst=True, unit='ns', utc=True).value
+        start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).value
+        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).value
 
         if start >= end:
-            raise ValueError('start must be before end')
+            raise ValueError("start must be before end")
 
         time_start = timeit.default_timer()
 
@@ -256,19 +277,28 @@ class Client(object):
         series = self._storage.get(series_id, start, end)
 
         if series.empty and raise_empty:  # may become empty after slicing
-            raise ValueError('can\'t find data in the given interval')
+            raise ValueError("can't find data in the given interval")
 
         if convert_date:
             series.index = pd.to_datetime(series.index, utc=True)
 
         time_end = timeit.default_timer()
-        log.info('Download series dataframe took {} seconds'
-                 .format(time_end - time_start), 'get')
+        log.info(
+            "Download series dataframe took {} seconds".format(time_end - time_start),
+            "get",
+        )
 
         return series
 
-    def set_metadata(self, series_id, metadata_id=None, namespace=None,
-                     key=None, overwrite=False, **namevalues):
+    def set_metadata(
+        self,
+        series_id,
+        metadata_id=None,
+        namespace=None,
+        key=None,
+        overwrite=False,
+        **namevalues
+    ):
         """
         Set metadata entries on a series. Metadata can be set from existing
         values or new metadata can be created.
@@ -297,24 +327,25 @@ class Client(object):
             response.json()
         """
         if not metadata_id and not namespace:
-            raise ValueError('one of metadata_id or namespace is mandatory')
+            raise ValueError("one of metadata_id or namespace is mandatory")
         elif not metadata_id and namespace:
             if not key:
-                raise ValueError('key is mandatory when namespace is passed')
+                raise ValueError("key is mandatory when namespace is passed")
             try:
                 response_create = self._metadata_api.put(
-                    namespace, key, overwrite, **namevalues)
-                metadata_id = response_create['Id']
+                    namespace, key, overwrite, **namevalues
+                )
+                metadata_id = response_create["Id"]
             except requests.exceptions.HTTPError as err:
                 if err.response.status_code == 409:
                     raise ValueError(
-                        'Metadata already exist. Specify overwrite=True to'
-                        'confirm overwriting the metadata.')
+                        "Metadata already exist. Specify overwrite=True to"
+                        "confirm overwriting the metadata."
+                    )
                 else:
                     raise
 
-        response = self._timeseries_api.attach_metadata(series_id,
-                                                        [metadata_id])
+        response = self._timeseries_api.attach_metadata(series_id, [metadata_id])
         return response
 
     def remove_metadata(self, series_id, metadata_id):
@@ -326,7 +357,7 @@ class Client(object):
         ----------
         series_id : str
             The identifier of the existing series
-        metadata_ids : str
+        metadata_id : str
             The identifier of the existing metadata entry.
 
         Return
@@ -334,8 +365,7 @@ class Client(object):
         dict
             response.json()
         """
-        response = self._timeseries_api.detach_metadata(series_id,
-                                                        [metadata_id])
+        response = self._timeseries_api.detach_metadata(series_id, [metadata_id])
         return response
 
     def metadata_set(self, namespace, key, **namevalues):
@@ -385,7 +415,7 @@ class Client(object):
         elif namespace and key:
             response = self._metadata_api.get(namespace, key)
         else:
-            raise ValueError('key is mandatory when namespace is passed')
+            raise ValueError("key is mandatory when namespace is passed")
 
         return response
 
@@ -413,26 +443,25 @@ class Client(object):
             return self._metadata_api.keys(namespace)
         else:
             response = self._metadata_api.get(namespace, key)
-            return response['Value']
+            return response["Value"]
 
     def metadata_search(self, namespace, key, conjunctive=True):
         """
-        Find metadata entries given namespace/key/name-value combination.
+        Find metadata entries given namespace/key combination.
 
         namespace : string
             The namespace to search in
         key : string
             The key to narrow search
-        namevalues : keyword arguments
-            Name/value pairs to narrow search further
+        conjuctive : bool
+            -
 
         Returns
         -------
         dict
             Metadata entries that matches the search.
         """
-        response = self._metadata_api.search(namespace, key,
-                                             conjunctive)
+        response = self._metadata_api.search(namespace, key, conjunctive)
         return response
 
     def metadata_delete(self, metadata_id):
@@ -452,16 +481,18 @@ class Client(object):
 
         if not isinstance(series, pd.Series):
             log.error("series type is {}".format(type(series)))
-            raise ValueError('series must be a pandas Series')
+            raise ValueError("series must be a pandas Series")
 
-        if not (pd.api.types.is_datetime64_ns_dtype(series.index) or
-                pd.api.types.is_int64_dtype(series.index)):
+        if not (
+            pd.api.types.is_datetime64_ns_dtype(series.index)
+            or pd.api.types.is_int64_dtype(series.index)
+        ):
             log.error("index dtype is {}".format(series.index.dtype))
-            raise ValueError('allowed dtypes are datetime64[ns] and int64')
+            raise ValueError("allowed dtypes are datetime64[ns] and int64")
 
         if not series.index.is_unique:
             log.error("index contains duplicate timestamp values")
-            raise ValueError('index values must be unique timestamps')
+            raise ValueError("index values must be unique timestamps")
 
     def _wait_until_file_ready(self, file_id):
         # wait for server side processing
@@ -478,4 +509,4 @@ class Client(object):
 
     def _get_file_status(self, file_id):
         response = self._files_api.status(file_id)
-        return response['State']
+        return response["State"]

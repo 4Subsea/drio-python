@@ -7,7 +7,7 @@ import requests
 import datareservoirio
 from datareservoirio.authenticate import UserCredentials
 from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.storage import AlwaysDownloadStrategy
+from datareservoirio.storage import BaseDownloader, DirectDownload
 from tests_integration._auth import USER
 
 
@@ -15,7 +15,7 @@ log = logging.getLogger(__file__)
 TIMESERIESID = '06C0AD81-3E81-406F-9DB0-EFD5114DD5E0'
 
 
-class Test_AlwaysDownloadStrategy(unittest.TestCase):
+class Test_DirectDownload(unittest.TestCase):
 
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUp(self, mock_input):
@@ -23,7 +23,7 @@ class Test_AlwaysDownloadStrategy(unittest.TestCase):
         self.timeseries_api = TimeSeriesAPI(session=self.auth)
 
         self._session = requests.Session()
-        self.strategy = AlwaysDownloadStrategy(session=self._session)
+        self.strategy = BaseDownloader(DirectDownload(session=self._session))
 
     def tearDown(self):
         self.auth.close()

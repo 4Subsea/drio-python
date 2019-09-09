@@ -9,7 +9,7 @@ import requests
 import datareservoirio
 from datareservoirio.authenticate import UserCredentials
 from datareservoirio.rest_api.files import FilesAPI
-from datareservoirio.storage.uploadstrategy import UploadStrategy
+from datareservoirio.storage import DirectUpload
 from tests_integration._auth import USER
 
 
@@ -31,9 +31,9 @@ class Test_FilesApi(unittest.TestCase):
         file_id = upload_params['FileId']
 
         with requests.Session() as s:
-            uploader = UploadStrategy(session=s)
+            uploader = DirectUpload(session=s)
 
-            df = pd.Series(np.arange(1e3))
+            df = pd.DataFrame({"values": np.arange(1e3)})
             df.index.name = 'time'
             df.name = 'values'
 

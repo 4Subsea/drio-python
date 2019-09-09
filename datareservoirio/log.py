@@ -37,5 +37,3 @@ class LogWriter(object):
         base = '{} *** {} *** {}{} *** {}'
 
         return base.format(time, lvl, self.logger.name, origin,  msg)
-
-

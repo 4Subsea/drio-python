@@ -9,7 +9,7 @@ import requests
 import datareservoirio
 from datareservoirio.authenticate import UserCredentials
 from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.storage import CachedDownloadStrategy, SimpleFileCache
+from datareservoirio.storage import BaseDownloader, FileCacheDownload
 from tests_integration._auth import USER
 
 
@@ -23,7 +23,7 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
     def setUp(self, mock_input):
         self.auth = UserCredentials(USER.NAME, auth_force=True)
         self.timeseries_api = TimeSeriesAPI(session=self.auth)
-        self._cache = SimpleFileCache(cache_root='./_cache/test_cacheddownloadstrategy')
+        self._cache_root = './_cache/test_filecachedownload'
 
         self._session = requests.Session()
 
@@ -32,21 +32,21 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
         self._session.close()
 
     def test_get_with_msgpack_format(self):
-        strategy = CachedDownloadStrategy(cache=self._cache,
-                                          format='msgpack',
-                                          session=self._session)
+        strategy = BaseDownloader(FileCacheDownload(
+            cache_root=self._cache_root, format_='parquet', session=self._session))
+
         chunks = self.timeseries_api.download_days(
             TIMESERIESID, 1513468800000000000, 1513814500000000000)
         iterations = 100
 
         usedtime = timeit(stmt=partial(strategy.get, chunks), number=iterations)
 
-        print('Average cache read with msgpack: {}'.format(usedtime/iterations))
+        print('Average cache read with parquet: {}'.format(usedtime/iterations))
 
     def test_get_with_csv_format(self):
-        strategy = CachedDownloadStrategy(cache=self._cache,
-                                          format='csv',
-                                          session=self._session)
+        strategy = BaseDownloader(FileCacheDownload(
+            cache_root=self._cache_root, format_='csv', session=self._session))
+
         chunks = self.timeseries_api.download_days(
             TIMESERIESID, 1513468800000000000, 1513814500000000000)
         iterations = 100
