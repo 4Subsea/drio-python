@@ -40,7 +40,7 @@ downloads. Beside turning the cache on and off, several aspects of it can be
 configured during instantiation. The configuration are passed on as a
 dictionary:
 
-* ``format``: format used to store series on disk, either 'msgpack' or 'csv'. Default is 'msgpack'.
+* ``format``: format used to store series on disk, either 'parquet', 'msgpack' (DEPRECATED) or 'csv'. Default is 'parquet'.
 * ``max_size``: size in megabytes that the cache is allowed to use. Default is 1024MB.
 * ``cache_root``: control the cache storage location. Default locations are:
     
@@ -57,7 +57,7 @@ Example::
 
     # Initiate a client with 32GB cache in the 'c:\project\drio_cache'
     client = drio.Client(auth, cache=True,
-                         cache_opt={'format': 'msgpack', 'max_size': 32*1024,
+                         cache_opt={'format': 'parquet', 'max_size': 32*1024,
                                     'cache_root': r'c:\project\drio_cache'})
 
 The cache has near disk-bound performance and will benefit greatly from fast
@@ -67,12 +67,12 @@ low-latency solid state drives.
 
     The cache is "cleaned up" during instantiation of :py:class:`Client`. If
     it is instantiated with defaults cache options, it will potentially delete
-    the larger cache set up by an another instance! Caution is adviced!
+    the larger cache set up by another instance! Caution is adviced!
 
 .. note::
 
     If you are working with several "larger" projects at once, it may be a good
-    idea to set up a different cache (storage location) for each project.
+    idea to configure dedicated cache locations for each project.
 
 
 Logging
