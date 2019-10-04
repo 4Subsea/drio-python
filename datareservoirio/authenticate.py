@@ -2,7 +2,7 @@ import getpass
 import json
 import logging
 import os
-import uuid
+import platform
 import warnings
 from abc import ABCMeta, abstractmethod
 from base64 import urlsafe_b64encode
@@ -90,10 +90,11 @@ class OAuth2Parameters:
 
 
 class TokenCache:
-    def __init__(self):
+    def __init__(self, session_key=None):
         if not os.path.exists(self._token_root):
             os.makedirs(self._token_root)
 
+        self._session_key = f'.{session_key}' if session_key else ''
         self._token_url = None
         self._scrambler_init()
 
@@ -107,7 +108,7 @@ class TokenCache:
     @property
     def token_path(self):
         return os.path.join(self._token_root,
-                            'token.{}'.format(environment.get()))
+                            f'token.{environment.get()}{self._session_key}')
 
     @property
     def token_url(self):
@@ -131,7 +132,7 @@ class TokenCache:
         return token
 
     def _scrambler_init(self):
-        machine_env = '{}|{}'.format(hex(uuid.getnode()), environment.get())
+        machine_env = '{}|{}'.format(platform.node(), environment.get())
 
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
@@ -151,16 +152,19 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
     ----------
     client : ``oauthlib.oauth2`` client.
         A client passed on to ``requests_oauthlib.OAuth2Session``.
-    username : str
-        Username accepted by authority.
+    auth_force : bool, optional
+        Force re-authenticating the session (default is False)
+    session_key : str, optional
+        Unique identifier for an auth session. Can be used so that multiple instances can have
+        independent auth/refresh cycles with the identity authority.
     kwargs : keyword arguments
         Keyword arguments passed on to ``requests_oauthlib.OAuth2Session``.
 
     """
-    def __init__(self, client, auth_force=False, **kwargs):
+    def __init__(self, client, auth_force=False, session_key=None, **kwargs):
         self._params = getattr(self, '_params', self._get_params())
 
-        self._token_cache = TokenCache()
+        self._token_cache = TokenCache(session_key=session_key)
         self._token_cache.load()
         if self._params.token_url is None:
             self._params.token_url = self._token_cache.token_url
@@ -299,19 +303,24 @@ class AccessToken(BaseAuthSession):
     When a valid code is presented, the session is authenticated and persisted. A previous session
     will be reused as long as it is not expired. When required, a new authentication code is prompted
     for.
-    
+
     Extends ``BaseAuthSession``.
 
     Parameters
     ----------
-    auth_force : bool
+    auth_force : bool, optional
         Force re-authenticating the session (default is False)
+    session_key : str, optional
+        Unique identifier for an auth session. Can be used so that multiple instances can have
+        independent auth/refresh cycles with the identity authority.
 
     """
-    def __init__(self, auth_force=False):
+    def __init__(self, auth_force=False, session_key=None):
         self._params = self._get_params(legacy_auth=False)
         client = WebApplicationClient(self._params.client_id)
-        super(AccessToken, self).__init__(client, auth_force=auth_force)
+        super(AccessToken, self).__init__(
+            client, auth_force=auth_force, session_key=session_key
+        )
 
     def _fetch_token_initial(self):
         return self.fetch_token()

@@ -189,13 +189,26 @@ class TestTokenCache(unittest.TestCase):
 
     def test_init_existing_token(self):
         self.mock_path_exists.return_value = True
-        authenticate.TokenCache()
+        tc = authenticate.TokenCache()
         self.mock_makedirs.assert_not_called()
+        self.assertEqual(tc._session_key, '')
 
     def test_init_no_token(self):
         self.mock_path_exists.return_value = False
         authenticate.TokenCache()
         self.mock_makedirs.assert_called_once()
+
+    def test_init_without_session_key(self):
+        self.mock_path_exists.return_value = False
+        dummy_key = None
+        tc = authenticate.TokenCache(session_key=dummy_key)
+        self.assertEqual(tc._session_key, '')
+
+    def test_init_with_session_key(self):
+        self.mock_path_exists.return_value = False
+        dummy_key = 'abc'
+        tc = authenticate.TokenCache(session_key=dummy_key)
+        self.assertEqual(tc._session_key, f'.{dummy_key}')
 
     def test_call(self):
         with patch('datareservoirio.authenticate.TokenCache.dump') as mock_dump:
