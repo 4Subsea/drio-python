@@ -22,7 +22,7 @@ setup(name='datareservoirio',
           'Documentation': 'https://www.datareservoir.io/python/docs/latest/'
       },
       install_requires=[
-          'azure-storage-blob>=1.4.0',
+          'azure-storage-blob>=1.4.0,<=2.1.0',
           'numpy',
           'oauthlib',
           'pandas>=0.24.0',
