@@ -138,6 +138,30 @@ class Test_BaseDownloader(unittest.TestCase):
         calls = [call("abc1"), call("abc2"), call("abc3")]
         mock_download.assert_has_calls(calls)
 
+    def test_get_with_text_data(self):
+        mock_backend = MagicMock()
+        base_downloader = BaseDownloader(mock_backend)
+
+        response = {
+            "Files": [{"Chunks": "abc1"}, {"Chunks": "abc2"}, {"Chunks": "abc3"}]
+        }
+
+        with patch.object(
+            base_downloader, "_download_chunks_as_dataframe"
+        ) as mock_download:
+            mock_download.side_effect = [
+                pd.DataFrame(["a", "b", "c"], index=[1, 2, 3]),
+                pd.DataFrame(["d", "e", "f"], index=[3, 4, 5]),
+                pd.DataFrame(["g", "h", "i"], index=[1, 5, 9]),
+            ]
+
+            df_expected = pd.DataFrame(
+                ["g", "b", "d", "e", "h", "i"], index=[1, 2, 3, 4, 5, 9]
+            )
+            df_out = base_downloader.get(response)
+
+        pd.testing.assert_frame_equal(df_expected, df_out)
+
     def test__combine_first_no_overlap(self):
         df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
         df2 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[6, 7, 8, 9])

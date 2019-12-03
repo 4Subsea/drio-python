@@ -29,14 +29,37 @@ class Test_AzureBlobService(unittest.TestCase):
 
         with patch.object(downloader, "get_blob_to_stream"):
             with patch("datareservoirio.storage.storage_engine.TextIOWrapper") as bytesio:
-                binary_content = MagicMock(spec=io.TextIOWrapper)
-                bytesio.return_value.__enter__.return_value = binary_content
-
-                binary_content.read.side_effect = [
-                    b'1,1.0\r\n2,2.0\r\n3,3.0\r\n', b'']
+                bytesio.return_value.__enter__.return_value = [
+                    "1,1.0\r\n",
+                    "2,2.0\r\n",
+                    "3,3.0\r\n"]
 
                 df_out = downloader.get_blob_to_df()
+        
         df_expected = pd.DataFrame({"values": [1., 2., 3.]}, index=pd.Int64Index([1, 2, 3]))
+
+        pd.testing.assert_frame_equal(df_out, df_expected)
+
+    def test_download_nonnumericdata(self):
+        downloader = AzureBlobService(self.upload_params, session=MagicMock())
+
+        with patch.object(downloader, "get_blob_to_stream"):
+            with patch("datareservoirio.storage.storage_engine.TextIOWrapper") as bytesio:
+                bytesio.return_value.__enter__.return_value = [
+                    "1374421840494003000,next value is empty\r\n", 
+                    "1474421840494003000,\r\n", 
+                    "1574421840494003000,$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74\r\n",
+                    "1674421882488006000,$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F\r\n"]
+
+                df_out = downloader.get_blob_to_df()
+        
+        df_expected = pd.DataFrame(
+            {"values": [
+                'next value is empty',
+                '',
+                '$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74',
+                '$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F']}, 
+            index=pd.Int64Index([1374421840494003000, 1474421840494003000, 1574421840494003000, 1674421882488006000]))
 
         pd.testing.assert_frame_equal(df_out, df_expected)
 

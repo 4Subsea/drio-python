@@ -53,7 +53,14 @@ class AzureBlobService(BlockBlobService):
         )
 
     def get_blob_to_df(self):
-        """Download content of the current blob to DataFrame"""
+        """
+        Download content of the current blob to DataFrame
+
+        Initial parse to frame with string values
+        In case values are non-numeric (and possibly ,-separated text),
+        we will merge these back into one column of text.
+        Otherwise, convert values to float64
+        """
         time_start = timeit.default_timer()
 
         with BytesIO() as binary_content:
@@ -75,9 +82,18 @@ class AzureBlobService(BlockBlobService):
 
             binary_content.seek(0)
             with TextIOWrapper(binary_content, encoding="utf-8") as text_content:
-                df = pd.read_csv(
-                    text_content, header=None, names=["values"], index_col=0
-                )
+                values = self._split_values(text_content)
+                df = pd.DataFrame.from_records(values)
+                df.set_index(keys=0, inplace=True, drop=True)
+                df.index.name = None
+                df.index = df.index.astype("int64")
+                df.columns=["values"]
+                
+                try:
+                    df.values = df.values.astype("float64")
+                except ValueError:
+                    pass
+
         time_end = timeit.default_timer()
         logwriter.debug(
             "Blob download took {} seconds".format(time_end - time_start), "get_content"
@@ -187,7 +203,13 @@ class AzureBlobService(BlockBlobService):
             a += n
             b += n
 
+    def _split_values(self, lines):
+        for line in lines:
+            trimmed = line.rstrip("\r\n")
+            if trimmed != "":
+                yield trimmed.split(",", 1)
 
+            
 class StorageBackend:
     def __init__(self, session=None):
         self._service = partial(AzureBlobService, session=session)
