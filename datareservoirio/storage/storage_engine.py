@@ -82,18 +82,17 @@ class AzureBlobService(BlockBlobService):
 
             binary_content.seek(0)
             with TextIOWrapper(binary_content, encoding="utf-8") as text_content:
-                values = self._split_values(text_content)
-                df = pd.DataFrame.from_records(values)
-                df.set_index(keys=0, inplace=True, drop=True)
-                df.index.name = None
-                df.index = df.index.astype("int64")
-                df.columns=["values"]
-                
+                values_raw = map(self._split_value, text_content)
+                df_raw = pd.DataFrame.from_records(values_raw).dropna()
+
+                index = df_raw[0].values.astype("int64")
+                values = df_raw[1].values
                 try:
-                    df.values = df.values.astype("float64")
-                except ValueError:
+                    values = values.astype("float64")
+                except:
                     pass
 
+                df = pd.DataFrame(values, index, columns=["values"])
         time_end = timeit.default_timer()
         logwriter.debug(
             "Blob download took {} seconds".format(time_end - time_start), "get_content"
@@ -203,13 +202,10 @@ class AzureBlobService(BlockBlobService):
             a += n
             b += n
 
-    def _split_values(self, lines):
-        for line in lines:
-            trimmed = line.rstrip("\r\n")
-            if trimmed != "":
-                yield trimmed.split(",", 1)
+    def _split_value(self, line):
+        return line.rstrip().split(",", 1)
 
-            
+
 class StorageBackend:
     def __init__(self, session=None):
         self._service = partial(AzureBlobService, session=session)
