@@ -5,6 +5,7 @@ from functools import partial
 from io import BytesIO, StringIO, TextIOWrapper
 from time import sleep
 
+import numpy as np
 import pandas as pd
 from azure.common import AzureException
 from azure.storage.blob import BlobBlock, BlockBlobService
@@ -82,17 +83,21 @@ class AzureBlobService(BlockBlobService):
 
             binary_content.seek(0)
             with TextIOWrapper(binary_content, encoding="utf-8") as text_content:
-                values_raw = map(self._split_value, text_content)
-                df_raw = pd.DataFrame.from_records(values_raw).dropna()
+                values_raw = np.asarray(
+                    list(map(self._split_value, text_content)), dtype="O"
+                )
 
-                index = df_raw[0].values.astype("int64")
-                values = df_raw[1].values
-                try:
-                    values = values.astype("float64")
-                except:
-                    pass
+        index = values_raw.T[0].astype("int64")
+        values = values_raw.T[1]
+        try:
+            dtype = "float64"
+            values = values.astype(dtype)
+        except ValueError:  # unable to cast to float
+            # awaiting Pandas 1.0 string type + pd.NA
+            dtype = "O"
+        finally:
+            df = pd.DataFrame(values, index, columns=["values"], dtype=dtype)
 
-                df = pd.DataFrame(values, index, columns=["values"])
         time_end = timeit.default_timer()
         logwriter.debug(
             "Blob download took {} seconds".format(time_end - time_start), "get_content"
@@ -203,7 +208,10 @@ class AzureBlobService(BlockBlobService):
             b += n
 
     def _split_value(self, line):
-        return line.rstrip().split(",", 1)
+        val0, val1 = line.rstrip().split(",", 1)
+        if not val1:
+            val1 = None
+        return val0, val1
 
 
 class StorageBackend:
