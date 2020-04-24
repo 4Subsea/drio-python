@@ -122,15 +122,8 @@ class Test_Client(unittest.TestCase):
             self.assertIn('format_', kwargs)
             self.assertEqual(kwargs['format_'], 'csv')
 
-    @patch('datareservoirio.client.FileCacheDownload')  # DEPRECATED
-    def test_init_with_cache_format_msgpack(self, mock_cache):
-        with Client(self.auth, cache={'format': 'msgpack'}):
-            kwargs = mock_cache.call_args[1]
-            self.assertIn('format_', kwargs)
-            self.assertEqual(kwargs['format_'], 'msgpack')
-
     @patch('datareservoirio.client.FileCacheDownload')
-    def test_init_with_cache_format_msgpack(self, mock_cache):
+    def test_init_with_cache_format_parquet(self, mock_cache):
         with Client(self.auth, cache={'format': 'parquet'}):
             kwargs = mock_cache.call_args[1]
             self.assertIn('format_', kwargs)

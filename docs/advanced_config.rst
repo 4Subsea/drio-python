@@ -40,7 +40,7 @@ downloads. Beside turning the cache on and off, several aspects of it can be
 configured during instantiation. The configuration are passed on as a
 dictionary:
 
-* ``format``: format used to store series on disk, either 'parquet', 'msgpack' (DEPRECATED) or 'csv'. Default is 'parquet'.
+* ``format``: format used to store series on disk, either 'parquet' or 'csv'. Default is 'parquet'.
 * ``max_size``: size in megabytes that the cache is allowed to use. Default is 1024MB.
 * ``cache_root``: control the cache storage location. Default locations are:
     

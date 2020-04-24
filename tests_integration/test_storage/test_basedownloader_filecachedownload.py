@@ -31,7 +31,7 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
         self.auth.close()
         self._session.close()
 
-    def test_get_with_msgpack_format(self):
+    def test_get_with_parquet_format(self):
         strategy = BaseDownloader(FileCacheDownload(
             cache_root=self._cache_root, format_='parquet', session=self._session))
 

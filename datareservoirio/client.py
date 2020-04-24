@@ -38,7 +38,7 @@ class Client:
         Enable caching (default).
     cache_opt : dict, optional
         Configuration object for controlling the series cache.
-        'format': 'parquet', 'csv' or 'msgpack' (DEPRETACTED). Default is 'parquet'.
+        'format': 'parquet' or 'csv'. Default is 'parquet'.
         'max_size': max size of cache in megabytes. Default is 1024 MB.
         'cache_root': cache storage location. See documentation for platform
         specific defaults.

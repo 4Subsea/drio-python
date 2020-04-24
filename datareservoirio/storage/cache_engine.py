@@ -57,29 +57,8 @@ class CsvFormat(GenericFormat):
             return pd.read_csv(sr, index_col=0, encoding="ascii")
 
 
-class MsgPackFormat(GenericFormat):
-    """Serialize dataframe to/from the msgpack format."""
-
-    def __init__(self):
-        warnings.warn(
-            "'msgpack' will be deprecated soon. " "Consider using 'parquet' instead.",
-            FutureWarning,
-        )
-        super().__init__()
-
-    @property
-    def file_extension(self):
-        return "mp"
-
-    def serialize(self, dataframe, stream):
-        dataframe.to_msgpack(stream)
-
-    def deserialize(self, stream):
-        return pd.read_msgpack(stream)
-
-
 class ParquetFormat(GenericFormat):
-    """Serialize dataframe to/from the msgpack format."""
+    """Serialize dataframe to/from the parquet format."""
 
     @property
     def file_extension(self):
@@ -100,8 +79,7 @@ class CacheIO:
     ---------
     format : str
         Which format to use when storing files in the cache. Accepts `parquet`
-        (recommended) for Parquet, `csv` for CSV, and `msgpack` (DEPRECATED) for
-        MessagePack.
+        (recommended) for Parquet, and `csv` for CSV.
 
     """
 
@@ -110,10 +88,8 @@ class CacheIO:
             self._io_backend = ParquetFormat()
         elif format_ == "csv":
             self._io_backend = CsvFormat()
-        elif format_ == "msgpack":  # DEPRECATED
-            self._io_backend = MsgPackFormat()
         else:
-            raise ValueError("Unreckognized format.")
+            raise ValueError("Unreckognized format: {}".format(format))
         super().__init__(*args, **kwargs)
 
     def _write(self, data, filepath):

@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock, mock_open, patch
 import pandas as pd
 
 from datareservoirio.storage.cache_engine import (
-    CacheIO, CsvFormat, GenericFormat, MsgPackFormat, ParquetFormat,
+    CacheIO, CsvFormat, GenericFormat, ParquetFormat,
     _CacheIndex)
 
 
@@ -46,46 +46,7 @@ class Test_CsvFormat(unittest.TestCase):
         mock_df.to_csv.assert_called_once()
 
 
-class Test_MsgPackFormat(unittest.TestCase):
-    """DEPRECATED"""
-
-    def test__init(self):
-        file_format = MsgPackFormat()
-        self.assertIsInstance(file_format, GenericFormat)
-
-    def test_extension(self):
-        file_format = MsgPackFormat()
-        self.assertEqual(file_format.file_extension, "mp")
-
-    @patch("datareservoirio.storage.cache_engine.pd")
-    def test_deserialize(self, mock_pd):
-        file_format = MsgPackFormat()
-
-        mock_stream = io.BytesIO()
-        file_format.deserialize(mock_stream)
-        mock_pd.read_msgpack.assert_called_once_with(mock_stream)
-
-    def test_deserialize_actual(self):
-        df = pd.DataFrame({"values": [0, 1, 2, 3, 4]}, index=[0, 1, 2, 3, 4])
-        stream = io.BytesIO()
-        df.to_msgpack(stream)
-        stream.seek(0)
-
-        file_format = MsgPackFormat()
-        df_out = file_format.deserialize(stream)
-        pd.testing.assert_frame_equal(df, df_out)
-
-    def test_serialize(self):
-        file_format = MsgPackFormat()
-        mock_df = MagicMock()
-        stream = io.BytesIO()
-
-        file_format.serialize(mock_df, stream)
-        mock_df.to_msgpack.assert_called_once_with(stream)
-
-
 class Test_ParquetFormat(unittest.TestCase):
-    """DEPRECATED"""
 
     def test__init(self):
         file_format = ParquetFormat()
@@ -130,9 +91,8 @@ class Test_CacheIO(unittest.TestCase):
         cache_io = CacheIO("csv")
         self.assertIsInstance(cache_io._io_backend, CsvFormat)
 
-        cache_io = CacheIO("msgpack")
-        self.assertIsInstance(cache_io._io_backend, MsgPackFormat)
-
+        with self.assertRaises(ValueError):
+            CacheIO("msgpack")
         with self.assertRaises(ValueError):
             CacheIO("unicorn")
 

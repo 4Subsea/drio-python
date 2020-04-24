@@ -218,7 +218,7 @@ class FileCacheDownload(CacheIO, StorageBackend):
         Base folder within the default cache_root where cached data is
         stored. If cache_root is specified, this parameter is ignored.
     format_ : string
-        Specify cache file format. 'parquet', 'csv' or 'msgpack' (DEPRETACTED).
+        Specify cache file format. 'parquet' or 'csv'.
         Default is 'parquet'.
     session : requests.Session
         If specified, passed to the underlying clound backend so that an
