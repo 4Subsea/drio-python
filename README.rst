@@ -17,6 +17,7 @@ more!
 build other apps and services. The path from experimentation to apps and
 services got a little bit shorter!
 
+Read more at 4insight.io
 
 .. _DataReservoir.io: https://www.datareservoir.io/
 .. _Matplotlib: https://matplotlib.org/
