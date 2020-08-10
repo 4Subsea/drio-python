@@ -28,13 +28,20 @@ logwriter = LogWriter(logger)
 
 
 class OAuth2Parameters:
-    def __init__(self, environment, legacy_auth=True):
+    def __init__(self, environment, auth_type):
         self._environment = environment
+        self._auth_type = str(auth_type).upper()
 
-        if legacy_auth:
-            self._set_legacy()
+        if self._auth_type == "USER":
+            self._set_user()
+        elif self._auth_type == "CLIENT":
+            self._set_client()
+        elif self._auth_type == "USERLEGACY":
+            self._set_userlegacy()
         else:
-            self._set_B2C()
+            raise ValueError(
+                "Invalid 'auth_type'. Must be 'USER', 'CLIENT', or 'USERCLIENT'."
+                )
 
     @property
     def authority(self):
@@ -68,25 +75,33 @@ class OAuth2Parameters:
     def redirect_uri(self):
         return self._redirect_uri
 
-    def _set_legacy(self):
-        self._authority = _constants.AUTHORITY_URL_LEGACY
-        self._client_id = _constants.CLIENT_ID_LEGACY
-        self._token_url = _constants.TOKEN_URL_LEGACY
+    def _set_userlegacy(self):
+        self._authority = _constants.AUTHORITY_URL_USERLEGACY
+        self._client_id = _constants.CLIENT_ID_USERLEGACY
+        self._token_url = _constants.TOKEN_URL_USERLEGACY
         self._resource = getattr(
-            _constants, 'RESOURCE_{}_LEGACY'.format(self._environment))
+            _constants, 'RESOURCE_{}_USERLEGACY'.format(self._environment))
 
-    def _set_B2C(self):
+    def _set_user(self):
         self._authority = getattr(
-            _constants, 'AUTHORITY_URL_{}'.format(self._environment))
+            _constants, 'AUTHORITY_URL_{}_USER'.format(self._environment))
         self._client_id = getattr(
-            _constants, 'CLIENT_ID_{}'.format(self._environment))
+            _constants, 'CLIENT_ID_{}_USER'.format(self._environment))
         self._client_secret = getattr(
-            _constants, 'CLIENT_SECRET_{}'.format(self._environment))
+            _constants, 'CLIENT_SECRET_{}_USER'.format(self._environment))
         self._redirect_uri = getattr(
-            _constants, 'REDIRECT_URI_{}'.format(self._environment))
+            _constants, 'REDIRECT_URI_{}_USER'.format(self._environment))
         self._token_url = None  # token url will be provided as part of access code
         self._scope = getattr(
-            _constants, 'SCOPE_{}'.format(self._environment))
+            _constants, 'SCOPE_{}_USER'.format(self._environment))
+
+    def _set_client(self):
+        self._client_id = None
+        self._client_secret = None
+        self._token_url = getattr(
+            _constants, 'TOKEN_URL_{}_CLIENT'.format(self._environment))
+        self._scope = getattr(
+            _constants, 'SCOPE_{}_CLIENT'.format(self._environment))
 
 
 class TokenCache:
@@ -349,6 +364,61 @@ class AccessToken(BaseAuthSession):
             'client_secret': self._params.client_secret
             }
         return args, kwargs
+
+
+# class ServiceCredentials(BaseAuthSession):
+#     """
+#     Authorized session for backend clients/services. When a valid client id, client secret
+#     is presented, the session is authenticated and persisted. A previous
+#     session will be reused as long as it is not expired.
+
+#     Extends ``BaseAuthSession``.
+
+#     Parameters
+#     ----------
+#     client_id : str
+#         TBA
+#     client_secret : str
+#         TBA
+#     session_key : str, optional
+#         Unique identifier for an auth session. Can be used so that multiple instances can have
+#         independent auth/refresh cycles with the identity authority.
+
+#     """
+#     def __init__(self, auth_force=False, session_key=None):
+#         self._params = self._get_params(legacy_auth=False)
+#         client = WebApplicationClient(self._params.client_id)
+#         super(AccessToken, self).__init__(
+#             client, auth_force=auth_force, session_key=session_key
+#         )
+
+#     def _fetch_token_initial(self):
+#         return self.fetch_token()
+
+#     def _prepare_fetch_token_args(self):
+#         print('Please go here and authorize,', self._params.authority)
+#         package = input('Paste code here: ')
+#         parameters = json.loads(package)
+#         token_url = parameters['endpoint']
+#         code = parameters['code']
+
+#         self._params.token_url = token_url
+#         self._token_cache._token_url = token_url
+
+#         args = (self._params.token_url, )
+#         kwargs = {
+#             'code': code,
+#             'client_secret': self._params.client_secret
+#         }
+#         return args, kwargs
+
+#     def _prepare_refresh_token_args(self):
+#         args = (self._params.token_url, )
+#         kwargs = {
+#             'refresh_token': self.token['refresh_token'],
+#             'client_secret': self._params.client_secret
+#             }
+#         return args, kwargs
 
 
 # Default authenticator

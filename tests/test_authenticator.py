@@ -12,52 +12,48 @@ def setUpModule():
 
 
 class TestOAuth2Parameters(unittest.TestCase):
-
-    def test_environment_dev_legacy(self):
-        params = authenticate.OAuth2Parameters(_constants.ENV_DEV, legacy_auth=True)
-
-        self.assertEqual(params.resource, _constants.RESOURCE_DEV_LEGACY)
-        self.verify_shared_legacy_parameters(params)
-
-    def test_environment_test_legacy(self):
-        params = authenticate.OAuth2Parameters(_constants.ENV_TEST, legacy_auth=True)
-
-        self.assertEqual(params.resource, _constants.RESOURCE_TEST_LEGACY)
-        self.verify_shared_legacy_parameters(params)
-
-    def test_environment_qa_legacy(self):
-        params = authenticate.OAuth2Parameters(_constants.ENV_QA, legacy_auth=True)
-
-        self.assertEqual(params.resource, _constants.RESOURCE_QA_LEGACY)
-        self.verify_shared_legacy_parameters(params)
-
-    def test_environment_prod_legacy(self):
-        params = authenticate.OAuth2Parameters(_constants.ENV_PROD, legacy_auth=True)
-
-        self.assertEqual(params.resource, _constants.RESOURCE_PROD_LEGACY)
-        self.verify_shared_legacy_parameters(params)
-
-    def verify_shared_legacy_parameters(self, params):
-        self.assertEqual(params.authority, _constants.AUTHORITY_URL_LEGACY)
-        self.assertEqual(params.client_id, _constants.CLIENT_ID_LEGACY)
-        self.assertEqual(params.token_url, _constants.TOKEN_URL_LEGACY)
-
-    def test_environment_test(self):
+    def test_userlegacy(self):
         envs = [_constants.ENV_DEV, _constants.ENV_TEST,
                 _constants.ENV_QA, _constants.ENV_PROD]
         for env in envs:
-            params = authenticate.OAuth2Parameters(env, legacy_auth=False)
-            self.assertEqual(params.authority, getattr(
-                _constants, 'AUTHORITY_URL_{}'.format(env)))
+            params = authenticate.OAuth2Parameters(env, auth_type="userlegacy")
             self.assertEqual(params.client_id, getattr(
-                _constants, 'CLIENT_ID_{}'.format(env)))
+                _constants, 'CLIENT_ID_USERLEGACY'.format(env)))
+            self.assertEqual(params.authority, getattr(
+                _constants, 'AUTHORITY_URL_USERLEGACY'.format(env)))
+            self.assertEqual(params.token_url, getattr(
+                _constants, 'TOKEN_URL_USERLEGACY'.format(env)))
+            self.assertEqual(params.resource, getattr(
+                _constants, 'RESOURCE_{}_USERLEGACY'.format(env)))
+
+    def test_user(self):
+        envs = [_constants.ENV_DEV, _constants.ENV_TEST,
+                _constants.ENV_QA, _constants.ENV_PROD]
+        for env in envs:
+            params = authenticate.OAuth2Parameters(env, auth_type="USER")
+            self.assertEqual(params.authority, getattr(
+                _constants, 'AUTHORITY_URL_{}_USER'.format(env)))
+            self.assertEqual(params.client_id, getattr(
+                _constants, 'CLIENT_ID_{}_USER'.format(env)))
             self.assertEqual(params.client_secret, getattr(
-                _constants, 'CLIENT_SECRET_{}'.format(env)))
+                _constants, 'CLIENT_SECRET_{}_USER'.format(env)))
             self.assertEqual(params.redirect_uri, getattr(
-                _constants, 'REDIRECT_URI_{}'.format(env)))
+                _constants, 'REDIRECT_URI_{}_USER'.format(env)))
             self.assertEqual(params.token_url, None)
             self.assertEqual(params.scope, getattr(
-                _constants, 'SCOPE_{}'.format(env)))
+                _constants, 'SCOPE_{}_USER'.format(env)))
+
+    def test_client(self):
+        envs = [_constants.ENV_DEV, _constants.ENV_TEST,
+                _constants.ENV_QA, _constants.ENV_PROD]
+        for env in envs:
+            params = authenticate.OAuth2Parameters(env, auth_type="Client")
+            self.assertEqual(params.client_id, None)
+            self.assertEqual(params.client_secret, None)
+            self.assertEqual(params.token_url, getattr(
+                _constants, 'TOKEN_URL_{}_CLIENT'.format(env)))
+            self.assertEqual(params.scope, getattr(
+                _constants, 'SCOPE_{}_CLIENT'.format(env)))
 
 
 class TestAuthenticator(unittest.TestCase):
