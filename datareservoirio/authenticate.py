@@ -52,7 +52,8 @@ class TokenCache:
         with open(self.token_path, "w") as f:
             json.dump(token, f)
 
-    def load(self):
+    @property
+    def token(self):
         try:
             with open(self.token_path, "r") as f:
                 token = json.load(f)
@@ -73,8 +74,9 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
     auth_force : bool, optional
         Force re-authenticating the session (default is False)
     session_key : str, optional
-        Unique identifier for an auth session. Can be used so that multiple instances can have
-        independent auth/refresh cycles with the identity authority.
+        Unique identifier for an auth session. Can be used so that multiple
+        instances can have independent auth/refresh cycles with the identity
+        authority.
     kwargs : keyword arguments
         Keyword arguments passed on to ``requests_oauthlib.OAuth2Session``.
         Here, the mandatory parameters for the authentication client shall be
@@ -94,12 +96,11 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
         super().__init__(
             client=client,
             token_updater=self._token_cache,
-            token=self._token_cache.load(),
+            token=self._token_cache.token,
             **kwargs,
         )
 
-        if self._token_url is None:
-            self._token_url = self._token_cache.token_url
+        self._token_url = self._token_url or self._token_cache.token_url
 
         if auth_force:
             token = self._fetch_token_initial()
@@ -153,10 +154,10 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
 
 class UserAuthenticator(BaseAuthSession):
     """
-    Authorized session where credentials are given in the DataReservoir.io web application.
-    When a valid code is presented, the session is authenticated and persisted. A previous session
-    will be reused as long as it is not expired. When required, a new authentication code is prompted
-    for.
+    Authorized session where credentials are given in the DataReservoir.io web
+    application. When a valid code is presented, the session is authenticated
+    and persisted. A previous session will be reused as long as it is not
+    expired. When required, a new authentication code is prompted for.
 
     Extends ``BaseAuthSession``.
 
@@ -165,8 +166,9 @@ class UserAuthenticator(BaseAuthSession):
     auth_force : bool, optional
         Force re-authenticating the session (default is False)
     session_key : str, optional
-        Unique identifier for an auth session. Can be used so that multiple instances can have
-        independent auth/refresh cycles with the identity authority.
+        Unique identifier for an auth session. Can be used so that multiple
+        instances can have independent auth/refresh cycles with the identity
+        authority.
 
     """
 
@@ -227,8 +229,9 @@ class ClientAuthenticator(BaseAuthSession):
     auth_force : bool, optional
         Force re-authenticating the session (default is False)
     session_key : str, optional
-        Unique identifier for an auth session. Can be used so that multiple instances can have
-        independent auth/refresh cycles with the identity authority.
+        Unique identifier for an auth session. Can be used so that multiple
+        instances can have independent auth/refresh cycles with the identity
+        authority.
 
     """
 
@@ -297,9 +300,7 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
         }
 
         client = LegacyApplicationClient(client_id)
-        super().__init__(
-            client, session_params, auth_force=auth_force
-        )
+        super().__init__(client, session_params, auth_force=auth_force)
 
     def _prepare_fetch_token_args(self):
         args = (self._token_url,)
