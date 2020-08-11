@@ -91,7 +91,7 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
 
         self._session_params = session_params
 
-        super(BaseAuthSession, self).__init__(
+        super().__init__(
             client=client,
             token_updater=self._token_cache,
             token=self._token_cache.load(),
@@ -121,13 +121,13 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
     def fetch_token(self):
         """Fetch new access and refresh token."""
         args, kwargs = self._prepare_fetch_token_args()
-        token = super(BaseAuthSession, self).fetch_token(*args, **kwargs)
+        token = super().fetch_token(*args, **kwargs)
         return token
 
     def refresh_token(self, *args, **kwargs):
         """Refresh (expired) access token with a valid refresh token."""
         args, kwargs = self._prepare_refresh_token_args()
-        token = super(BaseAuthSession, self).refresh_token(*args, **kwargs)
+        token = super().refresh_token(*args, **kwargs)
         return token
 
     @abstractmethod
@@ -297,7 +297,7 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
         }
 
         client = LegacyApplicationClient(client_id)
-        super(UserCredentials, self).__init__(
+        super().__init__(
             client, session_params, auth_force=auth_force
         )
 
@@ -340,7 +340,7 @@ class UnsafeUserCredentials(UserCredentials):  # Deprecate soon
     def __init__(self, username, password):
 
         self._password = password
-        super(UnsafeUserCredentials, self).__init__(username, auth_force=True)
+        super().__init__(username, auth_force=True)
 
     def _get_pass(self):
         return self._password
