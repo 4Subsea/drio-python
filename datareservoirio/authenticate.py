@@ -4,7 +4,7 @@ import logging
 import os
 import platform
 import warnings
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from base64 import urlsafe_b64encode
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -20,93 +20,11 @@ from oauthlib.oauth2 import (
 from requests_oauthlib import OAuth2Session
 
 from .appdirs import user_data_dir
-from . import _constants
 from .globalsettings import environment
 from .log import LogWriter
 
 logger = logging.getLogger(__name__)
 logwriter = LogWriter(logger)
-
-
-class OAuth2Parameters:
-    def __init__(self, environment, auth_type):
-        self._environment = environment
-        self._auth_type = str(auth_type).upper()
-
-        if self._auth_type == "USER":
-            self._set_user()
-        elif self._auth_type == "CLIENT":
-            self._set_client()
-        elif self._auth_type == "USERLEGACY":
-            self._set_userlegacy()
-        else:
-            raise ValueError(
-                "Invalid 'auth_type'. Must be 'USER', 'CLIENT', or 'USERCLIENT'."
-            )
-
-    @property
-    def authority(self):
-        return self._authority
-
-    @property
-    def client_id(self):
-        return self._client_id
-
-    @property
-    def resource(self):
-        return self._resource
-
-    @property
-    def token_url(self):
-        return self._token_url
-
-    @token_url.setter
-    def token_url(self, value):
-        self._token_url = value
-
-    @property
-    def client_secret(self):
-        return self._client_secret
-
-    @property
-    def scope(self):
-        return self._scope
-
-    @property
-    def redirect_uri(self):
-        return self._redirect_uri
-
-    def _set_userlegacy(self):
-        self._authority = _constants.AUTHORITY_URL_USERLEGACY
-        self._client_id = _constants.CLIENT_ID_USERLEGACY
-        self._token_url = _constants.TOKEN_URL_USERLEGACY
-        self._resource = getattr(
-            _constants, "RESOURCE_{}_USERLEGACY".format(self._environment)
-        )
-
-    def _set_user(self):
-        self._authority = getattr(
-            _constants, "AUTHORITY_URL_{}_USER".format(self._environment)
-        )
-        self._client_id = getattr(
-            _constants, "CLIENT_ID_{}_USER".format(self._environment)
-        )
-        self._client_secret = getattr(
-            _constants, "CLIENT_SECRET_{}_USER".format(self._environment)
-        )
-        self._redirect_uri = getattr(
-            _constants, "REDIRECT_URI_{}_USER".format(self._environment)
-        )
-        self._token_url = None  # token url will be provided as part of access code
-        self._scope = getattr(_constants, "SCOPE_{}_USER".format(self._environment))
-
-    def _set_client(self):
-        self._client_id = None
-        self._client_secret = None
-        self._token_url = getattr(
-            _constants, "TOKEN_URL_{}_CLIENT".format(self._environment)
-        )
-        self._scope = getattr(_constants, "SCOPE_{}_CLIENT".format(self._environment))
 
 
 class TokenCache:
