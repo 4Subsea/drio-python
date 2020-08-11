@@ -79,17 +79,6 @@ class BaseAPI(object):
         return response
 
 
-class TokenAuth(requests.auth.AuthBase):
-    """Authenticator class for reservoir REST API"""
-    def __init__(self, token):
-        self.token = token
-
-    def __call__(self, r):
-        value = 'Bearer {}'.format(self.token['accessToken'])
-        r.headers.update({'Authorization': value})
-        return r
-
-
 def _update_kwargs(kwargs, defaults):
     """Append defaults to keyword arguments"""
     for key in defaults:
