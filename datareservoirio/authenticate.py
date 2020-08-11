@@ -150,81 +150,6 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
         return args, kwargs
 
 
-class UserCredentials(BaseAuthSession):
-    """
-    Authorized session with username and password. Authenticates against legacy
-    authority (Azure AD). Password is prompted when needed.
-
-    Extends ``BaseAuthSession``.
-
-    Parameters
-    ----------
-    username : str
-        Username accepted by authority.
-    auth_force : bool
-        Force re-authenticating the session (default is False)
-
-    """
-
-    def __init__(self, username, auth_force=False):
-        env = environment.current_environment
-        client_id = eval("_constants.CLIENT_ID_USERLEGACY")
-        session_params = {
-            "username": username,
-            "resource": eval(f"_constants.RESOURCE_{env}_USERLEGACY"),
-            "token_url": eval("_constants.TOKEN_URL_USERLEGACY"),
-        }
-
-        client = LegacyApplicationClient(client_id)
-        super(UserCredentials, self).__init__(
-            client, session_params, auth_force=auth_force
-        )
-
-    def _prepare_fetch_token_args(self):
-        args = (self._token_url,)
-        kwargs = {
-            "resource": self._session_params["resource"],
-            "username": self._session_params["username"],
-            "password": self._get_pass(),
-            "include_client_id": True,
-        }
-        return args, kwargs
-
-    def _prepare_refresh_token_args(self):
-        args = (self._token_url,)
-        kwargs = {"refresh_token": self.token["refresh_token"]}
-        return args, kwargs
-
-    def _get_pass(self):
-        return getpass.getpass("Password: ")
-
-
-class UnsafeUserCredentials(UserCredentials):
-    """
-    Authorized session with username and password. Authenticates against legacy
-    authority (Azure AD). It is considered "unsafe" as it stores password in
-    memory.
-
-    Extends ``UserCredentials``.
-
-    Parameters
-    ----------
-    username : str
-        Username accepted by authority.
-    password : str
-        Password accepted by authority.
-
-    """
-
-    def __init__(self, username, password):
-
-        self._password = password
-        super(UnsafeUserCredentials, self).__init__(username, auth_force=True)
-
-    def _get_pass(self):
-        return self._password
-
-
 class AccessToken(BaseAuthSession):
     """
     Authorized session where credentials are given in the DataReservoir.io web application.
@@ -330,3 +255,82 @@ class ServiceCredentials(BaseAuthSession):
 
 # Default authenticator
 Authenticator = AccessToken
+
+
+class UserCredentials(BaseAuthSession):  # Deprecate soon
+    """
+    Authorized session with username and password. Authenticates against legacy
+    authority (Azure AD). Password is prompted when needed.
+
+    Extends ``BaseAuthSession``.
+
+    Parameters
+    ----------
+    username : str
+        Username accepted by authority.
+    auth_force : bool
+        Force re-authenticating the session (default is False)
+
+    """
+
+    def __init__(self, username, auth_force=False):
+        warnings.warn(
+            "Support for username password credentials will be deprecated in "
+            "the near future. Use 'ClienAuthenticator' instead.")
+
+        env = environment.current_environment
+        client_id = eval("_constants.CLIENT_ID_USERLEGACY")
+        session_params = {
+            "username": username,
+            "resource": eval(f"_constants.RESOURCE_{env}_USERLEGACY"),
+            "token_url": eval("_constants.TOKEN_URL_USERLEGACY"),
+        }
+
+        client = LegacyApplicationClient(client_id)
+        super(UserCredentials, self).__init__(
+            client, session_params, auth_force=auth_force
+        )
+
+    def _prepare_fetch_token_args(self):
+        args = (self._token_url,)
+        kwargs = {
+            "resource": self._session_params["resource"],
+            "username": self._session_params["username"],
+            "password": self._get_pass(),
+            "include_client_id": True,
+        }
+        return args, kwargs
+
+    def _prepare_refresh_token_args(self):
+        args = (self._token_url,)
+        kwargs = {"refresh_token": self.token["refresh_token"]}
+        return args, kwargs
+
+    def _get_pass(self):
+        return getpass.getpass("Password: ")
+
+
+class UnsafeUserCredentials(UserCredentials):  Deprecate soon
+    """
+    Authorized session with username and password. Authenticates against legacy
+    authority (Azure AD). It is considered "unsafe" as it stores password in
+    memory.
+
+    Extends ``UserCredentials``.
+
+    Parameters
+    ----------
+    username : str
+        Username accepted by authority.
+    password : str
+        Password accepted by authority.
+
+    """
+
+    def __init__(self, username, password):
+
+        self._password = password
+        super(UnsafeUserCredentials, self).__init__(username, auth_force=True)
+
+    def _get_pass(self):
+        return self._password
