@@ -7,12 +7,13 @@ from abc import ABCMeta, abstractmethod
 
 from oauthlib.oauth2 import (
     BackendApplicationClient,
+    InvalidGrantError,
     LegacyApplicationClient,
     WebApplicationClient,
-    InvalidGrantError,
 )
 from requests_oauthlib import OAuth2Session
 
+from . import _constants
 from .appdirs import user_data_dir
 from .globalsettings import environment
 from .log import LogWriter
@@ -48,14 +49,14 @@ class TokenCache:
 
     def dump(self, token):
         token["token_url"] = self.token_url
-        with open(self.token_path, "wb") as f:
+        with open(self.token_path, "w") as f:
             json.dump(token, f)
 
     def load(self):
         try:
-            with open(self.token_path, "rb") as f:
+            with open(self.token_path, "r") as f:
                 token = json.load(f)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.JSONDecodeError):
             return None
         self._token_url = token.pop("token_url", None)
         return token
@@ -150,7 +151,7 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
         return args, kwargs
 
 
-class AccessToken(BaseAuthSession):
+class UserAuthenticator(BaseAuthSession):
     """
     Authorized session where credentials are given in the DataReservoir.io web application.
     When a valid code is presented, the session is authenticated and persisted. A previous session
@@ -207,7 +208,7 @@ class AccessToken(BaseAuthSession):
         return args, kwargs
 
 
-class ServiceCredentials(BaseAuthSession):
+class ClientAuthenticator(BaseAuthSession):
     """
     Authorized session where credentials are given in the DataReservoir.io web application.
     When a valid code is presented, the session is authenticated and persisted. A previous session
@@ -225,13 +226,14 @@ class ServiceCredentials(BaseAuthSession):
         independent auth/refresh cycles with the identity authority.
 
     """
+
     def __init__(self, client_id, client_secret, session_key=None):
         env = environment.current_environment
 
         session_params = {
             "client_secret": client_secret,
             "token_url": eval(f"_constants.TOKEN_URL_{env}_CLIENT"),
-            "scope": eval(f"_constants.SCOPE_{env}_CLIENT")
+            "scope": eval(f"_constants.SCOPE_{env}_CLIENT"),
         }
 
         client = BackendApplicationClient(client_id)
@@ -253,8 +255,13 @@ class ServiceCredentials(BaseAuthSession):
         return
 
 
-# Default authenticator
-Authenticator = AccessToken
+Authenticator = UserAuthenticator  # Default authenticator
+
+
+class AccessToken(UserAuthenticator):  # Deprecate soon
+    def __init__(self, auth_force=False, session_key=None):
+        warnings.warn("Use UserAuthenticator instead.", DeprecationWarning)
+        super().__init__(self, auth_force=auth_force, session_key=session_key)
 
 
 class UserCredentials(BaseAuthSession):  # Deprecate soon
@@ -276,7 +283,8 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
     def __init__(self, username, auth_force=False):
         warnings.warn(
             "Support for username password credentials will be deprecated in "
-            "the near future. Use 'ClienAuthenticator' instead.")
+            "the near future. Use 'ClienAuthenticator' instead."
+        )
 
         env = environment.current_environment
         client_id = eval("_constants.CLIENT_ID_USERLEGACY")
@@ -310,7 +318,7 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
         return getpass.getpass("Password: ")
 
 
-class UnsafeUserCredentials(UserCredentials):  Deprecate soon
+class UnsafeUserCredentials(UserCredentials):  # Deprecate soon
     """
     Authorized session with username and password. Authenticates against legacy
     authority (Azure AD). It is considered "unsafe" as it stores password in
