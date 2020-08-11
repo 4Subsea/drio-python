@@ -2,15 +2,9 @@ import getpass
 import json
 import logging
 import os
-import platform
 import warnings
 from abc import ABCMeta, abstractmethod
-from base64 import urlsafe_b64encode
 
-from cryptography.fernet import Fernet, InvalidToken
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from oauthlib.oauth2 import (
     BackendApplicationClient,
     LegacyApplicationClient,
@@ -34,7 +28,6 @@ class TokenCache:
 
         self._session_key = f".{session_key}" if session_key else ""
         self._token_url = None
-        self._scrambler_init()
 
     def __call__(self, token):
         self.dump(token)
@@ -55,33 +48,17 @@ class TokenCache:
 
     def dump(self, token):
         token["token_url"] = self.token_url
-        data = json.dumps(token).encode("utf-8")
         with open(self.token_path, "wb") as f:
-            f.write(self._scrambler.encrypt(data))
+            json.dump(token, f)
 
     def load(self):
         try:
             with open(self.token_path, "rb") as f:
-                data = self._scrambler.decrypt(f.read())
-        except (FileNotFoundError, InvalidToken):
+                token = json.load(f)
+        except FileNotFoundError:
             return None
-
-        token = json.loads(data.decode("utf-8"))
         self._token_url = token.pop("token_url", None)
         return token
-
-    def _scrambler_init(self):
-        machine_env = "{}|{}".format(platform.node(), environment.get())
-
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=machine_env.encode("utf-8"),
-            iterations=100000,
-            backend=default_backend(),
-        )
-        key = urlsafe_b64encode(kdf.derive(self._token_root.encode("utf-8")))
-        self._scrambler = Fernet(key)
 
 
 class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
