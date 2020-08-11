@@ -1,7 +1,6 @@
 import logging
 from functools import wraps
 
-import requests
 from requests.packages.urllib3 import Retry
 from requests.adapters import HTTPAdapter
 
@@ -15,21 +14,22 @@ logwriter = LogWriter(logger)
 def _response_logger(func):
     @wraps(func)
     def func_wrapper(*args, **kwargs):
-        logwriter.debug('request initiated')
+        logwriter.debug("request initiated")
         response = func(*args, **kwargs)
-        logwriter.debug('response recieved')
+        logwriter.debug("response recieved")
 
-        logwriter.debug('request url: {}'.format(response.request.url))
-        logwriter.debug('status code: {}'.format(response.status_code))
+        logwriter.debug("request url: {}".format(response.request.url))
+        logwriter.debug("status code: {}".format(response.status_code))
         try:
-            logwriter.debug('response text: {}'.format(response.text))
+            logwriter.debug("response text: {}".format(response.text))
         except ValueError:
-            logwriter.debug('response text: failed encoding')
+            logwriter.debug("response text: failed encoding")
         return response
+
     return func_wrapper
 
 
-class BaseAPI(object):
+class BaseAPI:
     """Base class for reservoir REST API"""
 
     def __init__(self, session):
@@ -39,16 +39,20 @@ class BaseAPI(object):
 
         # Attention: Be careful when extending the list of retry_status!
         retry_status = frozenset([413, 429, 502, 503, 504])
-        method_whitelist = frozenset(['HEAD', 'TRACE', 'GET', 'POST', 'PUT',
-                                      'OPTIONS', 'DELETE'])
+        method_whitelist = frozenset(
+            ["HEAD", "TRACE", "GET", "POST", "PUT", "OPTIONS", "DELETE"]
+        )
 
         persist = Retry(
-            total=10, backoff_factor=0.5, method_whitelist=method_whitelist,
-            status_forcelist=retry_status, raise_on_status=False)
-        self._session.mount(self._api_base_url,
-                            HTTPAdapter(max_retries=persist))
+            total=10,
+            backoff_factor=0.5,
+            method_whitelist=method_whitelist,
+            status_forcelist=retry_status,
+            raise_on_status=False,
+        )
+        self._session.mount(self._api_base_url, HTTPAdapter(max_retries=persist))
 
-        self._defaults = {'timeout': 30.0}
+        self._defaults = {"timeout": 30.0}
 
     @_response_logger
     def _get(self, *args, **kwargs):
