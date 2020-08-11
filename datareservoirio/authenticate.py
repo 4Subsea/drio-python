@@ -210,15 +210,20 @@ class UserAuthenticator(BaseAuthSession):
 
 class ClientAuthenticator(BaseAuthSession):
     """
-    Authorized session where credentials are given in the DataReservoir.io web application.
-    When a valid code is presented, the session is authenticated and persisted. A previous session
-    will be reused as long as it is not expired. When required, a new authentication code is prompted
+    Authorized session where credentials are given as client_id and
+    client_secret. When valid credentials are presented, the session is
+    authenticated and persisted. A previous session will be reused as long as
+    it is not expired. When required, a new authentication code is prompted
     for.
 
     Extends ``BaseAuthSession``.
 
     Parameters
     ----------
+    client_id : str
+        Unique identifier for the client (i.e. app/service etc.).
+    client_secret : str
+        Secret/password for the client.
     auth_force : bool, optional
         Force re-authenticating the session (default is False)
     session_key : str, optional
@@ -253,9 +258,6 @@ class ClientAuthenticator(BaseAuthSession):
 
     def _prepare_refresh_token_args(self):
         return
-
-
-Authenticator = UserAuthenticator  # Default authenticator
 
 
 class AccessToken(UserAuthenticator):  # Deprecate soon
