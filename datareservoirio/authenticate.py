@@ -28,7 +28,7 @@ class TokenCache:
             os.makedirs(self._token_root)
 
         self._session_key = f".{session_key}" if session_key else ""
-        self._token_url = None
+        self._is_loaded = False
 
     def __call__(self, token):
         self.dump(token)
@@ -45,6 +45,8 @@ class TokenCache:
 
     @property
     def token_url(self):
+        if not self._is_loaded:
+            self.token
         return self._token_url
 
     def dump(self, token):
@@ -60,6 +62,7 @@ class TokenCache:
         except (FileNotFoundError, json.JSONDecodeError):
             return None
         self._token_url = token.pop("token_url", None)
+        self._is_loaded = True
         return token
 
 
