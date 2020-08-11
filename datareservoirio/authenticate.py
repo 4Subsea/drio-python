@@ -330,24 +330,3 @@ class ServiceCredentials(BaseAuthSession):
 
 # Default authenticator
 Authenticator = AccessToken
-
-
-# Legacy support and backward compatibility
-class AdalAuthenticator(UserCredentials):
-    def __init__(self, username):
-        warnings.warn(
-            "AdalAuthenticator will be depracated in near future."
-            " Please switch to UserCredentials.",
-            DeprecationWarning,
-        )
-        super(AdalAuthenticator, self).__init__(username, auth_force=True)
-
-
-class UnsafeAdalAuthenticator(UnsafeUserCredentials):
-    def __init__(self, username, password):
-        warnings.warn(
-            "UnsafeAdalAuthenticator will be depracated in near future."
-            " Please switch to UnsafeUserCredentials.",
-            DeprecationWarning,
-        )
-        super(UnsafeAdalAuthenticator, self).__init__(username, password)
