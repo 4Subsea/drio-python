@@ -11,51 +11,6 @@ def setUpModule():
     datareservoirio.globalsettings.environment.set_qa()
 
 
-class TestOAuth2Parameters(unittest.TestCase):
-    def test_userlegacy(self):
-        envs = [_constants.ENV_DEV, _constants.ENV_TEST,
-                _constants.ENV_QA, _constants.ENV_PROD]
-        for env in envs:
-            params = authenticate.OAuth2Parameters(env, auth_type="userlegacy")
-            self.assertEqual(params.client_id, getattr(
-                _constants, 'CLIENT_ID_USERLEGACY'.format(env)))
-            self.assertEqual(params.authority, getattr(
-                _constants, 'AUTHORITY_URL_USERLEGACY'.format(env)))
-            self.assertEqual(params.token_url, getattr(
-                _constants, 'TOKEN_URL_USERLEGACY'.format(env)))
-            self.assertEqual(params.resource, getattr(
-                _constants, 'RESOURCE_{}_USERLEGACY'.format(env)))
-
-    def test_user(self):
-        envs = [_constants.ENV_DEV, _constants.ENV_TEST,
-                _constants.ENV_QA, _constants.ENV_PROD]
-        for env in envs:
-            params = authenticate.OAuth2Parameters(env, auth_type="USER")
-            self.assertEqual(params.authority, getattr(
-                _constants, 'AUTHORITY_URL_{}_USER'.format(env)))
-            self.assertEqual(params.client_id, getattr(
-                _constants, 'CLIENT_ID_{}_USER'.format(env)))
-            self.assertEqual(params.client_secret, getattr(
-                _constants, 'CLIENT_SECRET_{}_USER'.format(env)))
-            self.assertEqual(params.redirect_uri, getattr(
-                _constants, 'REDIRECT_URI_{}_USER'.format(env)))
-            self.assertEqual(params.token_url, None)
-            self.assertEqual(params.scope, getattr(
-                _constants, 'SCOPE_{}_USER'.format(env)))
-
-    def test_client(self):
-        envs = [_constants.ENV_DEV, _constants.ENV_TEST,
-                _constants.ENV_QA, _constants.ENV_PROD]
-        for env in envs:
-            params = authenticate.OAuth2Parameters(env, auth_type="Client")
-            self.assertEqual(params.client_id, None)
-            self.assertEqual(params.client_secret, None)
-            self.assertEqual(params.token_url, getattr(
-                _constants, 'TOKEN_URL_{}_CLIENT'.format(env)))
-            self.assertEqual(params.scope, getattr(
-                _constants, 'SCOPE_{}_CLIENT'.format(env)))
-
-
 class TestAuthenticator(unittest.TestCase):
 
     def test_authenticator_exists(self):

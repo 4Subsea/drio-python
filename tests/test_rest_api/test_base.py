@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 
 from datareservoirio.rest_api.base import (
-    BaseAPI, TokenAuth, _update_kwargs)
+    BaseAPI, _update_kwargs)
 
 
 class Test_BaseAPI(unittest.TestCase):
@@ -42,28 +42,6 @@ class Test_BaseAPI(unittest.TestCase):
         _update_kwargs(kwargs, defaults)
 
         self.assertDictEqual(kwargs, {"abc": 123, "def": 456})
-
-
-class Test_TokenAuth(unittest.TestCase):
-
-    def setUp(self):
-        self.token = {'accessToken': 'abc'}
-
-    def test_init(self):
-        self.token_auth = TokenAuth(self.token)
-        self.assertDictEqual(self.token_auth.token, self.token)
-
-    def test_call(self):
-        r = Mock()
-        self.token_auth = TokenAuth(self.token)
-
-        auth_dict = {'Authorization': 'Bearer {}'
-                     .format(self.token['accessToken'])}
-
-        r = self.token_auth(r)
-        r.headers.update.assert_called_once_with(auth_dict)
-        r.headers = auth_dict
-        self.assertDictEqual(r.headers, auth_dict)
 
 
 if __name__ == '__main__':
