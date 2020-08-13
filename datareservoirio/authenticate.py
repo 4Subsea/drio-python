@@ -28,7 +28,7 @@ class TokenCache:
             os.makedirs(self._token_root)
 
         self._session_key = f".{session_key}" if session_key else ""
-        self._is_loaded = False
+        self._token_url = None
 
     def __call__(self, token):
         self.dump(token)
@@ -45,8 +45,8 @@ class TokenCache:
 
     @property
     def token_url(self):
-        if not self._is_loaded:
-            self.token
+        if self._token_url is None:
+            raise ValueError("'_token_url' is not set.")
         return self._token_url
 
     def dump(self, token):
@@ -62,7 +62,6 @@ class TokenCache:
         except (FileNotFoundError, json.JSONDecodeError):
             return None
         self._token_url = token.pop("token_url", None)
-        self._is_loaded = True
         return token
 
 
@@ -251,7 +250,6 @@ class ClientAuthenticator(BaseAuthSession):
         super().__init__(
             client, session_params, auth_force=True, session_key=session_key
         )
-        self.refresh_token = self.fetch_token
 
     def _prepare_fetch_token_args(self):
         args = (self._token_url,)
@@ -265,11 +263,16 @@ class ClientAuthenticator(BaseAuthSession):
     def _prepare_refresh_token_args(self):
         return
 
+    def refresh_token(self):
+        raise NotImplementedError(
+            "'ClientAuthenticator' does not support refresh token. "
+            "Use 'fetch_token' instead.")
+
 
 class AccessToken(UserAuthenticator):  # Deprecate soon
     def __init__(self, auth_force=False, session_key=None):
         warnings.warn("Use UserAuthenticator instead.", DeprecationWarning)
-        super().__init__(self, auth_force=auth_force, session_key=session_key)
+        super().__init__(auth_force=auth_force, session_key=session_key)
 
 
 class UserCredentials(BaseAuthSession):  # Deprecate soon
