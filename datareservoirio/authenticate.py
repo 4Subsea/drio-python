@@ -45,8 +45,6 @@ class TokenCache:
 
     @property
     def token_url(self):
-        if self._token_url is None:
-            raise ValueError("'_token_url' is not set.")
         return self._token_url
 
     def dump(self, token):
@@ -61,7 +59,10 @@ class TokenCache:
                 token = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return None
+
         self._token_url = token.pop("token_url", None)
+        if self._token_url is None:
+            return None
         return token
 
 
@@ -291,7 +292,7 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
 
     """
 
-    def __init__(self, username, auth_force=False):
+    def __init__(self, username, auth_force=False, session_key=None):
         warnings.warn(
             "Support for username password credentials will be deprecated in "
             "the near future. Use 'ClienAuthenticator' instead."
@@ -306,7 +307,7 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
         }
 
         client = LegacyApplicationClient(client_id)
-        super().__init__(client, session_params, auth_force=auth_force)
+        super().__init__(client, session_params, auth_force=auth_force, session_key=session_key)
 
     def _prepare_fetch_token_args(self):
         args = (self._token_url,)
@@ -344,10 +345,10 @@ class UnsafeUserCredentials(UserCredentials):  # Deprecate soon
 
     """
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, session_key=None):
 
         self._password = password
-        super().__init__(username, auth_force=True)
+        super().__init__(username, auth_force=True, session_key=session_key)
 
     def _get_pass(self):
         return self._password
