@@ -24,14 +24,22 @@ logwriter = LogWriter(logger)
 
 class TokenCache:
     def __init__(self, session_key=None):
+        self._session_key = f".{session_key}" if session_key else ""
+
         if not os.path.exists(self._token_root):
             os.makedirs(self._token_root)
 
-        self._session_key = f".{session_key}" if session_key else ""
-        self._token_url = None
+        try:
+            with open(self.token_path, "r") as f:
+                self._token = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            self._token = {}
 
     def __call__(self, token):
         self.dump(token)
+
+    def append(self, key, value):
+        self._token[key] = value
 
     @property
     def _token_root(self):
@@ -43,27 +51,14 @@ class TokenCache:
             self._token_root, f"token.{environment.get()}{self._session_key}"
         )
 
-    @property
-    def token_url(self):
-        return self._token_url
-
     def dump(self, token):
-        token["token_url"] = self.token_url
+        self._token.update(token)
         with open(self.token_path, "w") as f:
-            json.dump(token, f)
+            json.dump(self._token, f)
 
     @property
     def token(self):
-        try:
-            with open(self.token_path, "r") as f:
-                token = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return None
-
-        self._token_url = token.pop("token_url", None)
-        if self._token_url is None:
-            return None
-        return token
+        return None or self._token
 
 
 class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
@@ -74,6 +69,8 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
     ----------
     client : ``oauthlib.oauth2`` client.
         A client passed on to ``requests_oauthlib.OAuth2Session``.
+    token_url : str
+        Token endpoint URL, must use HTTPS.
     session_params: dict
         Dictionary containing the necessary parameters used during
         authentication. Use these parameters when overriding the
@@ -93,39 +90,25 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
     """
 
     def __init__(
-        self, client, session_params, auth_force=False, session_key=None, **kwargs
+        self, client, auth_force=False, session_key=None, **kwargs
     ):
-
-        self._token_cache = TokenCache(session_key=session_key)
-        self._token_url = session_params.pop("token_url", None)
-
-        self._session_params = session_params
-
         super().__init__(
             client=client,
-            token_updater=self._token_cache,
-            token=self._token_cache.token,
             **kwargs,
         )
 
-        self._token_url = self._token_url or self._token_cache.token_url
-
-        if auth_force:
-            token = self._fetch_token_initial()
+        if auth_force or not self.token:
+            token = self.fetch_token()
         else:
             try:
                 token = self.refresh_token()
-                self.auto_refresh_url = self._token_url
-                print("Authentication from previous session still valid.")
             except (KeyError, ValueError, InvalidGrantError):
-                token = self._fetch_token_initial()
-        self._token_cache(token)
+                token = self.fetch_token()
+            else:
+                print("Authentication from previous session still valid.")
 
-    def _fetch_token_initial(self):
-        """Define process for obtaining the initial token."""
-        token = self.fetch_token()
-        self.auto_refresh_url = self._token_url
-        return token
+        if self.token_updater:
+            self.token_updater(token)
 
     def fetch_token(self):
         """Fetch new access and refresh token."""
@@ -176,44 +159,50 @@ class UserAuthenticator(BaseAuthSession):
     session_key : str, optional
         Unique identifier for an auth session. Can be used so that multiple
         instances can have independent auth/refresh cycles with the identity
-        authority.
+        authority. Prevents local cache from being accidently overwritten.
 
     """
 
     def __init__(self, auth_force=False, session_key=None):
-        env = environment.current_environment
+        self._env = environment.current_environment
 
-        client_id = eval(f"_constants.CLIENT_ID_{env}_USER")
-        session_params = {
-            "client_secret": eval(f"_constants.CLIENT_SECRET_{env}_USER"),
-            "token_url": None,  # retrieved from access token response
-            "authority": eval(f"_constants.AUTHORITY_URL_{env}_USER"),
-        }
+        token_cache = TokenCache(session_key=session_key)
+        token = token_cache.token
 
-        client = WebApplicationClient(client_id)
+        if token:
+            self._token_url = token.get("token_url", None)
+        else:
+            self._token_url = None
+
+        client = WebApplicationClient(eval(f"_constants.CLIENT_ID_{self._env}_USER"))
         super().__init__(
-            client, session_params, auth_force=auth_force, session_key=session_key
+            client,
+            auth_force=auth_force,
+            token_updater=token_cache,
+            token=token,
+            auto_refresh_url=None  # update in _prepare_fetch_token
         )
 
     def _prepare_fetch_token_args(self):
-        print("Please go here and authorize,", self._session_params["authority"])
+        print("Please go here and authorize,", eval(f"_constants.AUTHORITY_URL_{self._env}_USER"))
         package = input("Paste code here: ")
         parameters = json.loads(package)
         token_url = parameters["endpoint"]
         code = parameters["code"]
 
+        self.token_updater.append("token_url", token_url)
         self._token_url = token_url
-        self._token_cache._token_url = token_url
+        self.auto_refresh_url = token_url
 
-        args = (self._token_url,)
-        kwargs = {"code": code, "client_secret": self._session_params["client_secret"]}
+        args = (self._token_url, )
+        kwargs = {"code": code, "client_secret": eval(f"_constants.CLIENT_SECRET_{self._env}_USER")}
         return args, kwargs
 
     def _prepare_refresh_token_args(self):
         args = (self._token_url,)
         kwargs = {
             "refresh_token": self.token["refresh_token"],
-            "client_secret": self._session_params["client_secret"],
+            "client_secret": eval(f"_constants.CLIENT_SECRET_{self._env}_USER"),
         }
         return args, kwargs
 
@@ -241,25 +230,20 @@ class ClientAuthenticator(BaseAuthSession):
 
     """
 
-    def __init__(self, client_id, client_secret, session_key=None):
-        env = environment.current_environment
-
-        session_params = {
-            "client_secret": client_secret,
-            "token_url": eval(f"_constants.TOKEN_URL_{env}_CLIENT"),
-            "scope": eval(f"_constants.SCOPE_{env}_CLIENT"),
-        }
+    def __init__(self, client_id, client_secret):
+        self._env = environment.current_environment
+        self._client_secret = client_secret
 
         client = BackendApplicationClient(client_id)
         super().__init__(
-            client, session_params, auth_force=True, session_key=session_key
+            client, auth_force=True
         )
 
     def _prepare_fetch_token_args(self):
-        args = (self._token_url,)
+        args = (eval(f"_constants.TOKEN_URL_{self._env}_CLIENT"), )
         kwargs = {
-            "client_secret": self._session_params["client_secret"],
-            "scope": self._session_params["scope"],
+            "client_secret": self._client_secret,
+            "scope": eval(f"_constants.SCOPE_{self._env}_CLIENT"),
             "include_client_id": True,
         }
         return args, kwargs
@@ -297,6 +281,10 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
         Username accepted by authority.
     auth_force : bool
         Force re-authenticating the session (default is False)
+    session_key : str, optional
+        Unique identifier for an auth session. Can be used so that multiple
+        instances can have independent auth/refresh cycles with the identity
+        authority.
 
     """
 
@@ -306,31 +294,32 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
             "the near future. Use 'ClienAuthenticator' instead."
         )
 
-        env = environment.current_environment
-        client_id = eval("_constants.CLIENT_ID_USERLEGACY")
-        session_params = {
-            "username": username,
-            "resource": eval(f"_constants.RESOURCE_{env}_USERLEGACY"),
-            "token_url": eval("_constants.TOKEN_URL_USERLEGACY"),
-        }
+        self._env = environment.current_environment
+        self._username = username
 
-        client = LegacyApplicationClient(client_id)
+        token_cache = TokenCache(session_key=session_key)
+
+        client = LegacyApplicationClient(_constants.CLIENT_ID_USERLEGACY)
         super().__init__(
-            client, session_params, auth_force=auth_force, session_key=session_key
+            client,
+            auth_force=auth_force,
+            token_updater=token_cache,
+            token=token_cache.token,
+            auto_refresh_url=_constants.TOKEN_URL_USERLEGACY
         )
 
     def _prepare_fetch_token_args(self):
-        args = (self._token_url,)
+        args = (_constants.TOKEN_URL_USERLEGACY, )
         kwargs = {
-            "resource": self._session_params["resource"],
-            "username": self._session_params["username"],
+            "resource": eval(f"_constants.RESOURCE_{self._env}_USERLEGACY"),
+            "username": self._username,
             "password": self._get_pass(),
             "include_client_id": True,
         }
         return args, kwargs
 
     def _prepare_refresh_token_args(self):
-        args = (self._token_url,)
+        args = (_constants.TOKEN_URL_USERLEGACY, )
         kwargs = {"refresh_token": self.token["refresh_token"]}
         return args, kwargs
 
@@ -352,13 +341,19 @@ class UnsafeUserCredentials(UserCredentials):  # Deprecate soon
         Username accepted by authority.
     password : str
         Password accepted by authority.
+    auth_force : bool
+        Force re-authenticating the session (default is False)
+    session_key : str, optional
+        Unique identifier for an auth session. Can be used so that multiple
+        instances can have independent auth/refresh cycles with the identity
+        authority.
 
     """
 
-    def __init__(self, username, password, session_key=None):
+    def __init__(self, username, password, auth_force=False, session_key=None):
 
         self._password = password
-        super().__init__(username, auth_force=True, session_key=session_key)
+        super().__init__(username, auth_force=auth_force, session_key=session_key)
 
     def _get_pass(self):
         return self._password
