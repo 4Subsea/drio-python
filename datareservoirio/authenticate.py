@@ -13,7 +13,7 @@ from oauthlib.oauth2 import (
 )
 from requests_oauthlib import OAuth2Session
 
-from . import _constants
+from . import _constants  # noqa: F401
 from .appdirs import user_data_dir
 from .globalsettings import environment
 from .log import LogWriter
@@ -74,6 +74,11 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
     ----------
     client : ``oauthlib.oauth2`` client.
         A client passed on to ``requests_oauthlib.OAuth2Session``.
+    session_params: dict
+        Dictionary containing the necessary parameters used during
+        authentication. Use these parameters when overriding the
+        '_prepare_fetch_token_args' and '_prepare_refresh_token_args' methods.
+        The provided dict is stored internally in '_session_params'.
     auth_force : bool, optional
         Force re-authenticating the session (default is False)
     session_key : str, optional
@@ -217,9 +222,7 @@ class ClientAuthenticator(BaseAuthSession):
     """
     Authorized session where credentials are given as client_id and
     client_secret. When valid credentials are presented, the session is
-    authenticated and persisted. A previous session will be reused as long as
-    it is not expired. When required, a new authentication code is prompted
-    for.
+    authenticated and persisted.
 
     Extends ``BaseAuthSession``.
 
@@ -267,10 +270,15 @@ class ClientAuthenticator(BaseAuthSession):
     def refresh_token(self):
         raise NotImplementedError(
             "'ClientAuthenticator' does not support refresh token. "
-            "Use 'fetch_token' instead.")
+            "Use 'fetch_token' instead."
+        )
 
 
 class AccessToken(UserAuthenticator):  # Deprecate soon
+    """
+    Alias for 'UserAuthenticator'.
+    """
+
     def __init__(self, auth_force=False, session_key=None):
         warnings.warn("Use UserAuthenticator instead.", DeprecationWarning)
         super().__init__(auth_force=auth_force, session_key=session_key)
@@ -307,7 +315,9 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
         }
 
         client = LegacyApplicationClient(client_id)
-        super().__init__(client, session_params, auth_force=auth_force, session_key=session_key)
+        super().__init__(
+            client, session_params, auth_force=auth_force, session_key=session_key
+        )
 
     def _prepare_fetch_token_args(self):
         args = (self._token_url,)
