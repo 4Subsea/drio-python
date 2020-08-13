@@ -120,8 +120,8 @@ class Test_CacheIO(unittest.TestCase):
         mock_remove.assert_called_once_with("file_path")
 
         mock_remove.side_effect = Exception
-
         with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
             cache_io._delete("file_path")
         assert len(w) == 1
         assert issubclass(w[-1].category, Warning)
