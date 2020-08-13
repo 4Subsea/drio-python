@@ -17,11 +17,8 @@ Authentication
    :members:
    :inherited-members:
 
-.. autoclass:: datareservoirio.authenticate.AccessToken
+.. autoclass:: datareservoirio.authenticate.UserAuthenticator
    :members:
 
-.. autoclass:: datareservoirio.authenticate.UserCredentials
-   :members:
-
-.. autoclass:: datareservoirio.authenticate.UnsafeUserCredentials
+.. autoclass:: datareservoirio.authenticate.ClientAuthenticator
    :members:
