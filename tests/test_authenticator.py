@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch, MagicMock, PropertyMock, mock_open, DEFAULT
 
+import pytest
 
 import datareservoirio
 from datareservoirio import authenticate
@@ -17,6 +18,12 @@ class TestAuthenticator(unittest.TestCase):
         self.assertTrue(hasattr(datareservoirio, 'Authenticator'))
 
 
+class TestAccessToken(unittest.TestCase):
+
+    def test_accesstoken_exists(self):
+        self.assertTrue(hasattr(authenticate, 'AccessToken'))
+
+
 class TestBaseAuthSession(unittest.TestCase):
 
     @classmethod
@@ -28,9 +35,15 @@ class TestBaseAuthSession(unittest.TestCase):
 
             """
             def __init__(self, auth_force=False):
-                self._params = self._get_params(legacy_auth=True)
+                # self._params = self._get_params(legacy_auth=True)
+                session_params = {
+                    "client_secret": "victoria's",
+                    "token_url": "my_token_url",
+                    "authority": "cartman",
+                }
+
                 client = Mock()
-                super(MockAuthClass, self).__init__(client, auth_force=auth_force)
+                super(MockAuthClass, self).__init__(client, session_params, auth_force=auth_force)
 
             def _prepare_fetch_token_args(self):
                 args = ('token_url', )
@@ -75,9 +88,12 @@ class TestBaseAuthSession(unittest.TestCase):
     @patch('datareservoirio.authenticate.BaseAuthSession.fetch_token')
     def test_init(self, mock_cache, mock_token):
         mock_cache.load.return_value = None
-
         auth = self.MochAuthClass()
-        self.assertIsInstance(auth._params, authenticate.OAuth2Parameters)
+
+        assert auth._session_params == {
+            "client_secret": "victoria's",
+            "authority": "cartman",
+            }
 
     @patch('datareservoirio.authenticate.TokenCache')
     def test_fetch_token(self, mock_cache):
@@ -177,45 +193,34 @@ class TestTokenCache(unittest.TestCase):
         path = tc.token_path
         self.assertEqual(expected, path)
 
-    @patch('datareservoirio.authenticate.json.dumps', return_value='dumped_data')
-    @patch('datareservoirio.authenticate.open')
-    def test_dump(self, mock_open, mock_json_dumps):
-        dummy_token = {'token': 'dummy'}
+    @patch("datareservoirio.authenticate.json.dump")
+    def test_dump(self, mock_json):
         tc = authenticate.TokenCache()
+        tc._token_url = "my_token_url"
+        m = mock_open()
+        with patch('datareservoirio.authenticate.open', m):
+            tc.dump({"token": "abc"})
 
-        with patch.multiple(tc, _scrambler=DEFAULT, _token_url='token_url') as mock_values:
-            tc.dump(dummy_token)
+        m.assert_called_once()
+        mock_json.assert_called_once_with({"token": "abc", "token_url": "my_token_url"}, m())
 
-        mock_json_dumps.assert_called_once_with(dummy_token)
-        mock_values['_scrambler'].encrypt.assert_called_once_with(b'dumped_data')
+    def test_token_file_exist(self):
+        m = mock_open(read_data='{"token": "abc", "token_url": "my_token_url"}')
+        tc = authenticate.TokenCache()
+        with patch('datareservoirio.authenticate.open', m):
+            token = tc.token
 
-    @patch('datareservoirio.authenticate.json.loads', return_value={'dummy': 'token'})
-    def test_load_file_exist(self, mock_json_loads):
-        with patch('datareservoirio.authenticate.open', mock_open(read_data=b'scrambled_token')):
-            tc = authenticate.TokenCache()
-            tc._scrambler = MagicMock()
-            tc.load()
-            tc._scrambler.decrypt.assert_called_once_with(b'scrambled_token')
-            mock_json_loads.assert_called_once()
+        assert token == {"token": "abc"}
+        assert tc.token_url == "my_token_url"
 
-    @patch('datareservoirio.authenticate.json.loads', return_value='token')
-    @patch('datareservoirio.authenticate.TokenCache.token_path', return_value='path\\token')
-    @patch('datareservoirio.authenticate.TokenCache.__init__', return_value=None)
-    def test_load_no_file_exist(self, mock_init, mock_token_path, mock_json_loads):
-        mock_open_read = mock_open(read_data=b'scrambled_token')
-        mock_open_read.side_effect = FileNotFoundError
-        with patch('datareservoirio.authenticate.open', mock_open_read):
-            tc = authenticate.TokenCache()
-            ret_val = tc.load()
-            self.assertIsNone(ret_val)
-            mock_json_loads.assert_not_called()
+    def test_token_file_dont_exist(self):
+        m = mock_open()
+        m.side_effect = FileNotFoundError
+        tc = authenticate.TokenCache()
+        with patch('datareservoirio.authenticate.open', m):
+            token = tc.token
 
-    @patch('datareservoirio.authenticate.Fernet')
-    @patch('datareservoirio.authenticate.urlsafe_b64encode', return_value='key')
-    def test_scrambler_init(self, mock_b64encode, mock_fernet):
-        authenticate.TokenCache()
-        mock_b64encode.assert_called_once()
-        mock_fernet.assert_called_once_with('key')
+        assert token is None
 
 
 class TestUserCredentials(unittest.TestCase):
@@ -244,15 +249,21 @@ class TestUserCredentials(unittest.TestCase):
 
     def test__prepare_fetch_token_args(self):
         auth = authenticate.UserCredentials('username')
-        auth.username = 'username'  # fix since base class is mocked
+
+        # fix since base class is mocked
+        auth._session_params = {
+            "username": "username",
+            "resource": _constants.RESOURCE_QA_USERLEGACY,
+            "token_url": _constants.TOKEN_URL_USERLEGACY,
+        }
+        auth._token_url = auth._session_params["token_url"]
+
         args, kwargs = auth._prepare_fetch_token_args()
 
-        params = authenticate.OAuth2Parameters('QA', legacy_auth=True)
-        args_expected = (params.token_url, )
+        args_expected = (_constants.TOKEN_URL_USERLEGACY, )
         kwargs_exptected = {
-            'client_id': params.client_id,
-            'resource': params.resource,
-            'username': auth.username,
+            'resource': _constants.RESOURCE_QA_USERLEGACY,
+            'username': "username",
             'password': auth._get_pass(),
             'include_client_id': True
         }
@@ -263,20 +274,25 @@ class TestUserCredentials(unittest.TestCase):
     @patch('datareservoirio.authenticate.BaseAuthSession.token')
     def test__prepare_refresh_token_args(self, mock_token):
         auth = authenticate.UserCredentials('username')
-        auth.username = 'username'  # fix since base class is mocked
+                # fix since base class is mocked
+        auth._session_params = {
+            "username": "username",
+            "resource": _constants.RESOURCE_QA_USERLEGACY,
+            "token_url": _constants.TOKEN_URL_USERLEGACY,
+        }
+        auth._token_url = auth._session_params["token_url"]
         mock_token.__getitem__.return_value = '123abc'
 
         args, kwargs = auth._prepare_refresh_token_args()
 
-        params = authenticate.OAuth2Parameters('QA', legacy_auth=True)
-        args_expected = (params.token_url, )
+        args_expected = (_constants.TOKEN_URL_USERLEGACY, )
         kwargs_exptected = {'refresh_token': '123abc'}
 
         self.assertTupleEqual(args, args_expected)
         self.assertDictEqual(kwargs, kwargs_exptected)
 
 
-class TestAccessToken(unittest.TestCase):
+class TestUserAuthenticator(unittest.TestCase):
 
     def setUp(self):
         self._patcher = patch(
@@ -296,19 +312,23 @@ class TestAccessToken(unittest.TestCase):
         pass
 
     def test_init(self):
-        authenticate.AccessToken()
+        authenticate.UserAuthenticator()
 
     def test__prepare_fetch_token_args(self):
-        auth = authenticate.AccessToken()
+        auth = authenticate.UserAuthenticator()
         auth._token_cache = MagicMock()
+        auth._session_params = {
+            "client_secret": _constants.CLIENT_SECRET_QA_USER,
+            "token_url": None,
+            "authority": _constants.AUTHORITY_URL_QA_USER,
+        }
 
         args, kwargs = auth._prepare_fetch_token_args()
 
-        params = authenticate.OAuth2Parameters('QA', legacy_auth=False)
         args_expected = ('https://token-endpoint.com', )
         kwargs_exptected = {
             'code': 'abc321',
-            'client_secret': params.client_secret
+            'client_secret': _constants.CLIENT_SECRET_QA_USER
         }
 
         self.assertTupleEqual(args, args_expected)
@@ -316,23 +336,99 @@ class TestAccessToken(unittest.TestCase):
 
     @patch('datareservoirio.authenticate.BaseAuthSession.token')
     def test__prepare_refresh_token_args(self, mock_token):
-        auth = authenticate.AccessToken()
+        auth = authenticate.UserAuthenticator()
         auth._token_cache = MagicMock()
-        auth._params.token_url = 'https://token-endpoint.com'
+        auth._session_params = {
+            "client_secret": _constants.CLIENT_SECRET_QA_USER,
+            "token_url": None,
+            "authority": _constants.AUTHORITY_URL_QA_USER,
+        }
+        auth._token_url = 'https://token-endpoint.com'
 
         mock_token.__getitem__.return_value = '123abc'
 
         args, kwargs = auth._prepare_refresh_token_args()
 
-        params = authenticate.OAuth2Parameters('QA', legacy_auth=False)
         args_expected = ('https://token-endpoint.com', )
         kwargs_exptected = {
             'refresh_token': '123abc',
-            'client_secret': _constants.CLIENT_SECRET_QA
+            'client_secret': _constants.CLIENT_SECRET_QA_USER
         }
 
         self.assertTupleEqual(args, args_expected)
         self.assertDictEqual(kwargs, kwargs_exptected)
+
+
+class TestClientAuthenticator(unittest.TestCase):
+
+    def setUp(self):
+        self._patcher = patch(
+            'datareservoirio.authenticate.BaseAuthSession.__init__')
+        self.mock_init = self._patcher.start()
+
+        self._patcher_input = patch(
+            'datareservoirio.authenticate.input', return_value='{"endpoint":"https://token-endpoint.com","code":"abc321"}')
+        self.mock_input = self._patcher_input.start()
+
+        datareservoirio.globalsettings.environment.set_qa()
+
+        self.addCleanup(self._patcher.stop)
+        self.addCleanup(self._patcher_input.stop)
+
+    def tearDown(self):
+        pass
+
+    def test_init(self):
+        authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
+
+    def test__prepare_fetch_token_args(self):
+        auth = authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
+        auth._token_cache = MagicMock()
+        auth._session_params = {
+            "client_secret": "my_client_id",
+            "token_url": _constants.TOKEN_URL_QA_CLIENT,
+            "scope": _constants.SCOPE_QA_CLIENT,
+        }
+        auth._token_url = _constants.TOKEN_URL_QA_CLIENT
+
+        args, kwargs = auth._prepare_fetch_token_args()
+
+        args_expected = (_constants.TOKEN_URL_QA_CLIENT, )
+        kwargs_exptected = {
+            "client_secret": "my_client_id",
+            "scope": _constants.SCOPE_QA_CLIENT,
+            "include_client_id": True,
+        }
+
+        self.assertTupleEqual(args, args_expected)
+        self.assertDictEqual(kwargs, kwargs_exptected)
+
+    @patch('datareservoirio.authenticate.BaseAuthSession.token')
+    def test__prepare_refresh_token_args(self, mock_token):
+        auth = authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
+        auth._token_cache = MagicMock()
+        auth._session_params = {
+            "client_secret": _constants.CLIENT_SECRET_QA_USER,
+            "token_url": None,
+            "authority": _constants.AUTHORITY_URL_QA_USER,
+        }
+        auth._token_url = 'https://token-endpoint.com'
+        mock_token.__getitem__.return_value = '123abc'
+
+        assert auth._prepare_refresh_token_args() is None
+
+    def test_refresh_token(self):
+        auth = authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
+        auth._token_cache = MagicMock()
+        auth._session_params = {
+            "client_secret": "my_client_id",
+            "token_url": _constants.TOKEN_URL_QA_CLIENT,
+            "scope": _constants.SCOPE_QA_CLIENT,
+        }
+        auth._token_url = _constants.TOKEN_URL_QA_CLIENT
+
+        with pytest.raises(NotImplementedError):
+            auth.refresh_token()
 
 
 class Test_UnsafeUserCredentials(unittest.TestCase):
