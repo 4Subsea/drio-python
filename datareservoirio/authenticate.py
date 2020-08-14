@@ -58,7 +58,7 @@ class TokenCache:
 
     @property
     def token(self):
-        return None or self._token
+        return self._token or None
 
 
 class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
@@ -180,7 +180,7 @@ class UserAuthenticator(BaseAuthSession):
             auth_force=auth_force,
             token_updater=token_cache,
             token=token,
-            auto_refresh_url=None  # update in _prepare_fetch_token
+            auto_refresh_url=self._token_url
         )
 
     def _prepare_fetch_token_args(self):
