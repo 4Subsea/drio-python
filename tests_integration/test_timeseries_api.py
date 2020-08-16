@@ -7,19 +7,17 @@ import pandas as pd
 import requests
 from requests.exceptions import HTTPError
 
-import datareservoirio
-from datareservoirio.authenticate import UserCredentials
+from datareservoirio.authenticate import ClientAuthenticator
 from datareservoirio.rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from datareservoirio.storage import DirectUpload
-from tests_integration._auth import USER
+from tests_integration._auth import CLIENT
 
 
 class Test_TimeSeriesApi(unittest.TestCase):
 
     @classmethod
-    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = UserCredentials(USER.NAME, auth_force=True)
+        cls.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         cls.metaapi = MetadataAPI(session=cls.auth)
         files_api = FilesAPI(session=cls.auth)
 

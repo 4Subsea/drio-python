@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import requests
 
-import datareservoirio
 from datareservoirio.authenticate import ClientAuthenticator
 from datareservoirio.rest_api.files import FilesAPI
 from datareservoirio.storage import DirectUpload

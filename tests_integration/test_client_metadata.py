@@ -4,15 +4,16 @@ from unittest.mock import patch
 import requests
 
 import datareservoirio
-from datareservoirio.authenticate import UserCredentials
-from tests_integration._auth import USER
+from datareservoirio.authenticate import ClientAuthenticator
+
+from tests_integration._auth import CLIENT
 
 
 class Test_ClientMetadata(unittest.TestCase):
 
     @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUp(self, mock_pass):
-        self.auth = UserCredentials(USER.NAME, auth_force=True)
+        self.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         self.client = datareservoirio.Client(self.auth, cache=False)
 
     def tearDown(self):
