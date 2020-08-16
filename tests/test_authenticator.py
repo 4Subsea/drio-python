@@ -164,7 +164,7 @@ class Test_TokenCache:
 @patch("datareservoirio.authenticate.OAuth2Session.fetch_token")
 class Test_ClientAutheticator:
     def test_init(self, mock_fetch, mock_refresh):
-        authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
+        auth = authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
 
         mock_fetch.assert_called_once_with(
             _constants.TOKEN_URL_TEST_CLIENT,
@@ -172,6 +172,7 @@ class Test_ClientAutheticator:
             scope=_constants.SCOPE_TEST_CLIENT,
             include_client_id=True,
         )
+        assert auth.auto_refresh_url == _constants.TOKEN_URL_TEST_CLIENT
 
     def test_refresh_token(self, mock_fetch, mock_refresh):
         auth = authenticate.ClientAuthenticator("my_client_id", "my_client_secret")

@@ -89,12 +89,9 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
 
     """
 
-    def __init__(
-        self, client, auth_force=False, session_key=None, **kwargs
-    ):
+    def __init__(self, client, auth_force=False, session_key=None, **kwargs):
         super().__init__(
-            client=client,
-            **kwargs,
+            client=client, **kwargs,
         )
 
         if auth_force or not self.token:
@@ -180,11 +177,14 @@ class UserAuthenticator(BaseAuthSession):
             auth_force=auth_force,
             token_updater=token_cache,
             token=token,
-            auto_refresh_url=self._token_url
+            auto_refresh_url=self._token_url,
         )
 
     def _prepare_fetch_token_args(self):
-        print("Please go here and authorize,", eval(f"_constants.AUTHORITY_URL_{self._env}_USER"))
+        print(
+            "Please go here and authorize,",
+            eval(f"_constants.AUTHORITY_URL_{self._env}_USER"),
+        )
         package = input("Paste code here: ")
         parameters = json.loads(package)
         token_url = parameters["endpoint"]
@@ -194,8 +194,11 @@ class UserAuthenticator(BaseAuthSession):
         self._token_url = token_url
         self.auto_refresh_url = token_url
 
-        args = (self._token_url, )
-        kwargs = {"code": code, "client_secret": eval(f"_constants.CLIENT_SECRET_{self._env}_USER")}
+        args = (self._token_url,)
+        kwargs = {
+            "code": code,
+            "client_secret": eval(f"_constants.CLIENT_SECRET_{self._env}_USER"),
+        }
         return args, kwargs
 
     def _prepare_refresh_token_args(self):
@@ -236,11 +239,13 @@ class ClientAuthenticator(BaseAuthSession):
 
         client = BackendApplicationClient(client_id)
         super().__init__(
-            client, auth_force=True
+            client,
+            auth_force=True,
+            auto_refresh_url=eval(f"_constants.TOKEN_URL_{self._env}_CLIENT"),
         )
 
     def _prepare_fetch_token_args(self):
-        args = (eval(f"_constants.TOKEN_URL_{self._env}_CLIENT"), )
+        args = (eval(f"_constants.TOKEN_URL_{self._env}_CLIENT"),)
         kwargs = {
             "client_secret": self._client_secret,
             "scope": eval(f"_constants.SCOPE_{self._env}_CLIENT"),
@@ -305,11 +310,11 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
             auth_force=auth_force,
             token_updater=token_cache,
             token=token_cache.token,
-            auto_refresh_url=_constants.TOKEN_URL_USERLEGACY
+            auto_refresh_url=_constants.TOKEN_URL_USERLEGACY,
         )
 
     def _prepare_fetch_token_args(self):
-        args = (_constants.TOKEN_URL_USERLEGACY, )
+        args = (_constants.TOKEN_URL_USERLEGACY,)
         kwargs = {
             "resource": eval(f"_constants.RESOURCE_{self._env}_USERLEGACY"),
             "username": self._username,
@@ -319,7 +324,7 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
         return args, kwargs
 
     def _prepare_refresh_token_args(self):
-        args = (_constants.TOKEN_URL_USERLEGACY, )
+        args = (_constants.TOKEN_URL_USERLEGACY,)
         kwargs = {"refresh_token": self.token["refresh_token"]}
         return args, kwargs
 
