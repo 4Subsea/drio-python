@@ -1,13 +1,12 @@
 import logging
 import unittest
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 
 import datareservoirio
-from datareservoirio.authenticate import UserCredentials
-from tests_integration._auth import USER
+from datareservoirio.authenticate import ClientAuthenticator
+from tests_integration._auth import CLIENT
 
 datareservoirio.set_log_level('DEBUG')
 datareservoirio.logger.addHandler(logging.FileHandler('upload.log'))
@@ -16,9 +15,8 @@ datareservoirio.logger.addHandler(logging.FileHandler('upload.log'))
 class Test_ClientUploadDownload(unittest.TestCase):
 
     @classmethod
-    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUpClass(cls, mock_input):
-        cls.auth = UserCredentials(USER.NAME)
+        cls.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
 
     def setUp(self):
         self.client = datareservoirio.Client(self.auth)
