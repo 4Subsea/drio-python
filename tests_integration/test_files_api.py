@@ -7,17 +7,16 @@ import pandas as pd
 import requests
 
 import datareservoirio
-from datareservoirio.authenticate import UserCredentials
+from datareservoirio.authenticate import ClientAuthenticator
 from datareservoirio.rest_api.files import FilesAPI
 from datareservoirio.storage import DirectUpload
-from tests_integration._auth import USER
+from tests_integration._auth import CLIENT
 
 
 class Test_FilesApi(unittest.TestCase):
 
-    @patch('getpass.getpass', return_value=USER.PASSWORD)
     def setUp(self, mock_pass):
-        self.auth = UserCredentials(USER.NAME, auth_force=True)
+        self.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         self.api = FilesAPI(self.auth)
 
     def tearDown(self):

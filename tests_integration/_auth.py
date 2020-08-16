@@ -1,3 +1,3 @@
-class USER(object):
-    NAME = 'reservoir-integrationtest@4subsea.com'
-    PASSWORD = 'rai1VcnCcdjcEgmvYemu'
+class CLIENT:
+    CLIENT_ID = "1668de40-c3c0-452d-8862-b403e64ffc5b"
+    CLIENT_SECRET = "3H51_b-CH5nL3v.-dfHB2h0IxjPZG8emx."
