@@ -242,6 +242,8 @@ class ClientAuthenticator(BaseAuthSession):
             client,
             auth_force=True,
             auto_refresh_url=eval(f"_constants.TOKEN_URL_{self._env}_CLIENT"),
+            # unable to supress TokenUpdated expection without this dummy updater
+            token_updater=lambda token: None,
         )
 
     def _prepare_fetch_token_args(self):
@@ -256,11 +258,10 @@ class ClientAuthenticator(BaseAuthSession):
     def _prepare_refresh_token_args(self):
         return
 
-    def refresh_token(self):
-        raise NotImplementedError(
-            "'ClientAuthenticator' does not support refresh token. "
-            "Use 'fetch_token' instead."
-        )
+    def refresh_token(self, *args, **kwargs):
+        """Refresh (expired) access token"""
+        token = self.fetch_token()
+        return token
 
 
 class AccessToken(UserAuthenticator):  # Deprecate soon

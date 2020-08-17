@@ -176,9 +176,8 @@ class Test_ClientAutheticator:
 
     def test_refresh_token(self, mock_fetch, mock_refresh):
         auth = authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
-
-        with pytest.raises(NotImplementedError):
-            auth.refresh_token()
+        auth.refresh_token()
+        mock_fetch.assert_called()
 
     def test_prepare_refresh_token_args(self, mock_fetch, mock_refresh):
         auth = authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
