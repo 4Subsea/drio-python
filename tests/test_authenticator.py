@@ -360,7 +360,7 @@ class Test_UserAuthenticator:
             code="my_code",
             client_secret=_constants.CLIENT_SECRET_TEST_USER,
         )
-        mock_fetch.call_count == 2
+        assert mock_fetch.call_count == 2
 
     @patch("datareservoirio.authenticate.input")
     def test_prepare_fetch_token_args(
