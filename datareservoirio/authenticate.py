@@ -266,7 +266,8 @@ class AccessToken(UserAuthenticator):  # Deprecate soon
     """
 
     def __init__(self, auth_force=False, session_key=None):
-        warnings.warn("Use UserAuthenticator instead.", DeprecationWarning)
+        warnings.warn("Will be deprecated after 30th November 2020."
+                      "Use 'UserAuthenticator' instead.", DeprecationWarning)
         super().__init__(auth_force=auth_force, session_key=session_key)
 
 
@@ -292,8 +293,8 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
 
     def __init__(self, username, auth_force=False, session_key=None):
         warnings.warn(
-            "Support for username password credentials will be deprecated in "
-            "the near future. Use 'ClienAuthenticator' instead."
+            "Support for username password credentials will be deprecated after "
+            "30th November 2020. Use 'ClienAuthenticator' instead."
         )
 
         self._env = environment.current_environment
