@@ -78,10 +78,6 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
         The provided dict is stored internally in '_session_params'.
     auth_force : bool, optional
         Force re-authenticating the session (default is False)
-    session_key : str, optional
-        Unique identifier for an auth session. Can be used so that multiple
-        instances can have independent auth/refresh cycles with the identity
-        authority.
     kwargs : keyword arguments
         Keyword arguments passed on to ``requests_oauthlib.OAuth2Session``.
         Here, the mandatory parameters for the authentication client shall be
@@ -89,7 +85,7 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
 
     """
 
-    def __init__(self, client, auth_force=False, session_key=None, **kwargs):
+    def __init__(self, client, auth_force=False, **kwargs):
         super().__init__(
             client=client, **kwargs,
         )
