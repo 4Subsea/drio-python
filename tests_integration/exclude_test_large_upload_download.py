@@ -15,7 +15,7 @@ datareservoirio.logger.addHandler(logging.FileHandler('upload.log'))
 class Test_ClientUploadDownload(unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls, mock_input):
+    def setUpClass(cls):
         cls.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
 
     def setUp(self):

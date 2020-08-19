@@ -1,6 +1,5 @@
 import time
 import unittest
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -14,7 +13,7 @@ from tests_integration._auth import CLIENT
 
 class Test_FilesApi(unittest.TestCase):
 
-    def setUp(self, mock_pass):
+    def setUp(self):
         self.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         self.api = FilesAPI(self.auth)
 
