@@ -17,9 +17,7 @@ TIMESERIESID = "06C0AD81-3E81-406F-9DB0-EFD5114DD5E0"
 
 class Test_CachedDownloadStrategy(unittest.TestCase):
     def setUp(self):
-        self.auth = ClientAuthenticator(
-            CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET, auth_force=True
-        )
+        self.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         self.timeseries_api = TimeSeriesAPI(session=self.auth)
         self._cache_root = "./_cache/test_filecachedownload"
 

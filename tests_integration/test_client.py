@@ -132,9 +132,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
         cls.df_3 = pd.Series(np.arange(50.0), index=np.arange(125, 175))
 
     def setUp(self):
-        self.auth = ClientAuthenticator(
-            CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET, auth_force=True
-        )
+        self.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         self.client = datareservoirio.Client(self.auth, cache=True)
 
     def tearDown(self):
