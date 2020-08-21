@@ -64,9 +64,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         cls.auth.close()
 
     def setUp(self):
-        self.auth = ClientAuthenticator(
-            CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET, auth_force=True
-        )
+        self.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         self.api = TimeSeriesAPI(session=self.auth)
 
     def tearDown(self):
