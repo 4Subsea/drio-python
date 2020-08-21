@@ -220,12 +220,6 @@ class ClientAuthenticator(BaseAuthSession):
         Unique identifier for the client (i.e. app/service etc.).
     client_secret : str
         Secret/password for the client.
-    auth_force : bool, optional
-        Force re-authenticating the session (default is False)
-    session_key : str, optional
-        Unique identifier for an auth session. Can be used so that multiple
-        instances can have independent auth/refresh cycles with the identity
-        authority.
 
     """
 
