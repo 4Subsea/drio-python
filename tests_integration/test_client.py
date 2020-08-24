@@ -43,8 +43,9 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(0, len(df_recieved.index))
 
     def test_create_get_delete(self):
-        rng = pd.date_range("1970-01-01", periods=100, freq="ns", tz="utc")
-        df = pd.Series(np.arange(100.0), index=rng)
+        df = pd.Series(np.arange(100.0), index=np.arange(0, 100))
+        df.index = pd.to_datetime(df.index, utc=True)
+        
         response = self.client.create(df)
         info = self.client.info(response["TimeSeriesId"])
 
@@ -56,7 +57,7 @@ class Test_Client(unittest.TestCase):
 
         df_recieved = self.client.get(response["TimeSeriesId"], convert_date=True)
 
-        pd.util.testing.assert_series_equal(df, df_recieved)
+        pd.testing.assert_series_equal(df, df_recieved)
 
         self.client.delete(response["TimeSeriesId"])
 
@@ -83,7 +84,7 @@ class Test_Client(unittest.TestCase):
         data_sent = self.df_1
         data_sent = data_sent.append(self.df_3)
 
-        pd.util.testing.assert_series_equal(data_sent, data_recieved)
+        pd.testing.assert_series_equal(data_sent, data_recieved)
 
     def test_create_append_overlap_get_delete(self):
         response = self.client.create(self.df_1)
@@ -102,7 +103,7 @@ class Test_Client(unittest.TestCase):
         data_sent = data_sent.combine_first(self.df_2)
         data_sent = data_sent.combine_first(self.df_1)
 
-        pd.util.testing.assert_series_equal(data_sent, data_recieved)
+        pd.testing.assert_series_equal(data_sent, data_recieved)
 
     def test_create_get_performance(self):
         # 10 days @ 10Hz
@@ -143,8 +144,9 @@ class Test_Client_CacheEnable(unittest.TestCase):
         self.client.ping()
 
     def test_create_get_delete(self):
-        rng = pd.date_range("1970-01-01", periods=100, freq="ns", tz="utc")
-        df = pd.Series(np.arange(100.0), index=rng)
+        df = pd.Series(np.arange(100.0), index=np.arange(0, 100))
+        df.index = pd.to_datetime(df.index, utc=True)
+
         response = self.client.create(df)
         info = self.client.info(response["TimeSeriesId"])
 
@@ -156,7 +158,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
 
         df_recieved = self.client.get(response["TimeSeriesId"], convert_date=True)
 
-        pd.util.testing.assert_series_equal(df, df_recieved)
+        pd.testing.assert_series_equal(df, df_recieved)
 
         self.client.delete(response["TimeSeriesId"])
 
@@ -183,7 +185,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
         data_sent = self.df_1
         data_sent = data_sent.append(self.df_3)
 
-        pd.util.testing.assert_series_equal(data_sent, data_recieved)
+        pd.testing.assert_series_equal(data_sent, data_recieved)
 
     def test_create_append_overlap_get_delete(self):
         response = self.client.create(self.df_1)
@@ -202,7 +204,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
         data_sent = data_sent.combine_first(self.df_2)
         data_sent = data_sent.combine_first(self.df_1)
 
-        pd.util.testing.assert_series_equal(data_sent, data_recieved)
+        pd.testing.assert_series_equal(data_sent, data_recieved)
 
     def test_create_get_performance(self):
         # 10 days @ 10Hz
