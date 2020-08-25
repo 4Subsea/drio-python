@@ -2,7 +2,7 @@ import logging
 import pkg_resources
 
 from .client import Client
-from .authenticate import Authenticator
+from .authenticate import UserAuthenticator as Authenticator
 from . import globalsettings  # wierd bug. must be called last?
 
 

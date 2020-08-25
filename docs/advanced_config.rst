@@ -5,7 +5,11 @@ Advanced Configuration
 
 Authentication
 **************
-The default and recommended method for authentication is using
+
+Single user / interactive
+-------------------------
+
+The default and recommended method for authentication for users is using
 :py:class:`Authenticator`. You will be guided to your organizations login
 webpage, and login as usual. (We will not see or store your credentials!). Once
 authenticated, you can choose to re-use your (valid) access token (i.e. not be
@@ -24,13 +28,22 @@ prompted to authenticate next time) or re-authenticate everytime::
     Users on shared computers should always re-authenticate since access token
     from a different user may unintentionally be used.
 
-If you require machine-to-machine/server type of authentication,
-:ref:`contact us <support>` and we will provide you the specifics.
+If you desire to have multiple seperate session, it is advisable to set
+a session key during authetication. This will keep the sessions (token cache)
+seperate::
 
-Legacy users may authenticate by providing username/password credentials, using
-:py:class:`authenticate.UserCredentials` or 
-:py:class:`authenticate.UnsafeUserCredentials`. However, this possibility will
-be deprecated in the near feature.
+    auth_0 = drio.Authenticator(session_key="my_unique_session_0")
+    auth_1 = drio.Authenticator(session_key="my_unique_session_1")
+
+If you require client/backend type of authentication flow where user interaction
+is not feasible nor desired, you can use the
+:py:class:`autheticate.ClientAuthenticator`::
+
+    import datareservoirio as drio
+
+    auth = drio.autheticate.ClientAuthenticator("my_client_id", "my_client_secret")
+
+:ref:`Contact us <support>` and we will provide you the specifics.
 
 
 Caching

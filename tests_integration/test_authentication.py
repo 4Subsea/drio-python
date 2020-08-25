@@ -1,36 +1,31 @@
 import unittest
 import warnings
 from timeit import default_timer as timer
-from unittest.mock import patch
 
-from oauthlib.oauth2.rfc6749.errors import InvalidGrantError
+from oauthlib.oauth2.rfc6749.errors import InvalidClientError
 
-from datareservoirio.authenticate import UserCredentials
-from datareservoirio.authenticate import AdalAuthenticator
-from tests_integration._auth import USER
+from datareservoirio.authenticate import ClientAuthenticator
+from tests_integration._auth import CLIENT
 
 
 class Test_Authenticate(unittest.TestCase):
 
-    @patch('getpass.getpass', return_value=USER.PASSWORD)
-    def test_authentication_succeeds_without_error(self, mock_input):
+    def test_authentication_succeeds_without_error(self):
         start = timer()
-        auth = UserCredentials(USER.NAME, auth_force=True)
+        auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         auth.close()
         stop = timer()
         print("login took {} seconds".format(stop - start))
 
-    @patch('getpass.getpass', return_value='the wrong password')
-    def test_authentication_raises_error(self, mock_input):
-        with self.assertRaises(InvalidGrantError):
+    def test_authentication_raises_error(self):
+        with self.assertRaises(InvalidClientError):
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
-                auth = UserCredentials(USER.NAME, auth_force=True)
+                auth = ClientAuthenticator(CLIENT.CLIENT_ID, "wrong secret")
             auth.close()
 
-    @patch('getpass.getpass', return_value=USER.PASSWORD)
-    def test_authentication_token(self, mock_input):
-        auth = AdalAuthenticator(USER.NAME)
+    def test_authentication_token(self):
+        auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         auth.close()
         self.assertIsInstance(auth.token, dict)
 
