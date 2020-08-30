@@ -324,6 +324,10 @@ class UserCredentials(BaseAuthSession):  # Deprecate soon
         return getpass.getpass("Password: ")
 
 
+# Backward compatibility alias
+AdalAuthenticator = UserCredentials
+
+
 class UnsafeUserCredentials(UserCredentials):  # Deprecate soon
     """
     Authorized session with username and password. Authenticates against legacy
@@ -354,3 +358,7 @@ class UnsafeUserCredentials(UserCredentials):  # Deprecate soon
 
     def _get_pass(self):
         return self._password
+
+
+# Backward compatibility alias
+UnsafeAdalAuthenticator = UnsafeUserCredentials
