@@ -35,6 +35,9 @@ seperate::
     auth_0 = drio.Authenticator(session_key="my_unique_session_0")
     auth_1 = drio.Authenticator(session_key="my_unique_session_1")
 
+Service account / non-interactive client
+----------------------------------------
+
 If you require client/backend type of authentication flow where user interaction
 is not feasible nor desired, you can use the
 :py:class:`authenticate.ClientAuthenticator`::
