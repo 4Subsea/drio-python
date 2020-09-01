@@ -37,11 +37,11 @@ seperate::
 
 If you require client/backend type of authentication flow where user interaction
 is not feasible nor desired, you can use the
-:py:class:`autheticate.ClientAuthenticator`::
+:py:class:`authenticate.ClientAuthenticator`::
 
     import datareservoirio as drio
 
-    auth = drio.autheticate.ClientAuthenticator("my_client_id", "my_client_secret")
+    auth = drio.authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
 
 :ref:`Contact us <support>` and we will provide you the specifics.
 
