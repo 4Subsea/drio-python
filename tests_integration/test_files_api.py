@@ -12,7 +12,6 @@ from tests_integration._auth import CLIENT
 
 
 class Test_FilesApi(unittest.TestCase):
-
     def setUp(self):
         self.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         self.api = FilesAPI(self.auth)
@@ -25,14 +24,14 @@ class Test_FilesApi(unittest.TestCase):
 
     def test_upload_df_cycle(self):
         upload_params = self.api.upload()
-        file_id = upload_params['FileId']
+        file_id = upload_params["FileId"]
 
         with requests.Session() as s:
             uploader = DirectUpload(session=s)
 
             df = pd.DataFrame({"values": np.arange(1e3)})
-            df.index.name = 'time'
-            df.name = 'values'
+            df.index.name = "time"
+            df.name = "values"
 
             uploader.put(upload_params, df)
 
@@ -40,13 +39,15 @@ class Test_FilesApi(unittest.TestCase):
 
             counter = 0
             response = self.api.status(file_id)
-            while response['State'] != 'Ready' and counter < 15:
+            while response["State"] != "Ready" and counter < 15:
                 time.sleep(5)
                 response = self.api.status(file_id)
                 counter += 1
 
-            self.assertLess(counter, 15, 'Processing did not complete with Ready status')
+            self.assertLess(
+                counter, 15, "Processing did not complete with Ready status"
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

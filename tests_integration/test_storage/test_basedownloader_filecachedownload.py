@@ -10,7 +10,6 @@ from datareservoirio.rest_api import TimeSeriesAPI
 from datareservoirio.storage import BaseDownloader, FileCacheDownload
 from tests_integration._auth import CLIENT
 
-
 log = logging.getLogger(__file__)
 TIMESERIESID = "06C0AD81-3E81-406F-9DB0-EFD5114DD5E0"
 

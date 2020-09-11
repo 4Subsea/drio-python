@@ -1,6 +1,6 @@
-import unittest
 import logging
 import sys
+import unittest
 from unittest.mock import patch
 
 import datareservoirio._constants as consts
@@ -8,7 +8,6 @@ import datareservoirio.globalsettings as gs
 
 
 class TestConfiguration(unittest.TestCase):
-
     def setUp(self):
         self.logger = logging.getLogger(__name__)
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -56,14 +55,13 @@ class TestConfiguration(unittest.TestCase):
 
         self.assertEqual(env1, env2)
 
-    @patch('datareservoirio.globalsettings.environment._logger.info')
+    @patch("datareservoirio.globalsettings.environment._logger.info")
     def test_change_of_environment_is_logged(self, mock):
         gs.environment.set_qa()
-        mock.assert_any_call('Setting environment to: QA')
+        mock.assert_any_call("Setting environment to: QA")
 
 
 class TestApiBaseURL(unittest.TestCase):
-
     def test_(self):
         gs.environment.set_dev()
         base_url = gs.environment.api_base_url
@@ -81,12 +79,11 @@ class TestApiBaseURL(unittest.TestCase):
         base_url = gs.environment.api_base_url
         self.assertEqual(base_url, consts.API_BASE_URL_PROD)
 
-    @patch('datareservoirio.globalsettings.environment._logger.info')
+    @patch("datareservoirio.globalsettings.environment._logger.info")
     def test_change_of_base_url_is_logged(self, mock):
         gs.environment.set_qa()
-        mock.assert_any_call(
-            'Setting baseurl to: {}'.format(consts.API_BASE_URL_QA))
+        mock.assert_any_call("Setting baseurl to: {}".format(consts.API_BASE_URL_QA))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

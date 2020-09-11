@@ -87,7 +87,8 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
 
     def __init__(self, client, auth_force=False, **kwargs):
         super().__init__(
-            client=client, **kwargs,
+            client=client,
+            **kwargs,
         )
 
         if auth_force or not self.token:
@@ -260,8 +261,11 @@ class AccessToken(UserAuthenticator):  # Deprecate soon
     """
 
     def __init__(self, auth_force=False, session_key=None):
-        warnings.warn("Will be deprecated after 30th November 2020."
-                      "Use 'UserAuthenticator' instead.", DeprecationWarning)
+        warnings.warn(
+            "Will be deprecated after 30th November 2020."
+            "Use 'UserAuthenticator' instead.",
+            DeprecationWarning,
+        )
         super().__init__(auth_force=auth_force, session_key=session_key)
 
 

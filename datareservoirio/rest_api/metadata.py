@@ -18,9 +18,10 @@ class MetadataAPI(BaseAPI):
         HTTP calls.
 
     """
+
     def __init__(self, session):
         super(MetadataAPI, self).__init__(session)
-        self._root = self._api_base_url + 'metadata/'
+        self._root = self._api_base_url + "metadata/"
 
     def delete(self, metadata_id):
         """
@@ -31,10 +32,9 @@ class MetadataAPI(BaseAPI):
         metadata_id : str
             id of metadata
         """
-        logwriter.debug('called with <token>, {}'.format(
-            metadata_id), 'delete')
+        logwriter.debug("called with <token>, {}".format(metadata_id), "delete")
 
-        uri = self._root + '{}'.format(metadata_id)
+        uri = self._root + "{}".format(metadata_id)
         self._delete(uri)
         return
 
@@ -52,7 +52,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug('called with <token>, {}'.format(metadata_id), u'get')
+        logwriter.debug("called with <token>, {}".format(metadata_id), u"get")
 
         uri = self._root + metadata_id
         response = self._get(uri)
@@ -74,10 +74,9 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug('called with <token>, {} {}'.format(
-            namespace, key), u'get')
+        logwriter.debug("called with <token>, {} {}".format(namespace, key), u"get")
 
-        uri = self._root + namespace + '/' + key
+        uri = self._root + namespace + "/" + key
         response = self._get(uri)
         return response.json()
 
@@ -97,10 +96,11 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {}, {}".format(
-            metadata_id, namevalues), "put")
+        logwriter.debug(
+            "called with <token>, {}, {}".format(metadata_id, namevalues), "put"
+        )
 
-        metadata_json = {'Value': namevalues}
+        metadata_json = {"Value": namevalues}
 
         uri = self._root + metadata_id
         response = self._put(uri, json=metadata_json)
@@ -127,13 +127,18 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {}, {}, {}, {}".format(
-            namespace, key, overwrite, namevalues), "put")
+        logwriter.debug(
+            "called with <token>, {}, {}, {}, {}".format(
+                namespace, key, overwrite, namevalues
+            ),
+            "put",
+        )
 
-        metadata_json = {'Value': namevalues}
+        metadata_json = {"Value": namevalues}
 
-        uri = self._root + '{}/{}?overwrite={}'.format(
-            namespace, key, 'true' if overwrite else 'false')
+        uri = self._root + "{}/{}?overwrite={}".format(
+            namespace, key, "true" if overwrite else "false"
+        )
 
         response = self._put(uri, json=metadata_json)
         return response.json()
@@ -189,21 +194,20 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {} {} {}".format(
-            namespace, key, conjunctive), 'search')
+        logwriter.debug(
+            "called with <token>, {} {} {}".format(namespace, key, conjunctive),
+            "search",
+        )
 
         search_json = _assemble_metadatajson(namespace, key)
-        search_json['Conjunctive'] = conjunctive
+        search_json["Conjunctive"] = conjunctive
 
-        uri = self._root + 'search'
+        uri = self._root + "search"
         response = self._post(uri, json=search_json)
         return response.json()
 
 
 def _assemble_metadatajson(namespace, key, **namevalues):
     """Assemble metadata json from input"""
-    metadata_json = {
-        'Namespace': namespace,
-        'Key': key,
-        'Value': namevalues}
+    metadata_json = {"Namespace": namespace, "Key": key, "Value": namevalues}
     return metadata_json

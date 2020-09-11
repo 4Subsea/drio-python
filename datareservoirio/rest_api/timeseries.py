@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
 from functools import update_wrapper
 from threading import RLock as Lock
 from uuid import uuid4
@@ -18,9 +18,11 @@ def request_cache(timeout=180):
     Assumes that first positional argument is token and is not included in the
     request cache signature.
     """
+
     def func_wrapper(func):
         wrapper = _request_cache_wrapper(func, timeout, maxsize=256)
         return update_wrapper(wrapper, func)
+
     return func_wrapper
 
 
@@ -34,19 +36,19 @@ def _request_cache_wrapper(func, timeout, maxsize, skip_argpos=1):
 
         request_signature = _make_request_hash(args[skip_argpos:], kwargs)
 
-        log.debug('attempting to access request cache')
-        result, timestamp_cache = cache.get(request_signature,
-                                            (sentinel, None))
+        log.debug("attempting to access request cache")
+        result, timestamp_cache = cache.get(request_signature, (sentinel, None))
 
-        if (result is sentinel or
-                (timestamp_cache + timedelta(seconds=timeout) < timestamp)):
-            log.debug('request cache invalid - acquiring from source')
+        if result is sentinel or (
+            timestamp_cache + timedelta(seconds=timeout) < timestamp
+        ):
+            log.debug("request cache invalid - acquiring from source")
             result = func(*args, **kwargs)
 
             with cache_lock:  # altering cache is now thread-safe
                 cache[request_signature] = (result, timestamp)
                 if len(cache) > maxsize:
-                    log.debug('request cache full - pop out oldest item')
+                    log.debug("request cache full - pop out oldest item")
                     key = sorted(cache, key=lambda x: cache.get(x)[-1])[0]
                     del cache[key]
         return result
@@ -77,9 +79,10 @@ class TimeSeriesAPI(BaseAPI):
         True.
 
     """
+
     def __init__(self, session, cache=True):
         super(TimeSeriesAPI, self).__init__(session=session)
-        self._root = self._api_base_url + 'timeseries/'
+        self._root = self._api_base_url + "timeseries/"
         self._cache = cache
 
     def create(self, timeseries_id=None):
@@ -97,7 +100,7 @@ class TimeSeriesAPI(BaseAPI):
         dict
             http response.text loaded as json
         """
-        log.debug('called with <token>, {}'.format(timeseries_id), 'create')
+        log.debug("called with <token>, {}".format(timeseries_id), "create")
         if timeseries_id is None:
             timeseries_id = str(uuid4())
 
@@ -121,8 +124,8 @@ class TimeSeriesAPI(BaseAPI):
         """
         log.debug("called with <token>, {}".format(file_id), "create")
 
-        uri = self._root + 'create'
-        body = {'FileId': file_id}
+        uri = self._root + "create"
+        body = {"FileId": file_id}
         response = self._post(uri, data=body)
         return response.json()
 
@@ -141,30 +144,29 @@ class TimeSeriesAPI(BaseAPI):
         -----
         Refer to API documentation wrt append, overlap, and overwrite behavior
         """
-        log.debug('called with <token>, {}, {}'.format(
-            timeseries_id, file_id), 'add')
+        log.debug("called with <token>, {}, {}".format(timeseries_id, file_id), "add")
 
-        uri = self._root + 'add'
-        body = {'TimeSeriesId': timeseries_id, 'FileId': file_id}
+        uri = self._root + "add"
+        body = {"TimeSeriesId": timeseries_id, "FileId": file_id}
         response = self._post(uri, data=body)
         return response.json()
 
     def info(self, timeseries_id):
         """
-        Information about a timeseries entry.
+         Information about a timeseries entry.
 
-        Parameters
-        ----------
-       timeseries_id : str
-            id of the target timeseries
+         Parameters
+         ----------
+        timeseries_id : str
+             id of the target timeseries
 
-        Return
-        ------
-        dict
-            dictionary containing information about a timeseries
-            entry in the reservoir
+         Return
+         ------
+         dict
+             dictionary containing information about a timeseries
+             entry in the reservoir
         """
-        log.debug('called with <token>, {}'.format(timeseries_id))
+        log.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._root + timeseries_id
         response = self._get(uri)
@@ -179,7 +181,7 @@ class TimeSeriesAPI(BaseAPI):
         timeseries_id : str
             id of the target timeseries
         """
-        log.debug('called with <token>, {}'.format(timeseries_id))
+        log.debug("called with <token>, {}".format(timeseries_id))
 
         uri = self._root + timeseries_id
         self._delete(uri)
@@ -208,15 +210,15 @@ class TimeSeriesAPI(BaseAPI):
         ----
         Requests are divided into n-sub requests per day.
         """
-        log.debug('called with <token>, {}, {}, {}'.format(
-            timeseries_id, start, end))
+        log.debug("called with <token>, {}, {}, {}".format(timeseries_id, start, end))
 
         nanoseconds_day = 86400000000000
-        start = (start//nanoseconds_day)*nanoseconds_day
-        end = ((end//nanoseconds_day) + 1)*nanoseconds_day - 1
+        start = (start // nanoseconds_day) * nanoseconds_day
+        end = ((end // nanoseconds_day) + 1) * nanoseconds_day - 1
 
-        download_days = (self._download_days_cached
-                         if self._cache else self._download_days_base)
+        download_days = (
+            self._download_days_cached if self._cache else self._download_days_base
+        )
         return download_days(timeseries_id, start, end)
 
     @request_cache(timeout=180)
@@ -243,11 +245,10 @@ class TimeSeriesAPI(BaseAPI):
         json
             a list of files, each having a list of Azure Storage compatible chunk urls
         """
-        log.debug('called with <token>, {}, {}, {}'.format(
-            timeseries_id, start, end))
+        log.debug("called with <token>, {}, {}, {}".format(timeseries_id, start, end))
 
-        uri = self._root + '{}/data/days'.format(timeseries_id)
-        params = {'start': start, 'end': end}
+        uri = self._root + "{}/data/days".format(timeseries_id)
+        params = {"start": start, "end": end}
 
         response = self._get(uri, params=params)
         return response.json()
@@ -281,7 +282,7 @@ class TimeSeriesAPI(BaseAPI):
             else:
                 args_update.append(arg)
 
-        uri = self._root + 'search/' + '/'.join(args_update)
+        uri = self._root + "search/" + "/".join(args_update)
         response = self._get(uri)
         return response.json()
 
@@ -301,10 +302,12 @@ class TimeSeriesAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug('called with <token>, {}, {}'.format(
-            timeseries_id, metadata_id_list), 'attach_metadata')
+        log.debug(
+            "called with <token>, {}, {}".format(timeseries_id, metadata_id_list),
+            "attach_metadata",
+        )
 
-        uri = self._root + '{}/metadata'.format(timeseries_id)
+        uri = self._root + "{}/metadata".format(timeseries_id)
 
         response = self._put(uri, json=metadata_id_list)
         return response.json()
@@ -325,10 +328,12 @@ class TimeSeriesAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug('called with <token>, {}, {}'.format(
-            timeseries_id, metadata_id_list), 'detach_metadata')
+        log.debug(
+            "called with <token>, {}, {}".format(timeseries_id, metadata_id_list),
+            "detach_metadata",
+        )
 
-        uri = self._root + '{}/metadata'.format(timeseries_id)
+        uri = self._root + "{}/metadata".format(timeseries_id)
 
         response = self._delete(uri, json=metadata_id_list)
         return response.json()

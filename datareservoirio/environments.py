@@ -4,7 +4,6 @@ from . import _constants
 
 
 class Environment(object):
-
     def __init__(self):
         self._logger = logging.getLogger(__name__)
 
@@ -33,11 +32,11 @@ class Environment(object):
         self._set_base_url(_constants.API_BASE_URL_DEV)
 
     def _set_environment(self, environment):
-        self._logger.info('Setting environment to: {}'.format(environment))
+        self._logger.info("Setting environment to: {}".format(environment))
         self.current_environment = environment
 
     def _set_base_url(self, base_url):
-        self._logger.info('Setting baseurl to: {}'.format(base_url))
+        self._logger.info("Setting baseurl to: {}".format(base_url))
         self._api_base_url = base_url
 
     @property

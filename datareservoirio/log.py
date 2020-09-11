@@ -2,7 +2,6 @@ from datetime import datetime
 
 
 class LogWriter(object):
-
     def __init__(self, logger):
         self.logger = logger
 
@@ -27,13 +26,13 @@ class LogWriter(object):
         return self.logger.debug(msg)
 
     def format(self, lvl, msg, origin=None):
-        time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
         if origin:
-            origin = '.'+origin
+            origin = "." + origin
         else:
-            origin = ''
+            origin = ""
 
-        base = '{} *** {} *** {}{} *** {}'
+        base = "{} *** {} *** {}{} *** {}"
 
-        return base.format(time, lvl, self.logger.name, origin,  msg)
+        return base.format(time, lvl, self.logger.name, origin, msg)

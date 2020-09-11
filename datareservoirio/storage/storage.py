@@ -3,9 +3,8 @@ import logging
 import os
 import re
 import shutil
-from threading import RLock as Lock
 from concurrent.futures import ThreadPoolExecutor
-
+from threading import RLock as Lock
 
 import pandas as pd
 
@@ -112,11 +111,12 @@ class BaseDownloader:
     Multiple chunks will be downloaded in parallel using ThreadPoolExecutor.
 
     """
+
     def __init__(self, backend):
         self._backend = backend
 
     def get(self, response):
-        filechunks = [f['Chunks'] for f in response['Files']]
+        filechunks = [f["Chunks"] for f in response["Files"]]
         filedatas = map(self._download_chunks_as_dataframe, filechunks)
 
         try:
@@ -125,7 +125,7 @@ class BaseDownloader:
             return pd.DataFrame()
 
         for fd in filedatas:
-                df = self._combine_first(fd, df)
+            df = self._combine_first(fd, df)
         return df
 
     def _download_chunks_as_dataframe(self, chunks):
@@ -144,7 +144,7 @@ class BaseDownloader:
         """
         df = self._backend.get(chunk)
         if not df.index.is_unique:
-            return df[~df.index.duplicated(keep='last')]
+            return df[~df.index.duplicated(keep="last")]
         return df
 
     @staticmethod
@@ -167,8 +167,10 @@ class BaseDownloader:
                 df_combined = pd.concat((calling, other))
             else:
                 df_combined = pd.concat((other, calling))
-        elif (len(calling_index) == len(other_index) and
-              (calling_index == other_index).all()):  # exact overlap
+        elif (
+            len(calling_index) == len(other_index)
+            and (calling_index == other_index).all()
+        ):  # exact overlap
             df_combined = calling
         else:  # partial overlap - expensive
             df_combined = calling.combine_first(other)
@@ -188,6 +190,7 @@ class BaseUploader:
         existing request session can be reused.
 
     """
+
     def __init__(self, backend):
         self._backend = backend
 
@@ -225,6 +228,7 @@ class FileCacheDownload(CacheIO, StorageBackend):
         existing request session can be reused.
 
     """
+
     STOREFORMATVERSION = "v2"
     CACHE_THRESHOLD = 24 * 60  # number of rows
 
@@ -386,6 +390,7 @@ class DirectDownload(StorageBackend):
         existing request session can be reused.
 
     """
+
     def __init__(self, session=None):
         super().__init__(session=session)
 
@@ -414,6 +419,7 @@ class DirectUpload(StorageBackend):
         existing request session can be reused.
 
     """
+
     def __init__(self, session=None):
         super().__init__(session=session)
 

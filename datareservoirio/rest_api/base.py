@@ -1,8 +1,8 @@
 import logging
 from functools import wraps
 
-from requests.packages.urllib3 import Retry
 from requests.adapters import HTTPAdapter
+from requests.packages.urllib3 import Retry
 
 from .. import globalsettings
 from ..log import LogWriter

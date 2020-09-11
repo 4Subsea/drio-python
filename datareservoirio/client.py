@@ -2,19 +2,18 @@ import logging
 import time
 import timeit
 
-import requests
 import pandas as pd
+import requests
 
 from .log import LogWriter
-from .rest_api import FilesAPI, TimeSeriesAPI, MetadataAPI
-
+from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import (
+    BaseDownloader,
+    BaseUploader,
     DirectDownload,
     DirectUpload,
     FileCacheDownload,
     Storage,
-    BaseDownloader,
-    BaseUploader,
 )
 
 logger = logging.getLogger(__name__)

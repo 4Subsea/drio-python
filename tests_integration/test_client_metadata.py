@@ -4,7 +4,6 @@ import requests
 
 import datareservoirio
 from datareservoirio.authenticate import ClientAuthenticator
-
 from tests_integration._auth import CLIENT
 
 
