@@ -1,15 +1,12 @@
 import time
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import requests
 
 import datareservoirio
 from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.rest_api.timeseries import (
-    request_cache,
-    _make_request_hash)
-
+from datareservoirio.rest_api.timeseries import _make_request_hash, request_cache
 
 dummy_response_add = """
     {
@@ -28,7 +25,7 @@ dummy_response_add = """
 
 def make_add_response():
     response = requests.Response()
-    response._content = dummy_response_add.encode('ascii')
+    response._content = dummy_response_add.encode("ascii")
 
     return response
 
@@ -38,59 +35,62 @@ def setUpModule():
 
 
 class Test_TimeSeriesAPI(unittest.TestCase):
-
     def setUp(self):
         self.api = TimeSeriesAPI(Mock())
-        self.api._root = 'https://root/timeseries/'
+        self.api._root = "https://root/timeseries/"
 
     def test_info(self):
         mock_get = self.api._session.get
 
         mock_get.return_value = Mock()
-        mock_get.return_value.text = u'{}'
+        mock_get.return_value.text = u"{}"
 
-        self.api.info('someId')
+        self.api.info("someId")
 
-        expected_uri = 'https://root/timeseries/someId'
+        expected_uri = "https://root/timeseries/someId"
 
         mock_get.assert_called_once_with(expected_uri, **self.api._defaults)
 
     def test_delete(self):
         mock_delete = self.api._session.delete
-        timeseries_id = '123456'
+        timeseries_id = "123456"
 
         mock_delete.return_value = Mock()
         mock_delete.return_value.status_code = 200
 
         self.api.delete(timeseries_id)
 
-        expected_uri = 'https://root/timeseries/123456'
+        expected_uri = "https://root/timeseries/123456"
 
         mock_delete.assert_called_with(expected_uri, **self.api._defaults)
 
     def test_create_with_timeseries_id(self):
-        ts_id = 'ebaebc1e-35f6-49b5-a6cf-3cc07177a691'
+        ts_id = "ebaebc1e-35f6-49b5-a6cf-3cc07177a691"
 
         mock_put = self.api._session.put
         mock_put.return_value = Mock()
-        mock_put.return_value.text = u'{TimeSeriesId:\'ebaebc1e-35f6-49b5-a6cf-3cc07177a691\'}'
+        mock_put.return_value.text = (
+            u"{TimeSeriesId:'ebaebc1e-35f6-49b5-a6cf-3cc07177a691'}"
+        )
 
         self.api.create(timeseries_id=ts_id)
 
-        expected_uri = 'https://root/timeseries/ebaebc1e-35f6-49b5-a6cf-3cc07177a691'
+        expected_uri = "https://root/timeseries/ebaebc1e-35f6-49b5-a6cf-3cc07177a691"
 
         mock_put.assert_called_with(expected_uri, data=None, **self.api._defaults)
 
-    @patch('datareservoirio.rest_api.timeseries.uuid4')
+    @patch("datareservoirio.rest_api.timeseries.uuid4")
     def test_create_without_timeseries_id(self, mock_uuid):
-        mock_uuid.return_value = u'aaabbbcc-35f6-49b5-a6cf-3cc07177a691'
+        mock_uuid.return_value = u"aaabbbcc-35f6-49b5-a6cf-3cc07177a691"
         mock_put = self.api._session.put
         mock_put.return_value = Mock()
-        mock_put.return_value.text = u'{TimeSeriesId:\'aaabbbcc-35f6-49b5-a6cf-3cc07177a691\'}'
+        mock_put.return_value.text = (
+            u"{TimeSeriesId:'aaabbbcc-35f6-49b5-a6cf-3cc07177a691'}"
+        )
 
         self.api.create()
 
-        expected_uri = 'https://root/timeseries/aaabbbcc-35f6-49b5-a6cf-3cc07177a691'
+        expected_uri = "https://root/timeseries/aaabbbcc-35f6-49b5-a6cf-3cc07177a691"
 
         mock_put.assert_called_with(expected_uri, data=None, **self.api._defaults)
 
@@ -99,124 +99,132 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         mock_post = self.api._session.post
         mock_post.return_value = Mock()
-        mock_post.return_value.text = u'{}'
+        mock_post.return_value.text = u"{}"
 
         self.api.create_with_data(file_id)
 
-        expected_uri = 'https://root/timeseries/create'
+        expected_uri = "https://root/timeseries/create"
         expected_body = {"FileId": file_id}
 
-        mock_post.assert_called_with(expected_uri, data=expected_body,
-                                     **self.api._defaults)
+        mock_post.assert_called_with(
+            expected_uri, data=expected_body, **self.api._defaults
+        )
 
     def test_add(self):
-        timeseries_id = 't666'
-        file_id = 'f001'
+        timeseries_id = "t666"
+        file_id = "f001"
 
         mock_post = self.api._session.post
         mock_post.return_value = Mock()
-        mock_post.return_value.text = u'{}'
+        mock_post.return_value.text = u"{}"
 
         self.api.add(timeseries_id, file_id)
 
-        expected_uri = 'https://root/timeseries/add'
+        expected_uri = "https://root/timeseries/add"
         expected_body = {"TimeSeriesId": timeseries_id, "FileId": file_id}
 
-        mock_post.assert_called_with(expected_uri, data=expected_body,
-                                     **self.api._defaults)
+        mock_post.assert_called_with(
+            expected_uri, data=expected_body, **self.api._defaults
+        )
 
     def test__download_days_base(self):
-        timeseries_id = 't666'
+        timeseries_id = "t666"
         start = -1000
         end = 6660000
 
         self.api._download_days_base(timeseries_id, start, end)
 
-        expected_uri = 'https://root/timeseries/{ts_id}/data/days'.format(
-            ts_id=timeseries_id)
-        expected_params = {'start': start, 'end': end}
+        expected_uri = "https://root/timeseries/{ts_id}/data/days".format(
+            ts_id=timeseries_id
+        )
+        expected_params = {"start": start, "end": end}
 
         mock_get = self.api._session.get
-        mock_get.assert_called_with(expected_uri, params=expected_params,
-                                    **self.api._defaults)
+        mock_get.assert_called_with(
+            expected_uri, params=expected_params, **self.api._defaults
+        )
 
     def test__download_days_cached(self):
-        timeseries_id = 't666'
+        timeseries_id = "t666"
         start = -1000
         end = 6660000
 
         self.api._download_days_cached(timeseries_id, start, end)
 
-        expected_uri = 'https://root/timeseries/{ts_id}/data/days'.format(
-            ts_id=timeseries_id)
-        expected_params = {'start': start, 'end': end}
+        expected_uri = "https://root/timeseries/{ts_id}/data/days".format(
+            ts_id=timeseries_id
+        )
+        expected_params = {"start": start, "end": end}
 
         mock_get = self.api._session.get
-        mock_get.assert_called_with(expected_uri, params=expected_params,
-                                    **self.api._defaults)
+        mock_get.assert_called_with(
+            expected_uri, params=expected_params, **self.api._defaults
+        )
 
     def test_download_days(self):
-        timeseries_id = 't666'
+        timeseries_id = "t666"
         nanoseconds_day = 86400000000000
-        start = 10*nanoseconds_day
-        end = 21*nanoseconds_day - 1
+        start = 10 * nanoseconds_day
+        end = 21 * nanoseconds_day - 1
 
-        with patch.object(self.api, '_download_days_cached') as mock_download_days:
+        with patch.object(self.api, "_download_days_cached") as mock_download_days:
             mock_download_days.return_value = Mock()
-            result = self.api.download_days(timeseries_id, start+102, end-102933)
+            result = self.api.download_days(timeseries_id, start + 102, end - 102933)
         mock_download_days.assert_called_once_with(timeseries_id, start, end)
         self.assertEqual(result, mock_download_days.return_value)
 
     def test_download_days_exact_end(self):
-        timeseries_id = 't666'
+        timeseries_id = "t666"
         nanoseconds_day = 86400000000000
-        start = 10*nanoseconds_day
-        end = 21*nanoseconds_day
-        end_expected = 22*nanoseconds_day - 1
+        start = 10 * nanoseconds_day
+        end = 21 * nanoseconds_day
+        end_expected = 22 * nanoseconds_day - 1
 
-        with patch.object(self.api, '_download_days_cached') as mock_download_days:
+        with patch.object(self.api, "_download_days_cached") as mock_download_days:
             mock_download_days.return_value = Mock()
             result = self.api.download_days(timeseries_id, start, end)
         mock_download_days.assert_called_once_with(timeseries_id, start, end_expected)
         self.assertEqual(result, mock_download_days.return_value)
 
     def test_attach_metadata(self):
-        timeseries_id = 't666'
-        meta_list = ['meta_1', 'meta_2']
+        timeseries_id = "t666"
+        meta_list = ["meta_1", "meta_2"]
         mock_post = self.api._session.put
 
         self.api.attach_metadata(timeseries_id, meta_list)
 
-        expected_uri = 'https://root/timeseries/{}/metadata'.format(timeseries_id)
+        expected_uri = "https://root/timeseries/{}/metadata".format(timeseries_id)
 
         mock_post.assert_called_with(expected_uri, json=meta_list, **self.api._defaults)
 
     def test_detach_metadata(self):
-        timeseries_id = 't666'
-        meta_list = ['meta_1', 'meta_2']
+        timeseries_id = "t666"
+        meta_list = ["meta_1", "meta_2"]
         mock_delete = self.api._session.delete
 
         self.api.detach_metadata(timeseries_id, meta_list)
 
-        expected_uri = 'https://root/timeseries/{}/metadata'.format(timeseries_id)
+        expected_uri = "https://root/timeseries/{}/metadata".format(timeseries_id)
 
-        mock_delete.assert_called_with(expected_uri, json=meta_list, **self.api._defaults)
+        mock_delete.assert_called_with(
+            expected_uri, json=meta_list, **self.api._defaults
+        )
 
     def test_search_without_value(self):
         mock_get = self.api._session.get
 
-        self.api.search('tns', 'tkey', 'tname', None)
+        self.api.search("tns", "tkey", "tname", None)
 
-        expected_uri = 'https://root/timeseries/search/tns/tkey/tname'
+        expected_uri = "https://root/timeseries/search/tns/tkey/tname"
 
         mock_get.assert_called_once_with(expected_uri, **self.api._defaults)
 
     def test_search_with_value(self):
         mock_get = self.api._session.get
 
-        self.api.search('tns', 'tkey', 'tname', 'theValue')
+        self.api.search("tns", "tkey", "tname", "theValue")
 
-        expected_uri = 'https://root/timeseries/search/tns/tkey/tname/theValue'
+        expected_uri = "https://root/timeseries/search/tns/tkey/tname/theValue"
 
         mock_get.assert_called_once_with(expected_uri, **self.api._defaults)
 
@@ -231,22 +239,21 @@ class Test__make_request_hash(unittest.TestCase):
 
     def test_just_kwargs(self):
         args = tuple()
-        kwargs = {'a': 1}
+        kwargs = {"a": 1}
 
         hash_out = _make_request_hash(args, kwargs)
-        self.assertEqual(hash_out, hash(('a', 1)))
+        self.assertEqual(hash_out, hash(("a", 1)))
 
     def test_args_kwargs(self):
         args = (1, 2)
-        kwargs = {'a': 1}
+        kwargs = {"a": 1}
 
         hash_out = _make_request_hash(args, kwargs)
-        self.assertEqual(hash_out, hash((1, 2, 'a', 1)))
+        self.assertEqual(hash_out, hash((1, 2, "a", 1)))
 
 
 class Test__request_cache(unittest.TestCase):
     def setUp(self):
-
         @request_cache()
         def user_function(some_object, x, y=5):
             return x + y
@@ -283,5 +290,5 @@ class Test__request_cache(unittest.TestCase):
         self.assertGreater(timestamp_1, timestamp_0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

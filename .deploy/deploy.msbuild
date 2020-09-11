@@ -65,8 +65,8 @@
     <ReplaceFileText
       InputFilename="$(SolutionDir)\setup.py"
       OutputFilename="$(SolutionDir)\setup.py"
-      MatchExpression="version='0.0.1'"
-      ReplacementText="version='$(ReleaseVersion)'" />
+      MatchExpression="version=&quot;0.0.1&quot;"
+      ReplacementText="version=&quot;$(ReleaseVersion)&quot;" />
   </Target>
 
   <Target Name="BuildPython" DependsOnTargets="SetupVersion">

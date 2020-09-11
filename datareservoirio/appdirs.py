@@ -8,10 +8,8 @@ from __future__ import absolute_import, division, print_function
 import os
 import sys
 
-
 # windows detection, covers cpython and ironpython
-WINDOWS = (sys.platform.startswith('win') or
-           (sys.platform == 'cli' and os.name == 'nt'))
+WINDOWS = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 
 
 def expanduser(path):
@@ -21,7 +19,7 @@ def expanduser(path):
     Includes a workaround for http://bugs.python.org/issue14768
     """
     expanded = os.path.expanduser(path)
-    if path.startswith('~/') and expanded.startswith('//'):
+    if path.startswith("~/") and expanded.startswith("//"):
         expanded = expanded[1:]
     return expanded
 
@@ -49,7 +47,7 @@ def user_cache_dir(appname):
     """
     if WINDOWS:
         # Get the base path
-        path = os.path.normpath(_get_win_folder('CSIDL_LOCAL_APPDATA'))
+        path = os.path.normpath(_get_win_folder("CSIDL_LOCAL_APPDATA"))
 
         # When using Python 2, return paths as bytes on Windows like we do on
         # other operating systems. See helper function docs for more details.
@@ -57,16 +55,16 @@ def user_cache_dir(appname):
             path = _win_path_to_bytes(path)
 
         # Add our app name and Cache directory to it
-        path = os.path.join(path, appname, 'Cache')
-    elif sys.platform == 'darwin':
+        path = os.path.join(path, appname, "Cache")
+    elif sys.platform == "darwin":
         # Get the base path
-        path = expanduser('~/Library/Caches')
+        path = expanduser("~/Library/Caches")
 
         # Add our app name to it
         path = os.path.join(path, appname)
     else:
         # Get the base path
-        path = os.getenv('XDG_CACHE_HOME', expanduser('~/.cache'))
+        path = os.getenv("XDG_CACHE_HOME", expanduser("~/.cache"))
 
         # Add our app name to it
         path = os.path.join(path, appname)
@@ -103,23 +101,28 @@ def user_data_dir(appname, roaming=False):
     That means, by default '~/.local/share/<AppName>'.
     """
     if WINDOWS:
-        const = roaming and 'CSIDL_APPDATA' or 'CSIDL_LOCAL_APPDATA'
+        const = roaming and "CSIDL_APPDATA" or "CSIDL_LOCAL_APPDATA"
         path = os.path.join(os.path.normpath(_get_win_folder(const)), appname)
-    elif sys.platform == 'darwin':
-        path = os.path.join(
-            expanduser('~/Library/Application Support/'),
-            appname,
-        ) if os.path.isdir(os.path.join(
-            expanduser('~/Library/Application Support/'),
-            appname,
-        )
-        ) else os.path.join(
-            expanduser('~/.config/'),
-            appname,
+    elif sys.platform == "darwin":
+        path = (
+            os.path.join(
+                expanduser("~/Library/Application Support/"),
+                appname,
+            )
+            if os.path.isdir(
+                os.path.join(
+                    expanduser("~/Library/Application Support/"),
+                    appname,
+                )
+            )
+            else os.path.join(
+                expanduser("~/.config/"),
+                appname,
+            )
         )
     else:
         path = os.path.join(
-            os.getenv('XDG_DATA_HOME', expanduser('~/.local/share')),
+            os.getenv("XDG_DATA_HOME", expanduser("~/.local/share")),
             appname,
         )
 
@@ -148,16 +151,17 @@ def user_config_dir(appname, roaming=True):
     """
     if WINDOWS:
         path = user_data_dir(appname, roaming=roaming)
-    elif sys.platform == 'darwin':
+    elif sys.platform == "darwin":
         path = user_data_dir(appname)
     else:
-        path = os.getenv('XDG_CONFIG_HOME', expanduser('~/.config'))
+        path = os.getenv("XDG_CONFIG_HOME", expanduser("~/.config"))
         path = os.path.join(path, appname)
 
     return path
 
 
 # -- Windows support functions --
+
 
 def _get_win_folder_from_registry(csidl_name):
     """
@@ -168,14 +172,14 @@ def _get_win_folder_from_registry(csidl_name):
     import _winreg
 
     shell_folder_name = {
-        'CSIDL_APPDATA': 'AppData',
-        'CSIDL_COMMON_APPDATA': 'Common AppData',
-        'CSIDL_LOCAL_APPDATA': 'Local AppData',
+        "CSIDL_APPDATA": "AppData",
+        "CSIDL_COMMON_APPDATA": "Common AppData",
+        "CSIDL_LOCAL_APPDATA": "Local AppData",
     }[csidl_name]
 
     key = _winreg.OpenKey(
         _winreg.HKEY_CURRENT_USER,
-        r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
+        r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders",
     )
     directory, _type = _winreg.QueryValueEx(key, shell_folder_name)
     return directory
@@ -183,9 +187,9 @@ def _get_win_folder_from_registry(csidl_name):
 
 def _get_win_folder_with_ctypes(csidl_name):
     csidl_const = {
-        'CSIDL_APPDATA': 26,
-        'CSIDL_COMMON_APPDATA': 35,
-        'CSIDL_LOCAL_APPDATA': 28,
+        "CSIDL_APPDATA": 26,
+        "CSIDL_COMMON_APPDATA": 35,
+        "CSIDL_LOCAL_APPDATA": 28,
     }[csidl_name]
 
     buf = ctypes.create_unicode_buffer(1024)
@@ -209,6 +213,7 @@ def _get_win_folder_with_ctypes(csidl_name):
 if WINDOWS:
     try:
         import ctypes
+
         _get_win_folder = _get_win_folder_with_ctypes
     except ImportError:
         _get_win_folder = _get_win_folder_from_registry
@@ -224,7 +229,7 @@ def _win_path_to_bytes(path):
 
     If encoding using ASCII and MBCS fails, return the original Unicode path.
     """
-    for encoding in ('ASCII', 'MBCS'):
+    for encoding in ("ASCII", "MBCS"):
         try:
             return path.encode(encoding)
         except (UnicodeEncodeError, LookupError):
@@ -236,7 +241,7 @@ def _win_path(path):
     r"""Pretend '\\?\' to long Windows path."""
     path = os.path.abspath(path)
     if (len(path) + 1) >= 260:
-        if path.startswith('\\\\'):
-            raise IOError('long UNC paths not supported')
-        return '\\\\?\\'+path
+        if path.startswith("\\\\"):
+            raise IOError("long UNC paths not supported")
+        return "\\\\?\\" + path
     return path

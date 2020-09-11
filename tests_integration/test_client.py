@@ -9,7 +9,6 @@ import requests
 
 import datareservoirio
 from datareservoirio.authenticate import ClientAuthenticator
-
 from tests_integration._auth import CLIENT
 
 
@@ -45,7 +44,7 @@ class Test_Client(unittest.TestCase):
     def test_create_get_delete(self):
         df = pd.Series(np.arange(100.0), index=np.arange(0, 100))
         df.index = pd.to_datetime(df.index, utc=True)
-        
+
         response = self.client.create(df)
         info = self.client.info(response["TimeSeriesId"])
 

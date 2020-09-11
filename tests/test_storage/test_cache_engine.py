@@ -8,8 +8,12 @@ from unittest.mock import MagicMock, Mock, mock_open, patch
 import pandas as pd
 
 from datareservoirio.storage.cache_engine import (
-    CacheIO, CsvFormat, GenericFormat, ParquetFormat,
-    _CacheIndex)
+    CacheIO,
+    CsvFormat,
+    GenericFormat,
+    ParquetFormat,
+    _CacheIndex,
+)
 
 
 class Test_CsvFormat(unittest.TestCase):
@@ -47,7 +51,6 @@ class Test_CsvFormat(unittest.TestCase):
 
 
 class Test_ParquetFormat(unittest.TestCase):
-
     def test__init(self):
         file_format = ParquetFormat()
         self.assertIsInstance(file_format, GenericFormat)
@@ -256,7 +259,7 @@ class Test__CacheIndex(unittest.TestCase):
         path_out = cache_index._get_filepath("id01", "md501")
         path_expected = os.path.normpath(os.path.join("./test", "id01_md501"))
 
-        from datareservoirio.appdirs import _win_path, WINDOWS
+        from datareservoirio.appdirs import WINDOWS, _win_path
 
         if WINDOWS:
             path_expected = _win_path(path_expected)

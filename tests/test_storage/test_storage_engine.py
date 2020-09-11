@@ -1,12 +1,12 @@
 import io
 import unittest
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import numpy as np
 import pandas as pd
 import requests
-
 from azure.storage.blob import BlobBlock
+
 from datareservoirio.storage.storage_engine import (
     AzureBlobService,
     AzureException,

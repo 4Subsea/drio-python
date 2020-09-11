@@ -1,10 +1,9 @@
 import json
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from datareservoirio import _constants
-from datareservoirio import authenticate
+from datareservoirio import _constants, authenticate
 from datareservoirio.globalsettings import environment
 
 

@@ -18,7 +18,6 @@ log = LogWriter(logger)
 _BYTES_PER_ROW = 128 // 8
 
 
-
 class GenericFormat(metaclass=ABCMeta):
     """
     Abstract class for file format classes.

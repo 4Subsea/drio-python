@@ -1,12 +1,12 @@
 import logging
+
 import pkg_resources
 
-from .client import Client
-from .authenticate import UserAuthenticator as Authenticator
 from . import globalsettings  # wierd bug. must be called last?
+from .authenticate import UserAuthenticator as Authenticator
+from .client import Client
 
-
-__version__ = pkg_resources.get_distribution('datareservoirio').version
+__version__ = pkg_resources.get_distribution("datareservoirio").version
 
 
 def set_log_level(lvl):
