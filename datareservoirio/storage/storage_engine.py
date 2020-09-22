@@ -8,20 +8,21 @@ from time import sleep
 import numpy as np
 import pandas as pd
 from azure.common import AzureException
-from azure.storage.blob import BlobBlock, BlockBlobService
+from azure.storage.blob import BlobClient
 
 log = logging.getLogger(__name__)
 
 
-class AzureBlobService(BlockBlobService):
+class AzureBlobService():
     """
-    Sub-class of BlockBlobService that handle upload/download of Pandas Series
-    to/from Azure Blob Storage.
+    Service that handle upload/download of Pandas Series
+    to/from Azure Storage blob.
     """
 
     MAX_DOWNLOAD_CONCURRENT_BLOCKS = 4  # benchmark shows no difference?
     MAX_CHUNK_GET_SIZE = 8 * 1024 * 1024
     MAX_SINGLE_GET_SIZE = MAX_CHUNK_GET_SIZE
+    MAX_BLOCK_SIZE = 4 * 1024 * 1024
 
     def __init__(self, params, session=None):
         """
@@ -46,9 +47,8 @@ class AzureBlobService(BlockBlobService):
         self.container_name = params["Container"]
         self.blob_name = params["Path"]
 
-        super(AzureBlobService, self).__init__(
-            self._account, sas_token=self._sas_key, request_session=session
-        )
+        self._blob_client = BlobClient.from_blob_url(self.blob_name)
+        # TODO: how to request_session=session
 
     def get_blob_to_df(self):
         """
@@ -63,16 +63,13 @@ class AzureBlobService(BlockBlobService):
 
         with BytesIO() as binary_content:
             log.debug(f"Get chunk {self.blob_name}")
+            # TODO: how to do progress reporting ala:
+            #                 progress_callback=lambda current, total: log.info(
+            # f"{self.blob_name}: {(current / total) * 100:.1f}% downloaded ({current / (1024 * 1024):.1f} of {total / (1024 * 1024):.1f} MB)"),
 
-            self.get_blob_to_stream(
-                self.container_name,
-                self.blob_name,
-                stream=binary_content,
-                max_connections=self.MAX_DOWNLOAD_CONCURRENT_BLOCKS,
-                progress_callback=lambda current, total: log.info(
-                    f"{self.blob_name}: {(current / total) * 100:.1f}% downloaded ({current / (1024 * 1024):.1f} of {total / (1024 * 1024):.1f} MB)"
-                ),
-            )
+            ds = self._blob_client.download_blob(
+                max_concurrency=self.MAX_DOWNLOAD_CONCURRENT_BLOCKS)
+            binary_content.write(ds.readall())
 
             binary_content.seek(0)
             with TextIOWrapper(binary_content, encoding="utf-8") as text_content:
@@ -134,34 +131,24 @@ class AzureBlobService(BlockBlobService):
                 blocks.append(block)
                 block_id += 1
 
-                log.debug(f"put block {block.id} for blob {self.blob_name}")
-                self.put_block_retry(
-                    self.container_name,
-                    self.blob_name,
-                    block_data.encode("ascii"),
-                    block.id,
-                )
+                log.debug(f"put block {block} for blob {self.blob_name}")
+                self.put_block_retry(block, block_data.encode("ascii"))
 
         if leftover:
             block = self._make_block(block_id)
             blocks.append(block)
 
-            log.debug(f"put block {block.id} for blob {self.blob_name}")
-            self.put_block_retry(
-                self.container_name,
-                self.blob_name,
-                block_data.encode("ascii"),
-                block.id,
-            )
+            log.debug(f"put block {block} for blob {self.blob_name}")
+            self.put_block_retry(block, block_data.encode("ascii"))
 
-        self.put_block_list(self.container_name, self.blob_name, blocks)
+        self._blob_client.commit_block_list(blocks)
 
     def put_block_retry(self, *args, **kwargs):
         """put_block with some retry - hotfix"""
         count = 0
         while count <= 5:
             try:
-                self.put_block(*args, **kwargs)
+                self._blob_client.stage_block(*args, **kwargs)
                 return None
             except AzureException as ex:
                 count += 1
@@ -173,7 +160,7 @@ class AzureBlobService(BlockBlobService):
     def _make_block(self, block_id):
         base64_block_id = self._b64encode(block_id)
         log.debug(f"block id {block_id} blockidbase64 {base64_block_id}")
-        return BlobBlock(id=base64_block_id)
+        return base64_block_id
 
     def _b64encode(self, i, length=8):
         i_str = "{0:0{length}d}".format(i, length=length)
