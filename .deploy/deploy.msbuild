@@ -7,7 +7,7 @@
     <PackageDir Condition="$(PackageDir) == ''">$(SolutionDir)\packages</PackageDir>
     <BuildDir Condition="$(BuildDir) == ''">$(SolutionDir)\build</BuildDir>
     <NuGetExePath>$(SolutionDir)\.nuget\v2.7\nuget.exe</NuGetExePath>
-    <ToxExePath Condition="$(ToxExePath) == ''">tox.exe</NuGetExePath>
+    <ToxExePath Condition="$(ToxExePath) == ''">tox.exe</ToxExePath>
     <OctoExePath>$(PackageDir)\OctopusTools.2.6.3.59\Octo.exe</OctoExePath>
     <OctoPackTargetsDirectory>$(PackageDir)\OctoPack.3.6.1\build</OctoPackTargetsDirectory>
     <OctoPackTargetsPath>$(OctoPackTargetsDirectory)\OctoPack.targets</OctoPackTargetsPath>
