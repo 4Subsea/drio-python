@@ -264,7 +264,9 @@ class Test_Client(unittest.TestCase):
         expected_response = {"abc": 123}
         self.client._timeseries_api.add.return_value = expected_response
 
-        response = self.client.append(self.dummy_df, self.timeseries_id, verify_status=False)
+        response = self.client.append(
+            self.dummy_df, self.timeseries_id, verify_status=False
+        )
 
         self.client._verify_and_prepare_series.assert_called_once_with(self.dummy_df)
         self._storage.put.assert_called_once_with(self.dummy_df)

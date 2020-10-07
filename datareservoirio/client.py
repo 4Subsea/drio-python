@@ -132,7 +132,8 @@ class Client:
             status = self._wait_until_file_ready(file_id)
             time_process = timeit.default_timer()
             log.info(
-                "Processing took {} seconds".format(time_process - time_upload), "create"
+                "Processing took {} seconds".format(time_process - time_upload),
+                "create",
             )
             if status == "Failed":
                 return status
@@ -177,7 +178,9 @@ class Client:
             status = self._wait_until_file_ready(file_id)
             time_process = timeit.default_timer()
             log.info(
-                "Processing serverside took {} seconds".format(time_process - time_upload),
+                "Processing serverside took {} seconds".format(
+                    time_process - time_upload
+                ),
                 "append",
             )
             if status == "Failed":
