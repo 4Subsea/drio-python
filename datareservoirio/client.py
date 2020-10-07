@@ -109,7 +109,7 @@ class Client:
             is None.
         verify_status : bool (optional)
             If true, and series is provided, the status of the data will be
-            verified before the series is created.
+            verified before the series is created. Default is True.
 
         Returns
         -------
@@ -160,7 +160,7 @@ class Client:
             The identifier of the existing series.
         verify_status : bool (optional)
             If true, the status of the file will be verified before
-            appended to the series.
+            appended to the series. Default is True.
 
         Returns
         -------
