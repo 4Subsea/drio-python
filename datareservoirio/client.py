@@ -97,7 +97,7 @@ class Client:
         """
         return self._files_api.ping()
 
-    def create(self, series=None):
+    def create(self, series=None, verify_status=True):
         """
         Create a new series in DataReservoir.io from a pandas.Series. If no
         data is provided, an empty series is created.
@@ -107,6 +107,9 @@ class Client:
         series : pandas.Series, optional
             Series with index (as DatetimeIndex-like or integer array). Default
             is None.
+        verify_status : bool (optional)
+            If true, and series is provided, the status of the file will be
+            verified before appended to the series.
 
         Returns
         -------
@@ -125,13 +128,14 @@ class Client:
         time_upload = timeit.default_timer()
         log.info("Upload took {} seconds".format(time_upload - time_start), "create")
 
-        status = self._wait_until_file_ready(file_id)
-        time_process = timeit.default_timer()
-        log.info(
-            "Processing took {} seconds".format(time_process - time_upload), "create"
-        )
-        if status == "Failed":
-            return status
+        if verify_status:
+            status = self._wait_until_file_ready(file_id)
+            time_process = timeit.default_timer()
+            log.info(
+                "Processing took {} seconds".format(time_process - time_upload), "create"
+            )
+            if status == "Failed":
+                return status
 
         response = self._timeseries_api.create_with_data(file_id)
         time_end = timeit.default_timer()
@@ -143,7 +147,7 @@ class Client:
         )
         return response
 
-    def append(self, series, series_id):
+    def append(self, series, series_id, verify_status=True):
         """
         Append data to an already existing series.
 
@@ -153,6 +157,9 @@ class Client:
             Series with index (as DatetimeIndex-like or integer array).
         series_id : string
             The identifier of the existing series.
+        verify_status : bool (optional)
+            If true, the status of the file will be verified before
+            appended to the series.
 
         Returns
         -------
@@ -166,14 +173,15 @@ class Client:
         time_upload = timeit.default_timer()
         log.info("Upload took {} seconds".format(time_upload - time_start), "append")
 
-        status = self._wait_until_file_ready(file_id)
-        time_process = timeit.default_timer()
-        log.info(
-            "Processing serverside took {} seconds".format(time_process - time_upload),
-            "append",
-        )
-        if status == "Failed":
-            return status
+        if verify_status:
+            status = self._wait_until_file_ready(file_id)
+            time_process = timeit.default_timer()
+            log.info(
+                "Processing serverside took {} seconds".format(time_process - time_upload),
+                "append",
+            )
+            if status == "Failed":
+                return status
 
         time_end = timeit.default_timer()
         log.info(
