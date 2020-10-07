@@ -1,0 +1,30 @@
+name: Deploy
+
+on: 
+  release:
+    types: [published]
+
+jobs:
+  Deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get version number
+        id: version_number
+        run: |
+          $REF="${{github.ref}}"
+          $TAG=$REF.Replace("refs/tags/", "")
+          echo "::set-output name=TAG::$TAG"
+          
+      - name: Prepare tools
+        shell: cmd
+        run: |
+         "%NUGET_PATH%" install .deploy\packages.config -o packages
+
+      - name: Deploy to Octopus
+        shell: cmd
+        run: |
+          call c:\venv-python-dev\Scripts\activate.bat
+          @echo on
+          "%MSBUILD14_PATH%" .deploy\deploy.msbuild /target:PushToEnvironment /p:NugetExePath="%NUGET_PATH%" /p:SolutionDir=.. /p:OctopusCreateRelease=True /p:OctopusTargetEnvironment=test /p:OctopusPerformDeploy=True /p:PackageVersion=${{steps.version_number.outputs.TAG}} /p:ReleaseVersion=${{steps.version_number.outputs.TAG}} /p:DeploymentFeedApiKey=${{secrets.OCTOPUS_DEPLOY_RELEASE_FEED_API_KEY}} /p:OctopusApiKey=${{secrets.OCTOPUS_DEPLOY_API_KEY}} /p:OctopusProject=reservoir-python /p:OctopusServer=${{secrets.OCTOPUS_DEPLOY_SERVER}} /p:DeploymentFeedPath=${{secrets.OCTOPUS_RELEASE_FEED_SERVER}} /v:m /nologo
