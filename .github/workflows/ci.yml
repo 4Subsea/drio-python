@@ -17,7 +17,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - uses: actions/upload-artifact@v2.2.0
 
       - name: black check
         shell: cmd
@@ -40,9 +39,7 @@ jobs:
           @echo on
           tox -r
 
-      - name: Coverage
-        with:
-          # Artifact name
+      - uses: actions/upload-artifact@v2
+        with:	
           name: Coverage
-          # A file, directory or wildcard pattern that describes what to upload
           path: cov_html-py36
