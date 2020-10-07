@@ -108,8 +108,8 @@ class Client:
             Series with index (as DatetimeIndex-like or integer array). Default
             is None.
         verify_status : bool (optional)
-            If true, and series is provided, the status of the file will be
-            verified before appended to the series.
+            If true, and series is provided, the status of the data will be
+            verified before the series is created.
 
         Returns
         -------
