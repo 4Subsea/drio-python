@@ -102,6 +102,24 @@ data::
     response = client.append(series, series_id)
 
 
+Data verification process
+-------------------------
+
+Data being appended to a series will go through a validation process before it 
+is made part of the series. By default, :py:func:`Client.create` and
+:py:func:`Client.append` will wait for this validation process to complete 
+successfully before appending the data to the timeseres. This behavior can be
+changed using the verify_status parameter:
+
+    response = client.create(series, verify_status=False)
+
+    response = client.append(series, series_id, verify_status=False)
+
+The result is that the data is queued for processing and the method returns
+immediately. When the validation process eventually completes, the data will
+be made available on the series.
+
+
 Access existing data
 --------------------
 
