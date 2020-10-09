@@ -108,11 +108,13 @@ class Client:
             Series with index (as DatetimeIndex-like or integer array). Default
             is None.
         force_commit : bool (optional)
-            If true, waiting for verification status will be skipped and the
-            data will be committed to the series immediately. The data will be
-            available in the series when the verification process completes.
-            If false, the status of the data will be verified before
-            data is committed to the series. Default is False.
+            All series are subjected to a server-side data validation before they are made available for
+            consumption; failing validation will result in the series being ignored. If False, the
+            method will wait for the data validation process to be completed and return the outcome, which
+            may be time consuming. If True, the method will NOT wait for the outcome and the data will be
+            available when/if the validation is successful. The latter is significantly faster, but is recommended
+            when the data are "validated" in advance. Default is False.
+            
 
         Returns
         -------
