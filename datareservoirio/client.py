@@ -97,7 +97,7 @@ class Client:
         """
         return self._files_api.ping()
 
-    def create(self, series=None, force_commit=False):
+    def create(self, series=None, wait_on_verification=True):
         """
         Create a new series in DataReservoir.io from a pandas.Series. If no
         data is provided, an empty series is created.
@@ -107,14 +107,16 @@ class Client:
         series : pandas.Series, optional
             Series with index (as DatetimeIndex-like or integer array). Default
             is None.
-        force_commit : bool (optional)
-            All series are subjected to a server-side data validation before they are made available for
-            consumption; failing validation will result in the series being ignored. If False, the
-            method will wait for the data validation process to be completed and return the outcome, which
-            may be time consuming. If True, the method will NOT wait for the outcome and the data will be
-            available when/if the validation is successful. The latter is significantly faster, but is recommended
-            when the data are "validated" in advance. Default is False.
-            
+        wait_on_verification : bool (optional)
+            All series are subjected to a server-side data validation before
+            they are made available for consumption; failing validation will
+            result in the series being ignored. If True, the method will wait
+            for the data validation process to be completed and return the
+            outcome, which may be time consuming. If False, the method will NOT
+            wait for the outcome and the data will be available when/if the
+            validation is successful. The latter is significantly faster, but
+            is recommended when the data is "validated" in advance.
+            Default is True.
 
         Returns
         -------
@@ -133,7 +135,7 @@ class Client:
         time_upload = timeit.default_timer()
         log.info("Upload took {} seconds".format(time_upload - time_start), "create")
 
-        if not force_commit:
+        if wait_on_verification:
             status = self._wait_until_file_ready(file_id)
             time_process = timeit.default_timer()
             log.info(
@@ -153,7 +155,7 @@ class Client:
         )
         return response
 
-    def append(self, series, series_id, force_commit=False):
+    def append(self, series, series_id, wait_on_verification=True):
         """
         Append data to an already existing series.
 
@@ -163,13 +165,16 @@ class Client:
             Series with index (as DatetimeIndex-like or integer array).
         series_id : string
             The identifier of the existing series.
-            All series are subjected to a server-side data validation before they are made available for
-            consumption; failing validation will result in the series being ignored. If False, the
-            method will wait for the data validation process to be completed and return the outcome, which
-            may be time consuming. If True, the method will NOT wait for the outcome and the data will be
-            available when/if the validation is successful. The latter is significantly faster, but is recommended
-            when the data are "validated" in advance. Default is False.
-            
+        wait_on_verification : bool (optional)
+            All series are subjected to a server-side data validation before
+            they are made available for consumption; failing validation will
+            result in the series being ignored. If True, the method will wait
+            for the data validation process to be completed and return the
+            outcome, which may be time consuming. If False, the method will NOT
+            wait for the outcome and the data will be available when/if the
+            validation is successful. The latter is significantly faster, but
+            is recommended when the data is "validated" in advance.
+            Default is True.
 
         Returns
         -------
@@ -183,7 +188,7 @@ class Client:
         time_upload = timeit.default_timer()
         log.info("Upload took {} seconds".format(time_upload - time_start), "append")
 
-        if not force_commit:
+        if wait_on_verification:
             status = self._wait_until_file_ready(file_id)
             time_process = timeit.default_timer()
             log.info(
