@@ -97,7 +97,7 @@ class Client:
         """
         return self._files_api.ping()
 
-    def create(self, series=None, verify_status=True):
+    def create(self, series=None, force_commit=False):
         """
         Create a new series in DataReservoir.io from a pandas.Series. If no
         data is provided, an empty series is created.
@@ -107,9 +107,12 @@ class Client:
         series : pandas.Series, optional
             Series with index (as DatetimeIndex-like or integer array). Default
             is None.
-        verify_status : bool (optional)
-            If true, and series is provided, the status of the data will be
-            verified before the series is created. Default is True.
+        force_commit : bool (optional)
+            If true, waiting for verification status will be skipped and the
+            data will be committed to the series immediately. The data will be
+            available in the series when the verification process completes.
+            If false, the status of the data will be verified before
+            data is committed to the series. Default is False.
 
         Returns
         -------
@@ -128,7 +131,7 @@ class Client:
         time_upload = timeit.default_timer()
         log.info("Upload took {} seconds".format(time_upload - time_start), "create")
 
-        if verify_status:
+        if not force_commit:
             status = self._wait_until_file_ready(file_id)
             time_process = timeit.default_timer()
             log.info(
@@ -148,7 +151,7 @@ class Client:
         )
         return response
 
-    def append(self, series, series_id, verify_status=True):
+    def append(self, series, series_id, force_commit=False):
         """
         Append data to an already existing series.
 
@@ -158,9 +161,12 @@ class Client:
             Series with index (as DatetimeIndex-like or integer array).
         series_id : string
             The identifier of the existing series.
-        verify_status : bool (optional)
-            If true, the status of the file will be verified before
-            appended to the series. Default is True.
+        force_commit : bool (optional)
+            If true, waiting for verification status will be skipped and the
+            data will be committed to the series immediately. The data will be
+            available in the series when the verification process completes.
+            If false, the status of the data will be verified before
+            data is committed to the series. Default is False.
 
         Returns
         -------
@@ -174,7 +180,7 @@ class Client:
         time_upload = timeit.default_timer()
         log.info("Upload took {} seconds".format(time_upload - time_start), "append")
 
-        if verify_status:
+        if not force_commit:
             status = self._wait_until_file_ready(file_id)
             time_process = timeit.default_timer()
             log.info(

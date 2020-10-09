@@ -208,14 +208,14 @@ class Test_Client(unittest.TestCase):
         self.assertDictEqual(response, expected_response)
 
     @patch("time.sleep")
-    def test_create_with_data_without_status_wait(self, mock_sleep):
+    def test_create_with_data_with_force_commit(self, mock_sleep):
         self._storage.put = Mock(return_value=self.dummy_params["FileId"])
         self.client._wait_until_file_ready = Mock(return_value="Ready")
 
         expected_response = {"abc": 123}
         self.client._timeseries_api.create_with_data.return_value = expected_response
 
-        response = self.client.create(self.dummy_df, verify_status=False)
+        response = self.client.create(self.dummy_df, force_commit=True)
 
         self._storage.put.assert_called_once_with(self.dummy_df)
         self.client._wait_until_file_ready.assert_not_called()
@@ -256,7 +256,7 @@ class Test_Client(unittest.TestCase):
         self.assertDictEqual(response, expected_response)
 
     @patch("time.sleep")
-    def test_append_without_status_wait(self, mock_sleep):
+    def test_append_with_force_commit(self, mock_sleep):
         self.client._verify_and_prepare_series = Mock(return_value=None)
         self._storage.put = Mock(return_value=self.dummy_params["FileId"])
         self.client._wait_until_file_ready = Mock(return_value="Ready")
@@ -265,7 +265,7 @@ class Test_Client(unittest.TestCase):
         self.client._timeseries_api.add.return_value = expected_response
 
         response = self.client.append(
-            self.dummy_df, self.timeseries_id, verify_status=False
+            self.dummy_df, self.timeseries_id, force_commit=True
         )
 
         self.client._verify_and_prepare_series.assert_called_once_with(self.dummy_df)
