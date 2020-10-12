@@ -102,6 +102,30 @@ data::
     response = client.append(series, series_id)
 
 
+Data verification process
+-------------------------
+
+Data that have been uploaded to `DataReservoir.io`_ will always go through a
+validation process before it is made part of the series. 
+By default, :py:func:`Client.create` and :py:func:`Client.append` will wait for
+this validation process to complete successfully before appending the data to
+the timeseres. This behavior can be changed using the wait_on_verification parameter:
+
+    response = client.create(series, wait_on_verification=False)
+
+    response = client.append(series, series_id, wait_on_verification=False)
+
+The result is that the data is queued for processing and the method returns
+immediately. When the validation process eventually completes, the data will
+be made available on the series.
+
+.. important::
+
+    Setting `wait_on_verification` to `False` is significantly faster, but is
+    only recommended when the data is "validated" in advance. If the data
+    should not pass the server-side validation the data will be ignored.
+
+
 Access existing data
 --------------------
 
