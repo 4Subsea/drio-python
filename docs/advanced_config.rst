@@ -94,4 +94,37 @@ low-latency solid state drives.
 Logging
 *******
 
-Coming soon, stay tuned!
+To simplify debugging, enable logging for the logger named 'datareservoirio'.
+
+.. code:: python
+    
+    import logging
+    
+    # Basic configuration of the root logger, including 'datareservoirio'
+    logging.basicConfig(format='%(asctime)s %(name)-20s %(levelname)-5s %(message)s', level=logging.INFO)
+
+.. code:: python
+
+    import logging
+    
+    # Configure desired log level specifically for 'datareservoirio'
+    logger = logging.getLogger('datareservoirio')
+    logger.setLevel(logging.DEBUG)
+
+.. code:: python
+
+    import logging
+    
+    # Advanced configuration allowing control of log level, message format and output handler
+    logger = logging.getLogger('datareservoirio')
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s %(name)-20s %(levelname)-5s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
+The following log names can be used to fine-tune the desired log output:
+
+* datareservoirio: top level module including configuration, authentication and client
+* datareservoirio.storage: storage module, including cache and data download
+* datareservoirio.rest_api: API module with logging of request parameters and responses
