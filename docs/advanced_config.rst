@@ -106,10 +106,14 @@ To simplify debugging, enable logging for the logger named 'datareservoirio'.
 .. code:: python
 
     import logging
+    import datareservoirio
     
     # Configure desired log level specifically for 'datareservoirio'
     logger = logging.getLogger('datareservoirio')
     logger.setLevel(logging.DEBUG)
+    
+    # Short-hand for the above
+    datareservoirio.set_log_level(logging.DEBUG)
 
 .. code:: python
 
