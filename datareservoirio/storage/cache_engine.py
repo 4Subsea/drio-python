@@ -2,7 +2,6 @@ import codecs
 import io
 import logging
 import os
-import warnings
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
 
@@ -95,14 +94,12 @@ class CacheIO:
         pre_filepath = filepath + ".uncommitted"
         with io.open(pre_filepath, "wb") as file_:
             try:
+                log.debug(f"Write {pre_filepath}")
                 self._io_backend.serialize(data, file_)
             except Exception as error:
-                log.error(
-                    "Serialize to {} failed with exception: {}".format(
-                        pre_filepath, error
-                    )
-                )
+                log.error(f"Serialize to {pre_filepath} failed with exception: {error}")
                 raise
+        log.debug(f"Commit {pre_filepath} as {filepath}")
         os.rename(pre_filepath, filepath)
 
     def _read(self, filepath):
@@ -113,9 +110,10 @@ class CacheIO:
 
     def _delete(self, filepath):
         try:
+            log.debug(f"Evict {filepath}")
             os.remove(filepath)
         except Exception as error:
-            warnings.warn("Could not delete {}. Exception: {}".format(filepath, error))
+            log.error(f"Could not delete {filepath}. Exception: {error}")
 
 
 class _CacheIndex(OrderedDict):
