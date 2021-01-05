@@ -128,3 +128,6 @@ The following log names can be used to fine-tune the desired log output:
 * datareservoirio: top level module including configuration, authentication and client
 * datareservoirio.storage: storage module, including cache and data download
 * datareservoirio.rest_api: API module with logging of request parameters and responses
+
+If you require even more detailed logging, consider using loggers from
+:py:mod:`requests`, :py:mod:`oauthlib`, :py:mod:`requests-oauthlib` and :py:mod:`azure-storage-blob`
