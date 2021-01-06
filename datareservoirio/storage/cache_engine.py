@@ -113,7 +113,8 @@ class CacheIO:
             log.debug(f"Evict {filepath}")
             os.remove(filepath)
         except Exception as error:
-            log.error(f"Could not delete {filepath}. Exception: {error}")
+            log.exception(f"Could not delete {filepath}", error)
+
 
 
 class _CacheIndex(OrderedDict):
