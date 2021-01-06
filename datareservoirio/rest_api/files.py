@@ -30,16 +30,15 @@ class FilesAPI(BaseAPI):
             Parameters requried by the uploader service
         """
 
-        log.debug("called with <token>", "upload")
+        log.debug("upload with <token>")
 
         uri = self._api_base_url + "Files/upload"
         response = self._post(uri)
 
-        for key, value in response.json().items():
-            log.debug(
-                "parameter received - {key}: {value}".format(key=key, value=value),
-                "upload",
-            )
+        if log.isEnabledFor(logging.DEBUG):
+            for key, value in response.json().items():
+                log.debug(f"parameter received - {key}: {value}")
+
         return response.json()
 
     def commit(self, file_id):
@@ -56,7 +55,7 @@ class FilesAPI(BaseAPI):
         str
             HTTP status code
         """
-        log.debug("called with <token>, {}".format(file_id), "commit")
+        log.debug(f"commit with <token>, {file_id}")
 
         uri = self._api_base_url + "Files/commit"
         body = {"FileId": file_id}
@@ -77,7 +76,7 @@ class FilesAPI(BaseAPI):
         str
             'Unitialized', 'Processing', 'Ready', or 'Failed'
         """
-        log.debug("called with <token>, {}".format(file_id), "status")
+        log.debug(f"status with <token>, {file_id}")
 
         uri = self._api_base_url + "files/{}/status".format(file_id)
         response = self._get(uri)
@@ -92,7 +91,7 @@ class FilesAPI(BaseAPI):
         dict
             pong
         """
-        log.debug("called <token>", "ping")
+        log.debug("ping with <token>")
 
         uri = self._api_base_url + "ping"
         response = self._get(uri)

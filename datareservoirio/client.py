@@ -129,26 +129,18 @@ class Client:
         time_start = timeit.default_timer()
         file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
-        log.info("Upload took {} seconds".format(time_upload - time_start), "create")
+        log.info(f"Upload took {time_upload - time_start} seconds")
 
         if wait_on_verification:
             status = self._wait_until_file_ready(file_id)
             time_process = timeit.default_timer()
-            log.info(
-                "Processing took {} seconds".format(time_process - time_upload),
-                "create",
-            )
+            log.info(f"Processing took {time_process - time_upload} seconds")
             if status == "Failed":
                 return status
 
         response = self._timeseries_api.create_with_data(file_id)
         time_end = timeit.default_timer()
-        log.info(
-            "Done. Total time spent: {} seconds ({} minutes)".format(
-                time_end - time_start, (time_end - time_start) / 60.0
-            ),
-            "create",
-        )
+        log.info(f"Done. Total time spent: {time_end - time_start} seconds ({(time_end - time_start) / 60.0} minutes)")
         return response
 
     def append(self, series, series_id, wait_on_verification=True):
@@ -182,27 +174,17 @@ class Client:
         time_start = timeit.default_timer()
         file_id = self._storage.put(series)
         time_upload = timeit.default_timer()
-        log.info("Upload took {} seconds".format(time_upload - time_start), "append")
+        log.info(f"Upload took {time_upload - time_start} seconds")
 
         if wait_on_verification:
             status = self._wait_until_file_ready(file_id)
             time_process = timeit.default_timer()
-            log.info(
-                "Processing serverside took {} seconds".format(
-                    time_process - time_upload
-                ),
-                "append",
-            )
+            log.info(f"Processing serverside took {time_process - time_upload} seconds")
             if status == "Failed":
                 return status
 
         time_end = timeit.default_timer()
-        log.info(
-            "Done, total time spent: {} seconds ({} minutes)".format(
-                time_end - time_start, (time_end - time_start) / 60.0
-            ),
-            "append",
-        )
+        log.info(f"Done. Total time spent: {time_end - time_start} seconds ({(time_end - time_start) / 60.0} minutes)")
 
         response = self._timeseries_api.add(series_id, file_id)
         return response
@@ -306,10 +288,7 @@ class Client:
             series.index = pd.to_datetime(series.index, utc=True)
 
         time_end = timeit.default_timer()
-        log.info(
-            "Download series dataframe took {} seconds".format(time_end - time_start),
-            "get",
-        )
+        log.info(f"Download series dataframe took {time_end - time_start} seconds")
 
         return series
 
@@ -500,17 +479,15 @@ class Client:
         return
 
     def _verify_and_prepare_series(self, series):
-        log.debug("checking arguments", "_check_arguments_create")
-
         if not isinstance(series, pd.Series):
-            log.error("series type is {}".format(type(series)))
+            log.error(f"series type is {type(series)}")
             raise ValueError("series must be a pandas Series")
 
         if not (
             pd.api.types.is_datetime64_ns_dtype(series.index)
             or pd.api.types.is_int64_dtype(series.index)
         ):
-            log.error("index dtype is {}".format(series.index.dtype))
+            log.error(f"index dtype is {series.index.dtype}")
             raise ValueError("allowed dtypes are datetime64[ns] and int64")
 
         if not series.index.is_unique:
@@ -521,7 +498,7 @@ class Client:
         # wait for server side processing
         while True:
             status = self._get_file_status(file_id)
-            log.debug("status is {}".format(status), "create")
+            log.debug(f"status is {status}")
 
             if status == "Ready":
                 return "Ready"

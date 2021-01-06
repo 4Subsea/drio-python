@@ -62,7 +62,7 @@ class AzureBlobService(BlockBlobService):
         time_start = timeit.default_timer()
 
         with BytesIO() as binary_content:
-            log.debug("getting chunk {}".format(self.blob_name), "get")
+            log.debug(f"Get chunk {self.blob_name}")
 
             self.get_blob_to_stream(
                 self.container_name,
@@ -96,9 +96,7 @@ class AzureBlobService(BlockBlobService):
             df = pd.DataFrame(values, index, columns=["values"], dtype=dtype)
 
         time_end = timeit.default_timer()
-        log.debug(
-            "Blob download took {} seconds".format(time_end - time_start), "get_content"
-        )
+        log.debug(f"Blob download took {time_end - time_start} seconds")
         return df
 
     def create_blob_from_series(self, series):
@@ -140,10 +138,7 @@ class AzureBlobService(BlockBlobService):
                 blocks.append(block)
                 block_id += 1
 
-                log.debug(
-                    "put block {} for blob {}".format(block.id, self.blob_name),
-                    "put_block",
-                )
+                log.debug(f"put block {block.id} for blob {self.blob_name}")
                 self.put_block_retry(
                     self.container_name,
                     self.blob_name,
@@ -155,9 +150,7 @@ class AzureBlobService(BlockBlobService):
             block = self._make_block(block_id)
             blocks.append(block)
 
-            log.debug(
-                "put block {} for blob {}".format(block.id, self.blob_name), "put_block"
-            )
+            log.debug(f"put block {block.id} for blob {self.blob_name}")
             self.put_block_retry(
                 self.container_name,
                 self.blob_name,
@@ -175,18 +168,15 @@ class AzureBlobService(BlockBlobService):
                 self.put_block(*args, **kwargs)
                 return None
             except AzureException as ex:
-                log.debug("raise AzureException", "put_block")
                 count += 1
                 if count > 5:
                     raise ex
+                log.debug("put_block_retry retry after AzureException")
                 sleep(1 * count)
 
     def _make_block(self, block_id):
         base64_block_id = self._b64encode(block_id)
-        log.debug(
-            "block id {} blockidbase64 {}".format(block_id, base64_block_id),
-            "_make_block",
-        )
+        log.debug(f"block id {block_id} blockidbase64 {base64_block_id}")
         return BlobBlock(id=base64_block_id)
 
     def _b64encode(self, i, length=8):

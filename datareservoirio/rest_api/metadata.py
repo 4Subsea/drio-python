@@ -2,7 +2,7 @@ import logging
 
 from .base import BaseAPI
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class MetadataAPI(BaseAPI):
@@ -30,7 +30,7 @@ class MetadataAPI(BaseAPI):
         metadata_id : str
             id of metadata
         """
-        log.debug("called with <token>, {}".format(metadata_id), "delete")
+        log.debug(f"delete with <token>, {metadata_id}")
 
         uri = self._root + "{}".format(metadata_id)
         self._delete(uri)
@@ -50,7 +50,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug("called with <token>, {}".format(metadata_id), u"get")
+        log.debug(f"get by id with <token>, {metadata_id}")
 
         uri = self._root + metadata_id
         response = self._get(uri)
@@ -72,7 +72,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug("called with <token>, {} {}".format(namespace, key), u"get")
+        log.debug(f"get with <token>, {namespace} {key}")
 
         uri = self._root + namespace + "/" + key
         response = self._get(uri)
@@ -94,9 +94,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug(
-            "called with <token>, {}, {}".format(metadata_id, namevalues), "put"
-        )
+        log.debug(f"put by id with <token>, {metadata_id}, {namevalues}")
 
         metadata_json = {"Value": namevalues}
 
@@ -125,12 +123,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug(
-            "called with <token>, {}, {}, {}, {}".format(
-                namespace, key, overwrite, namevalues
-            ),
-            "put",
-        )
+        log.debug(f"put with <token>, {namespace}, {key}, {overwrite}, {namevalues}")
 
         metadata_json = {"Value": namevalues}
 
@@ -192,10 +185,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug(
-            "called with <token>, {} {} {}".format(namespace, key, conjunctive),
-            "search",
-        )
+        log.debug(f"search with <token>, {namespace} {key} {conjunctive}")
 
         search_json = _assemble_metadatajson(namespace, key)
         search_json["Conjunctive"] = conjunctive

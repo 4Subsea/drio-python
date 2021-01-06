@@ -16,10 +16,10 @@ def _response_logger(func):
         response = func(*args, **kwargs)
         log.debug("response recieved")
 
-        log.debug("request url: {}".format(response.request.url))
-        log.debug("status code: {}".format(response.status_code))
+        log.debug(f"request url: {response.request.url}")
+        log.debug(f"status code: {response.status_code}")
         try:
-            log.debug("response text: {}".format(response.text))
+            log.debug(f"response text: {response.text}")
         except ValueError:
             log.debug("response text: failed encoding")
         return response

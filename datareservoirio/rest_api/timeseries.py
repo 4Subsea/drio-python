@@ -98,7 +98,7 @@ class TimeSeriesAPI(BaseAPI):
         dict
             http response.text loaded as json
         """
-        log.debug("called with <token>, {}".format(timeseries_id), "create")
+        log.debug(f"create with <token>, {timeseries_id}")
         if timeseries_id is None:
             timeseries_id = str(uuid4())
 
@@ -120,7 +120,7 @@ class TimeSeriesAPI(BaseAPI):
         dict
             http response.text loaded as json
         """
-        log.debug("called with <token>, {}".format(file_id), "create")
+        log.debug(f"create with <token>, {file_id}")
 
         uri = self._root + "create"
         body = {"FileId": file_id}
@@ -142,7 +142,7 @@ class TimeSeriesAPI(BaseAPI):
         -----
         Refer to API documentation wrt append, overlap, and overwrite behavior
         """
-        log.debug("called with <token>, {}, {}".format(timeseries_id, file_id), "add")
+        log.debug(f"add with <token>, {timeseries_id}, {file_id}")
 
         uri = self._root + "add"
         body = {"TimeSeriesId": timeseries_id, "FileId": file_id}
@@ -164,7 +164,7 @@ class TimeSeriesAPI(BaseAPI):
              dictionary containing information about a timeseries
              entry in the reservoir
         """
-        log.debug("called with <token>, {}".format(timeseries_id))
+        log.debug(f"info with <token>, {timeseries_id}")
 
         uri = self._root + timeseries_id
         response = self._get(uri)
@@ -179,7 +179,7 @@ class TimeSeriesAPI(BaseAPI):
         timeseries_id : str
             id of the target timeseries
         """
-        log.debug("called with <token>, {}".format(timeseries_id))
+        log.debug(f"delete with <token>, {timeseries_id}")
 
         uri = self._root + timeseries_id
         self._delete(uri)
@@ -208,7 +208,7 @@ class TimeSeriesAPI(BaseAPI):
         ----
         Requests are divided into n-sub requests per day.
         """
-        log.debug("called with <token>, {}, {}, {}".format(timeseries_id, start, end))
+        log.debug(f"download_days with <token>, {timeseries_id}, {start}, {end}")
 
         nanoseconds_day = 86400000000000
         start = (start // nanoseconds_day) * nanoseconds_day
@@ -243,7 +243,7 @@ class TimeSeriesAPI(BaseAPI):
         json
             a list of files, each having a list of Azure Storage compatible chunk urls
         """
-        log.debug("called with <token>, {}, {}, {}".format(timeseries_id, start, end))
+        log.debug(f"download_days_base with <token>, {timeseries_id}, {start}, {end}")
 
         uri = self._root + "{}/data/days".format(timeseries_id)
         params = {"start": start, "end": end}
@@ -300,10 +300,7 @@ class TimeSeriesAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug(
-            "called with <token>, {}, {}".format(timeseries_id, metadata_id_list),
-            "attach_metadata",
-        )
+        log.debug(f"attach_metadata with <token>, {timeseries_id}, {metadata_id_list}")
 
         uri = self._root + "{}/metadata".format(timeseries_id)
 
@@ -326,10 +323,7 @@ class TimeSeriesAPI(BaseAPI):
         dict
             response.json()
         """
-        log.debug(
-            "called with <token>, {}, {}".format(timeseries_id, metadata_id_list),
-            "detach_metadata",
-        )
+        log.debug(f"detach_metadata with <token>, {timeseries_id}, {metadata_id_list}")
 
         uri = self._root + "{}/metadata".format(timeseries_id)
 
