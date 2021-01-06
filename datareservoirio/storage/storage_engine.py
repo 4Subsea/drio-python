@@ -70,12 +70,7 @@ class AzureBlobService(BlockBlobService):
                 stream=binary_content,
                 max_connections=self.MAX_DOWNLOAD_CONCURRENT_BLOCKS,
                 progress_callback=lambda current, total: log.info(
-                    " {0:.1f}% downloaded ({1:.1f} of {2:.1f} MB)".format(
-                        (current / total) * 100,
-                        current / (1024 * 1024),
-                        total / (1024 * 1024),
-                    )
-                ),
+                    f"{self.blob_name}: {(current / total) * 100:.1f}% downloaded ({current / (1024 * 1024):.1f} of {total / (1024 * 1024):.1f} MB)")
             )
 
             binary_content.seek(0)
