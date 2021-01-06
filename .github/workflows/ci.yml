@@ -23,7 +23,7 @@ jobs:
         run: |
           call c:\venv-python-dev\Scripts\activate.bat
           @echo on
-          black --check .
+          black --diff .
 
       - name: isort check
         shell: cmd
