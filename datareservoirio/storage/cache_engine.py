@@ -95,7 +95,8 @@ class CacheIO:
                 log.debug(f"Write {pre_filepath}")
                 self._io_backend.serialize(data, file_)
             except Exception as error:
-                log.error(f"Serialize to {pre_filepath} failed with exception: {error}")
+                log.exception(f"Serialize to {pre_filepath} failed", error)
+
                 raise
         log.debug(f"Commit {pre_filepath} as {filepath}")
         os.rename(pre_filepath, filepath)
@@ -111,7 +112,8 @@ class CacheIO:
             log.debug(f"Evict {filepath}")
             os.remove(filepath)
         except Exception as error:
-            log.error(f"Could not delete {filepath}. Exception: {error}")
+            log.exception(f"Could not delete {filepath}", error)
+
 
 
 class _CacheIndex(OrderedDict):
