@@ -9,12 +9,10 @@ from threading import RLock as Lock
 import pandas as pd
 
 from ..appdirs import user_cache_dir
-from ..log import LogWriter
 from .cache_engine import CacheIO, _CacheIndex
 from .storage_engine import StorageBackend
 
-logger = logging.getLogger(__name__)
-log = LogWriter(logger)
+log = logging.getLogger(__name__)
 
 
 def _encode_for_path_safety(value):

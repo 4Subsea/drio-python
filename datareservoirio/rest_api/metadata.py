@@ -1,10 +1,8 @@
 import logging
 
-from ..log import LogWriter
 from .base import BaseAPI
 
 logger = logging.getLogger(__name__)
-logwriter = LogWriter(logger)
 
 
 class MetadataAPI(BaseAPI):
@@ -32,7 +30,7 @@ class MetadataAPI(BaseAPI):
         metadata_id : str
             id of metadata
         """
-        logwriter.debug("called with <token>, {}".format(metadata_id), "delete")
+        log.debug("called with <token>, {}".format(metadata_id), "delete")
 
         uri = self._root + "{}".format(metadata_id)
         self._delete(uri)
@@ -52,7 +50,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {}".format(metadata_id), u"get")
+        log.debug("called with <token>, {}".format(metadata_id), u"get")
 
         uri = self._root + metadata_id
         response = self._get(uri)
@@ -74,7 +72,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug("called with <token>, {} {}".format(namespace, key), u"get")
+        log.debug("called with <token>, {} {}".format(namespace, key), u"get")
 
         uri = self._root + namespace + "/" + key
         response = self._get(uri)
@@ -96,7 +94,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug(
+        log.debug(
             "called with <token>, {}, {}".format(metadata_id, namevalues), "put"
         )
 
@@ -127,7 +125,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug(
+        log.debug(
             "called with <token>, {}, {}, {}, {}".format(
                 namespace, key, overwrite, namevalues
             ),
@@ -194,7 +192,7 @@ class MetadataAPI(BaseAPI):
         dict
             response.json()
         """
-        logwriter.debug(
+        log.debug(
             "called with <token>, {} {} {}".format(namespace, key, conjunctive),
             "search",
         )

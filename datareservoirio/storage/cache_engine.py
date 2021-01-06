@@ -8,10 +8,8 @@ from collections import OrderedDict
 import pandas as pd
 
 from ..appdirs import WINDOWS, _win_path
-from ..log import LogWriter
 
-logger = logging.getLogger(__name__)
-log = LogWriter(logger)
+log = logging.getLogger(__name__)
 
 
 _BYTES_PER_ROW = 128 // 8

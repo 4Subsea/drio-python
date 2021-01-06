@@ -4,11 +4,9 @@ from functools import update_wrapper
 from threading import RLock as Lock
 from uuid import uuid4
 
-from ..log import LogWriter
 from .base import BaseAPI
 
-logger = logging.getLogger(__name__)
-log = LogWriter(logger)
+log = logging.getLogger(__name__)
 
 
 def request_cache(timeout=180):

@@ -116,18 +116,14 @@ class Test_CacheIO(unittest.TestCase):
         pd.testing.assert_frame_equal(df, df_out)
 
     @patch("os.remove")
-    def test_delete(self, mock_remove):
+    def test_delete_with_nonexisting_file_logs_error(self, mock_remove):
         cache_io = CacheIO("parquet")
+
+        mock_remove.side_effect = Exception
+
         cache_io._delete("file_path")
 
         mock_remove.assert_called_once_with("file_path")
-
-        mock_remove.side_effect = Exception
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            cache_io._delete("file_path")
-        assert len(w) == 1
-        assert issubclass(w[-1].category, Warning)
 
     @patch("os.rename")
     def test_write(self, mock_rename):

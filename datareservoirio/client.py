@@ -5,7 +5,6 @@ import timeit
 import pandas as pd
 import requests
 
-from .log import LogWriter
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import (
     BaseDownloader,
@@ -16,11 +15,8 @@ from .storage import (
     Storage,
 )
 
-logger = logging.getLogger(__name__)
-log = LogWriter(logger)
+log = logging.getLogger(__name__)
 
-
-#
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01

@@ -16,10 +16,8 @@ from requests_oauthlib import OAuth2Session
 from . import _constants  # noqa: F401
 from .appdirs import user_data_dir
 from .globalsettings import environment
-from .log import LogWriter
 
-logger = logging.getLogger(__name__)
-logwriter = LogWriter(logger)
+log = logging.getLogger(__name__)
 
 
 class TokenCache:

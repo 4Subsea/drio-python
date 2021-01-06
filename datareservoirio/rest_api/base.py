@@ -5,25 +5,23 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3 import Retry
 
 from .. import globalsettings
-from ..log import LogWriter
 
-logger = logging.getLogger(__name__)
-logwriter = LogWriter(logger)
+log = logging.getLogger(__name__)
 
 
 def _response_logger(func):
     @wraps(func)
     def func_wrapper(*args, **kwargs):
-        logwriter.debug("request initiated")
+        log.debug("request initiated")
         response = func(*args, **kwargs)
-        logwriter.debug("response recieved")
+        log.debug("response recieved")
 
-        logwriter.debug("request url: {}".format(response.request.url))
-        logwriter.debug("status code: {}".format(response.status_code))
+        log.debug("request url: {}".format(response.request.url))
+        log.debug("status code: {}".format(response.status_code))
         try:
-            logwriter.debug("response text: {}".format(response.text))
+            log.debug("response text: {}".format(response.text))
         except ValueError:
-            logwriter.debug("response text: failed encoding")
+            log.debug("response text: failed encoding")
         return response
 
     return func_wrapper
