@@ -91,7 +91,7 @@ class AzureBlobService(BlockBlobService):
             df = pd.DataFrame(values, index, columns=["values"], dtype=dtype)
 
         time_end = timeit.default_timer()
-        log.debug(f"Blob download took {time_end - time_start} seconds")
+        log.debug(f"{self.blob_name}: download took {time_end - time_start} seconds")
         return df
 
     def create_blob_from_series(self, series):
