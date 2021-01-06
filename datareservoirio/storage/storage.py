@@ -346,7 +346,9 @@ class FileCacheDownload(CacheIO, StorageBackend):
         self._delete(filepath)
 
     def _evict_from_cache(self):
-        log.debug(f"Current cache disk usage (estimate): {self._cache_index.size} of {self._max_size}")
+        log.debug(
+            f"Current cache disk usage (estimate): {self._cache_index.size} of {self._max_size}"
+        )
 
         # Thread-safe cache eviction using a double-check pattern
         if self._cache_index.size_less_than_max:
@@ -356,13 +358,17 @@ class FileCacheDownload(CacheIO, StorageBackend):
             if self._cache_index.size_less_than_max:
                 return
 
-            log.debug(f"Analyzing storage for eviction. Max size {self._cache_index._max_size} in {self.cache_root}")
+            log.debug(
+                f"Analyzing storage for eviction. Max size {self._cache_index._max_size} in {self.cache_root}"
+            )
 
             while not self._cache_index.size_less_than_max:
                 id_, item = self._cache_index.popitem()
                 self._evict_entry(id_, item["md5"])
 
-            log.debug(f"Storage analyzed. Current size: {self._cache_index.size} in {self.cache_root}")
+            log.debug(
+                f"Storage analyzed. Current size: {self._cache_index.size} in {self.cache_root}"
+            )
 
 
 class DirectDownload(StorageBackend):

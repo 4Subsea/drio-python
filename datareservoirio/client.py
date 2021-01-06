@@ -140,7 +140,9 @@ class Client:
 
         response = self._timeseries_api.create_with_data(file_id)
         time_end = timeit.default_timer()
-        log.info(f"Done. Total time spent: {time_end - time_start} seconds ({(time_end - time_start) / 60.0} minutes)")
+        log.info(
+            f"Done. Total time spent: {time_end - time_start} seconds ({(time_end - time_start) / 60.0} minutes)"
+        )
         return response
 
     def append(self, series, series_id, wait_on_verification=True):
@@ -184,7 +186,9 @@ class Client:
                 return status
 
         time_end = timeit.default_timer()
-        log.info(f"Done. Total time spent: {time_end - time_start} seconds ({(time_end - time_start) / 60.0} minutes)")
+        log.info(
+            f"Done. Total time spent: {time_end - time_start} seconds ({(time_end - time_start) / 60.0} minutes)"
+        )
 
         response = self._timeseries_api.add(series_id, file_id)
         return response
@@ -299,7 +303,7 @@ class Client:
         namespace=None,
         key=None,
         overwrite=False,
-        **namevalues
+        **namevalues,
     ):
         """
         Set metadata entries on a series. Metadata can be set from existing

@@ -115,7 +115,6 @@ class CacheIO:
             log.exception(f"Could not delete {filepath}", error)
 
 
-
 class _CacheIndex(OrderedDict):
     """
     Keep track of cache index in-memory.

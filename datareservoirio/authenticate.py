@@ -85,8 +85,7 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
 
     def __init__(self, client, auth_force=False, **kwargs):
         super().__init__(
-            client=client,
-            **kwargs,
+            client=client, **kwargs,
         )
 
         if auth_force or not self.token:
