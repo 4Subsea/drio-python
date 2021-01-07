@@ -3,18 +3,17 @@ import logging
 import os
 import re
 import shutil
+import timeit
 from concurrent.futures import ThreadPoolExecutor
 from threading import RLock as Lock
 
 import pandas as pd
 
 from ..appdirs import user_cache_dir
-from ..log import LogWriter
 from .cache_engine import CacheIO, _CacheIndex
 from .storage_engine import StorageBackend
 
-logger = logging.getLogger(__name__)
-log = LogWriter(logger)
+log = logging.getLogger(__name__)
 
 
 def _encode_for_path_safety(value):
@@ -291,15 +290,15 @@ class FileCacheDownload(CacheIO, StorageBackend):
 
         """
         id_, md5 = self._get_cache_id_md5(chunk)
-        log.debug("Cache lookup {}".format(id_))
+        log.debug(f"Cache lookup {id_}")
 
         data = self._get_cached_data(id_, md5)
         if data is None:
-            log.debug("Cache miss on {}".format(id_))
+            log.debug(f"Cache miss on {id_}")
             data = super().remote_get(chunk)
             self._put_data_to_cache(data, id_, md5)
         else:
-            log.debug("Cache hit on {}".format(id_))
+            log.debug(f"Cache hit on {id_}")
         return data
 
     def _get_cache_id_md5(self, chunk):
@@ -332,13 +331,13 @@ class FileCacheDownload(CacheIO, StorageBackend):
                 self._evict_entry(id_, item["md5"])
             return
 
-        log.debug("Trying to load from {}".format(filepath))
+        log.debug(f"Trying to load from {filepath}")
         data = self._read(filepath)
         self._cache_index.move_to_end(id_)
         return data
 
     def _evict_entry_root(self, root):
-        log.debug("Resetting {}".format(root))
+        log.debug(f"Resetting {root}")
         shutil.rmtree(root)
         if not os.path.exists(root):
             os.makedirs(root)
@@ -349,9 +348,7 @@ class FileCacheDownload(CacheIO, StorageBackend):
 
     def _evict_from_cache(self):
         log.debug(
-            "Current cache disk usage (estimate): {} of {}".format(
-                self._cache_index.size, self._max_size
-            )
+            f"Current cache disk usage (estimate): {self._cache_index.size} of {self._max_size}"
         )
 
         # Thread-safe cache eviction using a double-check pattern
@@ -363,19 +360,18 @@ class FileCacheDownload(CacheIO, StorageBackend):
                 return
 
             log.debug(
-                "Analyzing storage for eviction. Max size {} in {}".format(
-                    self._cache_index._max_size, self.cache_root
-                )
+                f"Analyzing storage for eviction. Max size {self._cache_index._max_size} in {self.cache_root}"
             )
+
+            time_start = timeit.default_timer()
 
             while not self._cache_index.size_less_than_max:
                 id_, item = self._cache_index.popitem()
                 self._evict_entry(id_, item["md5"])
 
+            time_end = timeit.default_timer()
             log.debug(
-                "Storage analyzed. Current size: {} in {}".format(
-                    self._cache_index.size, self.cache_root
-                )
+                f"Storage analyzed (in {time_end - time_start:.2f} seconds). Current size: {self._cache_index.size} in {self.cache_root}"
             )
 
 

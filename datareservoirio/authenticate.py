@@ -16,10 +16,8 @@ from requests_oauthlib import OAuth2Session
 from . import _constants  # noqa: F401
 from .appdirs import user_data_dir
 from .globalsettings import environment
-from .log import LogWriter
 
-logger = logging.getLogger(__name__)
-logwriter = LogWriter(logger)
+log = logging.getLogger(__name__)
 
 
 class TokenCache:
@@ -87,8 +85,7 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
 
     def __init__(self, client, auth_force=False, **kwargs):
         super().__init__(
-            client=client,
-            **kwargs,
+            client=client, **kwargs,
         )
 
         if auth_force or not self.token:

@@ -10,10 +10,7 @@ import pandas as pd
 from azure.common import AzureException
 from azure.storage.blob import BlobBlock, BlockBlobService
 
-from ..log import LogWriter
-
-logger = logging.getLogger(__name__)
-logwriter = LogWriter(logger)
+log = logging.getLogger(__name__)
 
 
 class AzureBlobService(BlockBlobService):
@@ -65,19 +62,15 @@ class AzureBlobService(BlockBlobService):
         time_start = timeit.default_timer()
 
         with BytesIO() as binary_content:
-            logwriter.debug("getting chunk {}".format(self.blob_name), "get")
+            log.debug(f"Get chunk {self.blob_name}")
 
             self.get_blob_to_stream(
                 self.container_name,
                 self.blob_name,
                 stream=binary_content,
                 max_connections=self.MAX_DOWNLOAD_CONCURRENT_BLOCKS,
-                progress_callback=lambda current, total: logwriter.info(
-                    " {0:.1f}% downloaded ({1:.1f} of {2:.1f} MB)".format(
-                        (current / total) * 100,
-                        current / (1024 * 1024),
-                        total / (1024 * 1024),
-                    )
+                progress_callback=lambda current, total: log.info(
+                    f"{self.blob_name}: {(current / total) * 100:.1f}% downloaded ({current / (1024 * 1024):.1f} of {total / (1024 * 1024):.1f} MB)"
                 ),
             )
 
@@ -99,9 +92,7 @@ class AzureBlobService(BlockBlobService):
             df = pd.DataFrame(values, index, columns=["values"], dtype=dtype)
 
         time_end = timeit.default_timer()
-        logwriter.debug(
-            "Blob download took {} seconds".format(time_end - time_start), "get_content"
-        )
+        log.debug(f"{self.blob_name}: download took {time_end - time_start} seconds")
         return df
 
     def create_blob_from_series(self, series):
@@ -143,10 +134,7 @@ class AzureBlobService(BlockBlobService):
                 blocks.append(block)
                 block_id += 1
 
-                logwriter.debug(
-                    "put block {} for blob {}".format(block.id, self.blob_name),
-                    "put_block",
-                )
+                log.debug(f"put block {block.id} for blob {self.blob_name}")
                 self.put_block_retry(
                     self.container_name,
                     self.blob_name,
@@ -158,9 +146,7 @@ class AzureBlobService(BlockBlobService):
             block = self._make_block(block_id)
             blocks.append(block)
 
-            logwriter.debug(
-                "put block {} for blob {}".format(block.id, self.blob_name), "put_block"
-            )
+            log.debug(f"put block {block.id} for blob {self.blob_name}")
             self.put_block_retry(
                 self.container_name,
                 self.blob_name,
@@ -178,18 +164,15 @@ class AzureBlobService(BlockBlobService):
                 self.put_block(*args, **kwargs)
                 return None
             except AzureException as ex:
-                logwriter.debug("raise AzureException", "put_block")
                 count += 1
                 if count > 5:
                     raise ex
+                log.debug("put_block_retry retry after AzureException")
                 sleep(1 * count)
 
     def _make_block(self, block_id):
         base64_block_id = self._b64encode(block_id)
-        logwriter.debug(
-            "block id {} blockidbase64 {}".format(block_id, base64_block_id),
-            "_make_block",
-        )
+        log.debug(f"block id {block_id} blockidbase64 {base64_block_id}")
         return BlobBlock(id=base64_block_id)
 
     def _b64encode(self, i, length=8):
