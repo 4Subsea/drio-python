@@ -1,9 +1,9 @@
 import base64
 import logging
-import timeit
 import os
 import re
 import shutil
+import timeit
 from concurrent.futures import ThreadPoolExecutor
 from threading import RLock as Lock
 
