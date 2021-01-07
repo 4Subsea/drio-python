@@ -1,5 +1,6 @@
 import base64
 import logging
+import timeit
 import os
 import re
 import shutil
@@ -362,12 +363,15 @@ class FileCacheDownload(CacheIO, StorageBackend):
                 f"Analyzing storage for eviction. Max size {self._cache_index._max_size} in {self.cache_root}"
             )
 
+            time_start = timeit.default_timer()
+
             while not self._cache_index.size_less_than_max:
                 id_, item = self._cache_index.popitem()
                 self._evict_entry(id_, item["md5"])
 
+            time_end = timeit.default_timer()
             log.debug(
-                f"Storage analyzed. Current size: {self._cache_index.size} in {self.cache_root}"
+                f"Storage analyzed (in {time_end - time_start:.2f} seconds). Current size: {self._cache_index.size} in {self.cache_root}"
             )
 
 
