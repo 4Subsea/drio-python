@@ -8,7 +8,7 @@ from time import sleep
 import numpy as np
 import pandas as pd
 from azure.common import AzureException
-from azure.storage.blob import BlobClient
+import azure.storage.blob
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +37,7 @@ class AzureBlobService():
                 * 'SasKey'
                 * 'Container' (container_name)
                 * 'Path' (blob_name)
+                * 'Endpoint'
         :param: requests.Session session
             If specified, passed to the underlying BlockBlobService so that an existing
             request session can be reused.
@@ -44,11 +45,16 @@ class AzureBlobService():
 
         self._account = params["Account"]
         self._sas_key = params["SasKey"]
+        self._blob_sas_url = params["Endpoint"]
         self.container_name = params["Container"]
         self.blob_name = params["Path"]
 
-        self._blob_client = BlobClient.from_blob_url(self.blob_name)
-        # TODO: how to request_session=session
+        self._blob_client = BlockBlobService(
+            account_name=self._account,
+            sas_token=self._sas_key,
+            request_session=session
+        )
+
 
     def get_blob_to_df(self):
         """

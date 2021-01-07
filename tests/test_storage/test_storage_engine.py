@@ -22,6 +22,7 @@ class Test_AzureBlobService(unittest.TestCase):
             "Path": "blob_xy",
             "FileId": "file_123abc",
             "SasKey": "sassykeiz",
+            "Endpoint": "https://account_xyz/blobcontainer/blob_xy?sassykeiz"
         }
 
     def test_constructor(self):
