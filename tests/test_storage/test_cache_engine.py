@@ -179,14 +179,25 @@ class Test__CacheIndex(unittest.TestCase):
         self._expected_total_size = 128 * 5
 
         self.mock_scandir.return_value = [
-            mock_file_0, mock_file_1, mock_file_2, mock_file_3, mock_file_4]
+            mock_file_0,
+            mock_file_1,
+            mock_file_2,
+            mock_file_3,
+            mock_file_4,
+        ]
 
         self.addCleanup(patcher.stop)
 
     def test_init(self):
         cahce_index = _CacheIndex("./test", 128)
 
-        for key in ["id00_md500", "id01_md501", "id02_md502", "id02_md503", "id02_md504"]:
+        for key in [
+            "id00_md500",
+            "id01_md501",
+            "id02_md502",
+            "id02_md503",
+            "id02_md504",
+        ]:
             self.assertIn(key, cahce_index)
 
         item_expected = {"id": "id01", "md5": "md501", "size": 128, "time": 0}
@@ -196,8 +207,10 @@ class Test__CacheIndex(unittest.TestCase):
     def test_init_items_sorted_by_time(self):
         cahce_index = _CacheIndex("./test", 128)
 
-        self.assertListEqual(list(cahce_index.keys()), 
-            ["id01_md501", "id02_md502", "id00_md500", "id02_md503", "id02_md504"])
+        self.assertListEqual(
+            list(cahce_index.keys()),
+            ["id01_md501", "id02_md502", "id00_md500", "id02_md503", "id02_md504"],
+        )
 
     @patch("os.path.exists", return_value=False)
     def test_exists_false(self, mock_exists):
@@ -246,7 +259,12 @@ class Test__CacheIndex(unittest.TestCase):
         cache_index._update_size()
         self.assertEqual(cache_index.size, 5 * 128)
 
-        cache_index["id03_md503"] = {"id": "id03", "md5": "md503", "size": 128, "time": 0}
+        cache_index["id03_md503"] = {
+            "id": "id03",
+            "md5": "md503",
+            "size": 128,
+            "time": 0,
+        }
 
         cache_index._update_size()
         self.assertEqual(cache_index.size, 6 * 128)
