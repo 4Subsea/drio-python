@@ -128,7 +128,10 @@ class _CacheIndex(OrderedDict):
             stat = file_.stat()
             id_, md5 = file_.name.split("_")
             cache_index_list.append(
-                (id_, self._index_item(md5, stat.st_size, stat.st_mtime))
+                (
+                    self._key(id_, md5),
+                    self._index_item(id_, md5, stat.st_size, stat.st_mtime)
+                )
             )
         cache_index_list.sort(key=lambda item: item[1]["time"])
         super(_CacheIndex, self).__init__(cache_index_list)
@@ -136,7 +139,8 @@ class _CacheIndex(OrderedDict):
 
     def exists(self, id_, md5):
         """Check if the entry exist in the cache."""
-        entry_exist = id_ in self
+        key = self._key(id_, md5)
+        entry_exist = key in self
         file_exist = self._file_exists(id_, md5)
 
         if not entry_exist and not file_exist:
@@ -145,7 +149,7 @@ class _CacheIndex(OrderedDict):
             self._register_file(id_, md5)
             return True
         elif entry_exist and not file_exist:
-            del self[id_]
+            del self[key]
             return False
 
         return True
@@ -168,13 +172,17 @@ class _CacheIndex(OrderedDict):
             self._current_size += item["size"]
 
     def popitem(self):
-        id_, item = super(_CacheIndex, self).popitem(last=False)
+        key, item = super(_CacheIndex, self).popitem(last=False)
         self._current_size -= item["size"]
-        return id_, item
+        return item["id"], item
 
     @staticmethod
-    def _index_item(md5, size, time):
-        item = {"md5": md5, "size": size, "time": time}
+    def _key(id_, md5):
+        return f"{id_}_{md5}"
+
+    @staticmethod
+    def _index_item(id_, md5, size, time):
+        item = {"id": id_, "md5": md5, "size": size, "time": time}
         return item
 
     def _get_filepath(self, id_, md5):
@@ -191,6 +199,6 @@ class _CacheIndex(OrderedDict):
     def _register_file(self, id_, md5):
         filepath = self._get_filepath(id_, md5)
         stat = os.stat(filepath)
-        item = self._index_item(md5, stat.st_size, stat.st_mtime)
-        self[id_] = item
+        item = self._index_item(id_, md5, stat.st_size, stat.st_mtime)
+        self[self._key(id_, md5)] = item
         self._current_size += item["size"]
