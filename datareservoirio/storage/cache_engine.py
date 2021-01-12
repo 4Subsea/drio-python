@@ -130,7 +130,7 @@ class _CacheIndex(OrderedDict):
             cache_index_list.append(
                 (
                     self._key(id_, md5),
-                    self._index_item(id_, md5, stat.st_size, stat.st_mtime),
+                    self._index_item(id_, md5, stat.st_size, stat.st_mtime)
                 )
             )
         cache_index_list.sort(key=lambda item: item[1]["time"])
@@ -153,6 +153,12 @@ class _CacheIndex(OrderedDict):
             return False
 
         return True
+
+    def touch(self, id_, md5):
+        """Mark the entry as recently used."""
+        key = self._key(id_, md5)
+        if key in self:
+            self.move_to_end(key)
 
     @property
     def size_less_than_max(self):
