@@ -423,26 +423,7 @@ class Test_FileCachceDownload(unittest.TestCase):
 
                 df_out = cache._get_cached_data(id_, md5)
         pd.testing.assert_frame_equal(df, df_out)
-        mock_index.move_to_end.assert_called_once_with(id_)
-
-    @patch("os.path.exists")
-    def test_get_cached_data_md5_mismatch(self, mock_exists):
-        id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
-        df = pd.DataFrame(
-            {"values": np.arange(24 * 61)}, index=np.arange(24 * 61, dtype=int)
-        )
-
-        cache = FileCacheDownload()
-        with patch.object(cache, "_cache_index") as mock_index:
-            mock_index.exists.return_value = True
-            mock_index.__getitem__.return_value = {
-                "md5": _encode_for_path_safety("md5-125")
-            }
-
-            with patch.multiple(cache, _read=DEFAULT, _evict_entry=DEFAULT) as mocks:
-                mocks["_read"].return_value = df
-
-                self.assertIsNone(cache._get_cached_data(id_, md5))
+        mock_index.touch.assert_called_once_with(id_, md5)
 
     @patch("os.path.exists")
     def test_get_cached_data_file_missing(self, mock_exists):

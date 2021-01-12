@@ -320,20 +320,12 @@ class FileCacheDownload(CacheIO, StorageBackend):
             return
 
         filepath = self._cache_index._get_filepath(id_, md5)
-        item = self._cache_index[id_]
 
-        filepath_exists = os.path.exists(filepath)
-        md5_match = item["md5"] == md5
+        log.debug(f"Loading cached data from {filepath}")
 
-        if not (md5_match and filepath_exists):
-            del self._cache_index[id_]
-            if filepath_exists:
-                self._evict_entry(id_, item["md5"])
-            return
-
-        log.debug(f"Trying to load from {filepath}")
         data = self._read(filepath)
-        self._cache_index.move_to_end(id_)
+        self._cache_index.touch(id_, md5)
+
         return data
 
     def _evict_entry_root(self, root):
