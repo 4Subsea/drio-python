@@ -25,7 +25,7 @@ setup(
         "numpy",
         "oauthlib",
         "pandas>=0.24.0",
-        "pyarrow",
+        "pyarrow<3.0.0",
         "requests",
         "requests-oauthlib",
     ],
