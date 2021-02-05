@@ -221,10 +221,10 @@ You can browse metadata, and search for metadata and series data through
     # List all available namespaces
     namespaces = client.metadata_browse(namespace=None, key=None)
 
-    # List all keys under a give namespace
+    # List all keys under a given namespace
     keys = client.metadata_browse(namespace='foo.bar')
 
-    # List all namespaces that contains a given namespace
+    # List all namespaces that contains a given key
     key_namspaces = client.metadata_browse(key='baz')
 
     # Get a specific entry (dict)
