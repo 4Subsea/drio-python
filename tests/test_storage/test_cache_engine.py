@@ -262,11 +262,11 @@ class Test__CacheIndex(unittest.TestCase):
     def test_touch_with_entry_moves_entry_to_last(self):
         cache_index = _CacheIndex("./test", 128 * 6)
         item_expected = "id01_md501"
-        self.assertEquals(next(iter(cache_index.keys())), item_expected)
+        self.assertEqual(next(iter(cache_index.keys())), item_expected)
 
         cache_index.touch("id01", "md501")
 
-        self.assertEquals(next(reversed(cache_index.keys())), item_expected)
+        self.assertEqual(next(reversed(cache_index.keys())), item_expected)
 
     def test__update_size(self):
         cache_index = _CacheIndex("./test", 128 * 6)

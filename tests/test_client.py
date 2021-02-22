@@ -363,8 +363,8 @@ class Test_Client(unittest.TestCase):
         self.client._storage.get.assert_called_once_with(self.timeseries_id, 1, 4)
 
     def test_get_with_emptytimeseries_return_empty(self):
-        self._storage.get.return_value = pd.Series()
-        response_expected = pd.Series()
+        self._storage.get.return_value = pd.Series(dtype="float64")
+        response_expected = pd.Series(dtype="float64")
         response_expected.index = pd.to_datetime(response_expected.index, utc=True)
 
         response = self.client.get(
@@ -377,7 +377,7 @@ class Test_Client(unittest.TestCase):
         pd.testing.assert_series_equal(response, response_expected, check_dtype=False)
 
     def test_get_with_raise_empty_throws(self):
-        self._storage.get.return_value = pd.Series()
+        self._storage.get.return_value = pd.Series(dtype="float64")
 
         with self.assertRaises(ValueError):
             self.client.get(
