@@ -24,8 +24,8 @@ setup(
         "azure-storage-blob>=1.4.0,<=2.1.0",
         "numpy",
         "oauthlib",
-        "pandas>=0.24.0",
-        "pyarrow<3.0.0",
+        "pandas",
+        "pyarrow",
         "requests",
         "requests-oauthlib",
     ],
@@ -36,6 +36,7 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     zip_safe=False,
 )
