@@ -145,7 +145,7 @@ class AzureBlobClient(BlobClient):
 
         if pd.api.types.is_datetime64_ns_dtype(series.index):
             series = series.copy()
-            series.index = series.index.astype("int64")
+            series.index = series.index.view("int64")
 
         block_data = series.to_csv(header=False, line_terminator="\n")
 
