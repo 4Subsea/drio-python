@@ -56,6 +56,52 @@ from io import BytesIO, TextIOWrapper, StringIO
 #         self.upload_blob(block_data.encode("ascii"), blob_type="BlockBlob")
 
 
+# class AzureBlobClient(BlobClient):
+#     def __init__(self, params):
+#         self._account = params["Account"]
+#         self._sas_key = params["SasKey"]
+#         self._container_name = params["Container"]
+#         self._blob_name = params["Path"]
+#         self._account_url = f"https://{self._account}.blob.core.windows.net"
+
+#         super(AzureBlobClient, self).__init__(
+#             self._account_url,
+#             self._container_name,
+#             self._blob_name,
+#             credential=self._sas_key,
+#         )
+
+#     def get_blob_to_df(self):
+#         text_content = self.download_blob().readall().decode(encoding="utf-8")
+
+#         df = pd.read_csv(
+#             StringIO(text_content),
+#             sep=",",
+#             index_col=0,
+#             header=None,
+#             names=(None, "values"),
+#             dtype="O",
+#         )
+
+#         df.index = df.index.view("int64")
+#         try:
+#             df = df.astype({"values": "float64"})
+#         except ValueError:   # unable to cast to float
+#             pass
+
+#         return df
+
+#     def create_blob_from_series(self, series):
+
+#         if pd.api.types.is_datetime64_ns_dtype(series.index):
+#             series = series.copy()
+#             series.index = series.index.astype("int64")
+
+#         block_data = series.to_csv(header=False, line_terminator="\n")
+
+#         self.upload_blob(block_data.encode("ascii"), blob_type="BlockBlob")
+
+
 class AzureBlobClient(BlobClient):
     def __init__(self, params):
         self._account = params["Account"]
@@ -72,21 +118,25 @@ class AzureBlobClient(BlobClient):
         )
 
     def get_blob_to_df(self):
-        text_content = self.download_blob().readall().decode(encoding="utf-8")
 
-        df = pd.read_csv(
-            StringIO(text_content),
-            sep=",",
-            index_col=0,
-            header=None,
-            names=(None, "values"),
-            dtype="O",
-        )
+        with BytesIO() as binary_content:
+            self.download_blob().readinto(binary_content)
 
-        df.index = df.index.astype("int64")
+            binary_content.seek(0)
+            with TextIOWrapper(binary_content, encoding="utf-8") as text_content:
+                df = pd.read_csv(
+                    text_content,
+                    sep=",",
+                    index_col=0,
+                    header=None,
+                    names=(None, "values"),
+                    dtype="O",
+                )
+
+        df.index = df.index.view("int64")
         try:
-            df.values = df.values.astype("float64")
-        except ValueError:   # unable to cast to float
+            df = df.astype({"values": "float64"})
+        except ValueError:  # unable to cast to float
             pass
 
         return df
