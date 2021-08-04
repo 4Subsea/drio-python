@@ -80,9 +80,14 @@ class AzureBlobClient(BlobClient):
             index_col=0,
             header=None,
             names=(None, "values"),
-            dtype={"values": "float64"},
+            dtype="O",
         )
+
         df.index = df.index.astype("int64")
+        try:
+            df.values = df.values.astype("float64")
+        except ValueError:   # unable to cast to float
+            pass
 
         return df
 
