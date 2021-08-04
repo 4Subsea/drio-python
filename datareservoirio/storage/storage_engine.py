@@ -93,10 +93,11 @@ class AzureBlobClient(BlobClient):
 
     def create_blob_from_series(self, series):
 
-        data = series.copy()
-        data.index = data.index.view("int64")
+        if pd.api.types.is_datetime64_ns_dtype(series.index):
+            series = series.copy()
+            series.index = series.index.astype("int64")
 
-        block_data = data.to_csv(header=False, line_terminator="\n")
+        block_data = series.to_csv(header=False, line_terminator="\n")
 
         self.upload_blob(block_data.encode("ascii"), blob_type="BlockBlob")
 
