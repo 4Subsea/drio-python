@@ -141,7 +141,7 @@ class AzureBlobClient(BlobClient):
                 header=None,
                 names=(None, "values"),
                 parse_dates=True,
-                dtype="string",
+                dtype={"values": "string"},
             )
 
         df.index = df.index.view("int64")

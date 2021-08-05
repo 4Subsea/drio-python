@@ -119,5 +119,10 @@ class Test_AzureBlobClient:
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
             vals_expect = ["some_string", "testing", "hello"]
             df_expect = pd.DataFrame(index=idx_expect, data={"values": vals_expect})
+            df_expect.index = df_expect.index.view("int64")
+            df_expect = df_expect.astype("string")
+
+            print(type(df_out.index))
+            print(df_out.dtypes)
 
             pd.testing.assert_frame_equal(df_out, df_expect)
