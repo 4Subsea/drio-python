@@ -141,12 +141,13 @@ class AzureBlobClient(BlobClient):
                 header=None,
                 names=(None, "values"),
                 parse_dates=True,
-                dtype="O",
+                dtype="string",
             )
 
         df.index = df.index.view("int64")
         try:
-            df = df.astype({"values": "float64"})
+            # df = df.astype({"values": "float64"})
+            df = df.astype("float64")
         except ValueError:  # unable to cast to float
             pass
 
