@@ -123,15 +123,26 @@ class AzureBlobClient(BlobClient):
             self.download_blob().readinto(binary_content)
 
             binary_content.seek(0)
-            with TextIOWrapper(binary_content, encoding="utf-8") as text_content:
-                df = pd.read_csv(
-                    text_content,
-                    sep=",",
-                    index_col=0,
-                    header=None,
-                    names=(None, "values"),
-                    dtype="O",
-                )
+            # with TextIOWrapper(binary_content, encoding="utf-8") as text_content:
+            #     df = pd.read_csv(
+            #         text_content,
+            #         sep=",",
+            #         index_col=0,
+            #         header=None,
+            #         names=(None, "values"),
+            #         parse_dates=True,
+            #         dtype="O",
+            #     )
+
+            df = pd.read_csv(
+                TextIOWrapper(binary_content, encoding="utf-8"),
+                sep=",",
+                index_col=0,
+                header=None,
+                names=(None, "values"),
+                parse_dates=True,
+                dtype="O",
+            )
 
         df.index = df.index.view("int64")
         try:
