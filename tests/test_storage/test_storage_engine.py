@@ -180,3 +180,23 @@ class Test_AzureBlobClient:
             mock_upload.assure_called_once_with(
                 series_csv.encode("ascii"), blob_type="BlockBlob"
             )
+
+
+class TestStorageBackend:
+    def test__init__(self, blob_params):
+        storage = StorageBackend()
+        assert isinstance(storage._service(blob_params), AzureBlobClient)
+
+    def test_remote_get(self, blob_params):
+        with patch("datareservoirio.storage.storage_engine.AzureBlobClient") as mock_service:
+            storage = StorageBackend()
+            storage.remote_get(blob_params)
+            mock_service.assert_called_once_with(blob_params)
+            mock_service.return_value.get_blob_to_df.assert_called_once()
+
+    def test_remote_put(self, blob_params):
+        with patch("datareservoirio.storage.storage_engine.AzureBlobClient") as mock_service:
+            storage = StorageBackend()
+            storage.remote_put(blob_params, "test")
+            mock_service.assert_called_once_with(blob_params)
+            mock_service.return_value.create_blob_from_series.assert_called_once_with("test")
