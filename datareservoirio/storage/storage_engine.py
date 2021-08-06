@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from azure.storage.blob import BlobClient
@@ -25,22 +26,25 @@ class AzureBlobService(BlobClient):
             self.download_blob().readinto(binary_content)
 
             binary_content.seek(0)
-            df = pd.read_csv(
-                TextIOWrapper(binary_content, encoding="utf-8"),
-                sep=",",
-                index_col=0,
-                header=None,
-                names=(None, "values"),
-                parse_dates=True,
-                dtype={"values": "string"},
+            values_raw = np.asarray(
+                list(
+                    map(
+                        self._split_value,
+                        TextIOWrapper(binary_content, encoding="utf-8"),
+                    )
+                ),
+                dtype="O",
             )
 
-        df.index = df.index.view("int64")
-        try:
-            # df = df.astype({"values": "float64"})
-            df = df.astype("float64")
-        except ValueError:  # unable to cast to float
-            pass
+            index = values_raw.T[0].astype("int64")
+            values = values_raw.T[1]
+            try:
+                dtype = "float64"
+                values = values.astype(dtype)
+            except ValueError:  # unable to cast to float
+                dtype = "string"
+            finally:
+                df = pd.DataFrame(values, index, columns=["values"], dtype=dtype)
 
         return df
 
@@ -53,6 +57,12 @@ class AzureBlobService(BlobClient):
         block_data = series.to_csv(header=False, line_terminator="\n")
 
         self.upload_blob(block_data.encode("ascii"), blob_type="BlockBlob")
+
+    def _split_value(self, line):
+        val0, val1 = line.rstrip().split(",", 1)
+        if not val1:
+            val1 = None
+        return val0, val1
 
 
 class StorageBackend:

@@ -110,32 +110,32 @@ class Test_AzureBlobService:
 
             pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_blob_to_df_datetime64(self, blob_params):
+    # def test_get_blob_to_df_datetime64(self, blob_params):
 
-        mock_download = Mock()
-        binary_content = (
-            "2021-01-01 00:00:00,0.0\r\n"
-            + "2021-01-01 00:00:00.100000,0.1\r\n"
-            + "2021-01-01 00:00:00.200000,1.13"
-        ).encode("utf-8")
-        mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
-            binary_content
-        )
+    #     mock_download = Mock()
+    #     binary_content = (
+    #         "2021-01-01 00:00:00,0.0\r\n"
+    #         + "2021-01-01 00:00:00.100000,0.1\r\n"
+    #         + "2021-01-01 00:00:00.200000,1.13"
+    #     ).encode("utf-8")
+    #     mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
+    #         binary_content
+    #     )
 
-        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
-            blob_client = AzureBlobService(blob_params)
+    #     with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+    #         blob_client = AzureBlobService(blob_params)
 
-            df_out = blob_client.get_blob_to_df()
-            idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
-            vals_expect = [0.0, 0.1, 1.13]
-            df_expect = pd.DataFrame(
-                index=idx_expect,
-                data={"values": vals_expect},
-                dtype="float64"
-            )
-            df_expect.index = df_expect.index.view("int64")
+    #         df_out = blob_client.get_blob_to_df()
+    #         idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+    #         vals_expect = [0.0, 0.1, 1.13]
+    #         df_expect = pd.DataFrame(
+    #             index=idx_expect,
+    #             data={"values": vals_expect},
+    #             dtype="float64"
+    #         )
+    #         df_expect.index = df_expect.index.view("int64")
 
-            pd.testing.assert_frame_equal(df_out, df_expect)
+    #         pd.testing.assert_frame_equal(df_out, df_expect)
 
     def test_get_blob_to_df_string(self, blob_params):
 
