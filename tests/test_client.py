@@ -110,7 +110,7 @@ class Test_Client(unittest.TestCase):
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_defaults_cache_is_enabled_and_format_parquet(self, mock_cache):
-        with Client(self.auth) as client:
+        with Client(self.auth):
             kwargs = mock_cache.call_args[1]
             self.assertIn("format_", kwargs)
             self.assertEqual(kwargs["format_"], "parquet")
@@ -122,7 +122,7 @@ class Test_Client(unittest.TestCase):
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_enabled(self, mock_cache):
-        with Client(self.auth, cache=True) as client:
+        with Client(self.auth, cache=True):
             cache_defaults = Client.CACHE_DEFAULT.copy()
             cache_defaults["format_"] = cache_defaults.pop("format")
             mock_cache.assert_called_once_with(
@@ -156,7 +156,7 @@ class Test_Client(unittest.TestCase):
 
         with Client(
             self.auth, cache=True, cache_opt={"cache_root": "a:\\diskett"}
-        ) as client:
+        ):
             mock_cache.assert_called_once_with(
                 **cache_defaults
             )
@@ -167,7 +167,7 @@ class Test_Client(unittest.TestCase):
         cache_defaults["format_"] = cache_defaults.pop("format")
         cache_defaults["max_size"] = 10
 
-        with Client(self.auth, cache=True, cache_opt={"max_size": 10}) as client:
+        with Client(self.auth, cache=True, cache_opt={"max_size": 10}):
             mock_cache.assert_called_once_with(
                 **cache_defaults
             )
