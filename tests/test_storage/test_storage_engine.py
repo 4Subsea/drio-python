@@ -283,15 +283,15 @@ class TestStorageBackend:
         assert isinstance(storage._service(blob_params), AzureBlobService)
 
     def test_remote_get(self, blob_params):
-        with patch("datareservoirio.storage.storage_engine.AzureBlobService") as mock_service:
-            storage = StorageBackend()
-            storage.remote_get(blob_params)
+        backend = StorageBackend()
+        with patch.object(backend, "_service") as mock_service:
+            backend.remote_get(blob_params)
             mock_service.assert_called_once_with(blob_params)
             mock_service.return_value.get_blob_to_df.assert_called_once()
 
     def test_remote_put(self, blob_params):
-        with patch("datareservoirio.storage.storage_engine.AzureBlobService") as mock_service:
-            storage = StorageBackend()
-            storage.remote_put(blob_params, "test")
+        backend = StorageBackend()
+        with patch.object(backend, "_service") as mock_service:
+            backend.remote_put(blob_params, "data")
             mock_service.assert_called_once_with(blob_params)
-            mock_service.return_value.create_blob_from_series.assert_called_once_with("test")
+            mock_service.return_value.create_blob_from_series.assert_called_once_with("data")
