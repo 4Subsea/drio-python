@@ -6,4 +6,4 @@ from .storage import (
     FileCacheDownload,
     Storage,
 )
-from .storage_engine import AzureBlobClient, StorageBackend
+from .storage_engine import AzureBlobService, StorageBackend

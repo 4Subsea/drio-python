@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 import datareservoirio as drio
-from datareservoirio.storage.storage_engine import StorageBackend, AzureBlobClient
+from datareservoirio.storage.storage_engine import StorageBackend, AzureBlobService
 
 
 # @pytest.fixture
@@ -36,12 +36,12 @@ def blob_params():
     return params
 
 
-class Test_AzureBlobClient:
+class Test_AzureBlobService:
 
     @patch("datareservoirio.storage.storage_engine.BlobClient.__init__")
     def test__init__(self, mock_blob_client__init__, blob_params):
 
-        blob_client = AzureBlobClient(blob_params)
+        blob_client = AzureBlobService(blob_params)
 
         assert blob_client._account == "some_account"
         assert blob_client._sas_key == "some_sas_key"
@@ -68,8 +68,8 @@ class Test_AzureBlobClient:
             binary_content
         )
 
-        with patch.object(AzureBlobClient, "download_blob", return_value=mock_download):
-            blob_client = AzureBlobClient(blob_params)
+        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+            blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
@@ -95,8 +95,8 @@ class Test_AzureBlobClient:
             binary_content
         )
 
-        with patch.object(AzureBlobClient, "download_blob", return_value=mock_download):
-            blob_client = AzureBlobClient(blob_params)
+        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+            blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
@@ -122,8 +122,8 @@ class Test_AzureBlobClient:
             binary_content
         )
 
-        with patch.object(AzureBlobClient, "download_blob", return_value=mock_download):
-            blob_client = AzureBlobClient(blob_params)
+        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+            blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
@@ -145,8 +145,8 @@ class Test_AzureBlobClient:
             index=series_idx
         )
 
-        with patch.object(AzureBlobClient, "upload_blob") as mock_upload:
-            blob_client = AzureBlobClient(blob_params)
+        with patch.object(AzureBlobService, "upload_blob") as mock_upload:
+            blob_client = AzureBlobService(blob_params)
 
             blob_client.create_blob_from_series(series)
 
@@ -167,8 +167,8 @@ class Test_AzureBlobClient:
             index=pd.to_datetime(series_idx)
         )
 
-        with patch.object(AzureBlobClient, "upload_blob") as mock_upload:
-            blob_client = AzureBlobClient(blob_params)
+        with patch.object(AzureBlobService, "upload_blob") as mock_upload:
+            blob_client = AzureBlobService(blob_params)
 
             blob_client.create_blob_from_series(series)
 
@@ -185,17 +185,17 @@ class Test_AzureBlobClient:
 class TestStorageBackend:
     def test__init__(self, blob_params):
         storage = StorageBackend()
-        assert isinstance(storage._service(blob_params), AzureBlobClient)
+        assert isinstance(storage._service(blob_params), AzureBlobService)
 
     def test_remote_get(self, blob_params):
-        with patch("datareservoirio.storage.storage_engine.AzureBlobClient") as mock_service:
+        with patch("datareservoirio.storage.storage_engine.AzureBlobService") as mock_service:
             storage = StorageBackend()
             storage.remote_get(blob_params)
             mock_service.assert_called_once_with(blob_params)
             mock_service.return_value.get_blob_to_df.assert_called_once()
 
     def test_remote_put(self, blob_params):
-        with patch("datareservoirio.storage.storage_engine.AzureBlobClient") as mock_service:
+        with patch("datareservoirio.storage.storage_engine.AzureBlobService") as mock_service:
             storage = StorageBackend()
             storage.remote_put(blob_params, "test")
             mock_service.assert_called_once_with(blob_params)

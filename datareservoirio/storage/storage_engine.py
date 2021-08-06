@@ -4,7 +4,7 @@ from azure.storage.blob import BlobClient
 from io import BytesIO, TextIOWrapper
 
 
-class AzureBlobClient(BlobClient):
+class AzureBlobService(BlobClient):
     def __init__(self, params):
         self._account = params["Account"]
         self._sas_key = params["SasKey"]
@@ -12,7 +12,7 @@ class AzureBlobClient(BlobClient):
         self._blob_name = params["Path"]
         self._account_url = f"https://{self._account}.blob.core.windows.net"
 
-        super(AzureBlobClient, self).__init__(
+        super(AzureBlobService, self).__init__(
             self._account_url,
             self._container_name,
             self._blob_name,
@@ -57,7 +57,7 @@ class AzureBlobClient(BlobClient):
 
 class StorageBackend:
     def __init__(self, session=None):
-        self._service = AzureBlobClient
+        self._service = AzureBlobService
 
     def remote_get(self, params):
         return self._service(params).get_blob_to_df()
