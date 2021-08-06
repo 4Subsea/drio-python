@@ -262,6 +262,20 @@ class Test_AzureBlobService:
                 series_csv.encode("ascii"), blob_type="BlockBlob"
             )
 
+    def test_split_value(self, blob_params):
+        uploader = AzureBlobService(blob_params)
+        value = "1,2"
+        output = uploader._split_value(value)
+        expected = ("1", "2")
+        assert output == expected
+
+    def test_split_value_nan(self, blob_params):
+        uploader = AzureBlobService(blob_params)
+        value = "1,"
+        output = uploader._split_value(value)
+        expected = ("1", None)
+        assert output == expected
+
 
 class TestStorageBackend:
     def test__init__(self, blob_params):
