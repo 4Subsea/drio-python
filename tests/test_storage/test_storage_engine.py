@@ -55,7 +55,7 @@ class Test_AzureBlobService:
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
             vals_expect = [0.0, 0.1, 1.13]
             df_expect = pd.DataFrame(
-                index=idx_expect,
+                index=pd.Int64Index(idx_expect),
                 data={"values": vals_expect},
                 dtype="float64"
             )
@@ -67,9 +67,9 @@ class Test_AzureBlobService:
 
         mock_download = Mock()
         binary_content = (
-            "1609459200000000000,0.0\r\n"
-            + "1609459200100000000,\r\n"
-            + "1609459200200000000,1.13"
+            "1,0.0\r\n"
+            + "2,\r\n"
+            + "3,1.13"
         ).encode("utf-8")
         mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
             binary_content
@@ -79,14 +79,11 @@ class Test_AzureBlobService:
             blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
-            idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
-            vals_expect = [0.0, None, 1.13]
             df_expect = pd.DataFrame(
-                index=idx_expect,
-                data={"values": vals_expect},
+                index=pd.Int64Index([1, 2, 3]),
+                data={"values": [0.0, None, 1.13]},
                 dtype="float64"
             )
-            df_expect.index = df_expect.index.view("int64")
 
             pd.testing.assert_frame_equal(df_out, df_expect)
 
@@ -109,11 +106,10 @@ class Test_AzureBlobService:
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
             vals_expect = ["some_string", "testing", "hello"]
             df_expect = pd.DataFrame(
-                index=idx_expect,
+                index=pd.Int64Index(idx_expect),
                 data={"values": vals_expect},
                 dtype="string"
             )
-            df_expect.index = df_expect.index.view("int64")
 
             pd.testing.assert_frame_equal(df_out, df_expect)
 
@@ -136,11 +132,10 @@ class Test_AzureBlobService:
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
             vals_expect = ["some_string", "$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74", "$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F"]
             df_expect = pd.DataFrame(
-                index=idx_expect,
+                index=pd.Int64Index(idx_expect),
                 data={"values": vals_expect},
                 dtype="string"
             )
-            df_expect.index = df_expect.index.view("int64")
 
             pd.testing.assert_frame_equal(df_out, df_expect)
 
@@ -148,9 +143,9 @@ class Test_AzureBlobService:
 
         mock_download = Mock()
         binary_content = (
-            "1609459200000000000,some_string\r\n"
-            + "1609459200100000000,\r\n"
-            + "1609459200200000000,hello"
+            "1,some_string\r\n"
+            + "2,\r\n"
+            + "3,hello"
         ).encode("utf-8")
         mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
             binary_content
@@ -160,14 +155,11 @@ class Test_AzureBlobService:
             blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
-            idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
-            vals_expect = ["some_string", None, "hello"]
             df_expect = pd.DataFrame(
-                index=idx_expect,
-                data={"values": vals_expect},
+                index=pd.Int64Index([1, 2, 3]),
+                data={"values": ["some_string", None, "hello"]},
                 dtype="string"
             )
-            df_expect.index = df_expect.index.view("int64")
 
             pd.testing.assert_frame_equal(df_out, df_expect)
 
