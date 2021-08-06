@@ -66,7 +66,7 @@ class AzureBlobService(BlobClient):
 
 
 class StorageBackend:
-    def __init__(self, session=None):
+    def __init__(self):
         self._service = AzureBlobService
 
     def remote_get(self, params):

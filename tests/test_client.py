@@ -117,7 +117,7 @@ class Test_Client(unittest.TestCase):
             cache_defaults = Client.CACHE_DEFAULT.copy()
             cache_defaults["format_"] = cache_defaults.pop("format")
             mock_cache.assert_called_once_with(
-                **cache_defaults, session=client._session
+                **cache_defaults
             )
 
     @patch("datareservoirio.client.FileCacheDownload")
@@ -126,7 +126,7 @@ class Test_Client(unittest.TestCase):
             cache_defaults = Client.CACHE_DEFAULT.copy()
             cache_defaults["format_"] = cache_defaults.pop("format")
             mock_cache.assert_called_once_with(
-                **cache_defaults, session=client._session
+                **cache_defaults
             )
 
     @patch("datareservoirio.client.FileCacheDownload")
@@ -158,7 +158,7 @@ class Test_Client(unittest.TestCase):
             self.auth, cache=True, cache_opt={"cache_root": "a:\\diskett"}
         ) as client:
             mock_cache.assert_called_once_with(
-                **cache_defaults, session=client._session
+                **cache_defaults
             )
 
     @patch("datareservoirio.client.FileCacheDownload")
@@ -169,7 +169,7 @@ class Test_Client(unittest.TestCase):
 
         with Client(self.auth, cache=True, cache_opt={"max_size": 10}) as client:
             mock_cache.assert_called_once_with(
-                **cache_defaults, session=client._session
+                **cache_defaults
             )
 
     def test_ping_request(self):
