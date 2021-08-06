@@ -116,18 +116,14 @@ class Test_Client(unittest.TestCase):
             self.assertEqual(kwargs["format_"], "parquet")
             cache_defaults = Client.CACHE_DEFAULT.copy()
             cache_defaults["format_"] = cache_defaults.pop("format")
-            mock_cache.assert_called_once_with(
-                **cache_defaults
-            )
+            mock_cache.assert_called_once_with(**cache_defaults)
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_enabled(self, mock_cache):
         with Client(self.auth, cache=True):
             cache_defaults = Client.CACHE_DEFAULT.copy()
             cache_defaults["format_"] = cache_defaults.pop("format")
-            mock_cache.assert_called_once_with(
-                **cache_defaults
-            )
+            mock_cache.assert_called_once_with(**cache_defaults)
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_format_csv(self, mock_cache):
@@ -154,12 +150,8 @@ class Test_Client(unittest.TestCase):
         cache_defaults["format_"] = cache_defaults.pop("format")
         cache_defaults["cache_root"] = "a:\\diskett"
 
-        with Client(
-            self.auth, cache=True, cache_opt={"cache_root": "a:\\diskett"}
-        ):
-            mock_cache.assert_called_once_with(
-                **cache_defaults
-            )
+        with Client(self.auth, cache=True, cache_opt={"cache_root": "a:\\diskett"}):
+            mock_cache.assert_called_once_with(**cache_defaults)
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_max_size(self, mock_cache):
@@ -168,9 +160,7 @@ class Test_Client(unittest.TestCase):
         cache_defaults["max_size"] = 10
 
         with Client(self.auth, cache=True, cache_opt={"max_size": 10}):
-            mock_cache.assert_called_once_with(
-                **cache_defaults
-            )
+            mock_cache.assert_called_once_with(**cache_defaults)
 
     def test_ping_request(self):
         self.client._files_api.ping.return_value = {"status": "pong"}

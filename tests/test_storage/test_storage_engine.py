@@ -1,8 +1,9 @@
-import pandas as pd
-import pytest
 from unittest.mock import Mock, patch
 
-from datareservoirio.storage.storage_engine import StorageBackend, AzureBlobService
+import pandas as pd
+import pytest
+
+from datareservoirio.storage.storage_engine import AzureBlobService, StorageBackend
 
 
 @pytest.fixture
@@ -17,7 +18,6 @@ def blob_params():
 
 
 class Test_AzureBlobService:
-
     @patch("datareservoirio.storage.storage_engine.BlobClient.__init__")
     def test__init__(self, mock_blob_client__init__, blob_params):
 
@@ -48,7 +48,9 @@ class Test_AzureBlobService:
             binary_content
         )
 
-        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
             blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
@@ -57,7 +59,7 @@ class Test_AzureBlobService:
             df_expect = pd.DataFrame(
                 index=pd.Int64Index(idx_expect),
                 data={"values": vals_expect},
-                dtype="float64"
+                dtype="float64",
             )
             df_expect.index = df_expect.index.view("int64")
 
@@ -66,23 +68,21 @@ class Test_AzureBlobService:
     def test_get_blob_to_df_w_empty(self, blob_params):
 
         mock_download = Mock()
-        binary_content = (
-            "1,0.0\r\n"
-            + "2,\r\n"
-            + "3,1.13"
-        ).encode("utf-8")
+        binary_content = ("1,0.0\r\n" + "2,\r\n" + "3,1.13").encode("utf-8")
         mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
             binary_content
         )
 
-        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
             blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
             df_expect = pd.DataFrame(
                 index=pd.Int64Index([1, 2, 3]),
                 data={"values": [0.0, None, 1.13]},
-                dtype="float64"
+                dtype="float64",
             )
 
             pd.testing.assert_frame_equal(df_out, df_expect)
@@ -99,7 +99,9 @@ class Test_AzureBlobService:
             binary_content
         )
 
-        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
             blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
@@ -108,7 +110,7 @@ class Test_AzureBlobService:
             df_expect = pd.DataFrame(
                 index=pd.Int64Index(idx_expect),
                 data={"values": vals_expect},
-                dtype="string"
+                dtype="string",
             )
 
             pd.testing.assert_frame_equal(df_out, df_expect)
@@ -125,16 +127,22 @@ class Test_AzureBlobService:
             binary_content
         )
 
-        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
             blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
-            vals_expect = ["some_string", "$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74", "$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F"]
+            vals_expect = [
+                "some_string",
+                "$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74",
+                "$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F",
+            ]
             df_expect = pd.DataFrame(
                 index=pd.Int64Index(idx_expect),
                 data={"values": vals_expect},
-                dtype="string"
+                dtype="string",
             )
 
             pd.testing.assert_frame_equal(df_out, df_expect)
@@ -142,23 +150,21 @@ class Test_AzureBlobService:
     def test_get_blob_to_df_string_w_empty(self, blob_params):
 
         mock_download = Mock()
-        binary_content = (
-            "1,some_string\r\n"
-            + "2,\r\n"
-            + "3,hello"
-        ).encode("utf-8")
+        binary_content = ("1,some_string\r\n" + "2,\r\n" + "3,hello").encode("utf-8")
         mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
             binary_content
         )
 
-        with patch.object(AzureBlobService, "download_blob", return_value=mock_download):
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
             blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
             df_expect = pd.DataFrame(
                 index=pd.Int64Index([1, 2, 3]),
                 data={"values": ["some_string", None, "hello"]},
-                dtype="string"
+                dtype="string",
             )
 
             pd.testing.assert_frame_equal(df_out, df_expect)
@@ -166,10 +172,7 @@ class Test_AzureBlobService:
     def test_create_blob_from_series(self, blob_params):
         series_vals = [1.1, 2.3, 0.2]
         series_idx = [1609459200000000000, 1609459200100000000, 1609459200200000000]
-        series = pd.Series(
-            data=series_vals,
-            index=series_idx
-        )
+        series = pd.Series(data=series_vals, index=series_idx)
 
         with patch.object(AzureBlobService, "upload_blob") as mock_upload:
             blob_client = AzureBlobService(blob_params)
@@ -188,10 +191,7 @@ class Test_AzureBlobService:
     def test_create_blob_from_series_datetime64(self, blob_params):
         series_vals = [1.1, 2.3, 0.2]
         series_idx = [1609459200000000000, 1609459200100000000, 1609459200200000000]
-        series = pd.Series(
-            data=series_vals,
-            index=pd.to_datetime(series_idx)
-        )
+        series = pd.Series(data=series_vals, index=pd.to_datetime(series_idx))
 
         with patch.object(AzureBlobService, "upload_blob") as mock_upload:
             blob_client = AzureBlobService(blob_params)
@@ -239,4 +239,6 @@ class TestStorageBackend:
         with patch.object(backend, "_service") as mock_service:
             backend.remote_put(blob_params, "data")
             mock_service.assert_called_once_with(blob_params)
-            mock_service.return_value.create_blob_from_series.assert_called_once_with("data")
+            mock_service.return_value.create_blob_from_series.assert_called_once_with(
+                "data"
+            )

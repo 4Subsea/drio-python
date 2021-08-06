@@ -1,8 +1,8 @@
+from io import BytesIO, TextIOWrapper
+
 import numpy as np
 import pandas as pd
-
 from azure.storage.blob import BlobClient
-from io import BytesIO, TextIOWrapper
 
 
 class AzureBlobService(BlobClient):
