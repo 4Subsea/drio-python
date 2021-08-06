@@ -118,11 +118,8 @@ class Test_AzureBlobClient:
             df_out = blob_client.get_blob_to_df()
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
             vals_expect = ["some_string", "testing", "hello"]
-            df_expect = pd.DataFrame(index=idx_expect, data={"values": vals_expect})
-            df_expect.index = df_expect.index.view("int64")
-            df_expect = df_expect.astype("string")
-
-            print(type(df_out.index))
-            print(df_out.dtypes)
+            df_expect = pd.DataFrame(index=idx_expect, data={"values": vals_expect}, dtype="string")
+            # df_expect.index = df_expect.index.view("int64")
+            # df_expect = df_expect.astype("string")
 
             pd.testing.assert_frame_equal(df_out, df_expect)
