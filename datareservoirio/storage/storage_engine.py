@@ -4,7 +4,6 @@ from azure.storage.blob import BlobClient
 from io import BytesIO, TextIOWrapper
 
 
-
 class AzureBlobClient(BlobClient):
     def __init__(self, params):
         self._account = params["Account"]
