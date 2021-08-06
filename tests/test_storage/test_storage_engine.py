@@ -136,3 +136,47 @@ class Test_AzureBlobClient:
             df_expect.index = df_expect.index.view("int64")
 
             pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_create_blob_from_series(self, blob_params):
+        series_vals = [1.1, 2.3, 0.2]
+        series_idx = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+        series = pd.Series(
+            data=series_vals,
+            index=series_idx
+        )
+
+        with patch.object(AzureBlobClient, "upload_blob") as mock_upload:
+            blob_client = AzureBlobClient(blob_params)
+
+            blob_client.create_blob_from_series(series)
+
+            series_csv = (
+                "1609459200000000000,1.1\n"
+                + "1609459200100000000,2.3\n"
+                + "1609459200200000000,0.2\n"
+            )
+            mock_upload.assure_called_once_with(
+                series_csv.encode("ascii"), blob_type="BlockBlob"
+            )
+
+    def test_create_blob_from_series_datetime64(self, blob_params):
+        series_vals = [1.1, 2.3, 0.2]
+        series_idx = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+        series = pd.Series(
+            data=series_vals,
+            index=pd.to_datetime(series_idx)
+        )
+
+        with patch.object(AzureBlobClient, "upload_blob") as mock_upload:
+            blob_client = AzureBlobClient(blob_params)
+
+            blob_client.create_blob_from_series(series)
+
+            series_csv = (
+                "1609459200000000000,1.1\n"
+                + "1609459200100000000,2.3\n"
+                + "1609459200200000000,0.2\n"
+            )
+            mock_upload.assure_called_once_with(
+                series_csv.encode("ascii"), blob_type="BlockBlob"
+            )
