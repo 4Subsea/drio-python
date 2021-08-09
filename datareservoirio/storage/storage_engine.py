@@ -1,6 +1,6 @@
-from io import BytesIO, TextIOWrapper
-import timeit
 import logging
+import timeit
+from io import BytesIO, TextIOWrapper
 
 import numpy as np
 import pandas as pd
@@ -118,6 +118,7 @@ class StorageBackend:
     """
     Handles upload/download of Pandas Series to/from Azure Blob Storage.
     """
+
     def __init__(self):
         self._service = AzureBlobService
 
