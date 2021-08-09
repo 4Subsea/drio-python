@@ -10,7 +10,26 @@ log = logging.getLogger(__name__)
 
 
 class AzureBlobService(BlobClient):
+    """
+    Sub-class of BlobClient that handle upload/download of Pandas Series to/from
+    Azure Blob Storage.
+    """
+
     def __init__(self, params):
+        """
+        Initiate transfer service to Azure Blob Storage.
+
+        Parameters
+        ----------
+        params : dict
+            Dict must include:
+
+                * 'Account'
+                * 'SasKey'
+                * 'Container' (container_name)
+                * 'Path' (blob_name)
+        """
+
         self._account = params["Account"]
         self._sas_key = params["SasKey"]
         self._container_name = params["Container"]
@@ -25,6 +44,14 @@ class AzureBlobService(BlobClient):
         )
 
     def get_blob_to_df(self):
+        """
+        Download content of the current blob to Pandas DataFrame.
+
+        Initial parse to frame with string values. In case values are non-numeric
+        (and possibly ,-separated text), we will merge these back into one column
+        of text. Otherwise, convert values to float64.
+        """
+
         time_start = timeit.default_timer()
 
         with BytesIO() as binary_content:
