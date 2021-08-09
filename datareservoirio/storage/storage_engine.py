@@ -115,11 +115,16 @@ class AzureBlobService(BlobClient):
 
 
 class StorageBackend:
+    """
+    Handles upload/download of Pandas Series to/from Azure Blob Storage.
+    """
     def __init__(self):
         self._service = AzureBlobService
 
     def remote_get(self, params):
+        """Get data."""
         return self._service(params).get_blob_to_df()
 
     def remote_put(self, params, data):
+        """Upload data."""
         return self._service(params).create_blob_from_series(data)
