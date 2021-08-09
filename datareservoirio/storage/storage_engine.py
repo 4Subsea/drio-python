@@ -95,6 +95,9 @@ class AzureBlobService(BlobClient):
             Approprately indexed Series.
         """
 
+        if isinstance(series, pd.DataFrame):
+            series = series.iloc[:, 0]
+
         log.debug(f"upload blob {self._blob_name}")
         if pd.api.types.is_datetime64_ns_dtype(series.index):
             series = series.copy()

@@ -207,6 +207,29 @@ class Test_AzureBlobService:
                 series_csv.encode("ascii"), blob_type="BlockBlob"
             )
 
+    def test_create_blob_from_multiple_columns(self, blob_params):
+        series_vals = [1.1, 2.3, 0.2]
+        series_vals2 = [1., 1., 1.]
+        series_idx = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+        series = pd.DataFrame(
+            data={"values": series_vals, "extra_values": series_vals2},
+            index=series_idx
+        )
+
+        with patch.object(AzureBlobService, "upload_blob") as mock_upload:
+            blob_client = AzureBlobService(blob_params)
+
+            blob_client.create_blob_from_series(series)
+
+            series_csv = (
+                "1609459200000000000,1.1\n"
+                + "1609459200100000000,2.3\n"
+                + "1609459200200000000,0.2\n"
+            )
+            mock_upload.assure_called_once_with(
+                series_csv.encode("ascii"), blob_type="BlockBlob"
+            )
+
     def test_split_value(self, blob_params):
         uploader = AzureBlobService(blob_params)
         value = "1,2"
