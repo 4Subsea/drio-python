@@ -260,4 +260,41 @@ with it::
                                     value='Sensor Corp')
 
 
+Do's and don'ts
+***************
+
+Expected data size vs. memory available
+=======================================
+
+When dealing with high-frequent timeseries data and/or long time spans, you should
+keep the memory usage in mind. Having all the data in memory at the same time could
+cause problems and make your script fail.
+
+Use for loops to download data in chunks
+----------------------------------------
+It is recommended to download data in smaller chunks (such as one day, or one hour).
+
+.. code-block:: python
+
+    # Make date iterator
+    start_end = pd.date_range(start="2020-01-01 00:00", end="2020-02-01 00:00", freq="1H")
+    start_end_iter = zip(start_end[:-1], start_end[:-1])
+
+    # Get timeseries in chunks
+    for start, end in start_end_iter:
+        timeseries = client.get(series_id, start=start, end=end)
+
+Resample using pandas
+---------------------
+It could be useful to resample the data. This is easily done using pandas:
+
+.. code-block:: python
+
+    # Resample using 1-minute mean
+    timeseries_resampled_mean = timeseries.resample("1min").agg(np.mean)
+
+    # Or, get the 1-hour standard deviation
+    timeseries_resampled_std = timeseries.resample("1min").agg(np.std)
+
+
 .. _DataReservoir.io: https://www.datareservoir.io/
