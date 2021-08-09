@@ -1,8 +1,12 @@
 from io import BytesIO, TextIOWrapper
+import timeit
+import logging
 
 import numpy as np
 import pandas as pd
 from azure.storage.blob import BlobClient
+
+log = logging.getLogger(__name__)
 
 
 class AzureBlobService(BlobClient):
@@ -21,8 +25,10 @@ class AzureBlobService(BlobClient):
         )
 
     def get_blob_to_df(self):
+        time_start = timeit.default_timer()
 
         with BytesIO() as binary_content:
+            log.debug(f"Get chunk {self._blob_name}")
             self.download_blob().readinto(binary_content)
 
             binary_content.seek(0)
@@ -46,6 +52,8 @@ class AzureBlobService(BlobClient):
             finally:
                 df = pd.DataFrame(values, index, columns=["values"], dtype=dtype)
 
+        time_end = timeit.default_timer()
+        log.debug(f"{self._blob_name}: download took {time_end - time_start} seconds")
         return df
 
     def create_blob_from_series(self, series):
