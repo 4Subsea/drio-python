@@ -221,6 +221,13 @@ class Test_AzureBlobService:
         expected = ("1", None)
         assert output == expected
 
+    def test_split_value_w_comma(self, blob_params):
+        uploader = AzureBlobService(blob_params)
+        value = "1,2,3,4"
+        output = uploader._split_value(value)
+        expected = ("1", "2,3,4")
+        assert output == expected
+
 
 class TestStorageBackend:
     def test__init__(self, blob_params):
