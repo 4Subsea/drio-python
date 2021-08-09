@@ -84,6 +84,16 @@ class AzureBlobService(BlobClient):
         return df
 
     def create_blob_from_series(self, series):
+        """
+        Upload Pandas series object to DataReservoir.
+
+        Read only the first column of the series!
+
+        Parameters
+        ----------
+        series : pandas.Series
+            Approprately indexed Series.
+        """
 
         log.debug(f"upload blob {self._blob_name}")
         if pd.api.types.is_datetime64_ns_dtype(series.index):
