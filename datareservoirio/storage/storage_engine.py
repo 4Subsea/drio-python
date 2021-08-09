@@ -58,6 +58,7 @@ class AzureBlobService(BlobClient):
 
     def create_blob_from_series(self, series):
 
+        log.debug(f"upload blob {self._blob_name}")
         if pd.api.types.is_datetime64_ns_dtype(series.index):
             series = series.copy()
             series.index = series.index.view("int64")
