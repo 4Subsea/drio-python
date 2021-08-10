@@ -294,7 +294,7 @@ chunks).
         timeseries = client.get(series_id, start=start, end=end)
 
 Resample data
-----------------
+-------------
 It could be useful to resample the data. This is easily done taking advantage of `Pandas`_ capabilities:
 
 .. code-block:: python
