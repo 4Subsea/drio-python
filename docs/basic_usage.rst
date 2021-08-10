@@ -295,7 +295,7 @@ chunks).
 
 Resample data
 ----------------
-It could be useful to resample the data. This is easily done with pandas:
+It could be useful to resample the data. This is easily done taking advantage of `Pandas`_ capabilities:
 
 .. code-block:: python
 
