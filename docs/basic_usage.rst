@@ -263,8 +263,8 @@ with it::
 Do's and don'ts
 ***************
 
-Expected data size vs. memory available
-=======================================
+Data size vs. memory available
+==============================
 
 When dealing with high-frequent data and/or long time spans, you should
 keep the memory usage in mind. Having all the data in memory at the same time could
