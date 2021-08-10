@@ -293,8 +293,8 @@ chunks).
     for start, end in start_end_iter:
         timeseries = client.get(series_id, start=start, end=end)
 
-Resample using pandas
----------------------
+Resample data
+----------------
 It could be useful to resample the data. This is easily done with pandas:
 
 .. code-block:: python
