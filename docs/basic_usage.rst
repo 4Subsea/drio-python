@@ -286,6 +286,9 @@ chunks).
     start_end = pd.date_range(start="2020-01-01 00:00", end="2020-02-01 00:00", freq="1H")
     start_end_iter = zip(start_end[:-1], start_end[1:])
 
+    series_id = <your time series ID>
+
+
     # Get timeseries in chunks
     for start, end in start_end_iter:
         timeseries = client.get(series_id, start=start, end=end)
