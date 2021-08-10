@@ -307,3 +307,4 @@ It could be useful to resample the data. This is easily done with pandas:
 
 
 .. _DataReservoir.io: https://www.datareservoir.io/
+.. _Pandas: https://pandas.pydata.org/
