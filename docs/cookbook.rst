@@ -96,6 +96,9 @@ data and get the 1-hour standard deviation::
 
     start_end = pd.date_range(start="2020-01-01 00:00", end="2020-06-01 00:00", freq="1D")
     start_end_iter = zip(start_end[:-1], start_end[1:])
+    
+    series_id = <your time series ID>
+
 
     result = pd.Series()
     for start, end in start_end_iter:
