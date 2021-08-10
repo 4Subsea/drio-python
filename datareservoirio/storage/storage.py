@@ -87,6 +87,7 @@ class Storage:
         response = self._timeseries_api.download_days(timeseries_id, start, end)
 
         df = self._downloader.get(response)
+        print(df.dtypes)
 
         # at this point, an entirely new object w/o reference
         # to internal objects is created.
@@ -99,7 +100,8 @@ class Storage:
         index_bool = (df.index.values >= start) & (df.index.values <= end)
         index = df.index.values[index_bool]  # enforces copy
         values = df.values[index_bool, 0]  # enforces copy
-        return pd.Series(data=values, index=index)
+        dtype = df.dtypes[0]
+        return pd.Series(data=values, index=index, dtype=dtype)
 
 
 class BaseDownloader:
