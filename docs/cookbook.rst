@@ -78,6 +78,38 @@ the ``TimeSeriesId`` s::
     df = pd.DataFrame(data_dict)
 
 
+.. _example_download_resample:
+
+Work with large amount of data
+******************************
+When working with large data sizes (long time spans and/or high sampling frequency),
+it is often useful to download data in chunks and resample so that you don't have
+all the data in memory at the same time. Let's see how you can download 6 months of
+data and get the 1-hour standard deviation::
+
+    import numpy as np
+    import datareservoirio as drio
+
+
+    auth = drio.Authenticator()
+    client = drio.Client(auth)
+
+    start_end = pd.date_range(start="2020-01-01 00:00", end="2020-06-01 00:00", freq="1D")
+    start_end_iter = zip(start_end[:-1], start_end[1:])
+
+    result = pd.Series()
+    for start, end in start_end_iter:
+        timeseries = client.get(series_id, start=start, end=end)
+
+        result = pd.concat([result, timeseries.resample("1H").agg(np.std)])
+
+
+
+
+
+
+
+
 
 .. _Matplotlib: https://matplotlib.org/
 .. _Pandas: https://pandas.pydata.org/
