@@ -383,13 +383,5 @@ class Test_UserAuthenticator:
         }
 
 
-class Test_AccessToken:
-    def test_accesstoken_exists(self):
-        assert hasattr(authenticate, "AccessToken")
-
-    def test_is_subclass_of_userauth(self):
-        issubclass(authenticate.AccessToken, authenticate.UserAuthenticator)
-
-
 if __name__ == "__main__":
     pytest.main()

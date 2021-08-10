@@ -87,6 +87,7 @@ class Storage:
         response = self._timeseries_api.download_days(timeseries_id, start, end)
 
         df = self._downloader.get(response)
+        print(df.dtypes)
 
         # at this point, an entirely new object w/o reference
         # to internal objects is created.
@@ -99,7 +100,8 @@ class Storage:
         index_bool = (df.index.values >= start) & (df.index.values <= end)
         index = df.index.values[index_bool]  # enforces copy
         values = df.values[index_bool, 0]  # enforces copy
-        return pd.Series(data=values, index=index)
+        dtype = df.dtypes[0]
+        return pd.Series(data=values, index=index, dtype=dtype)
 
 
 class BaseDownloader:
@@ -182,12 +184,6 @@ class BaseUploader:
     Series upload strategy that will upload Pandas Series to provided cloud
     backend.
 
-    Parameters
-    ----------
-    session : requests.Session
-        If specified, passed to the underlying BlockBlobService so that an
-        existing request session can be reused.
-
     """
 
     def __init__(self, backend):
@@ -222,9 +218,6 @@ class FileCacheDownload(CacheIO, StorageBackend):
     format_ : string
         Specify cache file format. 'parquet' or 'csv'.
         Default is 'parquet'.
-    session : requests.Session
-        If specified, passed to the underlying clound backend so that an
-        existing request session can be reused.
 
     """
 
@@ -237,7 +230,6 @@ class FileCacheDownload(CacheIO, StorageBackend):
         cache_root=None,
         cache_folder="datareservoirio",
         format_="parquet",
-        session=None,
     ):
         self._max_size = max_size * 1024 * 1024
         self._cache_format = format_
@@ -248,7 +240,7 @@ class FileCacheDownload(CacheIO, StorageBackend):
         self._evict_lock = Lock()
         self._evict_from_cache()
 
-        super().__init__(format_, session=session)
+        super().__init__(format_)
 
     def _init_cache_dir(self, cache_root, cache_folder):
         if cache_root is None:
@@ -371,16 +363,7 @@ class DirectDownload(StorageBackend):
     """
     Backend for direct download from cloud.
 
-    Parameters
-    ----------
-    session : requests.Session
-        If specified, passed to the underlying cloud backend so that an
-        existing request session can be reused.
-
     """
-
-    def __init__(self, session=None):
-        super().__init__(session=session)
 
     def get(self, chunk):
         """
@@ -400,16 +383,7 @@ class DirectUpload(StorageBackend):
     """
     Backend for direct upload to cloud.
 
-    Parameters
-    ----------
-    session : requests.Session
-        If specified, passed to the underlying cloud backend so that an
-        existing request session can be reused.
-
     """
-
-    def __init__(self, session=None):
-        super().__init__(session=session)
 
     def put(self, params, data):
         return super().remote_put(params, data)

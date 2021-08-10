@@ -58,32 +58,28 @@ class Test_Storage(unittest.TestCase):
 
 
 class Test_DirectUpload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage.StorageBackend.__init__")
+    @patch("datareservoirio.storage.storage.StorageBackend.__init__", return_value=None)
     def test_init(self, mock_backend):
-        session = MagicMock(spec=Session)
-        DirectUpload(session=session)
+        DirectUpload()
         mock_backend.assert_called_once()
 
     @patch("datareservoirio.storage.storage.StorageBackend.remote_put")
     def test_put(self, mock_remote_put):
-        session = MagicMock(spec=Session)
-        uploader = DirectUpload(session=session)
+        uploader = DirectUpload()
         uploader.put("params", "data")
 
         mock_remote_put.assert_called_once_with("params", "data")
 
 
 class Test_DirectDownload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage.StorageBackend.__init__")
+    @patch("datareservoirio.storage.storage.StorageBackend.__init__", return_value=None)
     def test_init(self, mock_backend):
-        session = MagicMock(spec=Session)
-        DirectDownload(session=session)
+        DirectDownload()
         mock_backend.assert_called_once()
 
     @patch("datareservoirio.storage.storage.StorageBackend.remote_get")
     def test_get(self, mock_remote_get):
-        session = MagicMock(spec=Session)
-        downloader = DirectDownload(session=session)
+        downloader = DirectDownload()
         downloader.get("params")
 
         mock_remote_get.assert_called_once_with("params")

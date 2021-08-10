@@ -64,11 +64,11 @@ class Client:
 
         if self._enable_cache:
             download_backend = FileCacheDownload(
-                session=self._session, format_=self._cache_format, **self._cache_opt
+                format_=self._cache_format, **self._cache_opt
             )
         else:
-            download_backend = DirectDownload(session=self._session)
-        upload_backend = DirectUpload(session=self._session)
+            download_backend = DirectDownload()
+        upload_backend = DirectUpload()
 
         downloader = BaseDownloader(download_backend)
         uploader = BaseUploader(upload_backend)

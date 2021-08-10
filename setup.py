@@ -21,7 +21,7 @@ setup(
     packages=find_packages(exclude=["tests", "tests_integration"]),
     project_urls={"Documentation": "https://www.datareservoir.io/python/docs/latest/"},
     install_requires=[
-        "azure-storage-blob>=1.4.0,<=2.1.0",
+        "azure-storage-blob>=12.1.0",
         "numpy",
         "oauthlib",
         "pandas",

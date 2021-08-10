@@ -1,279 +1,273 @@
-import io
-import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
-import numpy as np
 import pandas as pd
-import requests
-from azure.storage.blob import BlobBlock
+import pytest
 
-from datareservoirio.storage.storage_engine import (
-    AzureBlobService,
-    AzureException,
-    StorageBackend,
-)
+from datareservoirio.storage.storage_engine import AzureBlobService, StorageBackend
 
 
-class Test_AzureBlobService(unittest.TestCase):
-    def setUp(self):
-        self.upload_params = {
-            "Account": "account_xyz",
-            "Container": "blobcontainer",
-            "Path": "blob_xy",
-            "FileId": "file_123abc",
-            "SasKey": "sassykeiz",
-        }
+@pytest.fixture
+def blob_params():
+    params = {
+        "Account": "some_account",
+        "SasKey": "some_sas_key",
+        "Container": "some_container",
+        "Path": "some_path",
+    }
+    return params
 
-    def test_constructor(self):
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        expected_attributes = ["container_name", "blob_name"]
-        for attribute in expected_attributes:
-            if not hasattr(uploader, attribute):
-                self.fail("Expected uploader to have attribute {}".format(attribute))
 
-    def test_download(self):
-        downloader = AzureBlobService(self.upload_params, session=MagicMock())
+class Test_AzureBlobService:
+    @patch("datareservoirio.storage.storage_engine.BlobClient.__init__")
+    def test__init__(self, mock_blob_client__init__, blob_params):
 
-        with patch.object(downloader, "get_blob_to_stream"):
-            with patch(
-                "datareservoirio.storage.storage_engine.TextIOWrapper"
-            ) as bytesio:
-                bytesio.return_value.__enter__.return_value = [
-                    "1,1.0\r\n",
-                    "2,2.0\r\n",
-                    "3,3.0\r\n",
-                ]
+        blob_client = AzureBlobService(blob_params)
 
-                df_out = downloader.get_blob_to_df()
+        assert blob_client._account == "some_account"
+        assert blob_client._sas_key == "some_sas_key"
+        assert blob_client._container_name == "some_container"
+        assert blob_client._blob_name == "some_path"
+        assert blob_client._account_url == "https://some_account.blob.core.windows.net"
 
-        df_expected = pd.DataFrame(
-            {"values": [1.0, 2.0, 3.0]}, index=pd.Int64Index([1, 2, 3])
+        mock_blob_client__init__.assert_called_once_with(
+            "https://some_account.blob.core.windows.net",
+            "some_container",
+            "some_path",
+            credential="some_sas_key",
         )
 
-        pd.testing.assert_frame_equal(df_out, df_expected)
+    def test_get_blob_to_df(self, blob_params):
 
-    def test_download_numeric_w_empty(self):
-        downloader = AzureBlobService(self.upload_params, session=MagicMock())
-
-        with patch.object(downloader, "get_blob_to_stream"):
-            with patch(
-                "datareservoirio.storage.storage_engine.TextIOWrapper"
-            ) as bytesio:
-                bytesio.return_value.__enter__.return_value = [
-                    "1,1.0\r\n",
-                    "2,\r\n",
-                    "3,3.0\r\n",
-                ]
-
-                df_out = downloader.get_blob_to_df()
-
-        df_expected = pd.DataFrame(
-            {"values": [1.0, None, 3.0]}, index=pd.Int64Index([1, 2, 3])
+        mock_download = Mock()
+        binary_content = (
+            "1609459200000000000,0.0\r\n"
+            + "1609459200100000000,0.1\r\n"
+            + "1609459200200000000,1.13"
+        ).encode("utf-8")
+        mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
+            binary_content
         )
 
-        pd.testing.assert_frame_equal(df_out, df_expected)
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
+            blob_client = AzureBlobService(blob_params)
 
-    def test_download_nonnumericdata(self):
-        downloader = AzureBlobService(self.upload_params, session=MagicMock())
+            df_out = blob_client.get_blob_to_df()
+            idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+            vals_expect = [0.0, 0.1, 1.13]
+            df_expect = pd.DataFrame(
+                index=pd.Int64Index(idx_expect),
+                data={"values": vals_expect},
+                dtype="float64",
+            )
+            df_expect.index = df_expect.index.view("int64")
 
-        with patch.object(downloader, "get_blob_to_stream"):
-            with patch(
-                "datareservoirio.storage.storage_engine.TextIOWrapper"
-            ) as bytesio:
-                bytesio.return_value.__enter__.return_value = [
-                    "1374421840494003000,next value is empty\r\n",
-                    "1474421840494003000,\r\n",
-                    "1574421840494003000,$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74\r\n",
-                    "1674421882488006000,$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F\r\n",
-                ]
+            pd.testing.assert_frame_equal(df_out, df_expect)
 
-                df_out = downloader.get_blob_to_df()
+    def test_get_blob_to_df_w_empty(self, blob_params):
 
-        df_expected = pd.DataFrame(
-            {
-                "values": [
-                    "next value is empty",
-                    None,
-                    "$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74",
-                    "$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F",
-                ]
-            },
-            index=pd.Int64Index(
-                [
-                    1374421840494003000,
-                    1474421840494003000,
-                    1574421840494003000,
-                    1674421882488006000,
-                ]
-            ),
+        mock_download = Mock()
+        binary_content = ("1,0.0\r\n" + "2,\r\n" + "3,1.13").encode("utf-8")
+        mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
+            binary_content
         )
 
-        pd.testing.assert_frame_equal(df_out, df_expected)
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
+            blob_client = AzureBlobService(blob_params)
 
-    def test_upload(self):
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        uploader.put_block = Mock()
-        uploader.put_block_list = Mock()
+            df_out = blob_client.get_blob_to_df()
+            df_expect = pd.DataFrame(
+                index=pd.Int64Index([1, 2, 3]),
+                data={"values": [0.0, None, 1.13]},
+                dtype="float64",
+            )
 
-        series = pd.Series(np.arange(500))
-        uploader.create_blob_from_series(series)
+            pd.testing.assert_frame_equal(df_out, df_expect)
 
-        uploader.put_block.assert_called_once_with(
-            self.upload_params["Container"],
-            self.upload_params["Path"],
-            series.to_csv(header=False, line_terminator="\n").encode("ascii"),
-            "MDAwMDAwMDA=",
+    def test_get_blob_to_df_string(self, blob_params):
+
+        mock_download = Mock()
+        binary_content = (
+            "1609459200000000000,some_string\r\n"
+            + "1609459200100000000,testing\r\n"
+            + "1609459200200000000,hello"
+        ).encode("utf-8")
+        mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
+            binary_content
         )
-        uploader.put_block_list.assert_called_once()
 
-    def test_upload_converts_datetime64_to_int64(self):
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        uploader.put_block = Mock()
-        uploader.put_block_list = Mock()
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
+            blob_client = AzureBlobService(blob_params)
 
-        timevector = np.array(np.arange(0, 1001e9, 1e9), dtype="datetime64[ns]")
-        series = pd.Series(np.arange(1001), index=timevector)
-        uploader.create_blob_from_series(series)
+            df_out = blob_client.get_blob_to_df()
+            idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+            vals_expect = ["some_string", "testing", "hello"]
+            df_expect = pd.DataFrame(
+                index=pd.Int64Index(idx_expect),
+                data={"values": vals_expect},
+                dtype="string",
+            )
 
-        series.index = series.index.astype(np.int64)
-        uploader.put_block.assert_called_once_with(
-            self.upload_params["Container"],
-            self.upload_params["Path"],
-            series.to_csv(header=False, line_terminator="\n").encode("ascii"),
-            "MDAwMDAwMDA=",
+            pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_get_blob_to_df_nonnumeric(self, blob_params):
+
+        mock_download = Mock()
+        binary_content = (
+            "1609459200000000000,some_string\r\n"
+            + "1609459200100000000,$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74\r\n"
+            + "1609459200200000000,$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F"
+        ).encode("utf-8")
+        mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
+            binary_content
         )
-        uploader.put_block_list.assert_called_once()
 
-    def test_upload_long(self):
-        side_effect = 4 * [None]
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
+            blob_client = AzureBlobService(blob_params)
 
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        uploader.put_block = Mock(side_effect=side_effect)
-        uploader.put_block_list = Mock()
+            df_out = blob_client.get_blob_to_df()
+            idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+            vals_expect = [
+                "some_string",
+                "$GPGGA,,112359.00,6112.852865,N,00045.206912,E,2,07,1.1,60.96,M,47.02,M,7.4,0685*74",
+                "$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F",
+            ]
+            df_expect = pd.DataFrame(
+                index=pd.Int64Index(idx_expect),
+                data={"values": vals_expect},
+                dtype="string",
+            )
 
-        series = pd.Series(np.arange(1.001e6))
-        uploader.create_blob_from_series(series)
+            pd.testing.assert_frame_equal(df_out, df_expect)
 
-        # 4 was just found empirically
-        self.assertEqual(uploader.put_block.call_count, 4)
+    def test_get_blob_to_df_string_w_empty(self, blob_params):
 
-    @patch("datareservoirio.storage.storage_engine.sleep")
-    def test_upload_long_w_azureexception(self, mock_sleep):
-        side_effect = 3 * [AzureException] + 4 * [None]
+        mock_download = Mock()
+        binary_content = ("1,some_string\r\n" + "2,\r\n" + "3,hello").encode("utf-8")
+        mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
+            binary_content
+        )
 
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        uploader.put_block = Mock(side_effect=side_effect)
-        uploader.put_block_list = Mock()
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ):
+            blob_client = AzureBlobService(blob_params)
 
-        series = pd.Series(np.arange(1.001e6))
-        uploader.create_blob_from_series(series)
+            df_out = blob_client.get_blob_to_df()
+            df_expect = pd.DataFrame(
+                index=pd.Int64Index([1, 2, 3]),
+                data={"values": ["some_string", None, "hello"]},
+                dtype="string",
+            )
 
-        # 4 was just found empirically + 3 error
-        self.assertEqual(uploader.put_block.call_count, 4 + 3)
+            pd.testing.assert_frame_equal(df_out, df_expect)
 
-    @patch("datareservoirio.storage.storage_engine.sleep")
-    def test_upload_raise_azureexception(self, mock_sleep):
-        side_effect = 6 * [AzureException] + 4 * [None]
+    def test_create_blob_from_series(self, blob_params):
+        series_vals = [1.1, 2.3, 0.2]
+        series_idx = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+        series = pd.Series(data=series_vals, index=series_idx)
 
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        uploader.put_block = Mock(side_effect=side_effect)
-        uploader.put_block_list = Mock()
+        with patch.object(AzureBlobService, "upload_blob") as mock_upload:
+            blob_client = AzureBlobService(blob_params)
 
-        series = pd.Series(np.arange(1.001e6))
+            blob_client.create_blob_from_series(series)
 
-        with self.assertRaises(AzureException):
-            uploader.create_blob_from_series(series)
+            series_csv = (
+                "1609459200000000000,1.1\n"
+                + "1609459200100000000,2.3\n"
+                + "1609459200200000000,0.2\n"
+            )
+            mock_upload.assure_called_once_with(
+                series_csv.encode("ascii"), blob_type="BlockBlob"
+            )
 
-    def test_make_block(self):
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        block = uploader._make_block(0)
+    def test_create_blob_from_series_datetime64(self, blob_params):
+        series_vals = [1.1, 2.3, 0.2]
+        series_idx = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+        series = pd.Series(data=series_vals, index=pd.to_datetime(series_idx))
 
-        self.assertIsInstance(block, BlobBlock)
-        self.assertEqual(block.id, "MDAwMDAwMDA=")
+        with patch.object(AzureBlobService, "upload_blob") as mock_upload:
+            blob_client = AzureBlobService(blob_params)
 
-    def test_b64encode(self):
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        b64_result = uploader._b64encode(0)
-        b64_expected = "MDAwMDAwMDA="
-        self.assertEqual(b64_result, b64_expected)
+            blob_client.create_blob_from_series(series)
 
-        b64_result = uploader._b64encode(1)
-        b64_expected = "MDAwMDAwMDE="
-        self.assertEqual(b64_result, b64_expected)
+            series_csv = (
+                "1609459200000000000,1.1\n"
+                + "1609459200100000000,2.3\n"
+                + "1609459200200000000,0.2\n"
+            )
+            mock_upload.assure_called_once_with(
+                series_csv.encode("ascii"), blob_type="BlockBlob"
+            )
 
-        b64_result = uploader._b64encode(int(1e6))
-        b64_expected = "MDEwMDAwMDA="
-        self.assertEqual(b64_result, b64_expected)
+    def test_create_blob_from_multiple_columns(self, blob_params):
+        series_vals = [1.1, 2.3, 0.2]
+        series_vals2 = [1.0, 1.0, 1.0]
+        series_idx = [1609459200000000000, 1609459200100000000, 1609459200200000000]
+        series = pd.DataFrame(
+            data={"values": series_vals, "extra_values": series_vals2}, index=series_idx
+        )
 
-    def test_gen_line_chunks(self):
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
-        df = pd.DataFrame(np.arange(999))
+        with patch.object(AzureBlobService, "upload_blob") as mock_upload:
+            blob_client = AzureBlobService(blob_params)
 
-        for i, chunk in enumerate(uploader._gen_line_chunks(df, 100)):
-            if i < 9:
-                self.assertEqual(len(chunk), 100)
-            elif i == 9:
-                self.assertEqual(len(chunk), 99)
-            else:
-                self.fail("Too many iterations")
+            blob_client.create_blob_from_series(series)
 
-        self.assertEqual(i + 1, 10)
+            series_csv = (
+                "1609459200000000000,1.1\n"
+                + "1609459200100000000,2.3\n"
+                + "1609459200200000000,0.2\n"
+            )
+            mock_upload.assure_called_once_with(
+                series_csv.encode("ascii"), blob_type="BlockBlob"
+            )
 
-    def test_split_value(self):
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
+    def test_split_value(self, blob_params):
+        uploader = AzureBlobService(blob_params)
         value = "1,2"
         output = uploader._split_value(value)
         expected = ("1", "2")
-        self.assertTupleEqual(output, expected)
+        assert output == expected
 
-    def test_split_value_nan(self):
-        uploader = AzureBlobService(self.upload_params, session=MagicMock())
+    def test_split_value_nan(self, blob_params):
+        uploader = AzureBlobService(blob_params)
         value = "1,"
         output = uploader._split_value(value)
         expected = ("1", None)
-        self.assertTupleEqual(output, expected)
+        assert output == expected
+
+    def test_split_value_w_comma(self, blob_params):
+        uploader = AzureBlobService(blob_params)
+        value = "1,2,3,4"
+        output = uploader._split_value(value)
+        expected = ("1", "2,3,4")
+        assert output == expected
 
 
-class Test_StorageBackend(unittest.TestCase):
-    def setUp(self):
-        self._dummy_params = {
-            "Account": "some_account",
-            "SasKey": "some_key",
-            "Container": "yes_please",
-            "Path": "looking_for_it",
-        }
+class TestStorageBackend:
+    def test__init__(self, blob_params):
+        storage = StorageBackend()
+        assert isinstance(storage._service(blob_params), AzureBlobService)
 
-    def test__init(self):
-        with patch("datareservoirio.storage.storage_engine.partial") as mock_partial:
-            StorageBackend(session="hello")
-        mock_partial.assert_called_once_with(AzureBlobService, session="hello")
-
-    def test__service_is_azure_blob(self):
+    def test_remote_get(self, blob_params):
         backend = StorageBackend()
-        self.assertIsInstance(backend._service(self._dummy_params), AzureBlobService)
-
-    def test_get(self):
-        backend = StorageBackend()
-
         with patch.object(backend, "_service") as mock_service:
-            mock_obj = MagicMock()
-            mock_service.return_value = mock_obj
+            backend.remote_get(blob_params)
+            mock_service.assert_called_once_with(blob_params)
+            mock_service.return_value.get_blob_to_df.assert_called_once()
 
-            backend.remote_get(self._dummy_params)
-            mock_service.assert_called_once_with(self._dummy_params)
-            mock_obj.get_blob_to_df.assert_called_once()
-
-    def test_put(self):
+    def test_remote_put(self, blob_params):
         backend = StorageBackend()
-
         with patch.object(backend, "_service") as mock_service:
-            mock_obj = MagicMock()
-            mock_service.return_value = mock_obj
-
-            backend.remote_put(self._dummy_params, "data")
-            mock_service.assert_called_once_with(self._dummy_params)
-            mock_obj.create_blob_from_series.assert_called_once_with("data")
-
-
-if __name__ == "__main__":
-    unittest.main()
+            backend.remote_put(blob_params, "data")
+            mock_service.assert_called_once_with(blob_params)
+            mock_service.return_value.create_blob_from_series.assert_called_once_with(
+                "data"
+            )
