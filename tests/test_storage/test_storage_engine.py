@@ -13,7 +13,7 @@ def blob_params():
         "SasKey": "some_sas_key",
         "Container": "some_container",
         "Path": "some_path",
-        "VersionId": "some_version_id"
+        "VersionId": "some_version_id",
     }
     return params
 
