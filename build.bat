@@ -1,2 +1,2 @@
-python -m build
+python -m build --outdir ./build
 pause
