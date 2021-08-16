@@ -1,2 +1,2 @@
-python setup.py bdist_wheel --universal --dist-dir ./build
+python -m build
 pause
