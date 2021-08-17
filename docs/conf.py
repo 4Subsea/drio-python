@@ -14,14 +14,14 @@ import os
 import sys
 from datetime import date
 
-sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath("../"))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'datareservoirio'
+project = "datareservoirio"
 copyright = f"{date.today().year}, 4Subsea"
-author = '4Subsea'
+author = "4Subsea"
 
 
 # -- General configuration ---------------------------------------------------
