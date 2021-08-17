@@ -13,6 +13,7 @@ def blob_params():
         "SasKey": "some_sas_key",
         "Container": "some_container",
         "Path": "some_path",
+        "VersionId": "some_version_id",
     }
     return params
 
@@ -27,6 +28,26 @@ class Test_AzureBlobService:
         assert blob_client._sas_key == "some_sas_key"
         assert blob_client._container_name == "some_container"
         assert blob_client._blob_name == "some_path"
+        assert blob_client._version_id == "some_version_id"
+        assert blob_client._account_url == "https://some_account.blob.core.windows.net"
+
+        mock_blob_client__init__.assert_called_once_with(
+            "https://some_account.blob.core.windows.net",
+            "some_container",
+            "some_path",
+            credential="some_sas_key",
+        )
+
+    @patch("datareservoirio.storage.storage_engine.BlobClient.__init__")
+    def test__init__no_version_id(self, mock_blob_client__init__, blob_params):
+        blob_params.pop("VersionId")
+        blob_client = AzureBlobService(blob_params)
+
+        assert blob_client._account == "some_account"
+        assert blob_client._sas_key == "some_sas_key"
+        assert blob_client._container_name == "some_container"
+        assert blob_client._blob_name == "some_path"
+        assert blob_client._version_id is None
         assert blob_client._account_url == "https://some_account.blob.core.windows.net"
 
         mock_blob_client__init__.assert_called_once_with(
@@ -50,7 +71,7 @@ class Test_AzureBlobService:
 
         with patch.object(
             AzureBlobService, "download_blob", return_value=mock_download
-        ):
+        ) as mock_download_blob:
             blob_client = AzureBlobService(blob_params)
 
             df_out = blob_client.get_blob_to_df()
@@ -63,7 +84,30 @@ class Test_AzureBlobService:
             )
             df_expect.index = df_expect.index.view("int64")
 
+            mock_download_blob.assert_called_once_with(version_id="some_version_id")
             pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_get_blob_to_df_no_id(self, blob_params):
+
+        mock_download = Mock()
+        binary_content = (
+            "1609459200000000000,0.0\r\n"
+            + "1609459200100000000,0.1\r\n"
+            + "1609459200200000000,1.13"
+        ).encode("utf-8")
+        mock_download.readinto.side_effect = lambda binary_stream: binary_stream.write(
+            binary_content
+        )
+
+        with patch.object(
+            AzureBlobService, "download_blob", return_value=mock_download
+        ) as mock_download_blob:
+            blob_params.pop("VersionId")
+            blob_client = AzureBlobService(blob_params)
+
+            blob_client.get_blob_to_df()
+
+            mock_download_blob.assert_called_once_with(version_id=None)
 
     def test_get_blob_to_df_w_empty(self, blob_params):
 

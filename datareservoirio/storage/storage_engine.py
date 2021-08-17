@@ -34,6 +34,7 @@ class AzureBlobService(BlobClient):
         self._sas_key = params["SasKey"]
         self._container_name = params["Container"]
         self._blob_name = params["Path"]
+        self._version_id = params.get("VersionId", None)
         self._account_url = f"https://{self._account}.blob.core.windows.net"
 
         super(AzureBlobService, self).__init__(
@@ -56,7 +57,7 @@ class AzureBlobService(BlobClient):
 
         with BytesIO() as binary_content:
             log.debug(f"Get chunk {self._blob_name}")
-            self.download_blob().readinto(binary_content)
+            self.download_blob(version_id=self._version_id).readinto(binary_content)
 
             binary_content.seek(0)
             values_raw = np.asarray(
