@@ -33,7 +33,6 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
-    # "sphinx.ext.autosectionlabel",
 ]
 
 # Napoleon settings
