@@ -1,3 +1,5 @@
+.. _advanced-configuration:
+
 Advanced Configuration
 ######################
 

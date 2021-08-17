@@ -1,2 +1,2 @@
-python setup.py build_sphinx --build-dir ./build
+sphinx-build -b html ./docs ./build/html
 pause

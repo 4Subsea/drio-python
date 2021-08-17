@@ -272,7 +272,7 @@ cause problems and make your script fail.
 
 This :ref:`example<example_download_resample>` shows you how you can download
 6 months of timeseries data, and calculate the 1-hour standard deviation.
-In the :ref:`Advanced Configuration` section you can see how to enable and configure
+In the :ref:`advanced-configuration` section you can see how to enable and configure
 caching. Caching allows you to speed up repeating series downloads.
 
 Use for loops to download data in chunks

@@ -1,3 +1,5 @@
+.. _cookbook:
+
 Cookbook
 ########
 There are many complex yet common use cases for :py:mod:`datareservoirio`. We
