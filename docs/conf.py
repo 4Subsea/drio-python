@@ -27,7 +27,7 @@ copyright = f"{date.today().year}, 4Subsea"
 author = "4Subsea"
 
 # The full version, including alpha/beta/rc tags
-version = metadata.version("datareservoirio")
+version = metadata.version(project)
 release = version
 
 
