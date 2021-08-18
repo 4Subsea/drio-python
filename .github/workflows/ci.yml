@@ -35,6 +35,7 @@ jobs:
         shell: cmd
         run: |
           # call c:\venv-python-dev\Scripts\activate.bat
+          .venv\Scripts\activate
           @echo on
           black --diff .
 
@@ -42,6 +43,7 @@ jobs:
         shell: cmd
         run: |
           # call c:\venv-python-dev\Scripts\activate.bat
+          .venv\Scripts\activate
           @echo on
           isort -m 3 -l 88 --tc --check .
 
@@ -49,6 +51,7 @@ jobs:
         shell: cmd
         run: |
           # call c:\venv-python-dev\Scripts\activate.bat
+          .venv\Scripts\activate
           @echo on
           tox -r
 
