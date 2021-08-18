@@ -44,7 +44,7 @@ jobs:
         run: |
           call .venv\Scripts\activate.bat
           @echo on
-          isort -m 3 -l 88 --tc --check .
+          isort -m 3 -l 88 --tc --check . --profile black
 
       - name: tox
         shell: cmd
