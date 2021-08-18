@@ -25,7 +25,9 @@ jobs:
           .venv\Scripts\activate
 
       - name: Install dependencies
+        shell: cmd
         run: |
+          .venv\Scripts\activate
           pip install black
           pip install isort
 
