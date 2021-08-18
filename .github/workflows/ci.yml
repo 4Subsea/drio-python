@@ -30,6 +30,7 @@ jobs:
           call .venv\Scripts\activate.bat
           pip install black
           pip install isort
+          pip install tox
 
       - name: black check
         shell: cmd
