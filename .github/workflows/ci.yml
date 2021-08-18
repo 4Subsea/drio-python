@@ -18,11 +18,10 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Create and activate virtual environment
+      - name: Create virtual environment
         shell: cmd
         run: |
           call "%PROGRAMFILES%\Python38\python" -m venv .venv
-          .venv\Scripts\activate
 
       - name: Install dependencies
         shell: cmd
