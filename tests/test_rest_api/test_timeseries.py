@@ -235,7 +235,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.attach_group(timeseries_id, group_id)
 
-        expected_uri = "https://root/timeseries/{}/group/{}".format(timeseries_id, group_id)
+        expected_uri = "https://root/timeseries/{}/groups/{}".format(timeseries_id, group_id)
 
         mock_post.assert_called_with(expected_uri, json=group_id, **self.api._defaults)
 
@@ -246,7 +246,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         self.api.detach_group(timeseries_id, group_id)
 
-        expected_uri = "https://root/timeseries/{}/group/{}".format(timeseries_id, group_id)
+        expected_uri = "https://root/timeseries/{}/groups/{}".format(timeseries_id, group_id)
 
         mock_delete.assert_called_with(
             expected_uri, json=group_id, **self.api._defaults

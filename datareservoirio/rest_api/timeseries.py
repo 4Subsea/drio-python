@@ -348,7 +348,7 @@ class TimeSeriesAPI(BaseAPI):
         """
         log.debug(f"attach_group with <token>, {timeseries_id}, {group_id}")
 
-        uri = self._root + "{}/metadata".format(timeseries_id)
+        uri = self._root + "{}/groups/{}".format(timeseries_id, group_id)
 
         response = self._put(uri, json=group_id)
         return response.json()
