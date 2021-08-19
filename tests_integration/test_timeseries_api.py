@@ -153,6 +153,27 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         self.api.delete(response["TimeSeriesId"])
 
+    def test_attach_detach_group(self):
+        breakpoint()
+        response = self.api.create()
+        group_id = "40e9dd50-1f83-46db-a010-bd2870e06f4d" # 4Subsea - TEST group
+
+        self.api.attach_group(response["TimeSeriesId"], group_id)
+
+        response = self.api.info(response["TimeSeriesId"])
+        self.assertEqual(
+            len([m for m in response["Groups"] if m["Id"] == group_id]), 1
+        )
+
+        self.api.detach_metadata(response["TimeSeriesId"], metadata_id_list=[group_id])
+
+        response = self.api.info(response["TimeSeriesId"])
+        self.assertEqual(
+            len([m for m in response["Groups"] if m["Id"] == group_id]), 0
+        )
+
+        self.api.delete(response["TimeSeriesId"])
+
 
 if __name__ == "__main__":
     unittest.main()
