@@ -252,6 +252,18 @@ class Test_TimeSeriesAPI(unittest.TestCase):
             expected_uri, json=group_id, **self.api._defaults
         )
 
+    def test_list_groups(self):
+        timeseries_id = "t666"
+        group_id = "xxx-yyy-zzz"
+        mock_get = self.api._session.get
+
+        self.api.list_groups(timeseries_id)
+
+        expected_uri = "https://root/timeseries/{}/groups".format(timeseries_id)
+        mock_get.assert_called_with(
+            expected_uri, **self.api._defaults
+        )
+
 
 class Test__make_request_hash(unittest.TestCase):
     def test_just_args(self):

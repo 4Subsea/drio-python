@@ -330,6 +330,27 @@ class TimeSeriesAPI(BaseAPI):
         response = self._delete(uri, json=metadata_id_list)
         return response.json()
 
+    def list_groups(self, timeseries_id):
+        """
+        List the groups associated to a timeseries
+
+        Parameters
+        ----------
+        timeseries_id : str 
+            id of timeseries
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        log.debug(f"list groups attached to {timeseries_id}")
+
+        uri = self._root + "{}/groups".format(timeseries_id)
+
+        response = self._get(uri)
+        return response.json()
+    
     def attach_group(self, timeseries_id, group_id):
         """
         Attach a list of metadata entries to a series.
