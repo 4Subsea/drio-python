@@ -228,6 +228,30 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         mock_get.assert_called_once_with(expected_uri, **self.api._defaults)
 
+    def test_attach_group(self):
+        timeseries_id = "t666"
+        group_id = "xxx-yyy-zzz"
+        mock_post = self.api._session.put
+
+        self.api.attach_group(timeseries_id, group_id)
+
+        expected_uri = "https://root/timeseries/{}/group/{}".format(timeseries_id, group_id)
+
+        mock_post.assert_called_with(expected_uri, json=group_id, **self.api._defaults)
+
+    def test_detach_group(self):
+        timeseries_id = "t666"
+        group_id = "xxx-yyy-zzz"
+        mock_delete = self.api._session.delete
+
+        self.api.detach_group(timeseries_id, group_id)
+
+        expected_uri = "https://root/timeseries/{}/group/{}".format(timeseries_id, group_id)
+
+        mock_delete.assert_called_with(
+            expected_uri, json=group_id, **self.api._defaults
+        )
+
 
 class Test__make_request_hash(unittest.TestCase):
     def test_just_args(self):

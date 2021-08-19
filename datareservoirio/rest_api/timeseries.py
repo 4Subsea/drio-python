@@ -329,3 +329,50 @@ class TimeSeriesAPI(BaseAPI):
 
         response = self._delete(uri, json=metadata_id_list)
         return response.json()
+
+    def attach_group(self, timeseries_id, group_id):
+        """
+        Attach a list of metadata entries to a series.
+
+        Parameters
+        ----------
+        timeseries_id : str
+            id of timeseries
+        group_id : str
+            id of group
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        log.debug(f"attach_group with <token>, {timeseries_id}, {group_id}")
+
+        uri = self._root + "{}/metadata".format(timeseries_id)
+
+        response = self._put(uri, json=group_id)
+        return response.json()
+
+
+    def detach_group(self, timeseries_id, group_id):
+        """
+        Detach a group from a timeseries.
+
+        Parameters
+        ----------
+        timeseries_id : str
+            id of timeseries
+        group_id : str
+            id of group
+
+        Return
+        ------
+        dict
+            response.json()
+        """
+        log.debug(f"detach_group with <token>, {timeseries_id}, {group_id}")
+
+        uri = self._root + "{}/groups/{}".format(timeseries_id, group_id)
+
+        response = self._delete(uri, json=group_id)
+        return response.json()
