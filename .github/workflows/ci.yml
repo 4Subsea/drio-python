@@ -31,7 +31,7 @@ jobs:
           python -m black --check .
 
       - name: Run tests with tox
-        run: tox
+        run: tox -e py
 
       - uses: actions/upload-artifact@v2
         with:	
