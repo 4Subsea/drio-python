@@ -64,10 +64,10 @@
   <Target Name="SetupVersion">
     <Error Condition="$(ReleaseVersion) == ''" Text="ReleaseVersion parameter must be specified" />
     <ReplaceFileText
-      InputFilename="$(SolutionDir)\setup.py"
-      OutputFilename="$(SolutionDir)\setup.py"
-      MatchExpression="version=&quot;0.0.1&quot;"
-      ReplacementText="version=&quot;$(ReleaseVersion)&quot;" />
+      InputFilename="$(SolutionDir)\datareservoirio\__init__.py"
+      OutputFilename="$(SolutionDir)\datareservoirio\__init__.py"
+      MatchExpression="__version__ = &quot;0.0.1&quot;"
+      ReplacementText="__version__ = &quot;$(ReleaseVersion)&quot;" />
   </Target>
 
   <Target Name="BuildPython" DependsOnTargets="SetupVersion">
