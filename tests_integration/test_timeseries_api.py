@@ -20,7 +20,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         files_api = FilesAPI(session=cls.auth)
 
         session = requests.Session()
-        uploader = DirectUpload(session=session)
+        uploader = DirectUpload()#session=session)
 
         df_1 = pd.DataFrame({"values": np.arange(100.0)}, index=np.arange(0, 100))
         df_2 = pd.DataFrame({"values": np.arange(100.0)}, index=np.arange(50, 150))
@@ -165,7 +165,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
             len([m for m in response["Groups"] if m["Id"] == group_id]), 1
         )
 
-        self.api.detach_metadata(response["TimeSeriesId"], metadata_id_list=[group_id])
+        self.api.detach_group(response["TimeSeriesId"], group_id)
 
         response = self.api.info(response["TimeSeriesId"])
         self.assertEqual(

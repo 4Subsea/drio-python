@@ -371,7 +371,7 @@ class TimeSeriesAPI(BaseAPI):
 
         uri = self._root + "{}/groups/{}".format(timeseries_id, group_id)
 
-        response = self._put(uri, json=group_id)
+        response = self._put(uri, json={})
         return response.json()
 
 
@@ -395,5 +395,5 @@ class TimeSeriesAPI(BaseAPI):
 
         uri = self._root + "{}/groups/{}".format(timeseries_id, group_id)
 
-        response = self._delete(uri, json=group_id)
+        response = self._delete(uri, json={})
         return response.json()
