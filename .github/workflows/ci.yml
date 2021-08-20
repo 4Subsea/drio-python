@@ -1,45 +1,41 @@
 name: CI
 
-# Triggers CI on push or pull request events but only for the master branch
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   CI:
-    # The type of runner that the job will run on
-    runs-on: self-hosted
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.7, 3.8, 3.9]
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: black check
-        shell: cmd
-        run: |
-          call c:\venv-python-dev\Scripts\activate.bat
-          @echo on
-          black --diff .
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-      - name: isort check
-        shell: cmd
+      - name: Install dependencies
         run: |
-          call c:\venv-python-dev\Scripts\activate.bat
-          @echo on
-          isort -m 3 -l 88 --tc --check .
+          python -m pip install --upgrade pip
+          python -m pip install black isort tox
 
-      - name: tox
-        shell: cmd
+      - name: Style check with isort and black
         run: |
-          call c:\venv-python-dev\Scripts\activate.bat
-          @echo on
-          tox -r
+          python -m isort --check . --profile black
+          python -m black --check .
 
-      - uses: actions/upload-artifact@v2
-        with:	
-          name: Coverage
-          path: cov_html-py36
+      - name: Run tests with tox
+        run: tox -e py
+
+      - name: Test doc build with tox
+        run: tox -e docs
+        if: ${{ (matrix.python-version == '3.8') && (matrix.os == 'ubuntu-latest')}}
