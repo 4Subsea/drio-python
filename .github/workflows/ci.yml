@@ -39,9 +39,3 @@ jobs:
       - name: Test doc build with tox
         run: tox -e docs
         if: ${{ (matrix.python-version == '3.8') && (matrix.os == 'ubuntu-latest')}}
-
-      - uses: actions/upload-artifact@v2
-        with:	
-          name: Coverage
-          path: cov_html-py
-        if: ${{ (matrix.python-version == '3.8') && (matrix.os == 'ubuntu-latest')}}
