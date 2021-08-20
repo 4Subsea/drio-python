@@ -1,56 +1,37 @@
 name: CI
 
-# Triggers CI on push or pull request events but only for the master branch
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   CI:
-    # The type of runner that the job will run on
-    runs-on: self-hosted
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-versions: [3.7, 3.8, 3.9]
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Create virtual environment
-        shell: cmd
-        run: |
-          call "%PROGRAMFILES%\Python38\python" -m venv .venv
+      - name: Set up Python ${{ matrix.python-version }
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }
 
       - name: Install dependencies
-        shell: cmd
-        run: |
-          call .venv\Scripts\activate.bat
-          pip install black
-          pip install isort
-          pip install tox
+        run: python -m pip install --upgrade pip black isort pytest pytest-cov tox
 
-      - name: black check
-        shell: cmd
+      - name: Style check with isort and black
         run: |
-          call .venv\Scripts\activate.bat
-          @echo on
-          black --diff .
+          python -m isort --check . --profile black
+          python -m black --check .
 
-      - name: isort check
-        shell: cmd
-        run: |
-          call .venv\Scripts\activate.bat
-          @echo on
-          isort -m 3 -l 88 --tc --check . --profile black
-
-      - name: tox
-        shell: cmd
-        run: |
-          call .venv\Scripts\activate.bat
-          @echo on
-          tox -r
+      - name: Run tests with tox
+        shell: tox
 
       - uses: actions/upload-artifact@v2
         with:	
