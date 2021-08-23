@@ -154,7 +154,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.api.delete(response["TimeSeriesId"])
 
     def test_attach_detach_group(self):
-        breakpoint()
         response = self.api.create()
         group_id = "40e9dd50-1f83-46db-a010-bd2870e06f4d" # 4Subsea - TEST group
 
