@@ -87,7 +87,6 @@ class Storage:
         response = self._timeseries_api.download_days(timeseries_id, start, end)
 
         df = self._downloader.get(response)
-        print(df.dtypes)
 
         # at this point, an entirely new object w/o reference
         # to internal objects is created.
