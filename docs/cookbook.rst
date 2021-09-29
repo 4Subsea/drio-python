@@ -1,15 +1,17 @@
 .. _cookbook:
 
 Cookbook
-########
+========
 There are many complex yet common use cases for :py:mod:`datareservoirio`. We
 have collected some of them in this section. If you have suggestions on what
 more we can add to this section, please :ref:`let us know! <support>`
 
 
 Visualize data
-**************
-It is really easy to visualize data with `Matplotlib`_::
+--------------
+It is really easy to visualize data with `Matplotlib`_:
+
+.. code-block:: python
 
     import datareservoirio as drio
     import matplotlib.pyplot as plt
@@ -25,8 +27,10 @@ It is really easy to visualize data with `Matplotlib`_::
 
 
 Save data to file
-*****************
-Sometimes you may want to dump data to file (Don't worry, we won't judge you)::
+-----------------
+Sometimes you may want to dump data to file (Don't worry, we won't judge you):
+
+.. code-block:: python
 
     import datareservoirio as drio
 
@@ -44,8 +48,10 @@ Sometimes you may want to dump data to file (Don't worry, we won't judge you)::
 
 
 Work with higher dimensional data
-*********************************
-Let's see how you can upload and store a higher dimensional dataset::
+---------------------------------
+Let's see how you can upload and store a higher dimensional dataset:
+
+.. code-block:: python
 
     import datareservoirio as drio
 
@@ -81,11 +87,13 @@ the ``TimeSeriesId`` s::
 .. _example_download_resample:
 
 Work with large amount of data
-******************************
+------------------------------
 When working with large data sizes (long time spans and/or high sampling frequency),
 it is often useful to download data in chunks and resample so that you don't have
 all the data in memory at the same time. Let's see how you can download 6 months of
-data and get the 1-hour standard deviation::
+data and get the 1-hour standard deviation:
+
+.. code-block:: python
 
     import numpy as np
     import datareservoirio as drio
@@ -105,12 +113,6 @@ data and get the 1-hour standard deviation::
         timeseries = client.get(series_id, start=start, end=end)
 
         result = pd.concat([result, timeseries.resample("1H").agg(np.std)])
-
-
-
-
-
-
 
 
 

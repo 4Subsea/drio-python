@@ -1,17 +1,12 @@
-.. include:: readme_include.rst
+.. include:: ../README.rst
 
-Contents
-========
 
 .. toctree::
-   :glob:
-   :titlesonly:
-   :maxdepth: 2
+   :hidden:
 
    getting_started
-   data_struct
-   basic_usage
+   user_guide/index
+   api_ref/index
    cookbook
-   advanced_config
-   api
+   release_notes
    support

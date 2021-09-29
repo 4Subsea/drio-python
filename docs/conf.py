@@ -15,12 +15,11 @@ import sys
 from datetime import date
 from importlib import metadata
 
-import sphinx_bootstrap_theme
-
 sys.path.insert(0, os.path.abspath("../"))
 
 
 # -- Project information -----------------------------------------------------
+_TEMPLATE_VERSION = "1.0.0"
 
 project = "datareservoirio"
 copyright = f"{date.today().year}, 4Subsea"
@@ -28,6 +27,7 @@ author = "4Subsea"
 
 # The full version, including alpha/beta/rc tags
 version = metadata.version(project)
+# version = "0.0.1"
 release = version
 
 
@@ -46,6 +46,11 @@ extensions = [
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
+# Intershpinx mapping
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+}
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
@@ -60,67 +65,28 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "bootstrap"
-html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
-
-html_theme_options = {
-    # Navigation bar title. (Default: ``project`` value)
-    "navbar_title": "4insight.io - Python API",
-    # Tab name for entire site. (Default: "Site")
-    "navbar_site_name": "Content",
-    # A list of tuples containing pages or urls to link to.
-    # Valid tuples should be in the following forms:
-    #    (name, page)                 # a link to a page
-    #    (name, "/aa/bb", 1)          # a link to an arbitrary relative url
-    #    (name, "http://example.com", True) # arbitrary absolute url
-    # Note the "1" or "True" value above as the third argument to indicate
-    # an arbitrary url.
-    "navbar_links": [],
-    # Render the next and previous page links in navbar. (Default: true)
-    "navbar_sidebarrel": False,
-    # Render the current pages TOC in the navbar. (Default: true)
-    "navbar_pagenav": True,
-    # Tab name for the current pages TOC. (Default: "Page")
-    "navbar_pagenav_name": "Sections",
-    # Global TOC depth for "site" navbar tab. (Default: 1)
-    # Switching to -1 shows all levels.
-    "globaltoc_depth": 2,
-    # Include hidden TOCs in Site navbar?
-    #
-    # Note: If this is "false", you cannot have mixed ``:hidden:`` and
-    # non-hidden ``toctree`` directives in the same page, or else the build
-    # will break.
-    #
-    # Values: "true" (default) or "false"
-    "globaltoc_includehidden": "true",
-    # HTML navbar class (Default: "navbar") to attach to <div> element.
-    # For black navbar, do "navbar navbar-inverse"
-    "navbar_class": "navbar",
-    # Fix navigation bar to top of page?
-    # Values: "true" (default) or "false"
-    "navbar_fixed_top": "true",
-    # Location of link to source.
-    # Options are "nav" (default), "footer" or anything else to exclude.
-    "source_link_position": "nav",
-    # Bootswatch (http://bootswatch.com/) theme.
-    #
-    # Options are nothing (default) or the name of a valid theme
-    # such as "cosmo" or "sandstone".
-    #
-    # The set of valid themes depend on the version of Bootstrap
-    # that's used (the next config option).
-    #
-    # Currently, the supported themes are:
-    # - Bootstrap 2: https://bootswatch.com/2
-    # - Bootstrap 3: https://bootswatch.com/3
-    "bootswatch_theme": "spacelab",
-    # Choose Bootstrap version.
-    # Values: "3" (default) or "2" (in quotes)
-    "bootstrap_version": "3",
-}
+html_theme = "pydata_sphinx_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-html_sidebars = {"**": ["navigation.html", "searchbox.html"]}
+html_css_files = ['css/custom.css']
+html_logo = "_static/4insight-logo.svg" # "_static/Logo 4Subsea horisontal negative.png"
+html_theme_options = {
+    "external_links": [
+        {"name": "4Insight.io", "url": "https://4insight.io"},
+    ],
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/4subsea/drio-python",
+            "icon": "fab fa-github",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/datareservoirio",
+            "icon": "fas fa-box",
+        }
+    ]
+}
