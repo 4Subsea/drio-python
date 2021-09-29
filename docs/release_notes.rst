@@ -23,13 +23,10 @@ v0.9.8
 
 - unpin pandas and pyarrow versions
 
-
 v0.9.6
 ------
 
-- Cache clearing did not correctly index chunks that have multiple versions for 
-the same day. This might occur for streaming timeseries were the latest data is 
-continuously pulled from DRIO
+- Cache clearing did not correctly index chunks that have multiple versions for the same day. This might occur for streaming timeseries were the latest data is continuously pulled from DRIO
 
 v0.9.5
 ------
@@ -42,6 +39,7 @@ v0.9.5
 * Delete the LogWriter wrapper and change implementations to call directly on loggers
 * Include blob names in download progress logging
 * Include timing in cache eviction logging
+
 
 v0.9.3
 ------
