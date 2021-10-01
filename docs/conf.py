@@ -49,6 +49,7 @@ napoleon_numpy_docstring = True
 # Intershpinx mapping
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
+    "pandas": ("http://pandas.pydata.org/pandas-docs/stable/", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -72,7 +73,7 @@ html_theme = "pydata_sphinx_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_css_files = ['css/custom.css']
-html_logo = "_static/4insight-logo.svg" # "_static/Logo 4Subsea horisontal negative.png"
+html_logo = "_static/4insight-logo.svg"
 html_theme_options = {
     "external_links": [
         {"name": "4Insight.io", "url": "https://4insight.io"},

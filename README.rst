@@ -1,19 +1,19 @@
 DataReservoir.io
 ################
 
-The Python API for `DataReservoir.io`_ - `datareservoirio` comes with all
+The Python API for `DataReservoir.io`_ - ``datareservoirio`` comes with all
 batteries included. It provides both convinient high-level and low-level
 access.
 
 We built the Python experience with engineers and data scientists in mind. 
 Because we believe insight arise when engineers are empowered with the right
-data at the right time, and in the right manner. In fact, `datareservoirio` is
+data at the right time, and in the right manner. In fact, ``datareservoirio`` is
 best friends with the rich Python scientific
 ecosystem! It works natively with `Pandas`_ objects, and thus a perfect match
 if you work with `Numpy`_, `SciPy`_, `Matplotlib`_, `scikit-learn`_, and many
 more!
 
-`datareservoirio` is also a comprehensive library that can be used to
+``datareservoirio`` is also a comprehensive library that can be used to
 build other apps and services. The path from experimentation to apps and
 services got a little bit shorter!
 

@@ -1,9 +1,8 @@
+.. py:currentmodule:: datareservoirio
 .. _advanced-configuration:
 
 Advanced Configuration
 ======================
-
-.. py:currentmodule:: datareservoirio
 
 Authentication
 --------------

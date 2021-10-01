@@ -1,9 +1,12 @@
+.. py:currentmodule:: datareservoirio
+
 Manage series
 =============
 
 Store series data
 -----------------
-::
+
+.. code-block:: python
 
     # Create and store a simple time series 
 
@@ -22,7 +25,9 @@ Store series data
     response = client.create(series)
 
 If the request was successful, a Python dictionary containing essential
-information is returned::
+information is returned:
+
+.. code-block:: python
 
     {
         'FileId': '2465e7c8-7a5e-4602-bb3b-a5a01382aa1f',
@@ -46,7 +51,9 @@ information is returned::
 You can also store a sequence of data. However, you are required to define an
 integer index. (This is useful when appending and updating the data later.)
 
-Store sequence::
+Store sequence:
+
+.. code-block:: python
 
     # Create and store a simple sequence
     series = pd.Series(np.random.rand(10), index=np.arange(10))
@@ -58,8 +65,9 @@ Edit and append data
 
 You can always append new data to an existing time series (and sequence).
 However, any overlappinging indecies will result in overwrite/edit of existing
-data::
+data:
 
+.. code-block:: python
 
     dt_index = pd.date_range('2018-01-02 00:00:00', periods=10, freq='6H')
     series = pd.Series(np.random.rand(10), index=dt_index)
@@ -73,9 +81,11 @@ Data verification process
 
 Data that have been uploaded to `DataReservoir.io`_ will always go through a
 validation process before it is made part of the series. 
-By default, :py:func:`Client.create` and :py:func:`Client.append` will wait for
+By default, :py:meth:`Client.create` and :py:meth:`Client.append` will wait for
 this validation process to complete successfully before appending the data to
 the timeseres. This behavior can be changed using the wait_on_verification parameter:
+
+.. code-block:: python
 
     response = client.create(series, wait_on_verification=False)
 
@@ -87,7 +97,7 @@ be made available on the series.
 
 .. important::
 
-    Setting `wait_on_verification` to `False` is significantly faster, but is
+    Setting ``wait_on_verification=False`` is significantly faster, but is
     only recommended when the data is "validated" in advance. If the data
     should not pass the server-side validation the data will be ignored.
 
@@ -95,7 +105,9 @@ be made available on the series.
 Access existing data
 --------------------
 
-You can access any data you have ``TimeSeriesId`` (and authorization) for::
+You can access any data you have ``TimeSeriesId`` (and authorization) for:
+
+.. code-block:: python
 
     # Get entire timeseries
     timeseries = client.get(series_id)
@@ -109,14 +121,16 @@ You can access any data you have ``TimeSeriesId`` (and authorization) for::
 
 .. note::
 
-    :py:func:`Client.get` returns :py:class:`pandas.Series`.
+    :py:meth:`Client.get` returns :py:class:`pandas.Series`.
 
 
 Delete data
 -----------
 
 Note that deleting data is permanent and all references to ``TimeSerieId``
-is removed from the `DataReservoir.io`_ inventory::
+is removed from the `DataReservoir.io`_ inventory:
+
+.. code-block:: python
 
     client.delete(series_id)
 

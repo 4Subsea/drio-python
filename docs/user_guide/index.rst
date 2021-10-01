@@ -138,3 +138,4 @@ database solution (that compliments `DataReservoir.io`_ for your application).
    browse_search
    dos_donts
    advanced_config
+   cookbook

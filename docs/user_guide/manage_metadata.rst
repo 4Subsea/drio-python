@@ -5,7 +5,8 @@ can assign a metadata entry to one or more series'.
 
 Create metadata entries
 -----------------------
-::
+
+.. code-block:: python
 
     # Create a metadata entry
     response = client.metadata_set('foo.bar', 'baz',
@@ -13,7 +14,8 @@ Create metadata entries
 
 Update/edit metadata entries
 ----------------------------
-::
+
+.. code-block:: python
 
     # Update/edit a metadata entry
     response = client.metadata_set('foo.bar', 'baz',
@@ -22,7 +24,8 @@ Update/edit metadata entries
 
 Get metadata entries
 --------------------
-::
+
+.. code-block:: python
 
     # Get a metedata entry based on namespace and key
     metadata = client.metadata_get(namespace='foo.bar', key='baz')
@@ -32,7 +35,8 @@ Get metadata entries
 
 Delete metadata entries
 -----------------------
-::
+
+.. code-block:: python
 
     # Delete metadata
     client.metadata_delete(metadata_id)
@@ -43,7 +47,9 @@ Delete metadata entries
 Set metadata on series
 ----------------------
 You can assign metadata on series from existing metadata entries or just create
-a new one::
+a new one:
+
+.. code-block:: python
 
     # Existing meteadata
     client.set_metadata(series_id, metadata_id=metadata_id)
