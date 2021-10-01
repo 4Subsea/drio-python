@@ -1,17 +1,8 @@
 .. py:currentmodule:: datareservoirio
 
-API
-###
-
-High-level
-**********
-
-.. autoclass:: Client
-   :members:
-   :undoc-members:
 
 Authentication
-**************
+==============
 
 .. autoclass:: Authenticator
    :members:

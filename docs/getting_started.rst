@@ -1,10 +1,43 @@
-
 Getting Started
-###############
+===============
 
-Authentication and authorization
-******************************************
+New to Python?
+--------------
+You need to have Python installed on your system before you can use this package.
+Head over to `Python.org`_ for instructions.
 
+Python version support
+----------------------
+Officially Python 3.7, 3.8, and 3.9. We aim to support the three most
+recent major versions.
+
+OS support
+----------
+This package is tested with the latest Windows, MacOS, and Ubuntu (Linux) versions.
+
+Install
+-------
+``datareservoirio`` can be installed via pip from `PyPI`_.
+
+.. code-block:: shell
+
+   pip install datareservoirio
+
+.. _upgrade:
+
+Upgrade
+-------
+``datareservoirio`` can be upgraded via pip from `PyPI`_.
+
+.. code-block:: shell
+
+   pip install --upgrade datareservoirio
+
+.. _Python.org: https://python.org
+.. _PyPI: https://pypi.org/
+
+Authentication
+--------------
 Your data may be your most valued treasure and security is no laughing matter!
 At least we take it very seriously. Every API call requires authentication and
 every bit of data (pun intended) requires authorization to access.
@@ -16,23 +49,3 @@ organization. For single user access, :ref:`contact us <support>` and we will ho
 
 For non-interactive applications (daemons), you would need
 a set of ``client_id`` and ``client_secret``. :ref:`Contact us <support>` and we will help you.
-
-How to install
-**************
-
-:py:mod:`datareservoirio` is written in pure Python and supports Windows,
-Linux, and MacOS. Python >=3.6 is officially supported (but it may work just
-fine with older versions... but not Python 2!)
-
-.. _install-upgrade:
-
-To install from `PyPI`_::
-
-   pip install datareservoirio
-
-And to upgrade to the latest version::
-
-   pip install --upgrade datareservoirio
-
-
-.. _PyPI: https://pypi.org/project/datareservoirio/
