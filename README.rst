@@ -1,5 +1,5 @@
 DataReservoir.io
-################
+================
 
 The Python API for `DataReservoir.io`_ - ``datareservoirio`` comes with all
 batteries included. It provides both convinient high-level and low-level
