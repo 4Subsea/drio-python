@@ -132,7 +132,7 @@ class BaseDownloader:
         if not chunks:
             return pd.DataFrame()
 
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=1) as executor:
             filechunks = executor.map(self._download_verified_chunk, chunks)
         df_chunks = pd.concat(filechunks)
         return df_chunks
