@@ -246,7 +246,7 @@ class TimeSeriesAPI(BaseAPI):
         log.debug(f"download_days_base with <token>, {timeseries_id}, {start}, {end}")
 
         uri = self._root + "{}/data/days".format(timeseries_id)
-        params = {"start": start, "end": end}
+        params = {"start": start, "end": end, "inclusive": "left"}
 
         response = self._get(uri, params=params)
         return response.json()
