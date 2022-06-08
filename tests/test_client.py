@@ -41,7 +41,7 @@ class Test_Client(unittest.TestCase):
         }
 
         self.response = Mock()
-        self.response.text = u"1,1\n2,2\n3,3\n4,4"
+        self.response.text = "1,1\n2,2\n3,3\n4,4"
 
         self.series_with_10_rows = pd.Series(
             data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
