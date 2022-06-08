@@ -43,7 +43,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_get = self.api._session.get
 
         mock_get.return_value = Mock()
-        mock_get.return_value.text = u"{}"
+        mock_get.return_value.text = "{}"
 
         self.api.info("someId")
 
@@ -70,7 +70,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
         mock_put = self.api._session.put
         mock_put.return_value = Mock()
         mock_put.return_value.text = (
-            u"{TimeSeriesId:'ebaebc1e-35f6-49b5-a6cf-3cc07177a691'}"
+            "{TimeSeriesId:'ebaebc1e-35f6-49b5-a6cf-3cc07177a691'}"
         )
 
         self.api.create(timeseries_id=ts_id)
@@ -81,11 +81,11 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
     @patch("datareservoirio.rest_api.timeseries.uuid4")
     def test_create_without_timeseries_id(self, mock_uuid):
-        mock_uuid.return_value = u"aaabbbcc-35f6-49b5-a6cf-3cc07177a691"
+        mock_uuid.return_value = "aaabbbcc-35f6-49b5-a6cf-3cc07177a691"
         mock_put = self.api._session.put
         mock_put.return_value = Mock()
         mock_put.return_value.text = (
-            u"{TimeSeriesId:'aaabbbcc-35f6-49b5-a6cf-3cc07177a691'}"
+            "{TimeSeriesId:'aaabbbcc-35f6-49b5-a6cf-3cc07177a691'}"
         )
 
         self.api.create()
@@ -99,7 +99,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         mock_post = self.api._session.post
         mock_post.return_value = Mock()
-        mock_post.return_value.text = u"{}"
+        mock_post.return_value.text = "{}"
 
         self.api.create_with_data(file_id)
 
@@ -116,7 +116,7 @@ class Test_TimeSeriesAPI(unittest.TestCase):
 
         mock_post = self.api._session.post
         mock_post.return_value = Mock()
-        mock_post.return_value.text = u"{}"
+        mock_post.return_value.text = "{}"
 
         self.api.add(timeseries_id, file_id)
 

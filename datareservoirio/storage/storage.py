@@ -91,7 +91,7 @@ class Storage:
         # at this point, an entirely new object w/o reference
         # to internal objects is created.
         if df.empty:
-            return pd.Series(dtype = 'float64')
+            return pd.Series(dtype="float64")
         return self._create_series(df, start, end)
 
     def _create_series(self, df, start, end):
