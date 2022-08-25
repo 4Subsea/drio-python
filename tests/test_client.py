@@ -61,6 +61,7 @@ class Test_Client(unittest.TestCase):
                         {
                             "Account": "reservoirfiles00test",
                             "SasKey": "sv=2016-05-31&sr=b&sig=HF58vgk5RTKB8pN6SXp40Ih%2FRhsHnyJPh8fTqzbVcKM%3D&se=2017-05-22T15%3A25%3A59Z&sp=r",
+                            "SasKeyExpirationTime": "2022-08-25T06:59:06.591Z",
                             "Container": "timeseries-days",
                             "Path": "5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/17/16238.csv",
                             "Endpoint": "https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/17/16238.csv",
@@ -74,6 +75,7 @@ class Test_Client(unittest.TestCase):
                         {
                             "Account": "reservoirfiles00test",
                             "SasKey": "sv=2016-05-31&sr=b&sig=9u%2Fg5BY%2BODexgRvV0Bt6OMoM6Wr5zCyDL7vRP%2B2zrtc%3D&se=2017-05-22T15%3A25%3A59Z&sp=r",
+                            "SasKeyExpirationTime": "2022-08-25T06:59:06.591Z",
                             "Container": "timeseries-days",
                             "Path": "5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv",
                             "Endpoint": "https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv",
@@ -87,6 +89,7 @@ class Test_Client(unittest.TestCase):
                         {
                             "Account": "reservoirfiles00test",
                             "SasKey": "sv=2016-05-31&sr=b&sig=9u%2Fg5BY%2BODexgRvV0Bt6OMoM6Wr5zCyDL7vRP%2B2zrtc%3D&se=2017-05-22T15%3A25%3A59Z&sp=r",
+                            "SasKeyExpirationTime": "2022-08-25T06:59:06.591Z",
                             "Container": "timeseries-days",
                             "Path": "5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv",
                             "Endpoint": "https://timeseries-days/5a5fc7b8-3ad3-4b13-b452-d2c212fab6f1/2014/06/15/16236.csv",
