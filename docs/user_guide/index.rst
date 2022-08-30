@@ -28,7 +28,7 @@ All of the above functionality are exposed as high-level methods in the
 #. Instantiate a new ``client`` (using :py:class:`Client`)
 #. Go... Data is waiting for you!
 
-Data Structures
+Data structures
 ---------------
 
 `DataReservoir.io`_ works with two fundemental data structures; *series* and

@@ -56,7 +56,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post = self.api._session.get
 
         mock_post.return_value = Mock()
-        mock_post.return_value.text = u"{}"
+        mock_post.return_value.text = "{}"
 
         self.api.get_by_id(self.metadata_id)
 
@@ -68,7 +68,7 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post = self.api._session.get
 
         mock_post.return_value = Mock()
-        mock_post.return_value.text = u"{}"
+        mock_post.return_value.text = "{}"
 
         self.api.get("hello", "world")
 

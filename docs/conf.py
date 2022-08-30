@@ -74,7 +74,11 @@ html_theme = "pydata_sphinx_theme"
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 html_logo = "_static/4insight-logo.svg"
+html_context = {"default_mode": "light"}
+html_favicon = "_static/favicon.png"
+
 html_theme_options = {
+    "navbar_end": ["navbar-icon-links"],
     "external_links": [
         {"name": "4Insight.io", "url": "https://4insight.io"},
     ],
