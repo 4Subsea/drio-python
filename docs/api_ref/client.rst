@@ -1,11 +1,14 @@
 .. py:currentmodule:: datareservoirio
 
 
+======
 Client
 ======
 
-.. autoclass:: Client
-   :members:
-   :undoc-members:
 
+.. autosummary::
+    :toctree:
+    :template: class.rst
+
+    datareservoirio.Client
 

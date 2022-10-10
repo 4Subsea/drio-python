@@ -1,15 +1,15 @@
 .. py:currentmodule:: datareservoirio
 
 
+==============
 Authentication
 ==============
 
-.. autoclass:: Authenticator
-   :members:
-   :inherited-members:
 
-.. autoclass:: datareservoirio.authenticate.UserAuthenticator
-   :members:
+.. autosummary::
+    :toctree:
+    :template: class.rst
 
-.. autoclass:: datareservoirio.authenticate.ClientAuthenticator
-   :members:
+    datareservoirio.Authenticator
+    datareservoirio.authenticate.UserAuthenticator
+    datareservoirio.authenticate.ClientAuthenticator
