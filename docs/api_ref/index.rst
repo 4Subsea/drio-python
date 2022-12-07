@@ -1,4 +1,4 @@
-API Reference
+API reference
 =============
 This section gives an overview of all public ``datareservoirio`` objects, functions and methods.
 
