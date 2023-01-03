@@ -65,7 +65,7 @@ def linkcode_resolve(domain, info):
         path = os.path.relpath(inspect.getfile(obj))
         src, lineno = inspect.getsourcelines(obj)
 
-        path = f"{github_repo}blob/main/{path}#L{lineno}-L{lineno + len(src) - 1}"
+        path = f"{github_repo}blob/master/{path}#L{lineno}-L{lineno + len(src) - 1}"
 
     except Exception:
         path = None

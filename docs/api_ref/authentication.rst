@@ -10,6 +10,5 @@ Authentication
     :toctree:
     :template: class.rst
 
-    datareservoirio.Authenticator
     datareservoirio.authenticate.UserAuthenticator
     datareservoirio.authenticate.ClientAuthenticator
