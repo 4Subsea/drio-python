@@ -6,6 +6,8 @@
 
 # -- Path setup --------------------------------------------------------------
 
+import inspect
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -24,9 +26,9 @@ _TEMPLATE_VERSION = "2.0.0"
 project = "datareservoirio"
 copyright = f"{date.today().year}, 4Subsea"
 author = "4Subsea"
+github_repo = "https://github.com/4Subsea/drio-python/"
 
 # The full version, including alpha/beta/rc tags
-# version = metadata.version("fourinsight-engineroom-utils")
 version = metadata.version(project)
 release = version
 
@@ -41,8 +43,34 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.linkcode",
+    "myst_parser",
 ]
 autosummary_generate = True
+
+
+def linkcode_resolve(domain, info):
+    if domain != "py":
+        return None
+    if not info["module"]:
+        return None
+
+    obj = sys.modules[info["module"]]
+
+    for part in info["fullname"].split("."):
+        obj = getattr(obj, part)
+    obj = inspect.unwrap(obj)
+
+    try:
+        path = os.path.relpath(inspect.getfile(obj))
+        src, lineno = inspect.getsourcelines(obj)
+
+        path = f"{github_repo}blob/master/{path}#L{lineno}-L{lineno + len(src) - 1}"
+
+    except Exception:
+        path = None
+    return path
+
 
 # Napoleon settings
 napoleon_google_docstring = False
@@ -87,7 +115,7 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "GitHub",
-            "url": "https://github.com/4Subsea/drio-python",
+            "url": github_repo,
             "icon": "fab fa-github",
         },
         {

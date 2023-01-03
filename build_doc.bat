@@ -1,2 +1,2 @@
-sphinx-build -b html ./docs ./build/html
+sphinx-build -b html ./docs ./build/html -E
 pause
