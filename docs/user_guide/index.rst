@@ -40,7 +40,7 @@ Series
 A series is a one-dimensional sequence with numeric values (64-bit float) and
 unique indecies (64-bit integer). (Consequently, each numeric value is natively
 represented with 128-bits.) Each series is assigned a unique identifier
-`TimeSeriesId` (guid) for convinient access. Furhtermore, a series can be
+`TimeSeriesId` (guid) for convenient access. Furthermore, a series can be
 enriched with :ref:`metadata <metadata>`.
 
 For time series the index is interpreted as

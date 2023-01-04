@@ -51,7 +51,7 @@ a new one:
 
 .. code-block:: python
 
-    # Existing meteadata
+    # Existing metadata
     client.set_metadata(series_id, metadata_id=metadata_id)
 
     # Or create a new one during assignment

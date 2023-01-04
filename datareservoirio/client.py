@@ -400,7 +400,7 @@ class Client:
 
     def metadata_get(self, metadata_id=None, namespace=None, key=None):
         """
-        Retrieve a metedata entry.
+        Retrieve a metadata entry.
 
         Parameters
         ----------
