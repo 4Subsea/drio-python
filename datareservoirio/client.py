@@ -460,11 +460,13 @@ class Client:
         key : string
             The key to narrow search
         conjuctive : bool
+            -
 
         Returns
         -------
         dict
             Metadata entries that matches the search.
+
         """
         response = self._metadata_api.search(namespace, key, conjunctive)
         return response
