@@ -37,14 +37,14 @@ class BaseAPI:
 
         # Attention: Be careful when extending the list of retry_status!
         retry_status = frozenset([413, 429, 502, 503, 504])
-        method_whitelist = frozenset(
+        allowed_methods = frozenset(
             ["HEAD", "TRACE", "GET", "POST", "PUT", "OPTIONS", "DELETE"]
         )
 
         persist = Retry(
             total=10,
             backoff_factor=0.5,
-            method_whitelist=method_whitelist,
+            allowed_methods=allowed_methods,
             status_forcelist=retry_status,
             raise_on_status=False,
         )
