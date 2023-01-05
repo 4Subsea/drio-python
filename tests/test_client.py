@@ -299,7 +299,6 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(response, expected_response)
 
     def test_get_with_defaults(self):
-        print('hei')
         self._storage.get.return_value = self.series_with_10_rows
 
         response = self.client.get(self.timeseries_id)
