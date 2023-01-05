@@ -460,7 +460,6 @@ class Client:
         key : string
             The key to narrow search
         conjuctive : bool
-            -
 
         Returns
         -------
