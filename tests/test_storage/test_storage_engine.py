@@ -78,7 +78,7 @@ class Test_AzureBlobService:
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
             vals_expect = [0.0, 0.1, 1.13]
             df_expect = pd.DataFrame(
-                index=pd.Int64Index(idx_expect),
+                index=pd.Index(idx_expect, dtype="int64"),
                 data={"values": vals_expect},
                 dtype="float64",
             )
@@ -124,7 +124,7 @@ class Test_AzureBlobService:
 
             df_out = blob_client.get_blob_to_df()
             df_expect = pd.DataFrame(
-                index=pd.Int64Index([1, 2, 3]),
+                index=pd.Index([1, 2, 3], dtype="int64"),
                 data={"values": [0.0, None, 1.13]},
                 dtype="float64",
             )
@@ -152,7 +152,7 @@ class Test_AzureBlobService:
             idx_expect = [1609459200000000000, 1609459200100000000, 1609459200200000000]
             vals_expect = ["some_string", "testing", "hello"]
             df_expect = pd.DataFrame(
-                index=pd.Int64Index(idx_expect),
+                index=pd.Index(idx_expect, dtype="int64"),
                 data={"values": vals_expect},
                 dtype="string",
             )
@@ -184,7 +184,7 @@ class Test_AzureBlobService:
                 "$GPRMC,112440.00,A,6112.852904,N,00045.206762,E,0.0,304.90,221119,0.9,W,D*1F",
             ]
             df_expect = pd.DataFrame(
-                index=pd.Int64Index(idx_expect),
+                index=pd.Index(idx_expect, dtype="int64"),
                 data={"values": vals_expect},
                 dtype="string",
             )
@@ -206,7 +206,7 @@ class Test_AzureBlobService:
 
             df_out = blob_client.get_blob_to_df()
             df_expect = pd.DataFrame(
-                index=pd.Int64Index([1, 2, 3]),
+                index=pd.Index([1, 2, 3], dtype="int64"),
                 data={"values": ["some_string", None, "hello"]},
                 dtype="string",
             )
