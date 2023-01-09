@@ -242,7 +242,7 @@ class Client:
         return self._timeseries_api.delete(series_id)
 
     def get(
-        self, series_id, start=None, end=None, convert_date=True, raise_empty=False
+        self, series_id, start=None, end=None, end_inclusive=True, convert_date=True, raise_empty=False, 
     ):
         """
         Retrieve a series from DataReservoir.io.
@@ -255,8 +255,11 @@ class Client:
             start time (inclusive) of the series given as anything
             pandas.to_datetime is able to parse.
         end : optional
-            stop time (inclusive) of the series given as anything
+            stop time of the series given as anything
             pandas.to_datetime is able to parse.
+        end_inclusive : optional
+            If True (default), the stop time is inclusive
+            If False, the stop time is exclusive
         convert_date : bool
             If True (default), the index is converted to DatetimeIndex.
             If False, index is returned as ascending integers.
@@ -276,6 +279,10 @@ class Client:
 
         start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).value
+
+
+        if not end_inclusive:
+            end = (pd.to_datetime(end, dayfirst=True, unit="ns", utc=True)-pd.Timedelta(nanoseconds=1)).value
 
         if start >= end:
             raise ValueError("start must be before end")
