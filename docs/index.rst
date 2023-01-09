@@ -2,7 +2,7 @@ DataReservoir.io
 ================
 
 The Python API for `DataReservoir.io`_ - :mod:`datareservoirio` comes with all
-batteries included. It provides both convinient high-level and low-level
+batteries included. It provides both convenient high-level and low-level
 access.
 
 We built the Python experience with engineers and data scientists in mind. 

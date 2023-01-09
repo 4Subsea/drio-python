@@ -64,7 +64,7 @@ Edit and append data
 --------------------
 
 You can always append new data to an existing time series (and sequence).
-However, any overlappinging indecies will result in overwrite/edit of existing
+However, any overlappinging indicies will result in overwrite/edit of existing
 data:
 
 .. code-block:: python

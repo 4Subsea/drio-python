@@ -31,9 +31,9 @@ prompted to authenticate next time) or re-authenticate everytime:
     Users on shared computers should always re-authenticate since access token
     from a different user may unintentionally be used.
 
-If you desire to have multiple seperate session, it is advisable to set
-a session key during authetication. This will keep the sessions (token cache)
-seperate:
+If you desire to have multiple separate session, it is advisable to set
+a session key during authentication. This will keep the sessions (token cache)
+separate:
 
 .. code-block:: python
 
@@ -60,7 +60,7 @@ Caching
 -------
 The :py:class:`Client` class employs a disk cache to speed up repeating series
 downloads. Beside turning the cache on and off, several aspects of it can be
-configured during instantiation. The configuration are passed on as a
+configured during instantiation. The configuration is passed on as a
 dictionary:
 
 * ``format``: format used to store series on disk, either 'parquet' or 'csv'. Default is 'parquet'.
@@ -92,7 +92,7 @@ low-latency solid state drives.
 
     The cache is "cleaned up" during instantiation of :py:class:`Client`. If
     it is instantiated with defaults cache options, it will potentially delete
-    the larger cache set up by another instance! Caution is adviced!
+    the larger cache set up by another instance! Caution is advised!
 
 .. note::
 

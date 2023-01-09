@@ -38,9 +38,9 @@ explained below.
 Series
 ------
 A series is a one-dimensional sequence with numeric values (64-bit float) and
-unique indecies (64-bit integer). (Consequently, each numeric value is natively
+unique indicies (64-bit integer). (Consequently, each numeric value is natively
 represented with 128-bits.) Each series is assigned a unique identifier
-`TimeSeriesId` (guid) for convinient access. Furhtermore, a series can be
+`TimeSeriesId` (guid) for convenient access. Furthermore, a series can be
 enriched with :ref:`metadata <metadata>`.
 
 For time series the index is interpreted as
@@ -112,7 +112,7 @@ One simple yet effective way of creating a hierarcy and taxonomy is to use
     * ``application.streams``
 
 We found that this approach is rather easy to visualize and maps well to the
-physcial world.
+physical world.
 
 What is it **NOT** for
 ______________________

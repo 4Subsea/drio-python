@@ -1,7 +1,7 @@
 Manage metadata
 ================
 Similar to series, you can add, update, and delete metadata. In addition, you
-can assign a metadata entry to one or more series'.
+can assign a metadata entry to one or more series.
 
 Create metadata entries
 -----------------------
@@ -27,7 +27,7 @@ Get metadata entries
 
 .. code-block:: python
 
-    # Get a metedata entry based on namespace and key
+    # Get a metadata entry based on namespace and key
     metadata = client.metadata_get(namespace='foo.bar', key='baz')
 
     # or directly by id
@@ -51,7 +51,7 @@ a new one:
 
 .. code-block:: python
 
-    # Existing meteadata
+    # Existing metadata
     client.set_metadata(series_id, metadata_id=metadata_id)
 
     # Or create a new one during assignment
