@@ -1,14 +1,12 @@
-import getpass
+
 import json
 import logging
 import os
-import warnings
 from abc import ABCMeta, abstractmethod
 
 from oauthlib.oauth2 import (
     BackendApplicationClient,
     InvalidGrantError,
-    LegacyApplicationClient,
     WebApplicationClient,
 )
 from requests_oauthlib import OAuth2Session
