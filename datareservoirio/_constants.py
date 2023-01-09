@@ -9,20 +9,6 @@ API_BASE_URL_TEST = "https://reservoir-api-test.4subsea.net/api/"
 API_BASE_URL_QA = "https://reservoir-api-qa.4subsea.net/api/"
 API_BASE_URL_PROD = "https://reservoir-api.4subsea.net/api/"
 
-# USERLEGACY
-CLIENT_ID_USERLEGACY = "a946277d-6f78-43ab-be34-be689c4dd3e0"
-
-RESOURCE_DEV_USERLEGACY = "https://firesubsea.onmicrosoft.com/reservoir-api-dev"
-RESOURCE_TEST_USERLEGACY = "https://firesubsea.onmicrosoft.com/reservoir-api-test"
-RESOURCE_QA_USERLEGACY = "https://firesubsea.onmicrosoft.com/reservoir-api-qa"
-RESOURCE_PROD_USERLEGACY = "https://firesubsea.onmicrosoft.com/reservoir-api-prod"
-
-TENANT_ID_USERLEGACY = "cdf4cf3d-de23-49cf-a9b0-abd2b675f253"
-AUTHORITY_URL_USERLEGACY = "https://login.microsoftonline.com/{}".format(
-    TENANT_ID_USERLEGACY
-)
-TOKEN_URL_USERLEGACY = AUTHORITY_URL_USERLEGACY + "/oauth2/token"
-
 # USER (B2C - NOT REALLY SECRETS...)
 CLIENT_ID_DEV_USER = "9931d0a4-359d-47db-b17d-6fb0bd7679d0"
 CLIENT_SECRET_DEV_USER = "eK1{Vn_K]zpGl7(4%t4b;k2S"
