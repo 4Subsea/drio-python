@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
+import datareservoirio as drio
 from datareservoirio import _constants, authenticate
 from datareservoirio.globalsettings import environment
 
@@ -172,6 +173,9 @@ class Test_ClientAutheticator:
             include_client_id=True,
         )
         assert auth.auto_refresh_url == _constants.TOKEN_URL_TEST_CLIENT
+        assert (
+            auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
+        )
 
     def test_refresh_token(self, mock_fetch, mock_refresh):
         auth = authenticate.ClientAuthenticator("my_client_id", "my_client_secret")
@@ -236,6 +240,9 @@ class Test_UserAuthenticator:
             )
         mock_token.assert_called()
         auth.token_updater.assert_called()
+        assert (
+            auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
+        )
 
     def test_init_session_key(self, mock_token, mock_fetch, mock_refresh):
         with patch.object(
