@@ -87,21 +87,11 @@ class Storage:
         log.debug("getting day file inventory")
         response = self._timeseries_api.download_days(timeseries_id, start, end)
 
-        df = self._downloader.get(response)
+        series = self._downloader.get(response)
 
         # at this point, an entirely new object w/o reference
         # to internal objects is created.
-        if df.empty:
-            return pd.Series(dtype="float64")
-        return self._create_series(df, start, end)
-
-    def _create_series(self, df, start, end):
-        """Create a new pandas Series w/o internal references"""
-        index_bool = (df.index.values >= start) & (df.index.values <= end)
-        index = df.index.values[index_bool]  # enforces copy
-        values = df.values[index_bool, 0]  # enforces copy
-        dtype = df.dtypes[0]
-        return pd.Series(data=values, index=index, dtype=dtype)
+        return series
 
 
 class BaseDownloader:
