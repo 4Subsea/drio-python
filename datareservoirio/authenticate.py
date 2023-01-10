@@ -11,6 +11,7 @@ from oauthlib.oauth2 import (
 from requests_oauthlib import OAuth2Session
 
 import datareservoirio as drio
+
 from . import _constants  # noqa: F401
 from .appdirs import user_data_dir
 from .globalsettings import environment
