@@ -1,32 +1,59 @@
 import logging
 import unittest
 
-import requests
-
 from datareservoirio.authenticate import ClientAuthenticator
-from datareservoirio.rest_api import TimeSeriesAPI
-from datareservoirio.storage import BaseDownloader, DirectDownload
+from datareservoirio.rest_api import TimeSeriesAPI, FilesAPI
+from datareservoirio.storage import BaseDownloader, DirectDownload, DirectUpload
 from tests_integration._auth import CLIENT
 
-log = logging.getLogger(__file__)
-TIMESERIESID = "06C0AD81-3E81-406F-9DB0-EFD5114DD5E0"
 
+import pandas as pd
+import numpy as np
+import time 
+
+
+log = logging.getLogger(__file__)
 
 class Test_DirectDownload(unittest.TestCase):
     def setUp(self):
         self.auth = ClientAuthenticator(CLIENT.CLIENT_ID, CLIENT.CLIENT_SECRET)
         self.timeseries_api = TimeSeriesAPI(session=self.auth)
 
-        self._session = requests.Session()
-        self.strategy = BaseDownloader(DirectDownload(session=self._session))
+        self.strategy = BaseDownloader(DirectDownload())
+
+
+        # Set up some stuff here
+        self.files_api = FilesAPI(session=self.auth)
+
+        uploader = DirectUpload()
+
+        df = pd.DataFrame({"values": np.arange(100.0)}, index=np.arange(0, 100))
+
+        upload_params = self.files_api.upload()
+        self.token_fileid = upload_params["FileId"]
+
+        uploader.put(upload_params, df)
+
+        self.files_api.commit(upload_params["FileId"])
+
+
 
     def tearDown(self):
         self.auth.close()
-        self._session.close()
+
 
     def test_get(self):
+
+        #Make one myself?
+        response = self.timeseries_api.create()
+        myfileid = self.token_fileid
+
+        
+        response = self.timeseries_api.add(response["TimeSeriesId"], myfileid)
+
+
         chunks = self.timeseries_api.download_days(
-            TIMESERIESID, 1513468800000000000, 1513814400000000000
+            response["TimeSeriesId"], 0,100
         )
 
         series = self.strategy.get(chunks)
