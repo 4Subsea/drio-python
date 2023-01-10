@@ -16,7 +16,6 @@ class Test_Client(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-
         cls.df_1 = pd.Series(np.arange(100.0), index=np.arange(0, 100))
         cls.df_2 = pd.Series(np.arange(100.0), index=np.arange(50, 150))
         cls.df_3 = pd.Series(np.arange(50.0), index=np.arange(125, 175))
@@ -173,9 +172,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
     def test_create_append_nooverlap_get_delete(self):
         response = self.client.create(self.df_1)
 
-
         self.client.append(self.df_3, response["TimeSeriesId"])
-
 
         info = self.client.info(response["TimeSeriesId"])
         pprint.pprint(info)

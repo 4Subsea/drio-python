@@ -3,13 +3,12 @@ import unittest
 from functools import partial
 from timeit import timeit
 
-import pandas as pd
 import numpy as np
-
+import pandas as pd
 
 from datareservoirio.authenticate import ClientAuthenticator
-from datareservoirio.rest_api import TimeSeriesAPI, FilesAPI
-from datareservoirio.storage import BaseDownloader, FileCacheDownload, DirectUpload
+from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI
+from datareservoirio.storage import BaseDownloader, DirectUpload, FileCacheDownload
 from tests_integration._auth import CLIENT
 
 log = logging.getLogger(__file__)
@@ -36,32 +35,20 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
 
         self.files_api.commit(upload_params["FileId"])
 
-
-
-
-
-
     def tearDown(self):
         self.auth.close()
 
     def test_get_with_parquet_format(self):
         strategy = BaseDownloader(
-            FileCacheDownload(
-                cache_root=self._cache_root, format_="parquet"
-            )
+            FileCacheDownload(cache_root=self._cache_root, format_="parquet")
         )
 
         response = self.timeseries_api.create()
         myfileid = self.token_fileid
 
-        
         response = self.timeseries_api.add(response["TimeSeriesId"], myfileid)
 
-
-        chunks = self.timeseries_api.download_days(
-            response["TimeSeriesId"], 0,100
-        )
-
+        chunks = self.timeseries_api.download_days(response["TimeSeriesId"], 0, 100)
 
         iterations = 100
 
@@ -71,21 +58,15 @@ class Test_CachedDownloadStrategy(unittest.TestCase):
 
     def test_get_with_csv_format(self):
         strategy = BaseDownloader(
-            FileCacheDownload(
-                cache_root=self._cache_root, format_="csv"
-            )
+            FileCacheDownload(cache_root=self._cache_root, format_="csv")
         )
 
         response = self.timeseries_api.create()
         myfileid = self.token_fileid
 
-        
         response = self.timeseries_api.add(response["TimeSeriesId"], myfileid)
 
-
-        chunks = self.timeseries_api.download_days(
-            response["TimeSeriesId"], 0,100
-        )
+        chunks = self.timeseries_api.download_days(response["TimeSeriesId"], 0, 100)
         iterations = 100
 
         usedtime = timeit(stmt=lambda: strategy.get(chunks), number=iterations)

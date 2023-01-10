@@ -19,7 +19,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
         cls.metaapi = MetadataAPI(session=cls.auth)
         files_api = FilesAPI(session=cls.auth)
 
-
         uploader = DirectUpload()
 
         df_1 = pd.DataFrame({"values": np.arange(100.0)}, index=np.arange(0, 100))
@@ -55,8 +54,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
         cls.meta_response = cls.metaapi.put(
             "namespace_string_1", "key_string_1", meta_1_value
         )
-
-
 
     @classmethod
     def tearDownClass(cls):
@@ -120,12 +117,9 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
         self.assertEqual(0, info["TimeOfFirstSample"])
         self.assertEqual(174, info["TimeOfLastSample"])
-        
-        
 
         self.api.download_days(response["TimeSeriesId"], -1000, 1000)
         self.api.delete(response["TimeSeriesId"])
-
 
     def test_create_add_nooverlap_data_delete(self):
         response = self.api.create_with_data(self.token_fileid[0])
@@ -142,8 +136,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
     def test_attach_detach_meta(self):
         response = self.api.create()
         meta_id = self.meta_response["Id"]
-
-
 
         self.api.attach_metadata(response["TimeSeriesId"], metadata_id_list=[meta_id])
 

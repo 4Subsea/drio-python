@@ -1,18 +1,17 @@
 import logging
+import time
 import unittest
 
+import numpy as np
+import pandas as pd
+
 from datareservoirio.authenticate import ClientAuthenticator
-from datareservoirio.rest_api import TimeSeriesAPI, FilesAPI
+from datareservoirio.rest_api import FilesAPI, TimeSeriesAPI
 from datareservoirio.storage import BaseDownloader, DirectDownload, DirectUpload
 from tests_integration._auth import CLIENT
 
-
-import pandas as pd
-import numpy as np
-import time 
-
-
 log = logging.getLogger(__file__)
+
 
 class Test_DirectDownload(unittest.TestCase):
     def setUp(self):
@@ -20,7 +19,6 @@ class Test_DirectDownload(unittest.TestCase):
         self.timeseries_api = TimeSeriesAPI(session=self.auth)
 
         self.strategy = BaseDownloader(DirectDownload())
-
 
         # Set up some stuff here
         self.files_api = FilesAPI(session=self.auth)
@@ -36,25 +34,18 @@ class Test_DirectDownload(unittest.TestCase):
 
         self.files_api.commit(upload_params["FileId"])
 
-
-
     def tearDown(self):
         self.auth.close()
 
-
     def test_get(self):
 
-        #Make one myself?
+        # Make one myself?
         response = self.timeseries_api.create()
         myfileid = self.token_fileid
 
-        
         response = self.timeseries_api.add(response["TimeSeriesId"], myfileid)
 
-
-        chunks = self.timeseries_api.download_days(
-            response["TimeSeriesId"], 0,100
-        )
+        chunks = self.timeseries_api.download_days(response["TimeSeriesId"], 0, 100)
 
         series = self.strategy.get(chunks)
 
