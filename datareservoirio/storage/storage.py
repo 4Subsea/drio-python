@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import RLock as Lock
 
 import pandas as pd
+import requests
 
 from ..appdirs import user_cache_dir
 from .cache_engine import CacheIO, _CacheIndex
@@ -375,7 +376,8 @@ class DirectDownload(StorageBackend):
             data.
 
         """
-        return super().remote_get(chunk)
+        blob_url = chunk["Endpoint"]
+        return _blob_to_series(blob_url)
 
 
 class DirectUpload(StorageBackend):
@@ -385,4 +387,51 @@ class DirectUpload(StorageBackend):
     """
 
     def put(self, params, data):
-        return super().remote_put(params, data)
+        blob_url = params["Endpoint"]
+        return _series_to_blob(data, blob_url)
+
+
+def _blob_to_series(blob_url):
+    """
+    Download blob from remote storage and present as a Pandas Series.
+
+    Parameters
+    ----------
+    blob_url : str
+        Fully formated URL to the blob. Must contail all the required parameters
+        in the URL.
+
+    Return
+    ------
+    series : pandas.Series
+        Pandas series where index is nano-seconds since epoch and values are ``str``
+        or ``float64``.
+    """
+    series = pd.read_csv(
+        blob_url,
+        header=None,
+        names=("values",),
+        dtype={0: "int64", 1: "str"},
+        index_col=0,
+        encoding="utf-8",
+    ).squeeze("columns").astype("float64", errors="ignore")
+    return series
+
+
+def _series_to_blob(series, blob_url):
+    """
+    Upload a Pandas Series as blob to a remote storage.
+
+    The series object converted to CSV encoded in "ascii". Headers are ignored
+    and line terminator is set as ``\n``.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        Pandas series where index is nano-seconds since epoch (``Int64``) and
+        values are ``str`` or ``float64``.
+    """
+    # First request to create the blob, second to upload content.
+    requests.put(blob_url, headers={"x-ms-blob-type": "BlockBlob"}).raise_for_status()
+    series.to_csv(blob_url, header=False, line_terminator="\n", encoding="ascii")
+    return
