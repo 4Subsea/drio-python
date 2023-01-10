@@ -16,6 +16,7 @@ class Test_Client(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
+
         cls.df_1 = pd.Series(np.arange(100.0), index=np.arange(0, 100))
         cls.df_2 = pd.Series(np.arange(100.0), index=np.arange(50, 150))
         cls.df_3 = pd.Series(np.arange(50.0), index=np.arange(125, 175))
@@ -184,8 +185,7 @@ class Test_Client_CacheEnable(unittest.TestCase):
 
         data_recieved = self.client.get(info["TimeSeriesId"], convert_date=False)
         data_sent = self.df_1
-        data_sent = data_sent.append(self.df_3)
-
+        data_sent = pd.concat([data_sent, self.df_3])
         pd.testing.assert_series_equal(data_sent, data_recieved)
 
     def test_create_append_overlap_get_delete(self):
