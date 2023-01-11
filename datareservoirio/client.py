@@ -281,7 +281,7 @@ class Client:
 
         start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).value - 1
-        
+
         if start >= end:
             raise ValueError("start must be before end")
 
