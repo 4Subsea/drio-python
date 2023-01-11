@@ -389,6 +389,18 @@ class Test_Client(unittest.TestCase):
                 start="1970-01-01 00:00:00.000000004",
                 end="1970-01-01 00:00:00.000000001",
             )
+    
+    def test_get_subtract_nanosecond(self):
+        self._storage.get.return_value = self.series_with_10_rows
+
+        self.client.get(
+            self.timeseries_id,
+            start="1970-01-01 00:00:00.000000001",
+            end="1970-01-01 00:00:00.000000004",
+        )
+
+        self.client._storage.get.assert_called_once_with(self.timeseries_id, 1, 3)
+
 
     def test_search(self):
         self.client.search("test_namespace", "test_key", "test_name", 123)
