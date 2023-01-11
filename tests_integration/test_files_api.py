@@ -29,8 +29,6 @@ class Test_FilesApi(unittest.TestCase):
 
         with requests.Session() as s:
             uploader = DirectUpload()
-            # Feiler her med meldingen "__init__() got an unexpected keyword argument "session" -> pga omskriving av AzureBlobService? 
-
             df = pd.DataFrame({"values": np.arange(1e3)})
             df.index.name = "time"
             df.name = "values"
