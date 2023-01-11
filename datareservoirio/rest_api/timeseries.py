@@ -69,7 +69,7 @@ class TimeSeriesAPI(BaseAPI):
 
     Parameters
     ----------
-    session : 
+    session :
         Authorized session instance (User or Client) which appends a valid bearer token to all
         HTTP calls.
     cache : bool

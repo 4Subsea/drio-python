@@ -22,7 +22,6 @@ class Test_FilesApi(unittest.TestCase):
     def test_ping(self):
         self.api.ping()
 
-
     def test_upload_df_cycle(self):
         upload_params = self.api.upload()
         file_id = upload_params["FileId"]
@@ -47,7 +46,6 @@ class Test_FilesApi(unittest.TestCase):
             self.assertLess(
                 counter, 15, "Processing did not complete with Ready status"
             )
-
 
 
 if __name__ == "__main__":
