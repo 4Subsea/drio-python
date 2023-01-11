@@ -306,7 +306,7 @@ class Test_Client(unittest.TestCase):
         self.client._storage.get.assert_called_once_with(
             self.timeseries_id,
             datareservoirio.client._START_DEFAULT,
-            datareservoirio.client._END_DEFAULT,
+            datareservoirio.client._END_DEFAULT - 1,
         )
         pd.testing.assert_series_equal(response, self.series_with_10_rows)
 
@@ -314,17 +314,22 @@ class Test_Client(unittest.TestCase):
         series_without_dt = pd.Series(
             data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         )
+
         series_with_dt = pd.Series(
             data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         )
         series_with_dt.index = pd.to_datetime(series_with_dt.index, utc=True)
+
         start = pd.to_datetime(1, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(10, dayfirst=True, unit="ns", utc=True).value
-        self.client._storage.get.return_value = series_without_dt
 
+        self.client._storage.get.return_value = series_without_dt
         response = self.client.get(self.timeseries_id, start, end, convert_date=True)
 
-        self.client._storage.get.assert_called_once_with(self.timeseries_id, start, end)
+        self.client._storage.get.assert_called_once_with(
+            self.timeseries_id, start, end - 1
+        )
+
         pd.testing.assert_series_equal(
             response, series_without_dt, check_index_type=True
         )
@@ -339,7 +344,9 @@ class Test_Client(unittest.TestCase):
 
         response = self.client.get(self.timeseries_id, start, end, convert_date=False)
 
-        self.client._storage.get.assert_called_once_with(self.timeseries_id, start, end)
+        self.client._storage.get.assert_called_once_with(
+            self.timeseries_id, start, end - 1
+        )
         pd.testing.assert_series_equal(
             response, series_without_dt, check_index_type=True
         )
@@ -353,7 +360,7 @@ class Test_Client(unittest.TestCase):
             end="1970-01-01 00:00:00.000000004",
         )
 
-        self.client._storage.get.assert_called_once_with(self.timeseries_id, 1, 4)
+        self.client._storage.get.assert_called_once_with(self.timeseries_id, 1, 3)
 
     def test_get_with_emptytimeseries_return_empty(self):
         self._storage.get.return_value = pd.Series(dtype="float64")
@@ -389,6 +396,17 @@ class Test_Client(unittest.TestCase):
                 start="1970-01-01 00:00:00.000000004",
                 end="1970-01-01 00:00:00.000000001",
             )
+
+    def test_get_subtract_nanosecond(self):
+        self._storage.get.return_value = self.series_with_10_rows
+
+        self.client.get(
+            self.timeseries_id,
+            start="1970-01-01 00:00:00.000000001",
+            end="1970-01-01 00:00:00.000000004",
+        )
+
+        self.client._storage.get.assert_called_once_with(self.timeseries_id, 1, 3)
 
     def test_search(self):
         self.client.search("test_namespace", "test_key", "test_name", 123)
