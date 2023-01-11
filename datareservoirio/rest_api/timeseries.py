@@ -69,8 +69,8 @@ class TimeSeriesAPI(BaseAPI):
 
     Parameters
     ----------
-    session : subclass of ``requests.session``
-        Authorized session instance which appends a valid bearer token to all
+    session : 
+        Authorized session instance (User or Client) which appends a valid bearer token to all
         HTTP calls.
     cache : bool
         Whether to cache calls and responses with expiry time. Defaults to

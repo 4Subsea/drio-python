@@ -11,8 +11,8 @@ class FilesAPI(BaseAPI):
 
     Parameters
     ----------
-    session : subclass of ``requests.session``
-        Authorized session instance which appends a valid bearer token to all
+    session : 
+        Authorized session instance (User or Client) which appends a valid bearer token to all
         HTTP calls.
 
     """
