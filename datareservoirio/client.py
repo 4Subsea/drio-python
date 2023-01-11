@@ -83,7 +83,7 @@ class Client:
         return self
 
     def __exit__(self, *args):
-        self._session.close()
+        return self
 
     def ping(self):
         """
