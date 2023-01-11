@@ -19,8 +19,8 @@ from datareservoirio.storage import (
 
 from datareservoirio.storage.storage import (
     _encode_for_path_safety,
-    _blob_to_series,
-    _series_to_blob,
+    _blob_to_df,
+    _df_to_blob,
     requests,
 )
 
@@ -34,8 +34,8 @@ def numeric_blob_file_path():
 
 
 @pytest.fixture
-def numeric_blob_series():
-    series = pd.Series(
+def numeric_blob_df():
+    df = pd.DataFrame(
         data=[
             -0.200514,
             -0.200514,
@@ -60,9 +60,9 @@ def numeric_blob_series():
             1624838400781250000,
             1624838400878906250,
         ],
-        name="values",
+        columns=("values", ),
     )
-    return series
+    return df
 
 
 @pytest.fixture
@@ -71,8 +71,8 @@ def str_blob_file_path():
 
 
 @pytest.fixture
-def str_blob_series():
-    series = pd.Series(
+def str_blob_df():
+    df = pd.DataFrame(
         data=[
             "Aa",
             "Bb",
@@ -97,9 +97,9 @@ def str_blob_series():
             1624838400781250000,
             1624838400878906250,
         ],
-        name="values",
+        columns=("values", ),
     )
-    return series
+    return df
 
 
 class Test_Storage(unittest.TestCase):
@@ -119,12 +119,12 @@ class Test_Storage(unittest.TestCase):
         )
 
     def test_get(self):
-        data_remote = pd.Series([1, 2, 3, 4], index=[1, 2, 3, 4])
+        data_remote = pd.DataFrame([1, 2, 3, 4], index=[1, 2, 3, 4], columns=("values", ))
         self.downloader.get.return_value = data_remote
 
-        series = self.storage.get(self.tid, 1, 10)
+        series = self.storage.get(self.tid, 2, 3)
 
-        self.assertTrue(series.equals(pd.Series([1, 2, 3, 4], index=[1, 2, 3, 4])))
+        pd.testing.assert_series_equal(series, data_remote.squeeze("columns").iloc[1:3])
 
     def test_put(self):
         self._files_api.upload.return_value = {"FileId": "42"}
@@ -140,7 +140,7 @@ class Test_DirectUpload(unittest.TestCase):
         DirectUpload()
         mock_backend.assert_called_once()
 
-    @patch("datareservoirio.storage.storage._series_to_blob")
+    @patch("datareservoirio.storage.storage._df_to_blob")
     def test_put(self, mock_remote_put):
         params = {"Endpoint": "https:://go-here-for-blob.com"}
         uploader = DirectUpload()
@@ -155,7 +155,7 @@ class Test_DirectDownload(unittest.TestCase):
         DirectDownload()
         mock_backend.assert_called_once()
 
-    @patch("datareservoirio.storage.storage._blob_to_series")
+    @patch("datareservoirio.storage.storage._blob_to_df")
     def test_get(self, mock_remote_get):
         params = {"Endpoint": "https:://go-here-for-blob.com"}
         downloader = DirectDownload()
@@ -521,24 +521,24 @@ class Test_FileCachceDownload(unittest.TestCase):
 
 
 class Test__blob_to_series:
-    def test_get_numeric(self, numeric_blob_file_path, numeric_blob_series):
-        series_out = _blob_to_series(numeric_blob_file_path)
-        pd.testing.assert_series_equal(series_out, numeric_blob_series)
+    def test_get_numeric(self, numeric_blob_file_path, numeric_blob_df):
+        df_out = _blob_to_df(numeric_blob_file_path)
+        pd.testing.assert_frame_equal(df_out, numeric_blob_df)
 
-    def test_get_str(self, str_blob_file_path, str_blob_series):
-        series_out = _blob_to_series(str_blob_file_path)
-        pd.testing.assert_series_equal(series_out, str_blob_series)
+    def test_get_str(self, str_blob_file_path, str_blob_df):
+        df_out = _blob_to_df(str_blob_file_path)
+        pd.testing.assert_frame_equal(df_out, str_blob_df)
 
 
-class Test__series_to_blob:
+class Test__df_to_blob:
     @patch(
         "requests.put", **{"return_value.raise_for_status.return_value": MagicMock()}
     )
     def test_put_numeric(
-        self, mock_put, numeric_blob_file_path, numeric_blob_series, tmp_path
+        self, mock_put, numeric_blob_file_path, numeric_blob_df, tmp_path
     ):
         with patch("requests.put") as mock_put:
-            _series_to_blob(numeric_blob_series, tmp_path / "numeric_blob.csv")
+            _df_to_blob(numeric_blob_df, tmp_path / "numeric_blob.csv")
 
         mock_put.return_value.raise_for_status.assert_called_once()
         mock_put.assert_called_once_with(
@@ -556,9 +556,9 @@ class Test__series_to_blob:
     @patch(
         "requests.put", **{"return_value.raise_for_status.return_value": MagicMock()}
     )
-    def test_put_str(self, mock_put, str_blob_file_path, str_blob_series, tmp_path):
+    def test_put_str(self, mock_put, str_blob_file_path, str_blob_df, tmp_path):
 
-        _series_to_blob(str_blob_series, tmp_path / "str_blob.csv")
+        _df_to_blob(str_blob_df, tmp_path / "str_blob.csv")
 
         mock_put.return_value.raise_for_status.assert_called_once()
         mock_put.assert_called_once_with(
@@ -579,7 +579,7 @@ class Test__series_to_blob:
     )
     def test_put_raise(self, mock_put):
         with pytest.raises(Exception) as e:
-            _series_to_blob("bogus_series", "system32")
+            _df_to_blob("bogus_series", "system32")
         assert "this_test" == str(e.value)
 
 

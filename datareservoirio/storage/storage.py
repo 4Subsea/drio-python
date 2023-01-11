@@ -87,10 +87,12 @@ class Storage:
         log.debug("getting day file inventory")
         response = self._timeseries_api.download_days(timeseries_id, start, end)
 
-        series = self._downloader.get(response)
-
-        # at this point, an entirely new object w/o reference
-        # to internal objects is created.
+        series = (
+            self._downloader.get(response)
+            .squeeze("columns")
+            .loc[start:end]
+            .copy(deep=True)
+        )
         return series
 
 
@@ -367,7 +369,7 @@ class DirectDownload(StorageBackend):
 
         """
         blob_url = chunk["Endpoint"]
-        return _blob_to_series(blob_url)
+        return _blob_to_df(blob_url)
 
 
 class DirectUpload(StorageBackend):
@@ -378,10 +380,10 @@ class DirectUpload(StorageBackend):
 
     def put(self, params, data):
         blob_url = params["Endpoint"]
-        return _series_to_blob(data, blob_url)
+        return _df_to_blob(data, blob_url)
 
 
-def _blob_to_series(blob_url):
+def _blob_to_df(blob_url):
     """
     Download blob from remote storage and present as a Pandas Series.
 
@@ -397,24 +399,20 @@ def _blob_to_series(blob_url):
         Pandas series where index is nano-seconds since epoch and values are ``str``
         or ``float64``.
     """
-    series = (
-        pd.read_csv(
-            blob_url,
-            header=None,
-            names=("values",),
-            dtype={0: "int64", 1: "str"},
-            index_col=0,
-            encoding="utf-8",
-        )
-        .squeeze("columns")
-        .astype("float64", errors="ignore")
-    )
-    return series
+    df = pd.read_csv(
+        blob_url,
+        header=None,
+        names=("values",),
+        dtype={0: "int64", 1: "str"},
+        index_col=0,
+        encoding="utf-8",
+    ).astype("float64", errors="ignore")
+    return df
 
 
-def _series_to_blob(series, blob_url):
+def _df_to_blob(series, blob_url):
     """
-    Upload a Pandas Series as blob to a remote storage.
+    Upload a Pandas Dataframe as blob to a remote storage.
 
     The series object converted to CSV encoded in "ascii". Headers are ignored
     and line terminator is set as ``\n``.
