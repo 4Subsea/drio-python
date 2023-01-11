@@ -306,7 +306,7 @@ class Test_Client(unittest.TestCase):
         self.client._storage.get.assert_called_once_with(
             self.timeseries_id,
             datareservoirio.client._START_DEFAULT,
-            datareservoirio.client._END_DEFAULT-1,
+            datareservoirio.client._END_DEFAULT - 1,
         )
         pd.testing.assert_series_equal(response, self.series_with_10_rows)
 
@@ -314,7 +314,6 @@ class Test_Client(unittest.TestCase):
         series_without_dt = pd.Series(
             data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         )
-
 
         series_with_dt = pd.Series(
             data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -327,8 +326,9 @@ class Test_Client(unittest.TestCase):
         self.client._storage.get.return_value = series_without_dt
         response = self.client.get(self.timeseries_id, start, end, convert_date=True)
 
-        self.client._storage.get.assert_called_once_with(self.timeseries_id, start, end-1)
-
+        self.client._storage.get.assert_called_once_with(
+            self.timeseries_id, start, end - 1
+        )
 
         pd.testing.assert_series_equal(
             response, series_without_dt, check_index_type=True
@@ -344,7 +344,9 @@ class Test_Client(unittest.TestCase):
 
         response = self.client.get(self.timeseries_id, start, end, convert_date=False)
 
-        self.client._storage.get.assert_called_once_with(self.timeseries_id, start, end-1)
+        self.client._storage.get.assert_called_once_with(
+            self.timeseries_id, start, end - 1
+        )
         pd.testing.assert_series_equal(
             response, series_without_dt, check_index_type=True
         )
