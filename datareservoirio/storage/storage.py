@@ -397,14 +397,18 @@ def _blob_to_series(blob_url):
         Pandas series where index is nano-seconds since epoch and values are ``str``
         or ``float64``.
     """
-    series = pd.read_csv(
-        blob_url,
-        header=None,
-        names=("values",),
-        dtype={0: "int64", 1: "str"},
-        index_col=0,
-        encoding="utf-8",
-    ).squeeze("columns").astype("float64", errors="ignore")
+    series = (
+        pd.read_csv(
+            blob_url,
+            header=None,
+            names=("values",),
+            dtype={0: "int64", 1: "str"},
+            index_col=0,
+            encoding="utf-8",
+        )
+        .squeeze("columns")
+        .astype("float64", errors="ignore")
+    )
     return series
 
 
