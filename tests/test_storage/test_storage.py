@@ -558,7 +558,7 @@ class Test__df_to_blob:
             call_args = mock_put.call_args
             assert call_args.args == ("http:://azure.com/myblob",)
             assert call_args.kwargs["headers"] == {"x-ms-blob-type": "BlockBlob"}
-            assert call_args.kwargs["data"].memory == file_expected
+            assert call_args.kwargs["data"].memory == file_expected.replace(b"\r\n", b"\n")
 
     @patch(
         "requests.put", **{"return_value.raise_for_status.return_value": MagicMock()}
@@ -577,7 +577,7 @@ class Test__df_to_blob:
             call_args = mock_put.call_args
             assert call_args.args == ("http:://azure.com/myblob",)
             assert call_args.kwargs["headers"] == {"x-ms-blob-type": "BlockBlob"}
-            assert call_args.kwargs["data"].memory == file_expected
+            assert call_args.kwargs["data"].memory == file_expected.replace(b"\r\n", b"\n")
 
     @patch(
         "requests.put",
