@@ -47,7 +47,6 @@ class Client:
 
     def __init__(self, auth, cache=True, cache_opt=CACHE_DEFAULT):
         self._auth_session = auth
-        self._session = requests.Session()
         self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
         self._files_api = FilesAPI(self._auth_session)
         self._metadata_api = MetadataAPI(self._auth_session)
@@ -84,7 +83,7 @@ class Client:
         return self
 
     def __exit__(self, *args):
-        self._session.close()
+        return self
 
     def ping(self):
         """

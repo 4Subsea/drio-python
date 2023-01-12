@@ -26,27 +26,23 @@ class Test_FilesApi(unittest.TestCase):
         upload_params = self.api.upload()
         file_id = upload_params["FileId"]
 
-        with requests.Session() as s:
-            uploader = DirectUpload(session=s)
+        uploader = DirectUpload()
+        df = pd.DataFrame({"values": np.arange(1e3)})
+        df.index.name = "time"
+        df.name = "values"
 
-            df = pd.DataFrame({"values": np.arange(1e3)})
-            df.index.name = "time"
-            df.name = "values"
+        uploader.put(upload_params, df)
 
-            uploader.put(upload_params, df)
+        self.api.commit(file_id)
 
-            self.api.commit(file_id)
-
-            counter = 0
+        counter = 0
+        response = self.api.status(file_id)
+        while response["State"] != "Ready" and counter < 15:
+            time.sleep(5)
             response = self.api.status(file_id)
-            while response["State"] != "Ready" and counter < 15:
-                time.sleep(5)
-                response = self.api.status(file_id)
-                counter += 1
+            counter += 1
 
-            self.assertLess(
-                counter, 15, "Processing did not complete with Ready status"
-            )
+        self.assertLess(counter, 15, "Processing did not complete with Ready status")
 
 
 if __name__ == "__main__":
