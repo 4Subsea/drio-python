@@ -1,4 +1,5 @@
 import base64
+import io
 import logging
 import os
 import re
@@ -279,7 +280,8 @@ class FileCacheDownload(CacheIO, StorageBackend):
         data = self._get_cached_data(id_, md5)
         if data is None:
             log.debug(f"Cache miss on {id_}")
-            data = super().remote_get(chunk)
+            blob_url = chunk["Endpoint"]
+            data = _blob_to_df(blob_url)
             self._put_data_to_cache(data, id_, md5)
         else:
             log.debug(f"Cache hit on {id_}")
@@ -410,11 +412,11 @@ def _blob_to_df(blob_url):
     return df
 
 
-def _df_to_blob(series, blob_url):
+def _df_to_blob(df, blob_url):
     """
     Upload a Pandas Dataframe as blob to a remote storage.
 
-    The series object converted to CSV encoded in "ascii". Headers are ignored
+    The series object converted to CSV encoded in "utf-8". Headers are ignored
     and line terminator is set as ``\n``.
 
     Parameters
@@ -423,7 +425,17 @@ def _df_to_blob(series, blob_url):
         Pandas series where index is nano-seconds since epoch (``Int64``) and
         values are ``str`` or ``float64``.
     """
-    # First request to create the blob, second to upload content.
-    requests.put(blob_url, headers={"x-ms-blob-type": "BlockBlob"}).raise_for_status()
-    series.to_csv(blob_url, header=False, line_terminator="\n", encoding="ascii")
+    with io.BytesIO() as fp:
+        kwargs = {"header": False, "encoding": "utf-8", "mode": "wb"}
+        try:  # breaking change since pandas 1.5.0
+            df.to_csv(fp, lineterminator="\n", **kwargs)
+        except TypeError:  # Compatibility with pandas older than 1.5.0.
+            df.to_csv(fp, line_terminator="\n", **kwargs)
+        fp.seek(0)
+
+        requests.put(
+            blob_url,
+            headers={"x-ms-blob-type": "BlockBlob"},
+            data=fp
+            ).raise_for_status()
     return

@@ -1,3 +1,4 @@
+import io
 import os
 import unittest
 from pathlib import Path
@@ -21,7 +22,6 @@ from datareservoirio.storage.storage import (
     _encode_for_path_safety,
     _blob_to_df,
     _df_to_blob,
-    requests,
 )
 
 
@@ -60,7 +60,7 @@ def numeric_blob_df():
             1624838400781250000,
             1624838400878906250,
         ],
-        columns=("values", ),
+        columns=("values",),
     )
     return df
 
@@ -97,9 +97,19 @@ def str_blob_df():
             1624838400781250000,
             1624838400878906250,
         ],
-        columns=("values", ),
+        columns=("values",),
     )
     return df
+
+
+@pytest.fixture()
+def bytesio_with_memory():
+    class BytesIOmemory(io.BytesIO):
+        def close(self, *args, **kwargs):
+            self.memory = self.getvalue()
+            super().close(*args, **kwargs)
+
+    return BytesIOmemory
 
 
 class Test_Storage(unittest.TestCase):
@@ -119,7 +129,9 @@ class Test_Storage(unittest.TestCase):
         )
 
     def test_get(self):
-        data_remote = pd.DataFrame([1, 2, 3, 4], index=[1, 2, 3, 4], columns=("values", ))
+        data_remote = pd.DataFrame(
+            [1, 2, 3, 4], index=[1, 2, 3, 4], columns=("values",)
+        )
         self.downloader.get.return_value = data_remote
 
         series = self.storage.get(self.tid, 2, 3)
@@ -408,9 +420,13 @@ class Test_FileCachceDownload(unittest.TestCase):
                 "abc123def456", _encode_for_path_safety("md5-123")
             )
 
-    @patch("datareservoirio.storage.storage.StorageBackend.remote_get")
+    @patch("datareservoirio.storage.storage._blob_to_df")
     def test_get_not_cached(self, mock_remote_get):
-        chunk = {"Path": "abc-123/def_456", "ContentMd5": "md5-123"}
+        chunk = {
+            "Path": "abc-123/def_456",
+            "ContentMd5": "md5-123",
+            "Endpoint": "abc-123/def_456?start=12",
+        }
 
         df = pd.DataFrame({"values": [1.0, 2.0, 3.0]}, index=[1, 2, 3])
 
@@ -432,6 +448,7 @@ class Test_FileCachceDownload(unittest.TestCase):
             mocks["_get_cached_data"].assert_called_once_with(
                 "abc123def456", _encode_for_path_safety("md5-123")
             )
+            mock_remote_get.assert_called_once_with(chunk["Endpoint"])
 
     def test_put_data_to_cache_tiny(self):
         id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
@@ -535,51 +552,47 @@ class Test__df_to_blob:
         "requests.put", **{"return_value.raise_for_status.return_value": MagicMock()}
     )
     def test_put_numeric(
-        self, mock_put, numeric_blob_file_path, numeric_blob_df, tmp_path
+        self, mock_put, numeric_blob_file_path, numeric_blob_df, bytesio_with_memory
     ):
-        with patch("requests.put") as mock_put:
-            _df_to_blob(numeric_blob_df, tmp_path / "numeric_blob.csv")
+        with patch("io.BytesIO", new=bytesio_with_memory):
+            _df_to_blob(numeric_blob_df, "http:://azure.com/myblob")
 
-        mock_put.return_value.raise_for_status.assert_called_once()
-        mock_put.assert_called_once_with(
-            tmp_path / "numeric_blob.csv", headers={"x-ms-blob-type": "BlockBlob"}
-        )
+            mock_put.return_value.raise_for_status.assert_called_once()
 
-        with open(tmp_path / "numeric_blob.csv", "rb") as fp:
-            file_out = fp.read()
+            with open(numeric_blob_file_path, "rb") as fp:
+                file_expected = fp.read()
 
-        with open(numeric_blob_file_path, "rb") as fp:
-            file_expected = fp.read()
-
-        assert file_out == file_expected
+            call_args = mock_put.call_args
+            assert call_args.args == ("http:://azure.com/myblob",)
+            assert call_args.kwargs["headers"] == {"x-ms-blob-type": "BlockBlob"}
+            assert call_args.kwargs["data"].memory == file_expected
 
     @patch(
         "requests.put", **{"return_value.raise_for_status.return_value": MagicMock()}
     )
-    def test_put_str(self, mock_put, str_blob_file_path, str_blob_df, tmp_path):
+    def test_put_str(
+        self, mock_put, str_blob_file_path, str_blob_df, bytesio_with_memory
+    ):
+        with patch("io.BytesIO", new=bytesio_with_memory):
+            _df_to_blob(str_blob_df, "http:://azure.com/myblob")
 
-        _df_to_blob(str_blob_df, tmp_path / "str_blob.csv")
+            mock_put.return_value.raise_for_status.assert_called_once()
 
-        mock_put.return_value.raise_for_status.assert_called_once()
-        mock_put.assert_called_once_with(
-            tmp_path / "str_blob.csv", headers={"x-ms-blob-type": "BlockBlob"}
-        )
+            with open(str_blob_file_path, "rb") as fp:
+                file_expected = fp.read()
 
-        with open(tmp_path / "str_blob.csv", "rb") as fp:
-            file_out = fp.read()
-
-        with open(str_blob_file_path, "rb") as fp:
-            file_expected = fp.read()
-
-        assert file_out == file_expected
+            call_args = mock_put.call_args
+            assert call_args.args == ("http:://azure.com/myblob",)
+            assert call_args.kwargs["headers"] == {"x-ms-blob-type": "BlockBlob"}
+            assert call_args.kwargs["data"].memory == file_expected
 
     @patch(
         "requests.put",
         **{"return_value.raise_for_status.side_effect": Exception("this_test")}
     )
-    def test_put_raise(self, mock_put):
+    def test_put_raise(self, mock_put, numeric_blob_df):
         with pytest.raises(Exception) as e:
-            _df_to_blob("bogus_series", "system32")
+            _df_to_blob(numeric_blob_df, "http:://azure.com/myblob")
         assert "this_test" == str(e.value)
 
 
