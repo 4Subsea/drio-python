@@ -45,12 +45,13 @@ class Test_TokenCache:
         token_cache = authenticate.TokenCache()
         assert token_cache._token == {"access_token": "123abc"}
 
-    def test__token_root(self, mock_cache_dir):
-        mock_cache_dir.return_value = "my_dir"
+    def test__token_root(self, mock_cache_dir, tmp_path):
+        my_dir = tmp_path / "my_dir"
+        mock_cache_dir.return_value = my_dir
         token_cache = authenticate.TokenCache()
         token_root = token_cache._token_root
 
-        assert token_root == "my_dir"
+        assert token_root == my_dir
         mock_cache_dir.assert_called_with("datareservoirio")
 
     def test_token_path(self, mock_cache_dir, tmp_path):
@@ -74,21 +75,24 @@ class Test_TokenCache:
         token_cache = authenticate.TokenCache(session_key=session_key)
         assert token_cache.token_path == str(cache_path)
 
-    def test_token(self, mock_cache_dir):
-        mock_cache_dir.return_value = "my_dir"
+    def test_token(self, mock_cache_dir, tmp_path):
+        my_dir = tmp_path / "my_dir"
+        mock_cache_dir.return_value = my_dir
         token_cache = authenticate.TokenCache()
         token_cache._token = {"access_token": "123abc"}
 
         assert token_cache.token == {"access_token": "123abc"}
 
-    def test_token_none(self, mock_cache_dir):
-        mock_cache_dir.return_value = "my_dir"
+    def test_token_none(self, mock_cache_dir, tmp_path):
+        my_dir = tmp_path / "my_dir"
+        mock_cache_dir.return_value = my_dir
         token_cache = authenticate.TokenCache()
 
         assert token_cache.token is None
 
-    def test_append(self, mock_cache_dir):
-        mock_cache_dir.return_value = "my_dir"
+    def test_append(self, mock_cache_dir, tmp_path):
+        my_dir = tmp_path / "my_dir"
+        mock_cache_dir.return_value = my_dir
         token_cache = authenticate.TokenCache()
         token_cache._token = {"access_token": "123abc"}
 
@@ -150,8 +154,9 @@ class Test_TokenCache:
         token.update({"new_key": "new_value"})
         assert token == token_output
 
-    def test_call(self, mock_cache_dir):
-        mock_cache_dir.return_value = "my_dir"
+    def test_call(self, mock_cache_dir, tmp_path):
+        my_dir = tmp_path / "my_dir"
+        mock_cache_dir.return_value = my_dir
         token_cache = authenticate.TokenCache()
 
         with patch.object(token_cache, "dump") as mock_dump:
