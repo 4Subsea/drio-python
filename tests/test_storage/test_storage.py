@@ -155,11 +155,6 @@ class Test_Storage(unittest.TestCase):
 
 
 class Test_DirectUpload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage.StorageBackend.__init__", return_value=None)
-    def test_init(self, mock_backend):
-        DirectUpload()
-        mock_backend.assert_called_once()
-
     @patch("datareservoirio.storage.storage._df_to_blob")
     def test_put(self, mock_remote_put):
         params = {"Endpoint": "https:://go-here-for-blob.com"}
@@ -170,11 +165,6 @@ class Test_DirectUpload(unittest.TestCase):
 
 
 class Test_DirectDownload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage.StorageBackend.__init__", return_value=None)
-    def test_init(self, mock_backend):
-        DirectDownload()
-        mock_backend.assert_called_once()
-
     @patch("datareservoirio.storage.storage._blob_to_df")
     def test_get(self, mock_remote_get):
         params = {"Endpoint": "https:://go-here-for-blob.com"}
@@ -344,11 +334,6 @@ class Test_FileCachceDownload(unittest.TestCase):
 
         cacheio_patcher = patch("datareservoirio.storage.storage.CacheIO.__init__")
         self._cacheio_patch = cacheio_patcher.start()
-
-        storagebackend_patcher = patch(
-            "datareservoirio.storage.storage.StorageBackend.__init__"
-        )
-        self._storagebackend_patch = storagebackend_patcher.start()
 
         cacheindex_patcher = patch("datareservoirio.storage.storage._CacheIndex")
         self._cacheindex_patch = cacheindex_patcher.start()
