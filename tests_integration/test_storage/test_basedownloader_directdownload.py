@@ -19,8 +19,6 @@ class Test_DirectDownload(unittest.TestCase):
         self.timeseries_api = TimeSeriesAPI(session=self.auth)
 
         self.strategy = BaseDownloader(DirectDownload())
-
-        # Set up some stuff here
         self.files_api = FilesAPI(session=self.auth)
 
         uploader = DirectUpload()
@@ -39,7 +37,6 @@ class Test_DirectDownload(unittest.TestCase):
 
     def test_get(self):
 
-        # Make one myself?
         response = self.timeseries_api.create()
         myfileid = self.token_fileid
 
