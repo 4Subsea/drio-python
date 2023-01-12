@@ -17,13 +17,11 @@ from datareservoirio.storage import (
     FileCacheDownload,
     Storage,
 )
-
 from datareservoirio.storage.storage import (
-    _encode_for_path_safety,
     _blob_to_df,
     _df_to_blob,
+    _encode_for_path_safety,
 )
-
 
 TEST_PATH = Path(__file__).parent
 
@@ -558,7 +556,9 @@ class Test__df_to_blob:
             call_args = mock_put.call_args
             assert call_args.args == ("http:://azure.com/myblob",)
             assert call_args.kwargs["headers"] == {"x-ms-blob-type": "BlockBlob"}
-            assert call_args.kwargs["data"].memory == file_expected.replace(b"\r\n", b"\n")
+            assert call_args.kwargs["data"].memory == file_expected.replace(
+                b"\r\n", b"\n"
+            )
 
     @patch(
         "requests.put", **{"return_value.raise_for_status.return_value": MagicMock()}
@@ -577,7 +577,9 @@ class Test__df_to_blob:
             call_args = mock_put.call_args
             assert call_args.args == ("http:://azure.com/myblob",)
             assert call_args.kwargs["headers"] == {"x-ms-blob-type": "BlockBlob"}
-            assert call_args.kwargs["data"].memory == file_expected.replace(b"\r\n", b"\n")
+            assert call_args.kwargs["data"].memory == file_expected.replace(
+                b"\r\n", b"\n"
+            )
 
     @patch(
         "requests.put",

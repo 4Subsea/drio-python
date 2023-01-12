@@ -13,6 +13,7 @@ import requests
 
 from ..appdirs import user_cache_dir
 from .cache_engine import CacheIO, _CacheIndex
+
 # from .storage_engine import StorageBackend
 
 log = logging.getLogger(__name__)
@@ -189,7 +190,7 @@ class BaseUploader:
         return self._backend.put(params, data)
 
 
-class FileCacheDownload(CacheIO): # , StorageBackend):
+class FileCacheDownload(CacheIO):  # , StorageBackend):
     """
     Backend for download with file based cache.
 
@@ -356,7 +357,7 @@ class FileCacheDownload(CacheIO): # , StorageBackend):
             )
 
 
-class DirectDownload(): # StorageBackend):
+class DirectDownload:  # StorageBackend):
     """
     Backend for direct download from cloud.
 
@@ -377,7 +378,7 @@ class DirectDownload(): # StorageBackend):
         return _blob_to_df(blob_url)
 
 
-class DirectUpload():# StorageBackend):
+class DirectUpload:  # StorageBackend):
     """
     Backend for direct upload to cloud.
 
@@ -440,8 +441,6 @@ def _df_to_blob(df, blob_url):
         fp.seek(0)
 
         requests.put(
-            blob_url,
-            headers={"x-ms-blob-type": "BlockBlob"},
-            data=fp
-            ).raise_for_status()
+            blob_url, headers={"x-ms-blob-type": "BlockBlob"}, data=fp
+        ).raise_for_status()
     return
