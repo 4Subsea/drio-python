@@ -66,7 +66,10 @@ class Storage:
         upload_params = self._files_api.upload()
         file_id = upload_params["FileId"]
 
-        self._uploader.put(upload_params, series)
+        df = series.to_frame(name="values")
+        df.index = df.index.view("int64")
+
+        self._uploader.put(upload_params, df)
 
         self._files_api.commit(file_id)
         return file_id
@@ -425,6 +428,9 @@ def _df_to_blob(df, blob_url):
         Pandas series where index is nano-seconds since epoch (``Int64``) and
         values are ``str`` or ``float64``.
     """
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError
+
     with io.BytesIO() as fp:
         kwargs = {"header": False, "encoding": "utf-8", "mode": "wb"}
         try:  # breaking change since pandas 1.5.0
