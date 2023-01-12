@@ -19,8 +19,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
         cls.metaapi = MetadataAPI(session=cls.auth)
         files_api = FilesAPI(session=cls.auth)
 
-        session = requests.Session()
-        uploader = DirectUpload(session=session)
+        uploader = DirectUpload()
 
         df_1 = pd.DataFrame({"values": np.arange(100.0)}, index=np.arange(0, 100))
         df_2 = pd.DataFrame({"values": np.arange(100.0)}, index=np.arange(50, 150))
@@ -52,15 +51,13 @@ class Test_TimeSeriesApi(unittest.TestCase):
         }
 
         meta_1_value = {"Value": {"Ding": "Dong"}}
-        cls.meta_respons = cls.metaapi.put(
+        cls.meta_response = cls.metaapi.put(
             "namespace_string_1", "key_string_1", meta_1_value
         )
 
-        session.close()
-
     @classmethod
     def tearDownClass(cls):
-        cls.metaapi.delete(cls.meta_respons["Id"])
+        cls.metaapi.delete(cls.meta_response["Id"])
         cls.auth.close()
 
     def setUp(self):
@@ -87,7 +84,9 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.api.delete(response["TimeSeriesId"])
 
     def test_create_data_delete(self):
+
         response = self.api.create_with_data(self.token_fileid[0])
+
         info = self.api.info(response["TimeSeriesId"])
 
         self.assertEqual(0, response["TimeOfFirstSample"])
@@ -101,7 +100,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
     def test_delete(self):
         response = self.api.create(self.token_fileid[0])
-
         self.api.info(response["TimeSeriesId"])
         self.api.delete(response["TimeSeriesId"])
 
@@ -109,7 +107,9 @@ class Test_TimeSeriesApi(unittest.TestCase):
             self.api.info(response["TimeSeriesId"])
 
     def test_create_add_overlap_data_delete(self):
+
         response = self.api.create_with_data(self.token_fileid[0])
+
         response = self.api.add(response["TimeSeriesId"], self.token_fileid[1])
         response = self.api.add(response["TimeSeriesId"], self.token_fileid[2])
 
@@ -135,7 +135,7 @@ class Test_TimeSeriesApi(unittest.TestCase):
 
     def test_attach_detach_meta(self):
         response = self.api.create()
-        meta_id = self.meta_respons["Id"]
+        meta_id = self.meta_response["Id"]
 
         self.api.attach_metadata(response["TimeSeriesId"], metadata_id_list=[meta_id])
 

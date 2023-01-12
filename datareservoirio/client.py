@@ -47,7 +47,6 @@ class Client:
 
     def __init__(self, auth, cache=True, cache_opt=CACHE_DEFAULT):
         self._auth_session = auth
-        self._session = requests.Session()
         self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
         self._files_api = FilesAPI(self._auth_session)
         self._metadata_api = MetadataAPI(self._auth_session)
@@ -84,7 +83,7 @@ class Client:
         return self
 
     def __exit__(self, *args):
-        self._session.close()
+        return self
 
     def ping(self):
         """
@@ -242,7 +241,12 @@ class Client:
         return self._timeseries_api.delete(series_id)
 
     def get(
-        self, series_id, start=None, end=None, convert_date=True, raise_empty=False
+        self,
+        series_id,
+        start=None,
+        end=None,
+        convert_date=True,
+        raise_empty=False,
     ):
         """
         Retrieve a series from DataReservoir.io.
@@ -255,7 +259,7 @@ class Client:
             start time (inclusive) of the series given as anything
             pandas.to_datetime is able to parse.
         end : optional
-            stop time (inclusive) of the series given as anything
+            stop time (exclusive) of the series given as anything
             pandas.to_datetime is able to parse.
         convert_date : bool
             If True (default), the index is converted to DatetimeIndex.
@@ -275,7 +279,7 @@ class Client:
             end = _END_DEFAULT
 
         start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).value
-        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).value
+        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).value - 1
 
         if start >= end:
             raise ValueError("start must be before end")

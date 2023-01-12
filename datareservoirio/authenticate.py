@@ -10,6 +10,8 @@ from oauthlib.oauth2 import (
 )
 from requests_oauthlib import OAuth2Session
 
+import datareservoirio as drio
+
 from . import _constants  # noqa: F401
 from .appdirs import user_data_dir
 from .globalsettings import environment
@@ -93,11 +95,13 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
                 token = self.refresh_token()
             except (KeyError, ValueError, InvalidGrantError):
                 token = self.fetch_token()
-            else:
-                print("Authentication from previous session still valid.")
 
         if self.token_updater:
             self.token_updater(token)
+
+        self.headers.update(
+            {"user-agent": f"python-datareservoirio/{drio.__version__}"}
+        )
 
     def fetch_token(self):
         """Fetch new access and refresh token."""

@@ -16,14 +16,21 @@ class Test_ClientMetadata(unittest.TestCase):
         self.auth.close()
 
     def test_metadata_set_with_data_returns_id_of_existing_metadata(self):
-        response = self.client.metadata_set(
-            "system.integrationtest",
+
+        response1 = self.client.metadata_set(
+            "system.integration",
             "test_metadata_set",
             Country="Sweden",
             Language="Urdu",
         )
+        response2 = self.client.metadata_set(
+            "system.integration",
+            "test_metadata_set",
+            Country="Finland",
+            Language="Khmer",
+        )
 
-        self.assertEqual(response["Id"], "56e62c95-2cfa-4c61-2997-08d5fb8f513a")
+        self.assertEqual(response1["Id"], response2["Id"])
 
     def test_set_metadata_with_overwrite(self):
         ts_id = "6f64c5a8-bd28-4ca8-9df5-ffed0a0259b4"
