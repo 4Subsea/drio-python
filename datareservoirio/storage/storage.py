@@ -357,7 +357,8 @@ class FileCacheDownload(CacheIO):  # , StorageBackend):
             )
 
 
-class DirectDownload:  # StorageBackend):
+class DirectDownload:
+
     """
     Backend for direct download from cloud.
 
