@@ -379,7 +379,8 @@ class DirectDownload:
         return _blob_to_df(blob_url)
 
 
-class DirectUpload:  # StorageBackend):
+class DirectUpload:
+
     """
     Backend for direct upload to cloud.
 
