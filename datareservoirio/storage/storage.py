@@ -14,8 +14,6 @@ import requests
 from ..appdirs import user_cache_dir
 from .cache_engine import CacheIO, _CacheIndex
 
-
-
 log = logging.getLogger(__name__)
 
 
