@@ -22,21 +22,20 @@ You can browse metadata, and search for metadata and series data through
 
 Search for metadata
 -------------------
-You can also search for metadata:
+You can also search for metadata given a namespace and key:
 
 .. code-block:: python
 
-    # Search for *namespace* OR *key*
-    metadata_list = client.metadata_search('foo.bar', 'baz', conjunctive=False)
+    # Search for metadata given *namespace* and *key*
+    metadata_list = client.metadata_search('foo.bar', 'baz')
 
-    # Search for *namespace* AND *key*
-    metadata_list = client.metadata_search('foo.bar', 'baz', conjunctive=True)
 
 .. note::
 
-    The search is "fuzzy" as it looks for matches with
-    "wildcard + search term + wildcard". It is recommended to be as specific as
+    The namespace argument must be a perfect match. They key argument can be "begins with", meaning that 
+    the search looks for matches with "key + wildcard". It is recommended to be as specific as
     possible for best performance.
+
 
 Search for series
 -----------------
