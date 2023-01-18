@@ -1,10 +1,12 @@
+import io
 import os
 import unittest
-from unittest.mock import DEFAULT, MagicMock, Mock, PropertyMock, call, patch
+from pathlib import Path
+from unittest.mock import DEFAULT, MagicMock, Mock, call, patch
 
 import numpy as np
 import pandas as pd
-from requests import Session
+import pytest
 
 from datareservoirio.appdirs import user_cache_dir
 from datareservoirio.storage import (
@@ -15,7 +17,97 @@ from datareservoirio.storage import (
     FileCacheDownload,
     Storage,
 )
-from datareservoirio.storage.storage import _encode_for_path_safety
+from datareservoirio.storage.storage import (
+    _blob_to_df,
+    _df_to_blob,
+    _encode_for_path_safety,
+)
+
+TEST_PATH = Path(__file__).parent
+
+
+@pytest.fixture
+def numeric_blob_file_path():
+    return TEST_PATH / "testdata" / "numeric_blob.csv"
+
+
+@pytest.fixture
+def numeric_blob_df():
+    df = pd.DataFrame(
+        data=[
+            -0.200514,
+            -0.200514,
+            -0.203507,
+            -0.202312,
+            -0.202311,
+            -0.188543,
+            -0.190938,
+            -0.193332,
+            -0.192135,
+            -0.186149,
+        ],
+        index=[
+            1624838400000000000,
+            1624838400097656250,
+            1624838400195312500,
+            1624838400292968750,
+            1624838400390625000,
+            1624838400488281250,
+            1624838400585937500,
+            1624838400683593750,
+            1624838400781250000,
+            1624838400878906250,
+        ],
+        columns=("values",),
+    )
+    return df
+
+
+@pytest.fixture
+def str_blob_file_path():
+    return TEST_PATH / "testdata" / "str_blob.csv"
+
+
+@pytest.fixture
+def str_blob_df():
+    df = pd.DataFrame(
+        data=[
+            "Aa",
+            "Bb",
+            "Cc",
+            "Dd",
+            "Ee",
+            "Ff",
+            "Gg",
+            "Hh",
+            "Ii",
+            "Jj",
+        ],
+        index=[
+            1624838400000000000,
+            1624838400097656250,
+            1624838400195312500,
+            1624838400292968750,
+            1624838400390625000,
+            1624838400488281250,
+            1624838400585937500,
+            1624838400683593750,
+            1624838400781250000,
+            1624838400878906250,
+        ],
+        columns=("values",),
+    )
+    return df
+
+
+@pytest.fixture()
+def bytesio_with_memory():
+    class BytesIOmemory(io.BytesIO):
+        def close(self, *args, **kwargs):
+            self.memory = self.getvalue()
+            super().close(*args, **kwargs)
+
+    return BytesIOmemory
 
 
 class Test_Storage(unittest.TestCase):
@@ -35,54 +127,49 @@ class Test_Storage(unittest.TestCase):
         )
 
     def test_get(self):
-        data_remote = pd.DataFrame([1, 2, 3, 4], index=[1, 2, 3, 4])
+        data_remote = pd.DataFrame(
+            [1, 2, 3, 4], index=[1, 2, 3, 4], columns=("values",)
+        )
         self.downloader.get.return_value = data_remote
 
-        series = self.storage.get(self.tid, 1, 10)
+        series = self.storage.get(self.tid, 2, 3)
 
-        self.assertTrue(series.equals(pd.Series([1, 2, 3, 4], index=[1, 2, 3, 4])))
+        pd.testing.assert_series_equal(series, data_remote.squeeze("columns").iloc[1:3])
 
     def test_put(self):
         self._files_api.upload.return_value = {"FileId": "42"}
 
-        fileId = self.storage.put("data")
+        df_expected_sent = pd.DataFrame(
+            [1, 2, 3, 4], index=[1, 2, 3, 4], columns=("values",)
+        )
+        series = df_expected_sent.squeeze("columns")
+
+        fileId = self.storage.put(series)
 
         self.assertEqual(fileId, "42")
-
-    def test__create_series(self):
-        df = pd.DataFrame(data=[0, 2, 4, 8, 16, 32, 64], index=[0, 2, 4, 6, 8, 10, 12])
-        series_returned = self.storage._create_series(df, 4, 10)
-        series_expected = pd.Series(data=[4, 8, 16, 32], index=[4, 6, 8, 10])
-        pd.testing.assert_series_equal(series_returned, series_expected)
-        self.assertFalse(series_returned._is_view)  # opps! private api...
+        (params, df_sent), _ = self.uploader.put.call_args
+        assert params == {"FileId": "42"}
+        pd.testing.assert_frame_equal(df_expected_sent, df_sent)
 
 
 class Test_DirectUpload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage.StorageBackend.__init__", return_value=None)
-    def test_init(self, mock_backend):
-        DirectUpload()
-        mock_backend.assert_called_once()
-
-    @patch("datareservoirio.storage.storage.StorageBackend.remote_put")
+    @patch("datareservoirio.storage.storage._df_to_blob")
     def test_put(self, mock_remote_put):
+        params = {"Endpoint": "https:://go-here-for-blob.com"}
         uploader = DirectUpload()
-        uploader.put("params", "data")
+        uploader.put(params, "data")
 
-        mock_remote_put.assert_called_once_with("params", "data")
+        mock_remote_put.assert_called_once_with("data", params["Endpoint"])
 
 
 class Test_DirectDownload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage.StorageBackend.__init__", return_value=None)
-    def test_init(self, mock_backend):
-        DirectDownload()
-        mock_backend.assert_called_once()
-
-    @patch("datareservoirio.storage.storage.StorageBackend.remote_get")
+    @patch("datareservoirio.storage.storage._blob_to_df")
     def test_get(self, mock_remote_get):
+        params = {"Endpoint": "https:://go-here-for-blob.com"}
         downloader = DirectDownload()
-        downloader.get("params")
+        downloader.get(params)
 
-        mock_remote_get.assert_called_once_with("params")
+        mock_remote_get.assert_called_once_with(params["Endpoint"])
 
 
 class Test_BaseUploader(unittest.TestCase):
@@ -246,11 +333,6 @@ class Test_FileCachceDownload(unittest.TestCase):
         cacheio_patcher = patch("datareservoirio.storage.storage.CacheIO.__init__")
         self._cacheio_patch = cacheio_patcher.start()
 
-        storagebackend_patcher = patch(
-            "datareservoirio.storage.storage.StorageBackend.__init__"
-        )
-        self._storagebackend_patch = storagebackend_patcher.start()
-
         cacheindex_patcher = patch("datareservoirio.storage.storage._CacheIndex")
         self._cacheindex_patch = cacheindex_patcher.start()
 
@@ -329,9 +411,13 @@ class Test_FileCachceDownload(unittest.TestCase):
                 "abc123def456", _encode_for_path_safety("md5-123")
             )
 
-    @patch("datareservoirio.storage.storage.StorageBackend.remote_get")
+    @patch("datareservoirio.storage.storage._blob_to_df")
     def test_get_not_cached(self, mock_remote_get):
-        chunk = {"Path": "abc-123/def_456", "ContentMd5": "md5-123"}
+        chunk = {
+            "Path": "abc-123/def_456",
+            "ContentMd5": "md5-123",
+            "Endpoint": "abc-123/def_456?start=12",
+        }
 
         df = pd.DataFrame({"values": [1.0, 2.0, 3.0]}, index=[1, 2, 3])
 
@@ -353,6 +439,7 @@ class Test_FileCachceDownload(unittest.TestCase):
             mocks["_get_cached_data"].assert_called_once_with(
                 "abc123def456", _encode_for_path_safety("md5-123")
             )
+            mock_remote_get.assert_called_once_with(chunk["Endpoint"])
 
     def test_put_data_to_cache_tiny(self):
         id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
@@ -439,6 +526,69 @@ class Test_FileCachceDownload(unittest.TestCase):
                 mocks["_read"].return_value = df
 
                 self.assertIsNone(cache._get_cached_data(id_, md5))
+
+
+class Test__blob_to_series:
+    def test_get_numeric(self, numeric_blob_file_path, numeric_blob_df):
+        df_out = _blob_to_df(numeric_blob_file_path)
+        pd.testing.assert_frame_equal(df_out, numeric_blob_df)
+
+    def test_get_str(self, str_blob_file_path, str_blob_df):
+        df_out = _blob_to_df(str_blob_file_path)
+        pd.testing.assert_frame_equal(df_out, str_blob_df)
+
+
+class Test__df_to_blob:
+    @patch(
+        "requests.put", **{"return_value.raise_for_status.return_value": MagicMock()}
+    )
+    def test_put_numeric(
+        self, mock_put, numeric_blob_file_path, numeric_blob_df, bytesio_with_memory
+    ):
+        with patch("io.BytesIO", new=bytesio_with_memory):
+            _df_to_blob(numeric_blob_df, "http:://azure.com/myblob")
+
+            mock_put.return_value.raise_for_status.assert_called_once()
+
+            with open(numeric_blob_file_path, "rb") as fp:
+                file_expected = fp.read()
+
+            call_args = mock_put.call_args
+            assert call_args.args == ("http:://azure.com/myblob",)
+            assert call_args.kwargs["headers"] == {"x-ms-blob-type": "BlockBlob"}
+            assert call_args.kwargs["data"].memory == file_expected.replace(
+                b"\r\n", b"\n"
+            )
+
+    @patch(
+        "requests.put", **{"return_value.raise_for_status.return_value": MagicMock()}
+    )
+    def test_put_str(
+        self, mock_put, str_blob_file_path, str_blob_df, bytesio_with_memory
+    ):
+        with patch("io.BytesIO", new=bytesio_with_memory):
+            _df_to_blob(str_blob_df, "http:://azure.com/myblob")
+
+            mock_put.return_value.raise_for_status.assert_called_once()
+
+            with open(str_blob_file_path, "rb") as fp:
+                file_expected = fp.read()
+
+            call_args = mock_put.call_args
+            assert call_args.args == ("http:://azure.com/myblob",)
+            assert call_args.kwargs["headers"] == {"x-ms-blob-type": "BlockBlob"}
+            assert call_args.kwargs["data"].memory == file_expected.replace(
+                b"\r\n", b"\n"
+            )
+
+    @patch(
+        "requests.put",
+        **{"return_value.raise_for_status.side_effect": Exception("this_test")}
+    )
+    def test_put_raise(self, mock_put, numeric_blob_df):
+        with pytest.raises(Exception) as e:
+            _df_to_blob(numeric_blob_df, "http:://azure.com/myblob")
+        assert "this_test" == str(e.value)
 
 
 if __name__ == "__main__":

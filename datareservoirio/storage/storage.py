@@ -1,4 +1,5 @@
 import base64
+import io
 import logging
 import os
 import re
@@ -8,10 +9,10 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import RLock as Lock
 
 import pandas as pd
+import requests
 
 from ..appdirs import user_cache_dir
 from .cache_engine import CacheIO, _CacheIndex
-from .storage_engine import StorageBackend
 
 log = logging.getLogger(__name__)
 
@@ -64,7 +65,10 @@ class Storage:
         upload_params = self._files_api.upload()
         file_id = upload_params["FileId"]
 
-        self._uploader.put(upload_params, series)
+        df = series.to_frame(name="values")
+        df.index = df.index.view("int64")
+
+        self._uploader.put(upload_params, df)
 
         self._files_api.commit(file_id)
         return file_id
@@ -86,21 +90,13 @@ class Storage:
         log.debug("getting day file inventory")
         response = self._timeseries_api.download_days(timeseries_id, start, end)
 
-        df = self._downloader.get(response)
-
-        # at this point, an entirely new object w/o reference
-        # to internal objects is created.
-        if df.empty:
-            return pd.Series(dtype="float64")
-        return self._create_series(df, start, end)
-
-    def _create_series(self, df, start, end):
-        """Create a new pandas Series w/o internal references"""
-        index_bool = (df.index.values >= start) & (df.index.values <= end)
-        index = df.index.values[index_bool]  # enforces copy
-        values = df.values[index_bool, 0]  # enforces copy
-        dtype = df.dtypes[0]
-        return pd.Series(data=values, index=index, dtype=dtype)
+        series = (
+            self._downloader.get(response)
+            .squeeze("columns")
+            .loc[start:end]
+            .copy(deep=True)
+        )
+        return series
 
 
 class BaseDownloader:
@@ -192,7 +188,7 @@ class BaseUploader:
         return self._backend.put(params, data)
 
 
-class FileCacheDownload(CacheIO, StorageBackend):
+class FileCacheDownload(CacheIO):
     """
     Backend for download with file based cache.
 
@@ -286,7 +282,8 @@ class FileCacheDownload(CacheIO, StorageBackend):
         data = self._get_cached_data(id_, md5)
         if data is None:
             log.debug(f"Cache miss on {id_}")
-            data = super().remote_get(chunk)
+            blob_url = chunk["Endpoint"]
+            data = _blob_to_df(blob_url)
             self._put_data_to_cache(data, id_, md5)
         else:
             log.debug(f"Cache hit on {id_}")
@@ -358,7 +355,8 @@ class FileCacheDownload(CacheIO, StorageBackend):
             )
 
 
-class DirectDownload(StorageBackend):
+class DirectDownload:
+
     """
     Backend for direct download from cloud.
 
@@ -375,14 +373,74 @@ class DirectDownload(StorageBackend):
             data.
 
         """
-        return super().remote_get(chunk)
+        blob_url = chunk["Endpoint"]
+        return _blob_to_df(blob_url)
 
 
-class DirectUpload(StorageBackend):
+class DirectUpload:
+
     """
     Backend for direct upload to cloud.
 
     """
 
     def put(self, params, data):
-        return super().remote_put(params, data)
+        blob_url = params["Endpoint"]
+        return _df_to_blob(data, blob_url)
+
+
+def _blob_to_df(blob_url):
+    """
+    Download blob from remote storage and present as a Pandas Series.
+
+    Parameters
+    ----------
+    blob_url : str
+        Fully formated URL to the blob. Must contail all the required parameters
+        in the URL.
+
+    Return
+    ------
+    series : pandas.Series
+        Pandas series where index is nano-seconds since epoch and values are ``str``
+        or ``float64``.
+    """
+    df = pd.read_csv(
+        blob_url,
+        header=None,
+        names=("values",),
+        dtype={0: "int64", 1: "str"},
+        index_col=0,
+        encoding="utf-8",
+    ).astype("float64", errors="ignore")
+    return df
+
+
+def _df_to_blob(df, blob_url):
+    """
+    Upload a Pandas Dataframe as blob to a remote storage.
+
+    The series object converted to CSV encoded in "utf-8". Headers are ignored
+    and line terminator is set as ``\n``.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        Pandas series where index is nano-seconds since epoch (``Int64``) and
+        values are ``str`` or ``float64``.
+    """
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError
+
+    with io.BytesIO() as fp:
+        kwargs = {"header": False, "encoding": "utf-8", "mode": "wb"}
+        try:  # breaking change since pandas 1.5.0
+            df.to_csv(fp, lineterminator="\n", **kwargs)
+        except TypeError:  # Compatibility with pandas older than 1.5.0.
+            df.to_csv(fp, line_terminator="\n", **kwargs)
+        fp.seek(0)
+
+        requests.put(
+            blob_url, headers={"x-ms-blob-type": "BlockBlob"}, data=fp
+        ).raise_for_status()
+    return
