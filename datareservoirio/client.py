@@ -455,7 +455,7 @@ class Client:
             response = self._metadata_api.get(namespace, key)
             return response["Value"]
 
-    def metadata_search(self, namespace, key, conjunctive=True):
+    def metadata_search(self, namespace, key):
         """
         Find metadata entries given namespace/key combination.
 
