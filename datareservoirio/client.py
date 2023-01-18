@@ -206,7 +206,17 @@ class Client:
     def search(self, namespace, key=None, name=None, value=None):
         """
         Find available series having metadata with given
-        namespace + key* + name + value (optional) combination.
+        namespace + key* + name + value (optional) combination. Note that if an argument is None, the proceeding ones are also set to None. For example, 
+        (namespace = “hello”, key=None, name=”Rabbit”, value=”Hole”) will have the same effect as (namespace = “hello”, key=None, name=None, value=None)
+
+
+        
+        Fortsett: 
+        Sjekk nøye gjennom parametrene og forklar hvilke som må være fullstendige og hvilke som er partial.
+
+
+
+
 
         Parameters
         ----------
