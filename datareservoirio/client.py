@@ -4,6 +4,7 @@ import timeit
 
 import pandas as pd
 import requests
+import warnings
 
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import (
@@ -206,28 +207,26 @@ class Client:
     def search(self, namespace, key=None, name=None, value=None):
         """
         Find available series having metadata with given
-        namespace + key* + name + value (optional) combination. Note that if an argument is None, the proceeding ones are also set to None. For example, 
-        (namespace = “hello”, key=None, name=”Rabbit”, value=”Hole”) will have the same effect as (namespace = “hello”, key=None, name=None, value=None)
-
-
-        
-        Fortsett: 
-        Sjekk nøye gjennom parametrene og forklar hvilke som må være fullstendige og hvilke som er partial.
-
-
-
-
+        namespace + key* + name + value (optional) combination. Note that the
+        arguments are hierarchical, starting from the left. If an argument is
+        None, the proceeding ones are also set to None. For example,
+        (namespace = “hello”, key=None, name=”Rabbit”, value=”Hole”)
+        will have the same effect as (namespace = “hello”, key=None, name=None,
+        value=None)
 
         Parameters
         ----------
         namespace : str
-            The namespace to search in
+            Full namespace to search for 
         key : str, optional
-            The key to narrow search. Search is made with wildcard postfix.
+            Key or partial (begins with) key to narrow search.
+            Default (None) will include all.
         name: str, optional
-            name to narrow search further
+            Full name to narrow search further.
+            Default (None) will include all.
         value: str, optional
-            Value to narrow search further. Default (None) will include all.
+            Value or partial (begins or ends with or both) to narrow search further. 
+            Default (None) will include all.
 
         Returns
         -------
@@ -236,6 +235,12 @@ class Client:
             a dict is returned -> ``{TimeSeriesId: metadata}``. Otherwise, a
             plain list with ``TimeSeriesId`` is returned.
         """
+        args_ =  [namespace, key, name, value]
+        none_count = args_.count(None)
+    
+        if args_[-none_count:].count(None) < none_count:
+            warnings.warn('Warning: You have provided argument(s) following a None argument, they are ignored by the search!')
+
         return self._timeseries_api.search(namespace, key, name, value)
 
     def delete(self, series_id):

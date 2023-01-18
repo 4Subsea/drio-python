@@ -4,6 +4,8 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pandas as pd
 import requests
+import pytest
+
 
 import datareservoirio
 from datareservoirio import Client
@@ -413,6 +415,10 @@ class Test_Client(unittest.TestCase):
         self.client._timeseries_api.search.assert_called_once_with(
             "test_namespace", "test_key", "test_name", 123
         )
+
+    def test_search_None(self):
+        with pytest.warns():
+            self.client.search("test_namespace", None, "test_name", 123)
 
     def test_metadata_get_with_id(self):
         self.client._metadata_api.get_by_id.return_value = {"Id": "123abc"}
