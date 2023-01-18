@@ -14,7 +14,7 @@ import requests
 from ..appdirs import user_cache_dir
 from .cache_engine import CacheIO, _CacheIndex
 
-# from .storage_engine import StorageBackend
+
 
 log = logging.getLogger(__name__)
 
@@ -190,7 +190,7 @@ class BaseUploader:
         return self._backend.put(params, data)
 
 
-class FileCacheDownload(CacheIO):  # , StorageBackend):
+class FileCacheDownload(CacheIO):
     """
     Backend for download with file based cache.
 
