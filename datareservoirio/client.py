@@ -462,9 +462,7 @@ class Client:
         namespace : string
             The namespace to search in
         key : string
-            The key to narrow search
-        conjuctive : bool
-            -
+            The key to narrow search. Supports "begins with" specification, i.e. will look for matches with "key + wildcard"
 
         Returns
         -------
@@ -472,7 +470,7 @@ class Client:
             Metadata entries that matches the search.
 
         """
-        response = self._metadata_api.search(namespace, key, conjunctive)
+        response = self._metadata_api.search(namespace, key)
         return response
 
     def metadata_delete(self, metadata_id):
