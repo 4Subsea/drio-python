@@ -203,7 +203,7 @@ class Client:
         """
         return self._timeseries_api.info(series_id)
 
-    def search(self, namespace, key, name, value=None):
+    def search(self, namespace, key=None, name=None, value=None):
         """
         Find available series having metadata with given
         namespace + key* + name + value (optional) combination.
@@ -212,9 +212,9 @@ class Client:
         ----------
         namespace : str
             The namespace to search in
-        key : str
+        key : str, optional
             The key to narrow search. Search is made with wildcard postfix.
-        name: str
+        name: str, optional
             name to narrow search further
         value: str, optional
             Value to narrow search further. Default (None) will include all.
