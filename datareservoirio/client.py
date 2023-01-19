@@ -447,7 +447,12 @@ class Client:
 
     def metadata_browse(self, namespace=None, key=None):
         """
-        Browse available metadata namespace/key/names combinations.
+        Browse available metadata namespace/key combinations. Note that the 
+        arguments are hierarchical, starting from the left. If "namespace" is 
+        None, "key" is also set to None. For example, 
+        (namespace=None, key="somekey") will have the same effect as 
+        (namespace=None, key=None), i.e. list all available namespaces.
+
 
         Parameters
         ----------
