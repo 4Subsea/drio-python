@@ -458,27 +458,10 @@ class Test_Client(unittest.TestCase):
         self.client.metadata_browse(namespace="test_namespace")
         self.client._metadata_api.keys.assert_called_once_with("test_namespace")
 
-    def test_metadata_browse_names(self):
-        self.client._metadata_api.get.return_value = {"Value": "{}"}
-
-        self.client.metadata_browse(namespace="test_namespace", key="test_key")
-        self.client._metadata_api.get.assert_called_once_with(
-            "test_namespace", "test_key"
-        )
-
-    def test_metadata_search_conjunctive_true(self):
+    def test_metadata_search(self):
         self.client.metadata_search(namespace="test_namespace", key="test_key")
         self.client._metadata_api.search.assert_called_once_with(
-            "test_namespace", "test_key", True
-        )
-
-    def test_metadata_search_conjunctive_false(self):
-        self.client.metadata_search(
-            namespace="test_namespace", key="test_key", conjunctive=False
-        )
-        self.client._metadata_api.search.assert_called_once_with(
-            "test_namespace", "test_key", False
-        )
+            "test_namespace", "test_key")
 
     def test_metadata_delete(self):
         self.client.metadata_delete("id123")
