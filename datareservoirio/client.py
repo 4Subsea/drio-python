@@ -492,21 +492,18 @@ class Client:
 
     def _verify_and_prepare_series(self, series):
         if not isinstance(series, pd.Series):
-            log.error(f"series type is {type(series)}")
             raise ValueError("series must be a pandas Series")
 
         if not (
             pd.api.types.is_datetime64_ns_dtype(series.index)
             or pd.api.types.is_int64_dtype(series.index)
         ):
-            log.error(f"index dtype is {series.index.dtype}")
             raise ValueError("allowed dtypes are datetime64[ns] and int64")
 
         df = series.to_frame(name="values").reset_index(names="index")
         df["index"] = df["index"].view("int64")
 
         if not df["index"].is_unique:
-            log.error("index contains duplicate timestamp values")
             raise ValueError("index values must be unique timestamps")
 
         return df
