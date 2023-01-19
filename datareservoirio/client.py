@@ -478,11 +478,12 @@ class Client:
         namespace : string
             The namespace to search in
         key : string
-            The key to narrow search. Supports "begins with" specification, i.e. will look for matches with "key + wildcard"
+            The key to narrow search. Supports "begins with" specification, 
+            i.e. will look for matches with "key + wildcard"
 
         Returns
         -------
-        dict
+        list
             Metadata entries that matches the search.
 
         """
