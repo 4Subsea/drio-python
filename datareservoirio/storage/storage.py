@@ -399,11 +399,9 @@ def _blob_to_df(blob_url):
     df = pd.read_csv(
         blob_url,
         header=None,
-        names=("values",),
         dtype={0: "int64", 1: "str"},
-        index_col=0,
         encoding="utf-8",
-    ).astype("float64", errors="ignore")
+    ).astype({1: "float64"}, errors="ignore")
     return df
 
 
@@ -424,7 +422,7 @@ def _df_to_blob(df, blob_url):
         raise ValueError
 
     with io.BytesIO() as fp:
-        kwargs = {"header": False, "encoding": "utf-8", "mode": "wb"}
+        kwargs = {"header": False, "index": False, "encoding": "utf-8", "mode": "wb"}
         try:  # breaking change since pandas 1.5.0
             df.to_csv(fp, lineterminator="\n", **kwargs)
         except TypeError:  # Compatibility with pandas older than 1.5.0.

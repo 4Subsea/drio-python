@@ -290,11 +290,13 @@ class Client:
         log.debug("Getting series range")
         series = (
             self._storage.get(series_id, start, end)
-            .set_index("index")
+            .set_index(0)
             .squeeze("columns")
             .loc[start:end]
             .copy(deep=True)
         )
+        series.name = "values"
+        series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing
             raise ValueError("can't find data in the given interval")
@@ -504,11 +506,11 @@ class Client:
         ):
             raise ValueError("allowed dtypes are datetime64[ns] and int64")
 
-        df = series.to_frame(name="values").reset_index(names="index")
-        df["index"] = df["index"].view("int64")
-
-        if not df["index"].is_unique:
+        if not series.index.is_unique:
             raise ValueError("index values must be unique timestamps")
+
+        df = series.to_frame(name=1).reset_index(names=0)
+        df[0] = df[0].view("int64")
 
         return df
 
