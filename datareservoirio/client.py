@@ -123,12 +123,10 @@ class Client:
             response = self._timeseries_api.create()
             return response
 
-        # Transform goes here
-        self._verify_and_prepare_series(series)
-        # 
+        df = self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
-        file_id = self._storage.put(series)
+        file_id = self._storage.put(df)
         time_upload = timeit.default_timer()
         log.info(f"Upload took {time_upload - time_start} seconds")
 
@@ -172,11 +170,11 @@ class Client:
         dict
             The response from DataReservoir.io.
         """
-        # Transform goes here
-        self._verify_and_prepare_series(series)
+        df = self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
-        file_id = self._storage.put(series)
+
+        file_id = self._storage.put(df)
         time_upload = timeit.default_timer()
         log.info(f"Upload took {time_upload - time_start} seconds")
 
