@@ -465,8 +465,7 @@ class Client:
         if not namespace:
             return self._metadata_api.namespaces()
         else:
-            response = self._metadata_api.get(namespace)
-            return response["Value"]
+            return self._metadata_api.keys(namespace)
 
     def metadata_search(self, namespace, key):
         """
