@@ -445,35 +445,29 @@ class Client:
 
         return response
 
-    def metadata_browse(self, namespace=None, key=None):
+    def metadata_browse(self, namespace=None):
         """
-        Browse available metadata namespace/key combinations. Note that the 
-        arguments are hierarchical, starting from the left. If "namespace" is 
-        None, "key" is also set to None. For example, 
-        (namespace=None, key="somekey") will have the same effect as 
-        (namespace=None, key=None), i.e. list all available namespaces.
+        List available metadata namespaces and keys. If namespace is None, a list
+        of all available namespaces is returned. If namespace is specified, 
+        a list of all available keys for that namespace is returned. 
 
 
         Parameters
         ----------
         namespace : string
             The namespace to search in
-        key : string
-            the namespace key to narrow search
+
 
         Returns
         -------
-        list or dict
-            The namespaces or keys found. Or if both namespace and key is
-            present, the specific metadata for the namespace/key combination.
+        list
+            The namespaces or keys found. 
         """
 
         if not namespace:
             return self._metadata_api.namespaces()
-        elif not key:
-            return self._metadata_api.keys(namespace)
         else:
-            response = self._metadata_api.get(namespace, key)
+            response = self._metadata_api.get(namespace)
             return response["Value"]
 
     def metadata_search(self, namespace, key):
