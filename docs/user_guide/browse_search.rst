@@ -32,7 +32,7 @@ You can also search for metadata given a namespace and key:
 
 .. note::
 
-    The namespace argument must be a perfect match. They key argument can be "begins with", meaning that 
+    The namespace argument must be an exact match. They key argument can be "begins with", meaning that 
     the search looks for matches with "key + wildcard". It is recommended to be as specific as
     possible for best performance.
 
