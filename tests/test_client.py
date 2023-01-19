@@ -539,19 +539,32 @@ class Test_TimeSeriesClient_verify_prep_series(unittest.TestCase):
     def setUp(self):
         self.client = Client(Mock())
 
-    def test_datetime64(self):
-        series = pd.Series(
-            np.random.rand(10), index=np.arange(0, 10e9, 1e9).astype("datetime64[ns]")
-        )
+    def test_daterange(self):
+        index = pd.date_range("2023", periods=10, freq="1S")
+        values = np.random.rand(10)
+        series = pd.Series(values, index=index)
+        df_expected = pd.DataFrame({"index": index.values.astype("int64"), "values": values})
+
         result = self.client._verify_and_prepare_series(series)
-        self.assertIsNone(result)
+        pd.testing.assert_frame_equal(df_expected, result)
+
+    def test_datetime64(self):
+        index = np.arange(0, 10e9, 1e9, dtype="int64")
+        values = np.random.rand(10)
+        series = pd.Series(values, index=index.astype("datetime64[ns]"))
+        df_expected = pd.DataFrame({"index": index, "values": values})
+
+        result = self.client._verify_and_prepare_series(series)
+        pd.testing.assert_frame_equal(df_expected, result)
 
     def test_int64(self):
-        series = pd.Series(
-            np.random.rand(10), index=np.arange(0, 10e9, 1e9).astype("int64")
-        )
+        index = np.arange(0, 10e9, 1e9, dtype="int64")
+        values = np.random.rand(10)
+        series = pd.Series(values, index=index)
+        df_expected = pd.DataFrame({"index": index, "values": values})
+
         result = self.client._verify_and_prepare_series(series)
-        self.assertIsNone(result)
+        pd.testing.assert_frame_equal(df_expected, result)
 
     def test_index_not_valid(self):
         series = pd.Series(

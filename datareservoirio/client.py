@@ -123,7 +123,9 @@ class Client:
             response = self._timeseries_api.create()
             return response
 
+        # Transform goes here
         self._verify_and_prepare_series(series)
+        # 
 
         time_start = timeit.default_timer()
         file_id = self._storage.put(series)
@@ -170,6 +172,7 @@ class Client:
         dict
             The response from DataReservoir.io.
         """
+        # Transform goes here
         self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
@@ -499,9 +502,14 @@ class Client:
             log.error(f"index dtype is {series.index.dtype}")
             raise ValueError("allowed dtypes are datetime64[ns] and int64")
 
-        if not series.index.is_unique:
+        df = series.to_frame(name="values").reset_index(names="index")
+        df["index"] = df["index"].view("int64")
+
+        if not df["index"].is_unique:
             log.error("index contains duplicate timestamp values")
             raise ValueError("index values must be unique timestamps")
+
+        return df
 
     def _wait_until_file_ready(self, file_id):
         # wait for server side processing
