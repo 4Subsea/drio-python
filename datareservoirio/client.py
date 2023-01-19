@@ -290,12 +290,11 @@ class Client:
         log.debug("Getting series range")
         series = (
             self._storage.get(series_id, start, end)
-            .set_index(0)
+            .set_index("index")
             .squeeze("columns")
             .loc[start:end]
             .copy(deep=True)
         )
-        series.name = "values"
         series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing

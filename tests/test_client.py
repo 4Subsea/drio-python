@@ -312,8 +312,8 @@ class Test_Client(unittest.TestCase):
 
         self._storage.get.return_value = pd.DataFrame(
             {
-                0: index,
-                1: values
+                "index": index,
+                "values": values
             }
         )
         response_expected = pd.Series(
@@ -344,7 +344,7 @@ class Test_Client(unittest.TestCase):
         start = pd.to_datetime(1, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(10, dayfirst=True, unit="ns", utc=True).value
 
-        self.client._storage.get.return_value = pd.DataFrame({0: index, 1: values})
+        self.client._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
         response = self.client.get(self.timeseries_id, start, end, convert_date=True)
 
         self.client._storage.get.assert_called_once_with(
@@ -368,7 +368,7 @@ class Test_Client(unittest.TestCase):
         start = pd.to_datetime(1, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(10, dayfirst=True, unit="ns", utc=True).value
 
-        self.client._storage.get.return_value = pd.DataFrame({0: index, 1: values})
+        self.client._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
         response = self.client.get(self.timeseries_id, start, end, convert_date=False)
 
         self.client._storage.get.assert_called_once_with(
@@ -382,7 +382,7 @@ class Test_Client(unittest.TestCase):
     def test_get_with_start_stop_as_str_calls_storagewithnanonsinceepoch(self):
         index = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         values = np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10.])
-        self._storage.get.return_value = pd.DataFrame({0: index, 1: values})
+        self._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
 
         self.client.get(
             self.timeseries_id,
@@ -395,7 +395,7 @@ class Test_Client(unittest.TestCase):
     def test_get_with_emptytimeseries_return_empty(self):
         index = np.array([10, 11, 12])
         values = np.array([1, 2, 3])
-        self._storage.get.return_value = pd.DataFrame({0: index, 1: values})
+        self._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
 
         response_expected = pd.Series(dtype="float64", name="values")
         response_expected.index = pd.to_datetime(response_expected.index, utc=True)
@@ -412,7 +412,7 @@ class Test_Client(unittest.TestCase):
     def test_get_with_raise_empty_throws(self):
         index = np.array([6, 7, 8, 9, 10])
         values = np.array([6., 7., 8., 9., 10.])
-        self._storage.get.return_value = pd.DataFrame({0: index, 1: values})
+        self._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
 
         with self.assertRaises(ValueError):
             self.client.get(
@@ -436,7 +436,7 @@ class Test_Client(unittest.TestCase):
         index = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         values = np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10.])
 
-        self._storage.get.return_value = pd.DataFrame({0: index, 1: values})
+        self._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
 
         self.client.get(
             self.timeseries_id,

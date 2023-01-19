@@ -399,9 +399,10 @@ def _blob_to_df(blob_url):
     df = pd.read_csv(
         blob_url,
         header=None,
-        dtype={0: "int64", 1: "str"},
+        names=("index", "values"),
+        dtype={"index": "int64", "values": "str"},
         encoding="utf-8",
-    ).astype({1: "float64"}, errors="ignore")
+    ).astype({"values": "float64"}, errors="ignore")
     return df
 
 
