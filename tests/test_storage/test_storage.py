@@ -127,14 +127,12 @@ class Test_Storage(unittest.TestCase):
         )
 
     def test_get(self):
-        data_remote = pd.DataFrame(
-            [1, 2, 3, 4], index=[1, 2, 3, 4], columns=("values",)
-        )
+        data_remote = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
         self.downloader.get.return_value = data_remote
 
-        series = self.storage.get(self.tid, 2, 3)
+        data_out = self.storage.get(self.tid, 2, 3)
 
-        pd.testing.assert_series_equal(series, data_remote.squeeze("columns").iloc[1:3])
+        pd.testing.assert_frame_equal(data_out, data_remote)
 
     def test_put(self):
         self._files_api.upload.return_value = {"FileId": "42"}

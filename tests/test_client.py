@@ -308,7 +308,21 @@ class Test_Client(unittest.TestCase):
         self.assertEqual(response, expected_response)
 
     def test_get_with_defaults(self):
-        self._storage.get.return_value = self.series_with_10_rows
+        index = np.array([1, 2, 3, 4, 5, 6])
+        values = np.array([1., 2., 3., 4., 5., 6.])
+
+        self._storage.get.return_value = pd.DataFrame(
+            {
+                "index": index,
+                "values": values
+            }
+        )
+        response_expected = pd.Series(
+            values,
+            index=pd.to_datetime(index, utc=True),
+            name="values"
+        )
+        response_expected.index.name = "index"
 
         response = self.client.get(self.timeseries_id)
 
@@ -317,22 +331,23 @@ class Test_Client(unittest.TestCase):
             datareservoirio.client._START_DEFAULT,
             datareservoirio.client._END_DEFAULT - 1,
         )
-        pd.testing.assert_series_equal(response, self.series_with_10_rows)
+        pd.testing.assert_series_equal(response, response_expected)
 
     def test_get_with_convert_date_returns_series(self):
-        series_without_dt = pd.Series(
-            data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        )
+        index = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        values = np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10.])
 
         series_with_dt = pd.Series(
-            data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        )
-        series_with_dt.index = pd.to_datetime(series_with_dt.index, utc=True)
+            values[:-1],
+            index=pd.to_datetime(index[:-1], utc=True),
+            name="values"
+            )
+        series_with_dt.index.name = "index"
 
         start = pd.to_datetime(1, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(10, dayfirst=True, unit="ns", utc=True).value
 
-        self.client._storage.get.return_value = series_without_dt
+        self.client._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
         response = self.client.get(self.timeseries_id, start, end, convert_date=True)
 
         self.client._storage.get.assert_called_once_with(
@@ -340,28 +355,38 @@ class Test_Client(unittest.TestCase):
         )
 
         pd.testing.assert_series_equal(
-            response, series_without_dt, check_index_type=True
+            response, series_with_dt, check_index_type=True
         )
 
     def test_get_without_convert_date_returns_series(self):
-        series_without_dt = pd.Series(
-            data=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        )
+        index = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        values = np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10.])
+
+        series_with_dt = pd.Series(
+            values[:-1],
+            index=index[:-1],
+            name="values"
+            )
+        series_with_dt.index.name = "index"
+
         start = pd.to_datetime(1, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(10, dayfirst=True, unit="ns", utc=True).value
-        self.client._storage.get.return_value = series_without_dt
 
+        self.client._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
         response = self.client.get(self.timeseries_id, start, end, convert_date=False)
 
         self.client._storage.get.assert_called_once_with(
             self.timeseries_id, start, end - 1
         )
+
         pd.testing.assert_series_equal(
-            response, series_without_dt, check_index_type=True
+            response, series_with_dt, check_index_type=True
         )
 
     def test_get_with_start_stop_as_str_calls_storagewithnanonsinceepoch(self):
-        self._storage.get.return_value = self.series_with_10_rows
+        index = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        values = np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10.])
+        self._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
 
         self.client.get(
             self.timeseries_id,
@@ -372,9 +397,13 @@ class Test_Client(unittest.TestCase):
         self.client._storage.get.assert_called_once_with(self.timeseries_id, 1, 3)
 
     def test_get_with_emptytimeseries_return_empty(self):
-        self._storage.get.return_value = pd.Series(dtype="float64")
-        response_expected = pd.Series(dtype="float64")
+        index = np.array([10, 11, 12])
+        values = np.array([1, 2, 3])
+        self._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
+
+        response_expected = pd.Series(dtype="float64", name="values")
         response_expected.index = pd.to_datetime(response_expected.index, utc=True)
+        response_expected.index.name = "index"
 
         response = self.client.get(
             self.timeseries_id,
@@ -386,7 +415,9 @@ class Test_Client(unittest.TestCase):
         pd.testing.assert_series_equal(response, response_expected, check_dtype=False)
 
     def test_get_with_raise_empty_throws(self):
-        self._storage.get.return_value = pd.Series(dtype="float64")
+        index = np.array([6, 7, 8, 9, 10])
+        values = np.array([6., 7., 8., 9., 10.])
+        self._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
 
         with self.assertRaises(ValueError):
             self.client.get(
@@ -407,7 +438,10 @@ class Test_Client(unittest.TestCase):
             )
 
     def test_get_subtract_nanosecond(self):
-        self._storage.get.return_value = self.series_with_10_rows
+        index = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        values = np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10.])
+
+        self._storage.get.return_value = pd.DataFrame({"index": index, "values": values})
 
         self.client.get(
             self.timeseries_id,

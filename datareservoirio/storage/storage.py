@@ -86,14 +86,8 @@ class Storage:
         """
         log.debug("getting day file inventory")
         response = self._timeseries_api.download_days(timeseries_id, start, end)
-
-        series = (
-            self._downloader.get(response)
-            .squeeze("columns")
-            .loc[start:end]
-            .copy(deep=True)
-        )
-        return series
+        df = self._downloader.get(response)
+        return df
 
 
 class BaseDownloader:
