@@ -3,9 +3,8 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
-import requests
 import pytest
-
+import requests
 
 import datareservoirio
 from datareservoirio import Client
@@ -461,7 +460,8 @@ class Test_Client(unittest.TestCase):
     def test_metadata_search(self):
         self.client.metadata_search(namespace="test_namespace", key="test_key")
         self.client._metadata_api.search.assert_called_once_with(
-            "test_namespace", "test_key")
+            "test_namespace", "test_key"
+        )
 
     def test_metadata_delete(self):
         self.client.metadata_delete("id123")
