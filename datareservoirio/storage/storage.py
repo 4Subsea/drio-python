@@ -48,14 +48,14 @@ class Storage:
         self._downloader = downloader
         self._uploader = uploader
 
-    def put(self, series):
+    def put(self, df):
         """
-        Put a data into storage.
+        Put a Pandas DataFrame into storage.
 
         Parameters
         ----------
-        series : pandas.Series
-            pandas Series to store
+        df : pandas.DataFrame
+            DataFrame to store.
 
         Returns
         -------
@@ -64,9 +64,6 @@ class Storage:
         """
         upload_params = self._files_api.upload()
         file_id = upload_params["FileId"]
-
-        df = series.to_frame(name="values")
-        df.index = df.index.view("int64")
 
         self._uploader.put(upload_params, df)
 
