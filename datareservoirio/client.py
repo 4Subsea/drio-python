@@ -451,12 +451,10 @@ class Client:
         of all available namespaces is returned. If namespace is specified, 
         a list of all available keys for that namespace is returned. 
 
-
         Parameters
         ----------
         namespace : string
-            The namespace to search in
-
+            The namespace to search in (exact match)
 
         Returns
         -------
