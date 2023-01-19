@@ -232,8 +232,9 @@ class Client:
         -------
         dict or list
             Available information about the series. If ``value`` is passed,
-            a dict is returned -> ``{TimeSeriesId: metadata}``. Otherwise, a
-            plain list with ``TimeSeriesId`` is returned.
+            a plain list with ``TimeSeriesId`` is returned. Otherwise, a dict is 
+            returned -> ``{TimeSeriesId: metadata}``.
+
         """
         args_ =  [namespace, key, name, value]
         none_count = args_.count(None)
