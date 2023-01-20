@@ -170,20 +170,6 @@ class BaseDownloader:
         return df_combined
 
 
-class BaseUploader:
-    """
-    Series upload strategy that will upload Pandas Series to provided cloud
-    backend.
-
-    """
-
-    def __init__(self, backend):
-        self._backend = backend
-
-    def put(self, params, data):
-        return self._backend.put(params, data)
-
-
 class FileCacheDownload(CacheIO):
     """
     Backend for download with file based cache.
@@ -371,18 +357,6 @@ class DirectDownload:
         """
         blob_url = chunk["Endpoint"]
         return _blob_to_df(blob_url)
-
-
-class DirectUpload:
-
-    """
-    Backend for direct upload to cloud.
-
-    """
-
-    def put(self, params, data):
-        blob_url = params["Endpoint"]
-        return _df_to_blob(data, blob_url)
 
 
 def _blob_to_df(blob_url):

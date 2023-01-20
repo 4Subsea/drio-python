@@ -11,9 +11,9 @@ import pytest
 from datareservoirio.appdirs import user_cache_dir
 from datareservoirio.storage import (
     BaseDownloader,
-    BaseUploader,
+#     BaseUploader,
     DirectDownload,
-    DirectUpload,
+#    DirectUpload,
     FileCacheDownload,
     Storage,
 )
@@ -153,16 +153,6 @@ class Test_Storage(unittest.TestCase):
         pd.testing.assert_frame_equal(df_expected_sent, df_sent)
 
 
-class Test_DirectUpload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage._df_to_blob")
-    def test_put(self, mock_remote_put):
-        params = {"Endpoint": "https:://go-here-for-blob.com"}
-        uploader = DirectUpload()
-        uploader.put(params, "data")
-
-        mock_remote_put.assert_called_once_with("data", params["Endpoint"])
-
-
 class Test_DirectDownload(unittest.TestCase):
     @patch("datareservoirio.storage.storage._blob_to_df")
     def test_get(self, mock_remote_get):
@@ -171,21 +161,6 @@ class Test_DirectDownload(unittest.TestCase):
         downloader.get(params)
 
         mock_remote_get.assert_called_once_with(params["Endpoint"])
-
-
-class Test_BaseUploader(unittest.TestCase):
-    def test_init(self):
-        backend = MagicMock()
-        uploader = BaseUploader(backend)
-
-        self.assertEqual(backend, uploader._backend)
-
-    def test_put(self):
-        backend = MagicMock()
-        uploader = BaseUploader(backend)
-        uploader.put("params", "data")
-
-        backend.put.assert_called_once_with("params", "data")
 
 
 class Test_BaseDownloader(unittest.TestCase):

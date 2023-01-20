@@ -9,9 +9,7 @@ import requests
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import (
     BaseDownloader,
-    BaseUploader,
     DirectDownload,
-    DirectUpload,
     FileCacheDownload,
     Storage,
 )
