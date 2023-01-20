@@ -66,16 +66,13 @@ class Client:
             )
         else:
             download_backend = DirectDownload()
-        upload_backend = DirectUpload()
 
         downloader = BaseDownloader(download_backend)
-        uploader = BaseUploader(upload_backend)
 
         self._storage = Storage(
             self._timeseries_api,
             self._files_api,
             downloader=downloader,
-            uploader=uploader,
         )
 
     def __enter__(self):
