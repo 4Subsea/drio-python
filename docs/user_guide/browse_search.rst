@@ -73,7 +73,7 @@ The search function has one required argument (namespace), the rest are optional
 
 Series information
 ------------------
-The client.info() method returns a dict containing all available metadata for a given time series:
+The client.info() method returns a dict containing all available metadata for a given time series id:
 
 .. code-block:: python
 
