@@ -1,6 +1,7 @@
 import logging
 import time
 import timeit
+import warnings
 
 import pandas as pd
 import requests
@@ -204,29 +205,46 @@ class Client:
         """
         return self._timeseries_api.info(series_id)
 
-    def search(self, namespace, key, name, value=None):
+    def search(self, namespace, key=None, name=None, value=None):
         """
         Find available series having metadata with given
-        namespace + key* + name + value (optional) combination.
+        namespace + key* (optional) + name (optional) + *value* (optional)
+        combination. Note that the arguments are hierarchical, starting from
+        the left. If an argument is None, the proceeding ones are also set to
+        None. For example, (namespace = “hello”, key=None, name=”Rabbit”, value=”Hole”)
+        will have the same effect as (namespace = “hello”, key=None, name=None,
+        value=None)
 
         Parameters
         ----------
         namespace : str
-            The namespace to search in
-        key : str
-            The key to narrow search. Search is made with wildcard postfix.
-        name: str
-            name to narrow search further
+            Full namespace to search for
+        key : str, optional
+            Key or partial (begins with) key to narrow search.
+            Default (None) will include all.
+        name: str, optional
+            Full name to narrow search further.
+            Default (None) will include all.
         value: str, optional
-            Value to narrow search further. Default (None) will include all.
+            Value or partial (begins or ends with or both) to narrow search further.
+            Default (None) will include all.
 
         Returns
         -------
         dict or list
             Available information about the series. If ``value`` is passed,
-            a dict is returned -> ``{TimeSeriesId: metadata}``. Otherwise, a
-            plain list with ``TimeSeriesId`` is returned.
+            a plain list with ``TimeSeriesId`` is returned. Otherwise, a dict is
+            returned -> ``{TimeSeriesId: metadata}``.
+
         """
+        args_ = [namespace, key, name, value]
+        none_count = args_.count(None)
+
+        if args_[-none_count:].count(None) < none_count:
+            warnings.warn(
+                "Warning: You have provided argument(s) following a None argument, they are ignored by the search!"
+            )
+
         return self._timeseries_api.search(namespace, key, name, value)
 
     def delete(self, series_id):
@@ -437,50 +455,45 @@ class Client:
 
         return response
 
-    def metadata_browse(self, namespace=None, key=None):
+    def metadata_browse(self, namespace=None):
         """
-        Browse available metadata namespace/key/names combinations.
+        List available metadata namespaces and keys. If namespace is None, a list
+        of all available namespaces is returned. If namespace is specified,
+        a list of all available keys for that namespace is returned.
 
         Parameters
         ----------
         namespace : string
-            The namespace to search in
-        key : string
-            the namespace key to narrow search
+            The namespace to search in (exact match)
 
         Returns
         -------
-        list or dict
-            The namespaces or keys found. Or if both namespace and key is
-            present, the specific metadata for the namespace/key combination.
+        list
+            The namespaces or keys found.
         """
 
         if not namespace:
             return self._metadata_api.namespaces()
-        elif not key:
-            return self._metadata_api.keys(namespace)
         else:
-            response = self._metadata_api.get(namespace, key)
-            return response["Value"]
+            return self._metadata_api.keys(namespace)
 
-    def metadata_search(self, namespace, key, conjunctive=True):
+    def metadata_search(self, namespace, key):
         """
         Find metadata entries given namespace/key combination.
 
         namespace : string
             The namespace to search in
         key : string
-            The key to narrow search
-        conjuctive : bool
-            -
+            The key to narrow search. Supports "begins with" specification,
+            i.e. will look for matches with "key + wildcard"
 
         Returns
         -------
-        dict
+        list
             Metadata entries that matches the search.
 
         """
-        response = self._metadata_api.search(namespace, key, conjunctive)
+        response = self._metadata_api.search(namespace, key)
         return response
 
     def metadata_delete(self, metadata_id):

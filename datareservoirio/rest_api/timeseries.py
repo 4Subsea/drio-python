@@ -251,7 +251,7 @@ class TimeSeriesAPI(BaseAPI):
         response = self._get(uri, params=params)
         return response.json()
 
-    def search(self, namespace, key, name, value=None):
+    def search(self, namespace, key=None, name=None, value=None):
         """
         Find timeseries with metadata for given namespace/key/name/value
         combination.
@@ -260,9 +260,9 @@ class TimeSeriesAPI(BaseAPI):
         ----------
         namespace : str
             namespace in metadata
-        key : str
+        key : str, optional
             key in metadata
-        name : str
+        name : str, optional
             name in name/value-pair found in metadata value-json
         value : str, optional
             value in name/value-pair found in metadata value-json

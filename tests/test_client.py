@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
+import pytest
 import requests
 
 import datareservoirio
@@ -451,6 +452,10 @@ class Test_Client(unittest.TestCase):
             "test_namespace", "test_key", "test_name", 123
         )
 
+    def test_search_None(self):
+        with pytest.warns():
+            self.client.search("test_namespace", None, "test_name", 123)
+
     def test_metadata_get_with_id(self):
         self.client._metadata_api.get_by_id.return_value = {"Id": "123abc"}
 
@@ -489,26 +494,10 @@ class Test_Client(unittest.TestCase):
         self.client.metadata_browse(namespace="test_namespace")
         self.client._metadata_api.keys.assert_called_once_with("test_namespace")
 
-    def test_metadata_browse_names(self):
-        self.client._metadata_api.get.return_value = {"Value": "{}"}
-
-        self.client.metadata_browse(namespace="test_namespace", key="test_key")
-        self.client._metadata_api.get.assert_called_once_with(
-            "test_namespace", "test_key"
-        )
-
-    def test_metadata_search_conjunctive_true(self):
+    def test_metadata_search(self):
         self.client.metadata_search(namespace="test_namespace", key="test_key")
         self.client._metadata_api.search.assert_called_once_with(
-            "test_namespace", "test_key", True
-        )
-
-    def test_metadata_search_conjunctive_false(self):
-        self.client.metadata_search(
-            namespace="test_namespace", key="test_key", conjunctive=False
-        )
-        self.client._metadata_api.search.assert_called_once_with(
-            "test_namespace", "test_key", False
+            "test_namespace", "test_key"
         )
 
     def test_metadata_delete(self):

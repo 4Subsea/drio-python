@@ -167,7 +167,7 @@ class MetadataAPI(BaseAPI):
 
         return sorted(response.json())
 
-    def search(self, namespace, key, conjunctive=True):
+    def search(self, namespace, key):
         """
         Search for metadata entries.
 
@@ -177,18 +177,14 @@ class MetadataAPI(BaseAPI):
             Metadata namespace.
         key : str
             Metadata key.
-        conjunctive : bool
-            Whether to perform a conjunctive search or not. Deafault is True.
-
         Return
         ------
         dict
             response.json()
         """
-        log.debug(f"search with <token>, {namespace} {key} {conjunctive}")
+        log.debug(f"search with <token>, {namespace} {key}")
 
         search_json = _assemble_metadatajson(namespace, key)
-        search_json["Conjunctive"] = conjunctive
 
         uri = self._root + "search"
         response = self._post(uri, json=search_json)
