@@ -112,15 +112,10 @@ class Test_MetadataAPI(unittest.TestCase):
         mock_post.assert_called_with(expected_uri, **self.api._defaults)
 
     def test_search(self):
-        search_json = {
-            "Namespace": "hello",
-            "Key": "world",
-            "Value": {},
-            "Conjunctive": False,
-        }
+        search_json = {"Namespace": "hello", "Key": "world", "Value": {}}
         mock_post = self.api._session.post
 
-        self.api.search("hello", "world", conjunctive=False)
+        self.api.search("hello", "world")
 
         expected_uri = "https://root/metadata/search"
 
