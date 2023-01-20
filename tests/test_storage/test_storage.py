@@ -137,15 +137,19 @@ class Test_Storage(unittest.TestCase):
         pd.testing.assert_frame_equal(data_out, data_remote)
 
     def test_put(self):
-        self._files_api.upload.return_value = {"FileId": "42"}
+        self._files_api.upload.return_value = {
+            "FileId": "42",
+            "Endpoint": "https://remote-storage.com/myblob"
+            }
 
         df_expected_sent = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
 
-        fileId = self.storage.put(df_expected_sent)
+        with patch("datareservoirio.storage.storage._df_to_blob") as uploader:
+            fileId = self.storage.put(df_expected_sent)
 
-        self.assertEqual(fileId, "42")
-        (params, df_sent), _ = self.uploader.put.call_args
-        assert params == {"FileId": "42"}
+        (df_sent, target_url), _ = uploader.call_args
+        assert fileId == "42"
+        assert target_url == "https://remote-storage.com/myblob"
         pd.testing.assert_frame_equal(df_expected_sent, df_sent)
 
 

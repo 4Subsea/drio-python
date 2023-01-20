@@ -64,9 +64,9 @@ class Storage:
         """
         upload_params = self._files_api.upload()
         file_id = upload_params["FileId"]
+        target_url = upload_params["Endpoint"]
 
-        self._uploader.put(upload_params, df)
-
+        _df_to_blob(df, target_url)
         self._files_api.commit(file_id)
         return file_id
 
