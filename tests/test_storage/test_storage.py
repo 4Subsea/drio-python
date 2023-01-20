@@ -117,15 +117,13 @@ class Test_Storage(unittest.TestCase):
         self._timeseries_api = Mock()
         self._files_api = Mock()
         self.downloader = Mock()
-        self.uploader = Mock()
 
         self.tid = "abc-123-xyz"
 
         self.storage = Storage(
             self._timeseries_api,
             self._files_api,
-            downloader=self.downloader,
-            uploader=self.uploader,
+            downloader=self.downloader
         )
 
     def test_get(self):

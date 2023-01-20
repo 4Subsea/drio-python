@@ -26,7 +26,7 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, files_api, downloader, uploader):
+    def __init__(self, timeseries_api, files_api, downloader):
         """
         Initialize service for working with timeseries data in Azure Blob
         Storage.
@@ -39,14 +39,11 @@ class Storage:
             Instance of files API.
         downloader: cls
             A strategy instance for handling downloads.
-        uploader: cls
-            A strategy instance for handling uploads.
 
         """
         self._timeseries_api = timeseries_api
         self._files_api = files_api
         self._downloader = downloader
-        self._uploader = uploader
 
     def put(self, df):
         """
