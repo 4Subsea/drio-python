@@ -132,7 +132,9 @@ class BaseDownloader:
         duplicates.
         """
         df = self._backend.get(chunk)
-        df.set_index("index", inplace=True)  # Temporary hotfix while waiting for refactor
+        df.set_index(
+            "index", inplace=True
+        )  # Temporary hotfix while waiting for refactor
         if not df.index.is_unique:
             return df[~df.index.duplicated(keep="last")]
         return df

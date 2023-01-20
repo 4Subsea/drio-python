@@ -202,16 +202,19 @@ class Test_BaseDownloader(unittest.TestCase):
             base_downloader, "_download_chunks_as_dataframe"
         ) as mock_download:
             mock_download.side_effect = [
-                pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}).set_index("index"),
-                pd.DataFrame({"index": [3, 4, 5], "values": [5.0, 4.0, 5.0]}).set_index("index"),
-                pd.DataFrame({"index": [1, 5, 9], "values": [9.0, 8.0, 1.0]}).set_index("index"),
+                pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}).set_index(
+                    "index"
+                ),
+                pd.DataFrame({"index": [3, 4, 5], "values": [5.0, 4.0, 5.0]}).set_index(
+                    "index"
+                ),
+                pd.DataFrame({"index": [1, 5, 9], "values": [9.0, 8.0, 1.0]}).set_index(
+                    "index"
+                ),
             ]
 
             df_expected = pd.DataFrame(
-                {
-                    "index": [1, 2, 3, 4, 5, 9],
-                    "values": [9.0, 2.0, 5.0, 4.0, 8.0, 1.0]
-                }
+                {"index": [1, 2, 3, 4, 5, 9], "values": [9.0, 2.0, 5.0, 4.0, 8.0, 1.0]}
             )
             df_out = base_downloader.get(response)
 
@@ -232,16 +235,19 @@ class Test_BaseDownloader(unittest.TestCase):
             base_downloader, "_download_chunks_as_dataframe"
         ) as mock_download:
             mock_download.side_effect = [
-                pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}).set_index("index"),
-                pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}).set_index("index"),
-                pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}).set_index("index"),
-                ]
+                pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}).set_index(
+                    "index"
+                ),
+                pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}).set_index(
+                    "index"
+                ),
+                pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}).set_index(
+                    "index"
+                ),
+            ]
 
             df_expected = pd.DataFrame(
-                {
-                    "index": [1, 2, 3, 4, 5, 9],
-                    "values": ["g", "b", "d", "e", "h", "i"]
-                }
+                {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
             )
             df_out = base_downloader.get(response)
 
@@ -276,12 +282,7 @@ class Test_BaseDownloader(unittest.TestCase):
         pd.testing.assert_series_equal(df_expected, df_out)
 
     def test__download_verified_chunk(self):
-        df = pd.DataFrame(
-            {
-                "index": [1, 2, 3],
-                "values": [1.0, 2.0, 3.0]
-            }
-        )
+        df = pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
 
         mock_backend = MagicMock()
         mock_backend.get.return_value = df
@@ -295,12 +296,7 @@ class Test_BaseDownloader(unittest.TestCase):
         pd.testing.assert_frame_equal(df_expected, df_out)
 
     def test__download_verified_chunk_w_duplicates(self):
-        df = pd.DataFrame(
-            {
-                "index": [1, 2, 3],
-                "values": [1.0, 2.0, 3.0]
-            }
-        )
+        df = pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
         mock_backend = MagicMock()
         mock_backend.get.return_value = df
 
@@ -323,8 +319,8 @@ class Test_BaseDownloader(unittest.TestCase):
         df_expected = pd.DataFrame(
             {
                 "index": [1, 2, 3, 4, 5, 6, 7, 8, 9],
-                "values": [1.0, 2.0, 3.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0]
-                }
+                "values": [1.0, 2.0, 3.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0],
+            }
         ).set_index("index")
 
         base_downloader = BaseDownloader(mock_backend)
