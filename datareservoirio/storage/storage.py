@@ -210,7 +210,7 @@ class FileCacheDownload(CacheIO):
 
     """
 
-    STOREFORMATVERSION = "v2"
+    STOREFORMATVERSION = "v3"
     CACHE_THRESHOLD = 24 * 60  # number of rows
 
     def __init__(
