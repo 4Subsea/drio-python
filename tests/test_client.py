@@ -240,22 +240,23 @@ class Test_Client(unittest.TestCase):
 
     @patch("time.sleep")
     def test_append_all_methods_called(self, mock_sleep):
-        self.client._verify_and_prepare_series = Mock(return_value=self.dummy_df)
-        self._storage.put = Mock(return_value=self.dummy_params["FileId"])
+        self._storage.put = Mock()
         self.client._wait_until_file_ready = Mock(return_value="Ready")
 
         expected_response = {"abc": 123}
         self.client._timeseries_api.add.return_value = expected_response
+        mock_response = Mock()
+        mock_response.json.return_value = self.dummy_params
+        self.auth.post.return_value = mock_response
 
         response = self.client.append(self.dummy_series, self.timeseries_id)
 
-        self.client._verify_and_prepare_series.assert_called_once_with(
-            self.dummy_series
-        )
-        self._storage.put.assert_called_once_with(self.dummy_df)
+        args, kwargs = self._storage.put.call_args
+        pd.testing.assert_frame_equal(args[0], self.dummy_df)
         self.client._wait_until_file_ready.assert_called_once_with(
             self.dummy_params["FileId"]
         )
+
         self.client._timeseries_api.add.assert_called_once_with(
             self.timeseries_id, self.dummy_params["FileId"]
         )
@@ -263,23 +264,19 @@ class Test_Client(unittest.TestCase):
 
     @patch("time.sleep")
     def test_append_without_wait_on_verification(self, mock_sleep):
-        self.client._verify_and_prepare_series = Mock(return_value=self.dummy_df)
-        self._storage.put = Mock(return_value=self.dummy_params["FileId"])
+        self._storage.put = Mock()
         self.client._wait_until_file_ready = Mock(return_value="Ready")
 
         expected_response = {"abc": 123}
         self.client._timeseries_api.add.return_value = expected_response
+        mock_response = Mock()
+        mock_response.json.return_value = self.dummy_params
+        self.auth.post.return_value = mock_response
 
-        response = self.client.append(
-            self.dummy_df, self.timeseries_id, wait_on_verification=False
-        )
-
-        args, kwargs = self.client._verify_and_prepare_series.call_args
-        pd.testing.assert_frame_equal(args[0], self.dummy_df)
+        response = self.client.append(self.dummy_series, self.timeseries_id, wait_on_verification=False)
 
         args, kwargs = self._storage.put.call_args
         pd.testing.assert_frame_equal(args[0], self.dummy_df)
-
         self.client._wait_until_file_ready.assert_not_called()
 
         self.client._timeseries_api.add.assert_called_once_with(
