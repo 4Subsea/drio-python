@@ -34,7 +34,7 @@ You can also search for metadata given a namespace and key:
 
 Search for series
 -----------------
-In addition, you can search directly for series based on metadata associated
+In addition, you can search directly for time series based on metadata associated
 with it:
 
 .. code-block:: python
@@ -67,7 +67,7 @@ The search function has one required argument (namespace), the rest are optional
 .. note::
     
     The arguments in client.search are hierarchical and starts from the left. If one argument is set to None, 
-    all processing arguments will be treated as none. For example, client.search('foo.bar', None, 'sensor_vendor')
+    all proceeding arguments will be treated as none. For example, client.search('foo.bar', None, 'sensor_vendor')
     will return the same result as client.search('foo.bar')
 
 
