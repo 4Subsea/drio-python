@@ -117,13 +117,15 @@ class Test_Storage(unittest.TestCase):
         self._timeseries_api = Mock()
         self._files_api = Mock()
         self.downloader = Mock()
+        self.session = Mock()
 
         self.tid = "abc-123-xyz"
 
         self.storage = Storage(
             self._timeseries_api,
             self._files_api,
-            downloader=self.downloader
+            downloader=self.downloader,
+            session=self.session
         )
 
     def test_get(self):
@@ -135,20 +137,21 @@ class Test_Storage(unittest.TestCase):
         pd.testing.assert_frame_equal(data_out, data_remote)
 
     def test_put(self):
-        self._files_api.upload.return_value = {
-            "FileId": "42",
-            "Endpoint": "https://remote-storage.com/myblob"
-            }
+        target_url = "https://remote-storage.com/myblob"
+        commit_request = ("POST", "https://api/files/commit", {"json":{"FileId": 42}})
 
         df_expected_sent = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
 
         with patch("datareservoirio.storage.storage._df_to_blob") as uploader:
-            fileId = self.storage.put(df_expected_sent)
+            self.storage.put(df_expected_sent, target_url, commit_request)
 
-        (df_sent, target_url), _ = uploader.call_args
-        assert fileId == "42"
-        assert target_url == "https://remote-storage.com/myblob"
+        (df_sent, target_url_sent), _ = uploader.call_args
+        assert target_url == target_url_sent
         pd.testing.assert_frame_equal(df_expected_sent, df_sent)
+
+        self.session.request.assert_called_once_with(
+            *commit_request[:2], **commit_request[-1]
+            )
 
 
 class Test_DirectDownload(unittest.TestCase):

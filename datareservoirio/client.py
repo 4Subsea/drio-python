@@ -1,4 +1,5 @@
 import logging
+from operator import itemgetter
 import time
 import timeit
 import warnings
@@ -13,6 +14,9 @@ from .storage import (
     FileCacheDownload,
     Storage,
 )
+
+from .globalsettings import environment
+
 
 log = logging.getLogger(__name__)
 
@@ -72,7 +76,8 @@ class Client:
         self._storage = Storage(
             self._timeseries_api,
             self._files_api,
-            downloader=downloader,
+            downloader,
+            self._auth_session
         )
 
     def __enter__(self):
@@ -121,23 +126,24 @@ class Client:
 
         df = self._verify_and_prepare_series(series)
 
-        time_start = timeit.default_timer()
-        file_id = self._storage.put(df)
-        time_upload = timeit.default_timer()
-        log.info(f"Upload took {time_upload - time_start} seconds")
+        response_file = self._auth_session.post(environment.api_base_url + "files/upload")
+        response_file.raise_for_status()
+        file_id, target_url = itemgetter("FileId", "Endpoint")(response_file.json())
+
+        commit_request = (
+            "POST",
+            environment.api_base_url + "files/commit",
+            {"json": {"FileId": file_id}}
+            )
+        self._storage.put(df, target_url, commit_request)
+        print(target_url, file_id)
 
         if wait_on_verification:
             status = self._wait_until_file_ready(file_id)
-            time_process = timeit.default_timer()
-            log.info(f"Processing took {time_process - time_upload} seconds")
             if status == "Failed":
                 return status
 
         response = self._timeseries_api.create_with_data(file_id)
-        time_end = timeit.default_timer()
-        log.info(
-            f"Done. Total time spent: {time_end - time_start} seconds ({(time_end - time_start) / 60.0} minutes)"
-        )
         return response
 
     def append(self, series, series_id, wait_on_verification=True):

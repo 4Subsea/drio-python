@@ -26,7 +26,7 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, files_api, downloader):
+    def __init__(self, timeseries_api, files_api, downloader, session):
         """
         Initialize service for working with timeseries data in Azure Blob
         Storage.
@@ -39,13 +39,18 @@ class Storage:
             Instance of files API.
         downloader: cls
             A strategy instance for handling downloads.
+        auth : cls
+            An authenticated session that is used in all API calls. Must supply a
+            valid bearer token to all API calls.
+
 
         """
         self._timeseries_api = timeseries_api
         self._files_api = files_api
         self._downloader = downloader
+        self._session = session
 
-    def put(self, df):
+    def put(self, df, target_url, commit_request):
         """
         Put a Pandas DataFrame into storage.
 
@@ -53,19 +58,23 @@ class Storage:
         ----------
         df : pandas.DataFrame
             DataFrame to store.
+        target_url : str
+            Blob storage URL.
+        commit_request : tuple
+            Parameteres for "commit" request. Given as `(METHOD, URL, kwargs)`.
+            The tuple is passed forward to `session.request(METHOD, URL, **kwargs)`
 
         Returns
         -------
             The unique file id as stored in the reservoir
 
         """
-        upload_params = self._files_api.upload()
-        file_id = upload_params["FileId"]
-        target_url = upload_params["Endpoint"]
-
         _df_to_blob(df, target_url)
-        self._files_api.commit(file_id)
-        return file_id
+
+        method, url, kwargs = commit_request
+        response = self._session.request(method, url, **kwargs)
+        response.raise_for_status()
+        return
 
     def get(self, timeseries_id, start, end):
         """
