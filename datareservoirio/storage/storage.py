@@ -48,14 +48,14 @@ class Storage:
         self._downloader = downloader
         self._uploader = uploader
 
-    def put(self, series):
+    def put(self, df):
         """
-        Put a data into storage.
+        Put a Pandas DataFrame into storage.
 
         Parameters
         ----------
-        series : pandas.Series
-            pandas Series to store
+        df : pandas.DataFrame
+            DataFrame to store.
 
         Returns
         -------
@@ -64,9 +64,6 @@ class Storage:
         """
         upload_params = self._files_api.upload()
         file_id = upload_params["FileId"]
-
-        df = series.to_frame(name="values")
-        df.index = df.index.view("int64")
 
         self._uploader.put(upload_params, df)
 
@@ -89,14 +86,8 @@ class Storage:
         """
         log.debug("getting day file inventory")
         response = self._timeseries_api.download_days(timeseries_id, start, end)
-
-        series = (
-            self._downloader.get(response)
-            .squeeze("columns")
-            .loc[start:end]
-            .copy(deep=True)
-        )
-        return series
+        df = self._downloader.get(response)
+        return df
 
 
 class BaseDownloader:
@@ -122,6 +113,8 @@ class BaseDownloader:
 
         for fd in filedatas:
             df = self._combine_first(fd, df)
+
+        df.reset_index(inplace=True)  # Temporary hotfix while waiting for refactor
         return df
 
     def _download_chunks_as_dataframe(self, chunks):
@@ -139,6 +132,9 @@ class BaseDownloader:
         duplicates.
         """
         df = self._backend.get(chunk)
+        df.set_index(
+            "index", inplace=True
+        )  # Temporary hotfix while waiting for refactor
         if not df.index.is_unique:
             return df[~df.index.duplicated(keep="last")]
         return df
@@ -216,7 +212,7 @@ class FileCacheDownload(CacheIO):
 
     """
 
-    STOREFORMATVERSION = "v2"
+    STOREFORMATVERSION = "v3"
     CACHE_THRESHOLD = 24 * 60  # number of rows
 
     def __init__(
@@ -408,11 +404,10 @@ def _blob_to_df(blob_url):
     df = pd.read_csv(
         blob_url,
         header=None,
-        names=("values",),
-        dtype={0: "int64", 1: "str"},
-        index_col=0,
+        names=("index", "values"),
+        dtype={"index": "int64", "values": "str"},
         encoding="utf-8",
-    ).astype("float64", errors="ignore")
+    ).astype({"values": "float64"}, errors="ignore")
     return df
 
 
@@ -433,7 +428,7 @@ def _df_to_blob(df, blob_url):
         raise ValueError
 
     with io.BytesIO() as fp:
-        kwargs = {"header": False, "encoding": "utf-8", "mode": "wb"}
+        kwargs = {"header": False, "index": False, "encoding": "utf-8", "mode": "wb"}
         try:  # breaking change since pandas 1.5.0
             df.to_csv(fp, lineterminator="\n", **kwargs)
         except TypeError:  # Compatibility with pandas older than 1.5.0.

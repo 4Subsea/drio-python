@@ -124,10 +124,10 @@ class Client:
             response = self._timeseries_api.create()
             return response
 
-        self._verify_and_prepare_series(series)
+        df = self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
-        file_id = self._storage.put(series)
+        file_id = self._storage.put(df)
         time_upload = timeit.default_timer()
         log.info(f"Upload took {time_upload - time_start} seconds")
 
@@ -171,10 +171,11 @@ class Client:
         dict
             The response from DataReservoir.io.
         """
-        self._verify_and_prepare_series(series)
+        df = self._verify_and_prepare_series(series)
 
         time_start = timeit.default_timer()
-        file_id = self._storage.put(series)
+
+        file_id = self._storage.put(df)
         time_upload = timeit.default_timer()
         log.info(f"Upload took {time_upload - time_start} seconds")
 
@@ -305,7 +306,14 @@ class Client:
         time_start = timeit.default_timer()
 
         log.debug("Getting series range")
-        series = self._storage.get(series_id, start, end)
+        series = (
+            self._storage.get(series_id, start, end)
+            .set_index("index")
+            .squeeze("columns")
+            .loc[start:end]
+            .copy(deep=True)
+        )
+        series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing
             raise ValueError("can't find data in the given interval")
@@ -502,19 +510,21 @@ class Client:
 
     def _verify_and_prepare_series(self, series):
         if not isinstance(series, pd.Series):
-            log.error(f"series type is {type(series)}")
             raise ValueError("series must be a pandas Series")
 
         if not (
             pd.api.types.is_datetime64_ns_dtype(series.index)
             or pd.api.types.is_int64_dtype(series.index)
         ):
-            log.error(f"index dtype is {series.index.dtype}")
             raise ValueError("allowed dtypes are datetime64[ns] and int64")
 
         if not series.index.is_unique:
-            log.error("index contains duplicate timestamp values")
             raise ValueError("index values must be unique timestamps")
+
+        df = series.to_frame(name=1).reset_index(names=0)
+        df[0] = df[0].view("int64")
+
+        return df
 
     def _wait_until_file_ready(self, file_id):
         # wait for server side processing

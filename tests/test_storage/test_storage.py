@@ -34,31 +34,32 @@ def numeric_blob_file_path():
 @pytest.fixture
 def numeric_blob_df():
     df = pd.DataFrame(
-        data=[
-            -0.200514,
-            -0.200514,
-            -0.203507,
-            -0.202312,
-            -0.202311,
-            -0.188543,
-            -0.190938,
-            -0.193332,
-            -0.192135,
-            -0.186149,
-        ],
-        index=[
-            1624838400000000000,
-            1624838400097656250,
-            1624838400195312500,
-            1624838400292968750,
-            1624838400390625000,
-            1624838400488281250,
-            1624838400585937500,
-            1624838400683593750,
-            1624838400781250000,
-            1624838400878906250,
-        ],
-        columns=("values",),
+        {
+            "index": [
+                1624838400000000000,
+                1624838400097656250,
+                1624838400195312500,
+                1624838400292968750,
+                1624838400390625000,
+                1624838400488281250,
+                1624838400585937500,
+                1624838400683593750,
+                1624838400781250000,
+                1624838400878906250,
+            ],
+            "values": [
+                -0.200514,
+                -0.200514,
+                -0.203507,
+                -0.202312,
+                -0.202311,
+                -0.188543,
+                -0.190938,
+                -0.193332,
+                -0.192135,
+                -0.186149,
+            ],
+        },
     )
     return df
 
@@ -71,31 +72,32 @@ def str_blob_file_path():
 @pytest.fixture
 def str_blob_df():
     df = pd.DataFrame(
-        data=[
-            "Aa",
-            "Bb",
-            "Cc",
-            "Dd",
-            "Ee",
-            "Ff",
-            "Gg",
-            "Hh",
-            "Ii",
-            "Jj",
-        ],
-        index=[
-            1624838400000000000,
-            1624838400097656250,
-            1624838400195312500,
-            1624838400292968750,
-            1624838400390625000,
-            1624838400488281250,
-            1624838400585937500,
-            1624838400683593750,
-            1624838400781250000,
-            1624838400878906250,
-        ],
-        columns=("values",),
+        {
+            "index": [
+                1624838400000000000,
+                1624838400097656250,
+                1624838400195312500,
+                1624838400292968750,
+                1624838400390625000,
+                1624838400488281250,
+                1624838400585937500,
+                1624838400683593750,
+                1624838400781250000,
+                1624838400878906250,
+            ],
+            "values": [
+                "Aa",
+                "Bb",
+                "Cc",
+                "Dd",
+                "Ee",
+                "Ff",
+                "Gg",
+                "Hh",
+                "Ii",
+                "Jj",
+            ],
+        },
     )
     return df
 
@@ -127,24 +129,19 @@ class Test_Storage(unittest.TestCase):
         )
 
     def test_get(self):
-        data_remote = pd.DataFrame(
-            [1, 2, 3, 4], index=[1, 2, 3, 4], columns=("values",)
-        )
+        data_remote = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
         self.downloader.get.return_value = data_remote
 
-        series = self.storage.get(self.tid, 2, 3)
+        data_out = self.storage.get(self.tid, 2, 3)
 
-        pd.testing.assert_series_equal(series, data_remote.squeeze("columns").iloc[1:3])
+        pd.testing.assert_frame_equal(data_out, data_remote)
 
     def test_put(self):
         self._files_api.upload.return_value = {"FileId": "42"}
 
-        df_expected_sent = pd.DataFrame(
-            [1, 2, 3, 4], index=[1, 2, 3, 4], columns=("values",)
-        )
-        series = df_expected_sent.squeeze("columns")
+        df_expected_sent = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
 
-        fileId = self.storage.put(series)
+        fileId = self.storage.put(df_expected_sent)
 
         self.assertEqual(fileId, "42")
         (params, df_sent), _ = self.uploader.put.call_args
@@ -205,13 +202,19 @@ class Test_BaseDownloader(unittest.TestCase):
             base_downloader, "_download_chunks_as_dataframe"
         ) as mock_download:
             mock_download.side_effect = [
-                pd.DataFrame([1.0, 2.0, 3.0], index=[1, 2, 3]),
-                pd.DataFrame([5.0, 4.0, 5.0], index=[3, 4, 5]),
-                pd.DataFrame([9.0, 8.0, 1.0], index=[1, 5, 9]),
+                pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}).set_index(
+                    "index"
+                ),
+                pd.DataFrame({"index": [3, 4, 5], "values": [5.0, 4.0, 5.0]}).set_index(
+                    "index"
+                ),
+                pd.DataFrame({"index": [1, 5, 9], "values": [9.0, 8.0, 1.0]}).set_index(
+                    "index"
+                ),
             ]
 
             df_expected = pd.DataFrame(
-                [9.0, 2.0, 5.0, 4.0, 8.0, 1.0], index=[1, 2, 3, 4, 5, 9]
+                {"index": [1, 2, 3, 4, 5, 9], "values": [9.0, 2.0, 5.0, 4.0, 8.0, 1.0]}
             )
             df_out = base_downloader.get(response)
 
@@ -232,13 +235,19 @@ class Test_BaseDownloader(unittest.TestCase):
             base_downloader, "_download_chunks_as_dataframe"
         ) as mock_download:
             mock_download.side_effect = [
-                pd.DataFrame(["a", "b", "c"], index=[1, 2, 3]),
-                pd.DataFrame(["d", "e", "f"], index=[3, 4, 5]),
-                pd.DataFrame(["g", "h", "i"], index=[1, 5, 9]),
+                pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}).set_index(
+                    "index"
+                ),
+                pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}).set_index(
+                    "index"
+                ),
+                pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}).set_index(
+                    "index"
+                ),
             ]
 
             df_expected = pd.DataFrame(
-                ["g", "b", "d", "e", "h", "i"], index=[1, 2, 3, 4, 5, 9]
+                {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
             )
             df_out = base_downloader.get(response)
 
@@ -273,10 +282,12 @@ class Test_BaseDownloader(unittest.TestCase):
         pd.testing.assert_series_equal(df_expected, df_out)
 
     def test__download_verified_chunk(self):
-        mock_backend = MagicMock()
-        mock_backend.get.return_value = pd.DataFrame([1.0, 2.0, 3.0], index=[1, 2, 3])
+        df = pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
 
-        df_expected = pd.DataFrame([1.0, 2.0, 3.0], index=[1, 2, 3])
+        mock_backend = MagicMock()
+        mock_backend.get.return_value = df
+
+        df_expected = df.set_index("index")
 
         base_downloader = BaseDownloader(mock_backend)
         df_out = base_downloader._download_verified_chunk("chunk")
@@ -285,12 +296,11 @@ class Test_BaseDownloader(unittest.TestCase):
         pd.testing.assert_frame_equal(df_expected, df_out)
 
     def test__download_verified_chunk_w_duplicates(self):
+        df = pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
         mock_backend = MagicMock()
-        mock_backend.get.return_value = pd.DataFrame(
-            [1.0, 2.0, 4.0, 3.0], index=[1, 2, 2, 3]
-        )
+        mock_backend.get.return_value = df
 
-        df_expected = pd.DataFrame([1.0, 4.0, 3.0], index=[1, 2, 3])
+        df_expected = df.set_index("index")
 
         base_downloader = BaseDownloader(mock_backend)
         df_out = base_downloader._download_verified_chunk("chunk")
@@ -301,15 +311,17 @@ class Test_BaseDownloader(unittest.TestCase):
     def test__download_chunks_as_dataframe(self):
         mock_backend = MagicMock()
         mock_backend.get.side_effect = [
-            pd.DataFrame([1.0, 2.0, 3.0], index=[1, 2, 3]),
-            pd.DataFrame([3.0, 4.0, 5.0], index=[4, 5, 6]),
-            pd.DataFrame([5.0, 6.0, 7.0], index=[7, 8, 9]),
+            pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}),
+            pd.DataFrame({"index": [4, 5, 6], "values": [3.0, 4.0, 5.0]}),
+            pd.DataFrame({"index": [7, 8, 9], "values": [5.0, 6.0, 7.0]}),
         ]
 
         df_expected = pd.DataFrame(
-            [1.0, 2.0, 3.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0],
-            index=[1, 2, 3, 4, 5, 6, 7, 8, 9],
-        )
+            {
+                "index": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                "values": [1.0, 2.0, 3.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0],
+            }
+        ).set_index("index")
 
         base_downloader = BaseDownloader(mock_backend)
         df_out = base_downloader._download_chunks_as_dataframe(
