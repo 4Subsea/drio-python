@@ -9,11 +9,9 @@ import pandas as pd
 import pytest
 
 from datareservoirio.appdirs import user_cache_dir
-from datareservoirio.storage import (
+from datareservoirio.storage import (  # BaseUploader,; DirectUpload,
     BaseDownloader,
-#     BaseUploader,
     DirectDownload,
-#    DirectUpload,
     FileCacheDownload,
     Storage,
 )
@@ -125,7 +123,7 @@ class Test_Storage(unittest.TestCase):
             self._timeseries_api,
             self._files_api,
             downloader=self.downloader,
-            session=self.session
+            session=self.session,
         )
 
     def test_get(self):
@@ -138,7 +136,7 @@ class Test_Storage(unittest.TestCase):
 
     def test_put(self):
         target_url = "https://remote-storage.com/myblob"
-        commit_request = ("POST", "https://api/files/commit", {"json":{"FileId": 42}})
+        commit_request = ("POST", "https://api/files/commit", {"json": {"FileId": 42}})
 
         df_expected_sent = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
 
@@ -151,7 +149,7 @@ class Test_Storage(unittest.TestCase):
 
         self.session.request.assert_called_once_with(
             *commit_request[:2], **commit_request[-1]
-            )
+        )
 
 
 class Test_DirectDownload(unittest.TestCase):

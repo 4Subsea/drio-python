@@ -273,7 +273,9 @@ class Test_Client(unittest.TestCase):
         mock_response.json.return_value = self.dummy_params
         self.auth.post.return_value = mock_response
 
-        response = self.client.append(self.dummy_series, self.timeseries_id, wait_on_verification=False)
+        response = self.client.append(
+            self.dummy_series, self.timeseries_id, wait_on_verification=False
+        )
 
         args, kwargs = self._storage.put.call_args
         pd.testing.assert_frame_equal(args[0], self.dummy_df)

@@ -1,22 +1,15 @@
 import logging
-from operator import itemgetter
 import time
 import timeit
 import warnings
+from operator import itemgetter
 
 import pandas as pd
 import requests
 
-from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
-from .storage import (
-    BaseDownloader,
-    DirectDownload,
-    FileCacheDownload,
-    Storage,
-)
-
 from .globalsettings import environment
-
+from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
+from .storage import BaseDownloader, DirectDownload, FileCacheDownload, Storage
 
 log = logging.getLogger(__name__)
 
@@ -74,10 +67,7 @@ class Client:
         downloader = BaseDownloader(download_backend)
 
         self._storage = Storage(
-            self._timeseries_api,
-            self._files_api,
-            downloader,
-            self._auth_session
+            self._timeseries_api, self._files_api, downloader, self._auth_session
         )
 
     def __enter__(self):
@@ -126,15 +116,17 @@ class Client:
 
         df = self._verify_and_prepare_series(series)
 
-        response_file = self._auth_session.post(environment.api_base_url + "files/upload")
+        response_file = self._auth_session.post(
+            environment.api_base_url + "files/upload"
+        )
         response_file.raise_for_status()
         file_id, target_url = itemgetter("FileId", "Endpoint")(response_file.json())
 
         commit_request = (
             "POST",
             environment.api_base_url + "files/commit",
-            {"json": {"FileId": file_id}}
-            )
+            {"json": {"FileId": file_id}},
+        )
         self._storage.put(df, target_url, commit_request)
 
         if wait_on_verification:
@@ -173,15 +165,17 @@ class Client:
         """
         df = self._verify_and_prepare_series(series)
 
-        response_file = self._auth_session.post(environment.api_base_url + "files/upload")
+        response_file = self._auth_session.post(
+            environment.api_base_url + "files/upload"
+        )
         response_file.raise_for_status()
         file_id, target_url = itemgetter("FileId", "Endpoint")(response_file.json())
 
         commit_request = (
             "POST",
             environment.api_base_url + "files/commit",
-            {"json": {"FileId": file_id}}
-            )
+            {"json": {"FileId": file_id}},
+        )
 
         self._storage.put(df, target_url, commit_request)
 
