@@ -134,7 +134,7 @@ class BaseDownloader:
 
     def _download_verified_chunk(self, chunk):
         """
-        Download chunk as pandas DataFrame and ensure the series does not contain
+        Download chunk as Pandas DataFrame and ensure the series does not contain
         duplicates.
         """
         df = self._backend.get(chunk)
@@ -149,7 +149,7 @@ class BaseDownloader:
     def _combine_first(calling, other):
         """
         Faster combine first for most common scenarios and fall back to general
-        purpose pandas combine_first for advanced cases.
+        purpose Pandas combine_first for advanced cases.
         """
         if calling.empty or other.empty:
             return calling
