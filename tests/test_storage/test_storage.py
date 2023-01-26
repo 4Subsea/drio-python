@@ -9,7 +9,8 @@ import pandas as pd
 import pytest
 
 from datareservoirio.appdirs import user_cache_dir
-from datareservoirio.storage import (  # BaseUploader,; DirectUpload,
+from datareservoirio.storage import (
+
     BaseDownloader,
     DirectDownload,
     FileCacheDownload,
