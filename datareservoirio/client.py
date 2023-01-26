@@ -452,7 +452,9 @@ class Client:
         elif namespace and key:
             response = self._metadata_api.get(namespace, key)
         else:
-            raise ValueError("Missing required input: either (metadata_id) or (namespace, key)")
+            raise ValueError(
+                "Missing required input: either (metadata_id) or (namespace, key)"
+            )
 
         return response
 
