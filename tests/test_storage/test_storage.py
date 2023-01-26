@@ -121,7 +121,6 @@ class Test_Storage(unittest.TestCase):
 
         self.storage = Storage(
             self._timeseries_api,
-            self._files_api,
             downloader=self.downloader,
             session=self.session,
         )
