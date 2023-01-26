@@ -430,7 +430,8 @@ class Client:
 
     def metadata_get(self, metadata_id=None, namespace=None, key=None):
         """
-        Retrieve a metadata entry.
+        Retrieve a metadata entry. Required input is either metatdata_id, or
+        namespace + key, i.e. metadata_get(my_metadata_id) or metadata_get(my_namespace, my_key)
 
         Parameters
         ----------
@@ -451,7 +452,9 @@ class Client:
         elif namespace and key:
             response = self._metadata_api.get(namespace, key)
         else:
-            raise ValueError("key is mandatory when namespace is passed")
+            raise ValueError(
+                "Missing required input: either (metadata_id) or (namespace, key)"
+            )
 
         return response
 
