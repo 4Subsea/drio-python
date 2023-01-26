@@ -66,9 +66,7 @@ class Client:
 
         downloader = BaseDownloader(download_backend)
 
-        self._storage = Storage(
-            self._timeseries_api, downloader, self._auth_session
-        )
+        self._storage = Storage(self._timeseries_api, downloader, self._auth_session)
 
     def __enter__(self):
         return self
