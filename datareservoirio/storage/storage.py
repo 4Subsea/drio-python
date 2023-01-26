@@ -39,9 +39,10 @@ class Storage:
             Instance of files API.
         downloader: cls
             A strategy instance for handling downloads.
-        auth : cls
+        session : cls
             An authenticated session that is used in all API calls. Must supply a
             valid bearer token to all API calls.
+
 
 
         """
