@@ -26,7 +26,7 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, files_api, downloader, uploader):
+    def __init__(self, timeseries_api, downloader, session):
         """
         Initialize service for working with timeseries data in Azure Blob
         Storage.
@@ -35,20 +35,20 @@ class Storage:
         ----------
         timeseries_api: TimeseriesAPI
             Instance of timeseries API.
-        files_api: FilesAPI
-            Instance of files API.
         downloader: cls
             A strategy instance for handling downloads.
-        uploader: cls
-            A strategy instance for handling uploads.
+        session : cls
+            An authenticated session that is used in all API calls. Must supply a
+            valid bearer token to all API calls.
+
+
 
         """
         self._timeseries_api = timeseries_api
-        self._files_api = files_api
         self._downloader = downloader
-        self._uploader = uploader
+        self._session = session
 
-    def put(self, df):
+    def put(self, df, target_url, commit_request):
         """
         Put a Pandas DataFrame into storage.
 
@@ -56,19 +56,23 @@ class Storage:
         ----------
         df : pandas.DataFrame
             DataFrame to store.
+        target_url : str
+            Blob storage URL.
+        commit_request : tuple
+            Parameteres for "commit" request. Given as `(METHOD, URL, kwargs)`.
+            The tuple is passed forward to `session.request(METHOD, URL, **kwargs)`
 
         Returns
         -------
             The unique file id as stored in the reservoir
 
         """
-        upload_params = self._files_api.upload()
-        file_id = upload_params["FileId"]
+        _df_to_blob(df, target_url)
 
-        self._uploader.put(upload_params, df)
-
-        self._files_api.commit(file_id)
-        return file_id
+        method, url, kwargs = commit_request
+        response = self._session.request(method, url, **kwargs)
+        response.raise_for_status()
+        return
 
     def get(self, timeseries_id, start, end):
         """
@@ -128,7 +132,7 @@ class BaseDownloader:
 
     def _download_verified_chunk(self, chunk):
         """
-        Download chunk as pandas DataFrame and ensure the series does not contain
+        Download chunk as Pandas DataFrame and ensure the series does not contain
         duplicates.
         """
         df = self._backend.get(chunk)
@@ -143,7 +147,7 @@ class BaseDownloader:
     def _combine_first(calling, other):
         """
         Faster combine first for most common scenarios and fall back to general
-        purpose pandas combine_first for advanced cases.
+        purpose Pandas combine_first for advanced cases.
         """
         if calling.empty or other.empty:
             return calling
@@ -168,20 +172,6 @@ class BaseDownloader:
             df_combined = calling.combine_first(other)
 
         return df_combined
-
-
-class BaseUploader:
-    """
-    Series upload strategy that will upload Pandas Series to provided cloud
-    backend.
-
-    """
-
-    def __init__(self, backend):
-        self._backend = backend
-
-    def put(self, params, data):
-        return self._backend.put(params, data)
 
 
 class FileCacheDownload(CacheIO):
@@ -371,18 +361,6 @@ class DirectDownload:
         """
         blob_url = chunk["Endpoint"]
         return _blob_to_df(blob_url)
-
-
-class DirectUpload:
-
-    """
-    Backend for direct upload to cloud.
-
-    """
-
-    def put(self, params, data):
-        blob_url = params["Endpoint"]
-        return _df_to_blob(data, blob_url)
 
 
 def _blob_to_df(blob_url):

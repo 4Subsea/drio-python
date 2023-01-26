@@ -11,9 +11,7 @@ import pytest
 from datareservoirio.appdirs import user_cache_dir
 from datareservoirio.storage import (
     BaseDownloader,
-    BaseUploader,
     DirectDownload,
-    DirectUpload,
     FileCacheDownload,
     Storage,
 )
@@ -117,15 +115,14 @@ class Test_Storage(unittest.TestCase):
         self._timeseries_api = Mock()
         self._files_api = Mock()
         self.downloader = Mock()
-        self.uploader = Mock()
+        self.session = Mock()
 
         self.tid = "abc-123-xyz"
 
         self.storage = Storage(
             self._timeseries_api,
-            self._files_api,
             downloader=self.downloader,
-            uploader=self.uploader,
+            session=self.session,
         )
 
     def test_get(self):
@@ -137,26 +134,21 @@ class Test_Storage(unittest.TestCase):
         pd.testing.assert_frame_equal(data_out, data_remote)
 
     def test_put(self):
-        self._files_api.upload.return_value = {"FileId": "42"}
+        target_url = "https://remote-storage.com/myblob"
+        commit_request = ("POST", "https://api/files/commit", {"json": {"FileId": 42}})
 
         df_expected_sent = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
 
-        fileId = self.storage.put(df_expected_sent)
+        with patch("datareservoirio.storage.storage._df_to_blob") as uploader:
+            self.storage.put(df_expected_sent, target_url, commit_request)
 
-        self.assertEqual(fileId, "42")
-        (params, df_sent), _ = self.uploader.put.call_args
-        assert params == {"FileId": "42"}
+        (df_sent, target_url_sent), _ = uploader.call_args
+        assert target_url == target_url_sent
         pd.testing.assert_frame_equal(df_expected_sent, df_sent)
 
-
-class Test_DirectUpload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage._df_to_blob")
-    def test_put(self, mock_remote_put):
-        params = {"Endpoint": "https:://go-here-for-blob.com"}
-        uploader = DirectUpload()
-        uploader.put(params, "data")
-
-        mock_remote_put.assert_called_once_with("data", params["Endpoint"])
+        self.session.request.assert_called_once_with(
+            *commit_request[:2], **commit_request[-1]
+        )
 
 
 class Test_DirectDownload(unittest.TestCase):
@@ -167,21 +159,6 @@ class Test_DirectDownload(unittest.TestCase):
         downloader.get(params)
 
         mock_remote_get.assert_called_once_with(params["Endpoint"])
-
-
-class Test_BaseUploader(unittest.TestCase):
-    def test_init(self):
-        backend = MagicMock()
-        uploader = BaseUploader(backend)
-
-        self.assertEqual(backend, uploader._backend)
-
-    def test_put(self):
-        backend = MagicMock()
-        uploader = BaseUploader(backend)
-        uploader.put("params", "data")
-
-        backend.put.assert_called_once_with("params", "data")
 
 
 class Test_BaseDownloader(unittest.TestCase):
