@@ -91,11 +91,6 @@ class Storage:
         log.debug("getting day file inventory")
         response = self._timeseries_api.download_days(timeseries_id, start, end)
         df = self._downloader.get(response)
-        if df.empty:
-            return (
-                pd.DataFrame(columns=("index", "value"))
-                .astype({"index": "int64", "value": "string"})
-            )
         return df
 
 
@@ -118,7 +113,7 @@ class BaseDownloader:
         try:
             df = next(filedatas)
         except StopIteration:
-            return pd.DataFrame()
+            return pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
         for fd in filedatas:
             df = self._combine_first(fd, df)
@@ -128,7 +123,7 @@ class BaseDownloader:
 
     def _download_chunks_as_dataframe(self, chunks):
         if not chunks:
-            return pd.DataFrame()
+            return pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
         with ThreadPoolExecutor(max_workers=1) as executor:
             filechunks = executor.map(self._download_verified_chunk, chunks)
