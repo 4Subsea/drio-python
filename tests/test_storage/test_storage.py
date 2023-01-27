@@ -252,6 +252,20 @@ class Test_BaseDownloader(unittest.TestCase):
         pd.testing.assert_frame_equal(df_expected, df_out)
         mock_download.assert_called_once_with([])
 
+    def test_get_empty2(self):
+        mock_backend = MagicMock()
+        base_downloader = BaseDownloader(mock_backend)
+
+        response = {"Files": [{"Chunks": []}]}
+
+        df_out = base_downloader.get(response)
+
+        df_expected = pd.DataFrame(
+            pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+        )
+
+        pd.testing.assert_frame_equal(df_expected, df_out)
+
     def test__combine_first_no_overlap(self):
         df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
         df2 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[6, 7, 8, 9])
