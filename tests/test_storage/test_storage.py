@@ -242,6 +242,7 @@ class Test_BaseDownloader(unittest.TestCase):
             pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
         )
 
+        mock_backend.assert_not_called()
         pd.testing.assert_frame_equal(df_expected, df_out)
 
     def test__combine_first_no_overlap(self):
