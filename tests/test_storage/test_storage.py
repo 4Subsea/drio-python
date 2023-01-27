@@ -234,29 +234,7 @@ class Test_BaseDownloader(unittest.TestCase):
         mock_backend = MagicMock()
         base_downloader = BaseDownloader(mock_backend)
 
-        response = {"Files": [{"Chunks": []}]}
-
-        with patch.object(
-            base_downloader, "_download_chunks_as_dataframe"
-        ) as mock_download:
-            mock_download.return_value = pd.DataFrame(
-                columns=("index", "values")
-            ).astype({"index": "int64"})
-
-            df_out = base_downloader.get(response)
-
-        df_expected = pd.DataFrame(
-            pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
-        )
-
-        pd.testing.assert_frame_equal(df_expected, df_out)
-        mock_download.assert_called_once_with([])
-
-    def test_get_empty2(self):
-        mock_backend = MagicMock()
-        base_downloader = BaseDownloader(mock_backend)
-
-        response = {"Files": [{"Chunks": []}]}
+        response = {"Files": []}
 
         df_out = base_downloader.get(response)
 
