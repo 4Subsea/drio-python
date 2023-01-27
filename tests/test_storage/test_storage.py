@@ -331,8 +331,10 @@ class Test_BaseDownloader(unittest.TestCase):
         base_downloader = BaseDownloader(mock_backend)
         df_out = base_downloader._download_chunks_as_dataframe([])
 
-        df_expected = pd.DataFrame(columns=("index", "values")).astype(
-            {"index": "int64"}
+        df_expected = (
+            pd.DataFrame(columns=("index", "values"))
+            .astype({"index": "int64"})
+            .set_index("index")
         )
 
         mock_backend.assert_not_called()
