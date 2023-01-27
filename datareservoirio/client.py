@@ -291,14 +291,18 @@ class Client:
         time_start = timeit.default_timer()
 
         log.debug("Getting series range")
-        series = (
-            self._storage.get(series_id, start, end)
-            .set_index("index")
-            .squeeze("columns")
-            .loc[start:end]
-            .copy(deep=True)
-        )
-        series.index.name = None
+        df = self._storage.get(series_id, start, end)
+        if df.empty:
+            series = pd.Series(dtype="object")
+        else:
+            series = (
+                df
+                .set_index("index")
+                .squeeze("columns")
+                .loc[start:end]
+                .copy(deep=True)
+            )
+            series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing
             raise ValueError("can't find data in the given interval")
