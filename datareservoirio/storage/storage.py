@@ -118,7 +118,8 @@ class BaseDownloader:
         for fd in filedatas:
             df = self._combine_first(fd, df)
 
-        df.reset_index(inplace=True)  # Temporary hotfix while waiting for refactor
+        if not df.empty:
+            df.reset_index(inplace=True)  # Temporary hotfix while waiting for refactor
         return df
 
     def _download_chunks_as_dataframe(self, chunks):
