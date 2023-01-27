@@ -335,12 +335,12 @@ class Test_BaseDownloader(unittest.TestCase):
     def test__download_chunks_as_dataframe_no_chunks(self):
         mock_backend = MagicMock()
 
+        base_downloader = BaseDownloader(mock_backend)
+        df_out = base_downloader._download_chunks_as_dataframe([])
+
         df_expected = pd.DataFrame(columns=("index", "values")).astype(
             {"index": "int64"}
         )
-
-        base_downloader = BaseDownloader(mock_backend)
-        df_out = base_downloader._download_chunks_as_dataframe([])
 
         mock_backend.assert_not_called()
         pd.testing.assert_frame_equal(df_expected, df_out)
