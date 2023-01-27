@@ -91,6 +91,11 @@ class Storage:
         log.debug("getting day file inventory")
         response = self._timeseries_api.download_days(timeseries_id, start, end)
         df = self._downloader.get(response)
+        if df.empty:
+            return (
+                pd.DataFrame(columns=("index", "value"))
+                .astype({"index": "int64", "value": "string"})
+            )
         return df
 
 
