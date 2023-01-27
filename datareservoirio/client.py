@@ -9,7 +9,7 @@ import requests
 
 from .globalsettings import environment
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
-from .storage import BaseDownloader, DirectDownload, FileCacheDownload, Storage
+from .storage import BaseDownloader, FileCacheDownload, Storage
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class Client:
         specific defaults.
 
     """
-
+    # Remove support for format, use only parquet.
     CACHE_DEFAULT = {"format": "parquet", "max_size": 1024, "cache_root": None}
 
     def __init__(self, auth, cache=True, cache_opt=CACHE_DEFAULT):
@@ -48,6 +48,7 @@ class Client:
         self._metadata_api = MetadataAPI(self._auth_session)
         self._enable_cache = cache
 
+        # Emit deprecation warning if "format" is provided
         if self._enable_cache:
             cache_default = self.CACHE_DEFAULT.copy()
             if set(cache_default.keys()).issuperset(cache_opt):
@@ -58,15 +59,16 @@ class Client:
                 raise ValueError("cache_opt contains unknown keywords.")
 
         if self._enable_cache:
-            download_backend = FileCacheDownload(
-                format_=self._cache_format, **self._cache_opt
-            )
-        else:
-            download_backend = DirectDownload()
+            raise NotImplementedError("Temporarily disabled")
+        #     download_backend = FileCacheDownload(
+        #         format_=self._cache_format, **self._cache_opt
+        #     )
+        # else:
+        #     download_backend = None
 
-        downloader = BaseDownloader(download_backend)
+        # downloader = BaseDownloader(download_backend)
 
-        self._storage = Storage(self._timeseries_api, downloader, self._auth_session)
+        self._storage = Storage(self._timeseries_api, self._auth_session)  # (cache_opts)
 
     def __enter__(self):
         return self

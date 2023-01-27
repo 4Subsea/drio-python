@@ -26,7 +26,7 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, downloader, session):
+    def __init__(self, timeseries_api, session): # (cache_opts)
         """
         Initialize service for working with timeseries data in Azure Blob
         Storage.
@@ -35,8 +35,6 @@ class Storage:
         ----------
         timeseries_api: TimeseriesAPI
             Instance of timeseries API.
-        downloader: cls
-            A strategy instance for handling downloads.
         session : cls
             An authenticated session that is used in all API calls. Must supply a
             valid bearer token to all API calls.
@@ -45,7 +43,7 @@ class Storage:
 
         """
         self._timeseries_api = timeseries_api
-        self._downloader = downloader
+        self._downloader = BaseDownloader()  # BaseDownloader(cache_opts)
         self._session = session
 
     def put(self, df, target_url, commit_request):
@@ -103,8 +101,9 @@ class BaseDownloader:
 
     """
 
-    def __init__(self, backend):
-        self._backend = backend
+    def __init__(self):  # (cache_args + kwargs)
+        # self._cache = FileCache(*args, **kwargs)
+        pass
 
     def get(self, response):
         filechunks = [f["Chunks"] for f in response["Files"]]
@@ -135,7 +134,14 @@ class BaseDownloader:
         Download chunk as Pandas DataFrame and ensure the series does not contain
         duplicates.
         """
-        df = self._backend.get(chunk)
+        # Check if chunk is in cache
+            # If in cache, use it
+            # If not in cache, download, and then write to cache.
+
+        # Cache is temporarily broken
+        blob_url = chunk["Endpoint"]
+        df = _blob_to_df(blob_url)
+        #--
         df.set_index(
             "index", inplace=True
         )  # Temporary hotfix while waiting for refactor
@@ -251,7 +257,7 @@ class FileCacheDownload(CacheIO):
         """Reset the cache, deleting any stored data."""
         self._evict_entry_root(self.cache_root)
 
-    def get(self, chunk):
+    def get(self, chunk):  # "Counterpart to DirectDownload.get"
         """
         Retrieve data from backend. Uses cached data if it is available.
 
@@ -265,12 +271,16 @@ class FileCacheDownload(CacheIO):
         id_, md5 = self._get_cache_id_md5(chunk)
         log.debug(f"Cache lookup {id_}")
 
-        data = self._get_cached_data(id_, md5)
-        if data is None:
+        data = self._get_cached_data(id_, md5) # Check cache if data is available
+        # If data is None, return None.
+        # Then the caller can trigger remote download.
+        # When download is done, caller asks for cache write.
+        if data is None:  # If not, get it from remote
+            
             log.debug(f"Cache miss on {id_}")
             blob_url = chunk["Endpoint"]
             data = _blob_to_df(blob_url)
-            self._put_data_to_cache(data, id_, md5)
+            self._put_data_to_cache(data, id_, md5) # Then write to cache. # Make public.
         else:
             log.debug(f"Cache hit on {id_}")
         return data
@@ -339,28 +349,6 @@ class FileCacheDownload(CacheIO):
             log.debug(
                 f"Storage analyzed (in {time_end - time_start:.2f} seconds). Current size: {self._cache_index.size} in {self.cache_root}"
             )
-
-
-class DirectDownload:
-
-    """
-    Backend for direct download from cloud.
-
-    """
-
-    def get(self, chunk):
-        """
-        Retrieve data.
-
-        Parameters
-        ---------
-        chunk : dict
-            Dictionary containing parameters required by the backend to get
-            data.
-
-        """
-        blob_url = chunk["Endpoint"]
-        return _blob_to_df(blob_url)
 
 
 def _blob_to_df(blob_url):
