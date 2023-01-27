@@ -410,6 +410,22 @@ class Test_Client(unittest.TestCase):
 
         pd.testing.assert_series_equal(response, response_expected, check_dtype=False)
 
+    def test_get_empty(self):
+        self._storage.get.return_value = pd.DataFrame(
+            columns=("index", "values")
+        ).astype({"index": "int64"})
+        response_expected = pd.Series(name="values", dtype="object")
+        response_expected.index = pd.to_datetime(response_expected.index, utc=True)
+
+        response = self.client.get(self.timeseries_id)
+
+        self.client._storage.get.assert_called_once_with(
+            self.timeseries_id,
+            datareservoirio.client._START_DEFAULT,
+            datareservoirio.client._END_DEFAULT - 1,
+        )
+        pd.testing.assert_series_equal(response, response_expected)
+
     def test_get_with_raise_empty_throws(self):
         index = np.array([6, 7, 8, 9, 10])
         values = np.array([6.0, 7.0, 8.0, 9.0, 10.0])
