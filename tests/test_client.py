@@ -112,44 +112,46 @@ class Test_Client(unittest.TestCase):
 
     @patch("datareservoirio.client.DirectDownload")
     def test_init_with_cache_disabled(self, mock_dl):
-        with Client(self.auth, cache=False):
-            assert mock_dl.call_count == 1
+        Client(self.auth, cache=False)
+        assert mock_dl.call_count == 1
+        # close client?
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_defaults_cache_is_enabled_and_format_parquet(self, mock_cache):
-        with Client(self.auth):
-            kwargs = mock_cache.call_args[1]
-            self.assertIn("format_", kwargs)
-            self.assertEqual(kwargs["format_"], "parquet")
-            cache_defaults = Client.CACHE_DEFAULT.copy()
-            cache_defaults["format_"] = cache_defaults.pop("format")
-            mock_cache.assert_called_once_with(**cache_defaults)
+        Client(self.auth)
+        kwargs = mock_cache.call_args[1]
+        self.assertIn("format_", kwargs)
+        self.assertEqual(kwargs["format_"], "parquet")
+        cache_defaults = Client.CACHE_DEFAULT.copy()
+        cache_defaults["format_"] = cache_defaults.pop("format")
+        mock_cache.assert_called_once_with(**cache_defaults)
+        # close client?
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_enabled(self, mock_cache):
-        with Client(self.auth, cache=True):
-            cache_defaults = Client.CACHE_DEFAULT.copy()
-            cache_defaults["format_"] = cache_defaults.pop("format")
-            mock_cache.assert_called_once_with(**cache_defaults)
+        Client(self.auth, cache=True)
+        cache_defaults = Client.CACHE_DEFAULT.copy()
+        cache_defaults["format_"] = cache_defaults.pop("format")
+        mock_cache.assert_called_once_with(**cache_defaults)
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_format_csv(self, mock_cache):
-        with Client(self.auth, cache=True, cache_opt={"format": "csv"}):
-            kwargs = mock_cache.call_args[1]
-            self.assertIn("format_", kwargs)
-            self.assertEqual(kwargs["format_"], "csv")
+        Client(self.auth, cache=True, cache_opt={"format": "csv"})
+        kwargs = mock_cache.call_args[1]
+        self.assertIn("format_", kwargs)
+        self.assertEqual(kwargs["format_"], "csv")
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_format_parquet(self, mock_cache):
-        with Client(self.auth, cache={"format": "parquet"}):
-            kwargs = mock_cache.call_args[1]
-            self.assertIn("format_", kwargs)
-            self.assertEqual(kwargs["format_"], "parquet")
+        Client(self.auth, cache={"format": "parquet"})
+        kwargs = mock_cache.call_args[1]
+        self.assertIn("format_", kwargs)
+        self.assertEqual(kwargs["format_"], "parquet")
 
     def test_init_with_invalid_cache_format_raises_exception(self):
         with self.assertRaises(ValueError):
-            with Client(self.auth, cache=True, cache_opt={"format": "bogusformat"}):
-                pass
+            Client(self.auth, cache=True, cache_opt={"format": "bogusformat"})
+                #pass
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_root(self, mock_cache):
@@ -157,8 +159,8 @@ class Test_Client(unittest.TestCase):
         cache_defaults["format_"] = cache_defaults.pop("format")
         cache_defaults["cache_root"] = "a:\\diskett"
 
-        with Client(self.auth, cache=True, cache_opt={"cache_root": "a:\\diskett"}):
-            mock_cache.assert_called_once_with(**cache_defaults)
+        Client(self.auth, cache=True, cache_opt={"cache_root": "a:\\diskett"})
+        mock_cache.assert_called_once_with(**cache_defaults)
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_max_size(self, mock_cache):
@@ -166,8 +168,9 @@ class Test_Client(unittest.TestCase):
         cache_defaults["format_"] = cache_defaults.pop("format")
         cache_defaults["max_size"] = 10
 
-        with Client(self.auth, cache=True, cache_opt={"max_size": 10}):
-            mock_cache.assert_called_once_with(**cache_defaults)
+        Client(self.auth, cache=True, cache_opt={"max_size": 10})
+        mock_cache.assert_called_once_with(**cache_defaults)
+
 
     def test_ping_request(self):
         self.client._files_api.ping.return_value = {"status": "pong"}
