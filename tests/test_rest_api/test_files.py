@@ -51,7 +51,7 @@ class Test_FilesAPI(unittest.TestCase):
         result = self.api.upload()
 
         mock_post.assert_called_once_with(
-            "https://reservoir-api-qa.4subsea.net/api/Files/upload",
+            "https://reservoir-api-qa.4subsea.net/api/files/upload",
             **self.api._defaults
         )
 
@@ -64,7 +64,7 @@ class Test_FilesAPI(unittest.TestCase):
         self.api.commit("fileid")
 
         mock_post.assert_called_with(
-            "https://reservoir-api-qa.4subsea.net/api/Files/commit",
+            "https://reservoir-api-qa.4subsea.net/api/files/commit",
             data={"FileId": "fileid"},
             **self.api._defaults
         )
