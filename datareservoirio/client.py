@@ -68,12 +68,6 @@ class Client:
 
         self._storage = Storage(self._timeseries_api, downloader, self._auth_session)
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        return self
-
     def ping(self):
         """
         Test that you have a working connection to DataReservoir.io.
