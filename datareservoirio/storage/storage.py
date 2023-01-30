@@ -387,6 +387,7 @@ def _blob_to_df(blob_url):
     """
 
     response = requests.get(blob_url, stream=True)
+    response.raise_for_status()
 
     with io.BytesIO() as stream:
         for chunk in response.iter_content(chunk_size=512):
