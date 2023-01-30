@@ -151,7 +151,6 @@ class Test_Client(unittest.TestCase):
     def test_init_with_invalid_cache_format_raises_exception(self):
         with self.assertRaises(ValueError):
             Client(self.auth, cache=True, cache_opt={"format": "bogusformat"})
-            # pass
 
     @patch("datareservoirio.client.FileCacheDownload")
     def test_init_with_cache_root(self, mock_cache):
