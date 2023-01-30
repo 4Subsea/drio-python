@@ -1,5 +1,4 @@
 import base64
-import http
 import io
 import logging
 import os
