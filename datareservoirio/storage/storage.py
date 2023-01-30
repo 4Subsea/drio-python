@@ -370,23 +370,6 @@ class DirectDownload:
         return _blob_to_df(blob_url)
 
 
-def _retry(func):
-    def wrapper(*args, **kwargs):
-        MAX_RETRIES = 5
-        n_retries = 0
-        while n_retries < MAX_RETRIES:
-            try:
-                return func(*args, **kwargs)
-            except http.client.IncompleteRead:
-                continue
-            finally:
-                n_retries += 1
-        raise ValueError("Could not read dataframe from blob.")  # change exception type
-
-    return wrapper
-
-
-@_retry
 def _blob_to_df(blob_url):
     """
     Download blob from remote storage and present as a Pandas Series.
@@ -404,13 +387,20 @@ def _blob_to_df(blob_url):
         or ``float64``.
     """
 
-    df = pd.read_csv(
-        blob_url,
-        header=None,
-        names=("index", "values"),
-        dtype={"index": "int64", "values": "str"},
-        encoding="utf-8",
-    ).astype({"values": "float64"}, errors="ignore")
+    response = requests.get(blob_url, stream=True)
+
+    with io.BytesIO() as stream:
+        for chunk in response.iter_content(chunk_size=512):
+            stream.write(chunk)
+
+        stream.seek(0)
+        df = pd.read_csv(
+            stream,
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "str"},
+            encoding="utf-8",
+        ).astype({"values": "float64"}, errors="ignore")
 
     return df
 
