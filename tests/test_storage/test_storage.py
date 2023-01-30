@@ -43,6 +43,9 @@ def mock_requests_get(monkeypatch):
         def __init__(self, path):
             self._path = path
 
+        def raise_for_status(self):
+            pass
+
         def iter_content(self, chunk_size=1):
             with open(self._path, mode="rb") as f:
                 while content_i := f.read(chunk_size):
