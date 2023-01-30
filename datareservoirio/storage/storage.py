@@ -381,7 +381,7 @@ def _retry(func):
                 continue
             finally:
                 n_retries += 1
-        raise ValueError()   # change exception type
+        raise ValueError("Could not read dataframe from blob.")   # change exception type
     return wrapper
 
 
@@ -412,43 +412,6 @@ def _blob_to_df(blob_url):
     ).astype({"values": "float64"}, errors="ignore")
 
     return df
-
- 
-# def _blob_to_df(blob_url):
-#     """
-#     Download blob from remote storage and present as a Pandas Series.
-
-#     Parameters
-#     ----------
-#     blob_url : str
-#         Fully formated URL to the blob. Must contain all the required parameters
-#         in the URL.
-
-#     Return
-#     ------
-#     series : pandas.Series
-#         Pandas series where index is nano-seconds since epoch and values are ``str``
-#         or ``float64``.
-#     """
-
-    
-#     response = requests.get(blob_url, stream=True)
-
-#     with io.BytesIO() as stream:
-#         for chunk in response.iter_content(chunk_size=1024):
-#             stream.write(chunk)
-#         stream.seek(0)
-
-
-#         df = pd.read_csv(
-#             stream,
-#             header=None,
-#             names=("index", "values"),
-#             dtype={"index": "int64", "values": "str"},
-#             encoding="utf-8",
-#         ).astype({"values": "float64"}, errors="ignore")
-
-#     return df
 
 
 def _df_to_blob(df, blob_url):
