@@ -1,4 +1,5 @@
 import base64
+import http
 import io
 import logging
 import os
@@ -10,7 +11,6 @@ from threading import RLock as Lock
 
 import pandas as pd
 import requests
-import http
 
 from ..appdirs import user_cache_dir
 from .cache_engine import CacheIO, _CacheIndex
@@ -381,7 +381,8 @@ def _retry(func):
                 continue
             finally:
                 n_retries += 1
-        raise ValueError("Could not read dataframe from blob.")   # change exception type
+        raise ValueError("Could not read dataframe from blob.")  # change exception type
+
     return wrapper
 
 
