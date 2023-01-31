@@ -7,6 +7,7 @@ from unittest.mock import DEFAULT, MagicMock, Mock, call, patch
 import numpy as np
 import pandas as pd
 import pytest
+import requests
 
 from datareservoirio.appdirs import user_cache_dir
 from datareservoirio.storage import (
@@ -22,6 +23,38 @@ from datareservoirio.storage.storage import (
 )
 
 TEST_PATH = Path(__file__).parent
+
+
+@pytest.fixture
+def mock_requests_get(monkeypatch):
+    class MockResponse:
+        """
+        Used to mock the response from ``requests.get``, based on data in a local
+        file.
+
+        Needed to be able to test the ``_blob_to_df`` function.
+
+        Parameters
+        ----------
+        path : str
+            File path.
+        """
+
+        def __init__(self, path):
+            self._path = path
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size=1):
+            with open(self._path, mode="rb") as f:
+                while content_i := f.read(chunk_size):
+                    yield content_i
+
+    def mock_get(url, *args, **kwargs):
+        return MockResponse(url)
+
+    monkeypatch.setattr(requests, "get", mock_get)
 
 
 @pytest.fixture
@@ -548,11 +581,13 @@ class Test_FileCachceDownload(unittest.TestCase):
 
 
 class Test__blob_to_series:
-    def test_get_numeric(self, numeric_blob_file_path, numeric_blob_df):
+    def test_get_numeric(
+        self, mock_requests_get, numeric_blob_file_path, numeric_blob_df
+    ):
         df_out = _blob_to_df(numeric_blob_file_path)
         pd.testing.assert_frame_equal(df_out, numeric_blob_df)
 
-    def test_get_str(self, str_blob_file_path, str_blob_df):
+    def test_get_str(self, mock_requests_get, str_blob_file_path, str_blob_df):
         df_out = _blob_to_df(str_blob_file_path)
         pd.testing.assert_frame_equal(df_out, str_blob_df)
 
@@ -602,7 +637,7 @@ class Test__df_to_blob:
 
     @patch(
         "requests.put",
-        **{"return_value.raise_for_status.side_effect": Exception("this_test")}
+        **{"return_value.raise_for_status.side_effect": Exception("this_test")},
     )
     def test_put_raise(self, mock_put, numeric_blob_df):
         with pytest.raises(Exception) as e:
