@@ -113,7 +113,7 @@ class BaseDownloader:
         try:
             df = next(filedatas)
         except StopIteration:
-            return pd.DataFrame()
+            return pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
         for fd in filedatas:
             df = self._combine_first(fd, df)
@@ -123,7 +123,13 @@ class BaseDownloader:
 
     def _download_chunks_as_dataframe(self, chunks):
         if not chunks:
-            return pd.DataFrame()
+            df_chunks = pd.DataFrame(columns=("index", "values")).astype(
+                {"index": "int64"}
+            )
+            df_chunks.set_index(
+                "index", inplace=True
+            )  # Temporary hotfix while waiting for refactor
+            return df_chunks
 
         with ThreadPoolExecutor(max_workers=1) as executor:
             filechunks = executor.map(self._download_verified_chunk, chunks)
