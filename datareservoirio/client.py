@@ -9,7 +9,7 @@ import requests
 
 from .globalsettings import environment
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
-from .storage import BaseDownloader, FileCacheDownload, Storage
+from .storage import Storage
 
 log = logging.getLogger(__name__)
 
@@ -46,20 +46,20 @@ class Client:
         self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
         self._files_api = FilesAPI(self._auth_session)
         self._metadata_api = MetadataAPI(self._auth_session)
-        self._enable_cache = cache
+        # self._enable_cache = cache
 
-        # Emit deprecation warning if "format" is provided
-        if self._enable_cache:
-            cache_default = self.CACHE_DEFAULT.copy()
-            if set(cache_default.keys()).issuperset(cache_opt):
-                cache_default.update(cache_opt)
-                self._cache_opt = cache_default
-                self._cache_format = self._cache_opt.pop("format")
-            else:
-                raise ValueError("cache_opt contains unknown keywords.")
+        # # Emit deprecation warning if "format" is provided
+        # if self._enable_cache:
+        #     cache_default = self.CACHE_DEFAULT.copy()
+        #     if set(cache_default.keys()).issuperset(cache_opt):
+        #         cache_default.update(cache_opt)
+        #         self._cache_opt = cache_default
+        #         self._cache_format = self._cache_opt.pop("format")
+        #     else:
+        #         raise ValueError("cache_opt contains unknown keywords.")
 
-        if self._enable_cache:
-            raise NotImplementedError("Temporarily disabled")
+        # if self._enable_cache:
+        #     raise NotImplementedError("Temporarily disabled")
         #     download_backend = FileCacheDownload(
         #         format_=self._cache_format, **self._cache_opt
         #     )
@@ -68,7 +68,12 @@ class Client:
 
         # downloader = BaseDownloader(download_backend)
 
-        self._storage = Storage(self._timeseries_api, self._auth_session)  # (cache_opts)
+        self._storage = Storage(
+            self._timeseries_api,
+            self._auth_session,
+            cache,
+            cache_opt=cache_opt
+            )
 
     def __enter__(self):
         return self
