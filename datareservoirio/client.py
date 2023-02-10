@@ -32,34 +32,43 @@ class Client:
         Enable caching (default).
     cache_opt : dict, optional
         Configuration object for controlling the series cache.
-        'format': 'parquet' or 'csv'. Default is 'parquet'.
         'max_size': max size of cache in megabytes. Default is 1024 MB.
         'cache_root': cache storage location. See documentation for platform
         specific defaults.
 
     """
     # Remove support for format, use only parquet.
-    CACHE_DEFAULT = {"format": "parquet", "max_size": 1024, "cache_root": None}
+    # CACHE_DEFAULT = {"format": "parquet", "max_size": 1024, "cache_root": None}
 
-    def __init__(self, auth, cache=True, cache_opt=CACHE_DEFAULT):
+    def __init__(self, auth, cache=True, cache_opt=None):
         self._auth_session = auth
         self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
         self._files_api = FilesAPI(self._auth_session)
         self._metadata_api = MetadataAPI(self._auth_session)
 
         if cache:
-            cache_opt.update(
-                (key, self.CACHE_DEFAULT[key])
-                for key in set(self.CACHE_DEFAULT.keys()).difference(cache_opt)
-                )
-
-            if "format" in cache_opt:
+            try:
+                del cache_opt["format"]
+            except (TypeError, KeyError):
+                pass
+            else:
                 warnings.warn(
-                    "Support for choosing cache format depraceted."
-                    "'format' will be ignored.",
+                    "Support for choosing cache format depraceted. 'format' will be ignored.",
                     DeprecationWarning
                     )
-                del cache_opt["format"]
+
+            # # cache_opt.update(
+            # #     (key, self.CACHE_DEFAULT[key])
+            # #     for key in set(self.CACHE_DEFAULT.keys()).difference(cache_opt)
+            # #     )
+
+            # if isinstance(cache_opt, dict) and "format" in cache_opt:
+            #     warnings.warn(
+            #         "Support for choosing cache format depraceted."
+            #         "'format' will be ignored.",
+            #         DeprecationWarning
+            #         )
+            #     del cache_opt["format"]
 
         self._storage = Storage(
             self._timeseries_api,

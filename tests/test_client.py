@@ -135,21 +135,15 @@ class Test_Client(unittest.TestCase):
 
     @patch("datareservoirio.client.Storage")
     def test_init_with_cache_root(self, mock_storage):
-        cache_defaults = Client.CACHE_DEFAULT.copy()
-        cache_defaults["cache_root"] = "a:\\diskett"
-
         Client(self.auth, cache=True, cache_opt={"cache_root": "a:\\diskett"})
         assert mock_storage.call_args.kwargs["cache"]
-        assert mock_storage.call_args.kwargs["cache_opt"] == cache_defaults
+        assert mock_storage.call_args.kwargs["cache_opt"] == {"cache_root": "a:\\diskett"}
 
     @patch("datareservoirio.client.Storage")
     def test_init_with_cache_max_size(self, mock_storage):
-        cache_defaults = Client.CACHE_DEFAULT.copy()
-        cache_defaults["max_size"] = 10
-
         Client(self.auth, cache=True, cache_opt={"max_size": 10})
         assert mock_storage.call_args.kwargs["cache"]
-        assert mock_storage.call_args.kwargs["cache_opt"] == cache_defaults
+        assert mock_storage.call_args.kwargs["cache_opt"] == {"max_size": 10}
 
     def test_ping_request(self):
         self.client._files_api.ping.return_value = {"status": "pong"}

@@ -26,7 +26,7 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, session, cache=True, cache_opt={}):
+    def __init__(self, timeseries_api, session, cache=True, cache_opt=None):
         """
         Initialize service for working with timeseries data in Azure Blob
         Storage.
@@ -38,11 +38,17 @@ class Storage:
         session : cls
             An authenticated session that is used in all API calls. Must supply a
             valid bearer token to all API calls.
-
-
+    cache : bool
+        Enable caching (default).
+    cache_opt : dict, optional
+        Configuration object for controlling the series cache.
+        'max_size': max size of cache in megabytes. Default is 1024 MB.
+        'cache_root': cache storage location. See documentation for platform
+        specific defaults.
 
         """
         if cache:
+            cache_opt = {} if cache_opt is None else cache_opt
             storage_cache = StorageCache(**cache_opt)
         else:
             storage_cache = None
