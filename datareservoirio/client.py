@@ -43,6 +43,7 @@ class Client:
         self._files_api = FilesAPI(self._auth_session)
         self._metadata_api = MetadataAPI(self._auth_session)
 
+        # TODO: Remove after 2023-08-15
         if cache:
             try:
                 del cache_opt["format"]
