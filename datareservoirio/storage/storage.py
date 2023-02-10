@@ -26,7 +26,7 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, session, cache=True, cache_opt=None):
+    def __init__(self, timeseries_api, session, cache=True, cache_opt={}):
         """
         Initialize service for working with timeseries data in Azure Blob
         Storage.
@@ -43,7 +43,7 @@ class Storage:
 
         """
         if cache:
-            storage_cache = StorageCache(format_=cache_opt.pop("format"), **cache_opt)
+            storage_cache = StorageCache(**cache_opt)
         else:
             storage_cache = None
 

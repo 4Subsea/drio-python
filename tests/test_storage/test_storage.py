@@ -11,7 +11,7 @@ import pytest
 from datareservoirio.appdirs import user_cache_dir
 from datareservoirio.storage import (
     BaseDownloader,
-    FileCacheDownload,
+    StorageCache,
     Storage,
 )
 from datareservoirio.storage.storage import (
@@ -129,6 +129,7 @@ class Test_Storage(unittest.TestCase):
         self.storage = Storage(
             self._timeseries_api,
             session=self.session,
+            cache=False
         )
 
     @patch("datareservoirio.storage.storage._blob_to_df")
@@ -349,7 +350,7 @@ class Test_BaseDownloader(unittest.TestCase):
         pd.testing.assert_frame_equal(df_expected, df_out)
 
 
-class Test_FileCachceDownload(unittest.TestCase):
+class Test_StorageCache(unittest.TestCase):
     def setUp(self):
         makedirs_patcher = patch("datareservoirio.storage.storage.os.makedirs")
         self._makedirs_patch = makedirs_patcher.start()
@@ -364,43 +365,43 @@ class Test_FileCachceDownload(unittest.TestCase):
         self._cacheindex_patch = cacheindex_patcher.start()
 
         evict_patcher = patch(
-            "datareservoirio.storage.FileCacheDownload._evict_from_cache"
+            "datareservoirio.storage.StorageCache._evict_from_cache"
         )
         self._evict_patch = evict_patcher.start()
 
         self.addCleanup(patch.stopall)
 
     def test_init(self):
-        FileCacheDownload()
+        StorageCache()
         self._evict_patch.assert_called_once()
 
     def test_cache_hive(self):
-        cache = FileCacheDownload()
+        cache = StorageCache()
         self.assertEqual(cache._cache_hive, cache.STOREFORMATVERSION)
 
     def test_cache_root(self):
-        cache = FileCacheDownload()
+        cache = StorageCache()
         self.assertEqual(
             cache.cache_root, os.path.abspath(user_cache_dir("datareservoirio"))
         )
 
-        cache = FileCacheDownload(cache_folder="sometingelse")
+        cache = StorageCache(cache_folder="sometingelse")
         self.assertEqual(
             cache.cache_root, os.path.abspath(user_cache_dir("sometingelse"))
         )
 
-        cache = FileCacheDownload(cache_root="home", cache_folder="anywhere")
+        cache = StorageCache(cache_root="home", cache_folder="anywhere")
         self.assertEqual(cache.cache_root, os.path.abspath("home"))
 
     def test_cache_path(self):
-        cache = FileCacheDownload(cache_root="home")
+        cache = StorageCache(cache_root="home")
         self.assertEqual(
             os.path.join(os.path.abspath("home"), cache.STOREFORMATVERSION),
             cache._cache_path,
         )
 
     def test_reset_cache(self):
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_evict_entry_root") as mock_evict:
             cache.reset_cache()
         mock_evict.assert_called_once_with(cache.cache_root)
@@ -408,7 +409,7 @@ class Test_FileCachceDownload(unittest.TestCase):
     def test_get_cache_id_md5(self):
         chunk = {"Path": "abc-123/def_456", "ContentMd5": "md5-123"}
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         id_out, md5_out = cache._get_cache_id_md5(chunk)
         id_expected = cache._cache_format + "abc123def456"
         md5_expected = _encode_for_path_safety("md5-123")
@@ -420,7 +421,7 @@ class Test_FileCachceDownload(unittest.TestCase):
 
         df = pd.DataFrame({"values": [1.0, 2.0, 3.0]}, index=[1, 2, 3])
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.multiple(
             cache, _get_cache_id_md5=DEFAULT, _get_cached_data=DEFAULT
         ) as mocks:
@@ -448,7 +449,7 @@ class Test_FileCachceDownload(unittest.TestCase):
 
         df = pd.DataFrame({"values": [1.0, 2.0, 3.0]}, index=[1, 2, 3])
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.multiple(
             cache, _get_cache_id_md5=DEFAULT, _get_cached_data=DEFAULT
         ) as mocks:
@@ -461,30 +462,36 @@ class Test_FileCachceDownload(unittest.TestCase):
 
             data = cache.get(chunk)
 
-            pd.testing.assert_frame_equal(df, data)
+            assert data is None
             mocks["_get_cache_id_md5"].assert_called_once_with(chunk)
             mocks["_get_cached_data"].assert_called_once_with(
                 "abc123def456", _encode_for_path_safety("md5-123")
             )
-            mock_remote_get.assert_called_once_with(chunk["Endpoint"])
 
     def test_put_data_to_cache_tiny(self):
-        id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
+        chunk = {
+            "Path": "abc123def456",
+            "ContentMd5": "md5-123"
+        }
         df = pd.DataFrame({"values": [1.0, 2.0, 3.0]}, index=[1, 2, 3])
 
-        cache = FileCacheDownload()
-        cache._put_data_to_cache(df, id_, md5)
+        cache = StorageCache()
+        cache.put(df, chunk)
         self._cacheindex_patch._get_filepath.assert_not_called()
 
     def test_put_data_to_cache(self):
-        id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
+        chunk = {
+            "Path": "abc123def456",
+            "ContentMd5": "md5-123"
+        }
+
         df = pd.DataFrame(
             {"values": np.arange(24 * 61)}, index=np.arange(24 * 61, dtype=int)
         )
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_write") as mock_write:
-            cache._put_data_to_cache(df, id_, md5)
+            cache.put(df, chunk)
 
         self.assertEqual(self._evict_patch.call_count, 2)
         mock_write.assert_called_once()
@@ -493,14 +500,14 @@ class Test_FileCachceDownload(unittest.TestCase):
     @patch("shutil.rmtree")
     def test_evict_entry_root(self, mock_rmtree, mock_exists):
         mock_exists.return_value = False
-        cache = FileCacheDownload()
+        cache = StorageCache()
         cache._evict_entry_root("root")
 
         mock_rmtree.assert_called_once_with("root")
         self._makedirs_patch.assert_called_with("root")
 
     def test_evict_entry(self):
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_delete") as mock_delete:
             cache._evict_entry("id_", "md5")
         mock_delete.assert_called()
@@ -508,7 +515,7 @@ class Test_FileCachceDownload(unittest.TestCase):
     def test_get_cached_data_not_in_cache(self):
         id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache._cache_index, "exists") as mock_exists:
             mock_exists.return_value = False
 
@@ -521,7 +528,7 @@ class Test_FileCachceDownload(unittest.TestCase):
             {"values": np.arange(24 * 61)}, index=np.arange(24 * 61, dtype=int)
         )
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_cache_index") as mock_index:
             mock_index.exists.return_value = True
             mock_index.__getitem__.return_value = {
@@ -542,7 +549,7 @@ class Test_FileCachceDownload(unittest.TestCase):
             {"values": np.arange(24 * 61)}, index=np.arange(24 * 61, dtype=int)
         )
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_cache_index") as mock_index:
             mock_index.exists.return_value = False
             mock_index.__getitem__.return_value = {

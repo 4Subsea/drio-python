@@ -46,32 +46,25 @@ class Client:
         self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
         self._files_api = FilesAPI(self._auth_session)
         self._metadata_api = MetadataAPI(self._auth_session)
-        # self._enable_cache = cache
 
-        # # Emit deprecation warning if "format" is provided
-        # if self._enable_cache:
-        #     cache_default = self.CACHE_DEFAULT.copy()
-        #     if set(cache_default.keys()).issuperset(cache_opt):
-        #         cache_default.update(cache_opt)
-        #         self._cache_opt = cache_default
-        #         self._cache_format = self._cache_opt.pop("format")
-        #     else:
-        #         raise ValueError("cache_opt contains unknown keywords.")
+        if cache:
+            cache_opt.update(
+                (key, self.CACHE_DEFAULT[key])
+                for key in set(self.CACHE_DEFAULT.keys()).difference(cache_opt)
+                )
 
-        # if self._enable_cache:
-        #     raise NotImplementedError("Temporarily disabled")
-        #     download_backend = FileCacheDownload(
-        #         format_=self._cache_format, **self._cache_opt
-        #     )
-        # else:
-        #     download_backend = None
-
-        # downloader = BaseDownloader(download_backend)
+            if "format" in cache_opt:
+                warnings.warn(
+                    "Support for choosing cache format depraceted."
+                    "'format' will be ignored.",
+                    DeprecationWarning
+                    )
+                del cache_opt["format"]
 
         self._storage = Storage(
             self._timeseries_api,
             self._auth_session,
-            cache,
+            cache=cache,
             cache_opt=cache_opt
             )
 
