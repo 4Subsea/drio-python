@@ -8,99 +8,17 @@ import pandas as pd
 
 from datareservoirio.storage.cache_engine import (
     CacheIO,
-    CsvFormat,
-    GenericFormat,
-    ParquetFormat,
     _CacheIndex,
 )
 
 
-class Test_CsvFormat(unittest.TestCase):
-    def test__init(self):
-        file_format = CsvFormat()
-        self.assertIsInstance(file_format, GenericFormat)
-
-    def test_extension(self):
-        file_format = CsvFormat()
-        self.assertEqual(file_format.file_extension, "csv")
-
-    @patch("datareservoirio.storage.cache_engine.pd")
-    def test_deserialize(self, mock_pd):
-        file_format = CsvFormat()
-        file_format.deserialize(io.BytesIO())
-        mock_pd.read_csv.assert_called_once()
-
-    def test_deserialize_actual(self):
-        df = pd.DataFrame({"values": [0, 1, 2, 3, 4]}, index=[0, 1, 2, 3, 4])
-        stream = codecs.getwriter("utf-8")(io.BytesIO())
-        df.to_csv(stream)
-        stream.seek(0)
-
-        file_format = CsvFormat()
-        df_out = file_format.deserialize(stream)
-        pd.testing.assert_frame_equal(df, df_out)
-
-    def test_serialize(self):
-        file_format = CsvFormat()
-        mock_df = MagicMock()
-        stream = io.BytesIO()
-
-        file_format.serialize(mock_df, stream)
-        mock_df.to_csv.assert_called_once()
-
-
-class Test_ParquetFormat(unittest.TestCase):
-    def test__init(self):
-        file_format = ParquetFormat()
-        self.assertIsInstance(file_format, GenericFormat)
-
-    def test_extension(self):
-        file_format = ParquetFormat()
-        self.assertEqual(file_format.file_extension, "parquet")
-
-    @patch("datareservoirio.storage.cache_engine.pd")
-    def test_deserialize(self, mock_pd):
-        file_format = ParquetFormat()
-
-        mock_stream = io.BytesIO()
-        file_format.deserialize(mock_stream)
-        mock_pd.read_parquet.assert_called_once_with(mock_stream)
-
-    def test_deserialize_actual(self):
-        df = pd.DataFrame({"values": [0, 1, 2, 3, 4]}, index=[0, 1, 2, 3, 4])
-        stream = io.BytesIO()
-        df.to_parquet(stream)
-        stream.seek(0)
-
-        file_format = ParquetFormat()
-        df_out = file_format.deserialize(stream)
-        pd.testing.assert_frame_equal(df, df_out)
-
-    def test_serialize(self):
-        file_format = ParquetFormat()
-        mock_df = MagicMock()
-        stream = io.BytesIO()
-
-        file_format.serialize(mock_df, stream)
-        mock_df.to_parquet.assert_called_once_with(stream)
-
-
 class Test_CacheIO(unittest.TestCase):
     def test__init(self):
-        cache_io = CacheIO("parquet")
-        self.assertIsInstance(cache_io._io_backend, ParquetFormat)
-
-        cache_io = CacheIO("csv")
-        self.assertIsInstance(cache_io._io_backend, CsvFormat)
-
-        with self.assertRaises(ValueError):
-            CacheIO("msgpack")
-        with self.assertRaises(ValueError):
-            CacheIO("unicorn")
+        CacheIO()
 
     @patch("os.utime")
     def test_read(self, mock_utime):
-        cache_io = CacheIO("parquet")
+        cache_io = CacheIO()
 
         df = pd.DataFrame({"values": [0, 1, 2, 3, 4]}, index=[0, 1, 2, 3, 4])
         stream = io.BytesIO()
@@ -116,7 +34,7 @@ class Test_CacheIO(unittest.TestCase):
 
     @patch("os.remove")
     def test_delete_with_nonexisting_file_logs_error(self, mock_remove):
-        cache_io = CacheIO("parquet")
+        cache_io = CacheIO()
 
         mock_remove.side_effect = Exception
 
@@ -126,7 +44,7 @@ class Test_CacheIO(unittest.TestCase):
 
     @patch("os.rename")
     def test_write(self, mock_rename):
-        cache_io = CacheIO("parquet")
+        cache_io = CacheIO()
         df = MagicMock()
 
         with patch("io.open", mock_open()):

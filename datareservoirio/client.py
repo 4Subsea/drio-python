@@ -37,9 +37,6 @@ class Client:
         specific defaults.
 
     """
-    # Remove support for format, use only parquet.
-    # CACHE_DEFAULT = {"format": "parquet", "max_size": 1024, "cache_root": None}
-
     def __init__(self, auth, cache=True, cache_opt=None):
         self._auth_session = auth
         self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
@@ -54,21 +51,8 @@ class Client:
             else:
                 warnings.warn(
                     "Support for choosing cache format depraceted. 'format' will be ignored.",
-                    DeprecationWarning
+                    FutureWarning
                     )
-
-            # # cache_opt.update(
-            # #     (key, self.CACHE_DEFAULT[key])
-            # #     for key in set(self.CACHE_DEFAULT.keys()).difference(cache_opt)
-            # #     )
-
-            # if isinstance(cache_opt, dict) and "format" in cache_opt:
-            #     warnings.warn(
-            #         "Support for choosing cache format depraceted."
-            #         "'format' will be ignored.",
-            #         DeprecationWarning
-            #         )
-            #     del cache_opt["format"]
 
         self._storage = Storage(
             self._timeseries_api,

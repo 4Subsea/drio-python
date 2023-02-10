@@ -131,7 +131,7 @@ class Test_Client(unittest.TestCase):
             assert "format" not in mock_storage.call_args.kwargs["cache_opt"]
 
             assert len(w) == 1
-            assert issubclass(w[-1].category, DeprecationWarning)
+            assert issubclass(w[-1].category, FutureWarning)
 
     @patch("datareservoirio.client.Storage")
     def test_init_with_cache_root(self, mock_storage):

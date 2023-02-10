@@ -215,10 +215,6 @@ class StorageCache(CacheIO):
     cache_folder : string
         Base folder within the default cache_root where cached data is
         stored. If cache_root is specified, this parameter is ignored.
-    format_ : string
-        Specify cache file format. 'parquet' or 'csv'.
-        Default is 'parquet'.
-
     """
 
     STOREFORMATVERSION = "v3"
@@ -228,11 +224,10 @@ class StorageCache(CacheIO):
         self,
         max_size=1024,
         cache_root=None,
-        cache_folder="datareservoirio",
-        format_="parquet",
+        cache_folder="datareservoirio"
     ):
         self._max_size = max_size * 1024 * 1024
-        self._cache_format = format_
+        self._cache_format = "parquet"
 
         self._init_cache_dir(cache_root, cache_folder)
         self._cache_index = _CacheIndex(self._cache_path, self._max_size)
@@ -240,7 +235,7 @@ class StorageCache(CacheIO):
         self._evict_lock = Lock()
         self._evict_from_cache()
 
-        super().__init__(format_)
+        super().__init__()
 
     def _init_cache_dir(self, cache_root, cache_folder):
         if cache_root is None:
