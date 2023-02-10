@@ -32,7 +32,7 @@ class FilesAPI(BaseAPI):
 
         log.debug("upload with <token>")
 
-        uri = self._api_base_url + "Files/upload"
+        uri = self._api_base_url + "files/upload"
         response = self._post(uri)
 
         if log.isEnabledFor(logging.DEBUG):
@@ -57,7 +57,7 @@ class FilesAPI(BaseAPI):
         """
         log.debug(f"commit with <token>, {file_id}")
 
-        uri = self._api_base_url + "Files/commit"
+        uri = self._api_base_url + "files/commit"
         body = {"FileId": file_id}
         response = self._post(uri, data=body)
         return response.status_code

@@ -122,7 +122,7 @@ class BaseDownloader:
         try:
             df = next(filedatas)
         except StopIteration:
-            return pd.DataFrame()
+            return pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
         for fd in filedatas:
             df = self._combine_first(fd, df)
@@ -132,7 +132,13 @@ class BaseDownloader:
 
     def _download_chunks_as_dataframe(self, chunks):
         if not chunks:
-            return pd.DataFrame()
+            df_chunks = pd.DataFrame(columns=("index", "values")).astype(
+                {"index": "int64"}
+            )
+            df_chunks.set_index(
+                "index", inplace=True
+            )  # Temporary hotfix while waiting for refactor
+            return df_chunks
 
         with ThreadPoolExecutor(max_workers=1) as executor:
             filechunks = executor.map(self._download_verified_chunk, chunks)
@@ -360,7 +366,7 @@ def _blob_to_df(blob_url):
     Parameters
     ----------
     blob_url : str
-        Fully formated URL to the blob. Must contail all the required parameters
+        Fully formated URL to the blob. Must contain all the required parameters
         in the URL.
 
     Return
@@ -369,13 +375,23 @@ def _blob_to_df(blob_url):
         Pandas series where index is nano-seconds since epoch and values are ``str``
         or ``float64``.
     """
-    df = pd.read_csv(
-        blob_url,
-        header=None,
-        names=("index", "values"),
-        dtype={"index": "int64", "values": "str"},
-        encoding="utf-8",
-    ).astype({"values": "float64"}, errors="ignore")
+
+    response = requests.get(blob_url, stream=True)
+    response.raise_for_status()
+
+    with io.BytesIO() as stream:
+        for chunk in response.iter_content(chunk_size=512):
+            stream.write(chunk)
+
+        stream.seek(0)
+        df = pd.read_csv(
+            stream,
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "str"},
+            encoding="utf-8",
+        ).astype({"values": "float64"}, errors="ignore")
+
     return df
 
 

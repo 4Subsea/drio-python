@@ -7,6 +7,7 @@ from unittest.mock import DEFAULT, MagicMock, Mock, call, patch
 import numpy as np
 import pandas as pd
 import pytest
+import requests
 
 from datareservoirio.appdirs import user_cache_dir
 from datareservoirio.storage import (
@@ -21,6 +22,38 @@ from datareservoirio.storage.storage import (
 )
 
 TEST_PATH = Path(__file__).parent
+
+
+@pytest.fixture
+def mock_requests_get(monkeypatch):
+    class MockResponse:
+        """
+        Used to mock the response from ``requests.get``, based on data in a local
+        file.
+
+        Needed to be able to test the ``_blob_to_df`` function.
+
+        Parameters
+        ----------
+        path : str
+            File path.
+        """
+
+        def __init__(self, path):
+            self._path = path
+
+        def raise_for_status(self):
+            pass
+
+        def iter_content(self, chunk_size=1):
+            with open(self._path, mode="rb") as f:
+                while content_i := f.read(chunk_size):
+                    yield content_i
+
+    def mock_get(url, *args, **kwargs):
+        return MockResponse(url)
+
+    monkeypatch.setattr(requests, "get", mock_get)
 
 
 @pytest.fixture
@@ -262,6 +295,20 @@ class Test_BaseDownloader(unittest.TestCase):
         #     df_out = base_downloader.get(response)
 
         # pd.testing.assert_frame_equal(df_expected, df_out)
+    def test_get_empty(self):
+        mock_backend = MagicMock()
+        base_downloader = BaseDownloader(mock_backend)
+
+        response = {"Files": []}
+
+        df_out = base_downloader.get(response)
+
+        df_expected = pd.DataFrame(
+            pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+        )
+
+        mock_backend.assert_not_called()
+        pd.testing.assert_frame_equal(df_expected, df_out)
 
     def test__combine_first_no_overlap(self):
         df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
@@ -347,6 +394,21 @@ class Test_BaseDownloader(unittest.TestCase):
         df_out = base_downloader._download_chunks_as_dataframe(chunk)
 
         mock_remote_get.assert_called_once_with("https:://go-here-for-blob.com/segment_0")
+        pd.testing.assert_frame_equal(df_expected, df_out)
+
+    def test__download_chunks_as_dataframe_no_chunks(self):
+        mock_backend = MagicMock()
+
+        base_downloader = BaseDownloader(mock_backend)
+        df_out = base_downloader._download_chunks_as_dataframe([])
+
+        df_expected = (
+            pd.DataFrame(columns=("index", "values"))
+            .astype({"index": "int64"})
+            .set_index("index")
+        )
+
+        mock_backend.assert_not_called()
         pd.testing.assert_frame_equal(df_expected, df_out)
 
 
@@ -563,11 +625,13 @@ class Test_StorageCache(unittest.TestCase):
 
 
 class Test__blob_to_series:
-    def test_get_numeric(self, numeric_blob_file_path, numeric_blob_df):
+    def test_get_numeric(
+        self, mock_requests_get, numeric_blob_file_path, numeric_blob_df
+    ):
         df_out = _blob_to_df(numeric_blob_file_path)
         pd.testing.assert_frame_equal(df_out, numeric_blob_df)
 
-    def test_get_str(self, str_blob_file_path, str_blob_df):
+    def test_get_str(self, mock_requests_get, str_blob_file_path, str_blob_df):
         df_out = _blob_to_df(str_blob_file_path)
         pd.testing.assert_frame_equal(df_out, str_blob_df)
 
@@ -617,7 +681,7 @@ class Test__df_to_blob:
 
     @patch(
         "requests.put",
-        **{"return_value.raise_for_status.side_effect": Exception("this_test")}
+        **{"return_value.raise_for_status.side_effect": Exception("this_test")},
     )
     def test_put_raise(self, mock_put, numeric_blob_df):
         with pytest.raises(Exception) as e:

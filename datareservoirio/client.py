@@ -61,12 +61,6 @@ class Client:
             cache_opt=cache_opt
             )
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        return self
-
     def ping(self):
         """
         Test that you have a working connection to DataReservoir.io.
