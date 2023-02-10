@@ -6,10 +6,7 @@ from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import pandas as pd
 
-from datareservoirio.storage.cache_engine import (
-    CacheIO,
-    _CacheIndex,
-)
+from datareservoirio.storage.cache_engine import CacheIO, _CacheIndex
 
 
 class Test_CacheIO(unittest.TestCase):

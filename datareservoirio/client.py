@@ -37,6 +37,7 @@ class Client:
         specific defaults.
 
     """
+
     def __init__(self, auth, cache=True, cache_opt=None):
         self._auth_session = auth
         self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
@@ -52,15 +53,12 @@ class Client:
             else:
                 warnings.warn(
                     "Support for choosing cache format depraceted. 'format' will be ignored.",
-                    FutureWarning
-                    )
+                    FutureWarning,
+                )
 
         self._storage = Storage(
-            self._timeseries_api,
-            self._auth_session,
-            cache=cache,
-            cache_opt=cache_opt
-            )
+            self._timeseries_api, self._auth_session, cache=cache, cache_opt=cache_opt
+        )
 
     def ping(self):
         """

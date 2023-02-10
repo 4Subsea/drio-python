@@ -28,23 +28,23 @@ class Storage:
 
     def __init__(self, timeseries_api, session, cache=True, cache_opt=None):
         """
-        Initialize service for working with timeseries data in Azure Blob
-        Storage.
+            Initialize service for working with timeseries data in Azure Blob
+            Storage.
 
-        Parameters
-        ----------
-        timeseries_api: TimeseriesAPI
-            Instance of timeseries API.
-        session : cls
-            An authenticated session that is used in all API calls. Must supply a
-            valid bearer token to all API calls.
-    cache : bool
-        Enable caching (default).
-    cache_opt : dict, optional
-        Configuration object for controlling the series cache.
-        'max_size': max size of cache in megabytes. Default is 1024 MB.
-        'cache_root': cache storage location. See documentation for platform
-        specific defaults.
+            Parameters
+            ----------
+            timeseries_api: TimeseriesAPI
+                Instance of timeseries API.
+            session : cls
+                An authenticated session that is used in all API calls. Must supply a
+                valid bearer token to all API calls.
+        cache : bool
+            Enable caching (default).
+        cache_opt : dict, optional
+            Configuration object for controlling the series cache.
+            'max_size': max size of cache in megabytes. Default is 1024 MB.
+            'cache_root': cache storage location. See documentation for platform
+            specific defaults.
 
         """
         if cache:
@@ -226,12 +226,7 @@ class StorageCache(CacheIO):
     STOREFORMATVERSION = "v3"
     CACHE_THRESHOLD = 24 * 60  # number of rows
 
-    def __init__(
-        self,
-        max_size=1024,
-        cache_root=None,
-        cache_folder="datareservoirio"
-    ):
+    def __init__(self, max_size=1024, cache_root=None, cache_folder="datareservoirio"):
         self._max_size = max_size * 1024 * 1024
         self._cache_format = "parquet"
 

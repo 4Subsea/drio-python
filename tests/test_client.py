@@ -1,11 +1,11 @@
 import unittest
+import warnings
 from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
 import pytest
 import requests
-import warnings
 
 import datareservoirio
 from datareservoirio import Client
@@ -137,7 +137,9 @@ class Test_Client(unittest.TestCase):
     def test_init_with_cache_root(self, mock_storage):
         Client(self.auth, cache=True, cache_opt={"cache_root": "a:\\diskett"})
         assert mock_storage.call_args.kwargs["cache"]
-        assert mock_storage.call_args.kwargs["cache_opt"] == {"cache_root": "a:\\diskett"}
+        assert mock_storage.call_args.kwargs["cache_opt"] == {
+            "cache_root": "a:\\diskett"
+        }
 
     @patch("datareservoirio.client.Storage")
     def test_init_with_cache_max_size(self, mock_storage):

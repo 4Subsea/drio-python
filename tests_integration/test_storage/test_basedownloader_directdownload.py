@@ -36,7 +36,6 @@ class Test_DirectDownload(unittest.TestCase):
         self.auth.close()
 
     def test_get(self):
-
         response = self.timeseries_api.create()
         myfileid = self.token_fileid
 

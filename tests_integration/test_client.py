@@ -15,7 +15,6 @@ from tests_integration._auth import CLIENT
 class Test_Client(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-
         cls.df_1 = pd.Series(np.arange(100.0), index=np.arange(0, 100))
         cls.df_2 = pd.Series(np.arange(100.0), index=np.arange(50, 150))
         cls.df_3 = pd.Series(np.arange(50.0), index=np.arange(125, 175))

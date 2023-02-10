@@ -84,7 +84,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
         self.api.delete(response["TimeSeriesId"])
 
     def test_create_data_delete(self):
-
         response = self.api.create_with_data(self.token_fileid[0])
 
         info = self.api.info(response["TimeSeriesId"])
@@ -107,7 +106,6 @@ class Test_TimeSeriesApi(unittest.TestCase):
             self.api.info(response["TimeSeriesId"])
 
     def test_create_add_overlap_data_delete(self):
-
         response = self.api.create_with_data(self.token_fileid[0])
 
         response = self.api.add(response["TimeSeriesId"], self.token_fileid[1])
