@@ -28,16 +28,16 @@ class Storage:
 
     def __init__(self, timeseries_api, session, cache=True, cache_opt=None):
         """
-            Initialize service for working with timeseries data in Azure Blob
-            Storage.
+        Initialize service for working with timeseries data in Azure Blob
+        Storage.
 
-            Parameters
-            ----------
-            timeseries_api: TimeseriesAPI
-                Instance of timeseries API.
-            session : cls
-                An authenticated session that is used in all API calls. Must supply a
-                valid bearer token to all API calls.
+        Parameters
+        ----------
+        timeseries_api: TimeseriesAPI
+            Instance of timeseries API.
+        session : cls
+            An authenticated session that is used in all API calls. Must supply a
+            valid bearer token to all API calls.
         cache : bool
             Enable caching (default).
         cache_opt : dict, optional
@@ -267,7 +267,6 @@ class StorageCache(CacheIO):
         self._evict_entry_root(self.cache_root)
 
     def get(self, chunk):
-
         """
         Retrieve data from backend. Uses cached data if it is available.
 
