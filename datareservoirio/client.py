@@ -52,7 +52,7 @@ class Client:
                 pass
             else:
                 warnings.warn(
-                    "Support for choosing cache format depraceted. 'format' will be ignored.",
+                    "Support for choosing cache format deprecated. 'format' will be ignored.",
                     FutureWarning,
                 )
 
