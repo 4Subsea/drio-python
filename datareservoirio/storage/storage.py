@@ -266,7 +266,8 @@ class StorageCache(CacheIO):
         """Reset the cache, deleting any stored data."""
         self._evict_entry_root(self.cache_root)
 
-    def get(self, chunk):  # "Counterpart to DirectDownload.get"
+    def get(self, chunk):
+
         """
         Retrieve data from backend. Uses cached data if it is available.
 
