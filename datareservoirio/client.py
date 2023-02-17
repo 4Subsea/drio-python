@@ -1,6 +1,5 @@
 import logging
 import time
-import timeit
 import warnings
 from operator import itemgetter
 
@@ -280,7 +279,13 @@ class Client:
         if start >= end:
             raise ValueError("start must be before end")
 
-        time_start = timeit.default_timer()
+        # split start, end to sequence of start_day, end_day list
+        # for each start-end pair, generate url to rest call.
+        # submit each call to storage.get(target_url)  -> (it downloads and merges in sequence)
+        #    make it work sequencially first, upgrade to concurrent later.
+        # collect all in correct sequence
+        # concat collection
+        # set_index, squeeze, and slice
 
         log.debug("Getting series range")
         series = (
@@ -297,9 +302,6 @@ class Client:
 
         if convert_date:
             series.index = pd.to_datetime(series.index, utc=True)
-
-        time_end = timeit.default_timer()
-        log.info(f"Download series dataframe took {time_end - time_start} seconds")
 
         return series
 
