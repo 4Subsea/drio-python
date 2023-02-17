@@ -1,8 +1,6 @@
-import codecs
 import io
 import logging
 import os
-from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
 
 import pandas as pd
@@ -15,77 +13,13 @@ log = logging.getLogger(__name__)
 _BYTES_PER_ROW = 128 // 8
 
 
-class GenericFormat(metaclass=ABCMeta):
-    """
-    Abstract class for file format classes.
-    """
-
-    @abstractproperty
-    def file_extension(self):
-        pass
-
-    @abstractmethod
-    def serialize(self, dataframe, stream):
-        pass
-
-    @abstractmethod
-    def deserialize(self, stream):
-        pass
-
-
-class CsvFormat(GenericFormat):
-    """Serialize dataframe to/from the csv format."""
-
-    def __init__(self):
-        self._reader_factory = codecs.getreader("utf-8")
-        self._writer_factory = codecs.getwriter("utf-8")
-
-    @property
-    def file_extension(self):
-        return "csv"
-
-    def serialize(self, dataframe, stream):
-        with self._writer_factory(stream) as sw:
-            dataframe.to_csv(sw, header=True, encoding="ascii")
-
-    def deserialize(self, stream):
-        with self._reader_factory(stream) as sr:
-            return pd.read_csv(sr, index_col=0, encoding="ascii")
-
-
-class ParquetFormat(GenericFormat):
-    """Serialize dataframe to/from the parquet format."""
-
-    @property
-    def file_extension(self):
-        return "parquet"
-
-    def serialize(self, dataframe, stream):
-        dataframe.to_parquet(stream)
-
-    def deserialize(self, stream):
-        return pd.read_parquet(stream)
-
-
 class CacheIO:
     """
     Basic cache related disk operations.
 
-    Parameter
-    ---------
-    format : str
-        Which format to use when storing files in the cache. Accepts `parquet`
-        (recommended) for Parquet, and `csv` for CSV.
-
     """
 
-    def __init__(self, format_, *args, **kwargs):
-        if format_ == "parquet":
-            self._io_backend = ParquetFormat()
-        elif format_ == "csv":
-            self._io_backend = CsvFormat()
-        else:
-            raise ValueError("Unreckognized format: {}".format(format))
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def _write(self, data, filepath):
@@ -93,7 +27,7 @@ class CacheIO:
         with io.open(pre_filepath, "wb") as file_:
             try:
                 log.debug(f"Write {pre_filepath}")
-                self._io_backend.serialize(data, file_)
+                data.to_parquet(file_)
             except Exception as error:
                 log.exception(f"Serialize to {pre_filepath} failed: {error}")
                 raise
@@ -102,7 +36,7 @@ class CacheIO:
 
     def _read(self, filepath):
         with io.open(filepath, "rb") as file_:
-            data = self._io_backend.deserialize(file_)
+            data = pd.read_parquet(file_)
         os.utime(filepath)
         return data
 

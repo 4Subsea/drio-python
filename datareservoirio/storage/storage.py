@@ -26,7 +26,7 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, downloader, session):
+    def __init__(self, timeseries_api, session, cache=True, cache_opt=None):
         """
         Initialize service for working with timeseries data in Azure Blob
         Storage.
@@ -35,17 +35,26 @@ class Storage:
         ----------
         timeseries_api: TimeseriesAPI
             Instance of timeseries API.
-        downloader: cls
-            A strategy instance for handling downloads.
         session : cls
             An authenticated session that is used in all API calls. Must supply a
             valid bearer token to all API calls.
-
-
+        cache : bool
+            Enable caching (default).
+        cache_opt : dict, optional
+            Configuration object for controlling the series cache.
+            'max_size': max size of cache in megabytes. Default is 1024 MB.
+            'cache_root': cache storage location. See documentation for platform
+            specific defaults.
 
         """
+        if cache:
+            cache_opt = {} if cache_opt is None else cache_opt
+            storage_cache = StorageCache(**cache_opt)
+        else:
+            storage_cache = None
+
         self._timeseries_api = timeseries_api
-        self._downloader = downloader
+        self._downloader = BaseDownloader(storage_cache)
         self._session = session
 
     def put(self, df, target_url, commit_request):
@@ -103,8 +112,8 @@ class BaseDownloader:
 
     """
 
-    def __init__(self, backend):
-        self._backend = backend
+    def __init__(self, cacheio=None):
+        self._cacheio = cacheio
 
     def get(self, response):
         filechunks = [f["Chunks"] for f in response["Files"]]
@@ -141,7 +150,17 @@ class BaseDownloader:
         Download chunk as Pandas DataFrame and ensure the series does not contain
         duplicates.
         """
-        df = self._backend.get(chunk)
+        if self._cacheio is not None:
+            df = self._cacheio.get(chunk)
+
+            if df is None:
+                blob_url = chunk["Endpoint"]
+                df = _blob_to_df(blob_url)
+                self._cacheio.put(df, chunk)
+        else:
+            blob_url = chunk["Endpoint"]
+            df = _blob_to_df(blob_url)
+
         df.set_index(
             "index", inplace=True
         )  # Temporary hotfix while waiting for refactor
@@ -180,7 +199,7 @@ class BaseDownloader:
         return df_combined
 
 
-class FileCacheDownload(CacheIO):
+class StorageCache(CacheIO):
     """
     Backend for download with file based cache.
 
@@ -202,24 +221,14 @@ class FileCacheDownload(CacheIO):
     cache_folder : string
         Base folder within the default cache_root where cached data is
         stored. If cache_root is specified, this parameter is ignored.
-    format_ : string
-        Specify cache file format. 'parquet' or 'csv'.
-        Default is 'parquet'.
-
     """
 
     STOREFORMATVERSION = "v3"
     CACHE_THRESHOLD = 24 * 60  # number of rows
 
-    def __init__(
-        self,
-        max_size=1024,
-        cache_root=None,
-        cache_folder="datareservoirio",
-        format_="parquet",
-    ):
+    def __init__(self, max_size=1024, cache_root=None, cache_folder="datareservoirio"):
         self._max_size = max_size * 1024 * 1024
-        self._cache_format = format_
+        self._cache_format = "parquet"
 
         self._init_cache_dir(cache_root, cache_folder)
         self._cache_index = _CacheIndex(self._cache_path, self._max_size)
@@ -227,7 +236,7 @@ class FileCacheDownload(CacheIO):
         self._evict_lock = Lock()
         self._evict_from_cache()
 
-        super().__init__(format_)
+        super().__init__()
 
     def _init_cache_dir(self, cache_root, cache_folder):
         if cache_root is None:
@@ -274,9 +283,6 @@ class FileCacheDownload(CacheIO):
         data = self._get_cached_data(id_, md5)
         if data is None:
             log.debug(f"Cache miss on {id_}")
-            blob_url = chunk["Endpoint"]
-            data = _blob_to_df(blob_url)
-            self._put_data_to_cache(data, id_, md5)
         else:
             log.debug(f"Cache hit on {id_}")
         return data
@@ -287,7 +293,8 @@ class FileCacheDownload(CacheIO):
         id_ = re.sub(r"-|_|/|\.", "", path)
         return self._cache_format + id_, md5  # modify id_ with format prefix
 
-    def _put_data_to_cache(self, data, id_, md5):
+    def put(self, data, chunk):
+        id_, md5 = self._get_cache_id_md5(chunk)
         if len(data) <= self.CACHE_THRESHOLD:
             return  # do not cache tiny files
         filepath = self._cache_index._get_filepath(id_, md5)
@@ -345,28 +352,6 @@ class FileCacheDownload(CacheIO):
             log.debug(
                 f"Storage analyzed (in {time_end - time_start:.2f} seconds). Current size: {self._cache_index.size} in {self.cache_root}"
             )
-
-
-class DirectDownload:
-
-    """
-    Backend for direct download from cloud.
-
-    """
-
-    def get(self, chunk):
-        """
-        Retrieve data.
-
-        Parameters
-        ---------
-        chunk : dict
-            Dictionary containing parameters required by the backend to get
-            data.
-
-        """
-        blob_url = chunk["Endpoint"]
-        return _blob_to_df(blob_url)
 
 
 def _blob_to_df(blob_url):

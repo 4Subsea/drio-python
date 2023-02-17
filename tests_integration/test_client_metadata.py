@@ -16,7 +16,6 @@ class Test_ClientMetadata(unittest.TestCase):
         self.auth.close()
 
     def test_metadata_set_with_data_returns_id_of_existing_metadata(self):
-
         response1 = self.client.metadata_set(
             "system.integration",
             "test_metadata_set",

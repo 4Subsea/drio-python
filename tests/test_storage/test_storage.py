@@ -10,12 +10,7 @@ import pytest
 import requests
 
 from datareservoirio.appdirs import user_cache_dir
-from datareservoirio.storage import (
-    BaseDownloader,
-    DirectDownload,
-    FileCacheDownload,
-    Storage,
-)
+from datareservoirio.storage import BaseDownloader, Storage, StorageCache
 from datareservoirio.storage.storage import (
     _blob_to_df,
     _df_to_blob,
@@ -146,24 +141,32 @@ def bytesio_with_memory():
 class Test_Storage(unittest.TestCase):
     def setUp(self):
         self._timeseries_api = Mock()
-        self._files_api = Mock()
-        self.downloader = Mock()
         self.session = Mock()
 
         self.tid = "abc-123-xyz"
 
-        self.storage = Storage(
-            self._timeseries_api,
-            downloader=self.downloader,
-            session=self.session,
-        )
+        self._timeseries_api.download_days.return_value = {
+            "Files": [
+                {
+                    "Chunks": [
+                        {"Endpoint": "https:://go-here-for-blob.com/segment_0"},
+                    ]
+                },
+            ]
+        }
 
-    def test_get(self):
+        self.storage = Storage(self._timeseries_api, session=self.session, cache=False)
+
+    @patch("datareservoirio.storage.storage._blob_to_df")
+    def test_get(self, mock_remote_get):
         data_remote = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
-        self.downloader.get.return_value = data_remote
+        mock_remote_get.return_value = data_remote.copy()  # Inplace manipulation occurs
 
         data_out = self.storage.get(self.tid, 2, 3)
 
+        mock_remote_get.assert_called_once_with(
+            "https:://go-here-for-blob.com/segment_0"
+        )
         pd.testing.assert_frame_equal(data_out, data_remote)
 
     def test_put(self):
@@ -184,84 +187,104 @@ class Test_Storage(unittest.TestCase):
         )
 
 
-class Test_DirectDownload(unittest.TestCase):
-    @patch("datareservoirio.storage.storage._blob_to_df")
-    def test_get(self, mock_remote_get):
-        params = {"Endpoint": "https:://go-here-for-blob.com"}
-        downloader = DirectDownload()
-        downloader.get(params)
-
-        mock_remote_get.assert_called_once_with(params["Endpoint"])
-
-
 class Test_BaseDownloader(unittest.TestCase):
     def test_init(self):
-        mock_backend = MagicMock()
-        base_downloader = BaseDownloader(mock_backend)
-        self.assertEqual(base_downloader._backend, mock_backend)
+        BaseDownloader()
 
-    def test_get(self):
-        mock_backend = MagicMock()
-        base_downloader = BaseDownloader(mock_backend)
-
+    @patch("datareservoirio.storage.storage._blob_to_df")
+    def test_get(self, mock_remote_get):
         response = {
-            "Files": [{"Chunks": "abc1"}, {"Chunks": "abc2"}, {"Chunks": "abc3"}]
+            "Files": [
+                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]},
+                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_1"}]},
+                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_2"}]},
+            ]
         }
 
-        with patch.object(
-            base_downloader, "_download_chunks_as_dataframe"
-        ) as mock_download:
-            mock_download.side_effect = [
-                pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}).set_index(
-                    "index"
-                ),
-                pd.DataFrame({"index": [3, 4, 5], "values": [5.0, 4.0, 5.0]}).set_index(
-                    "index"
-                ),
-                pd.DataFrame({"index": [1, 5, 9], "values": [9.0, 8.0, 1.0]}).set_index(
-                    "index"
-                ),
-            ]
+        mock_remote_get.side_effect = [
+            pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}),
+            pd.DataFrame({"index": [3, 4, 5], "values": [5.0, 4.0, 5.0]}),
+            pd.DataFrame({"index": [1, 5, 9], "values": [9.0, 8.0, 1.0]}),
+        ]
 
-            df_expected = pd.DataFrame(
-                {"index": [1, 2, 3, 4, 5, 9], "values": [9.0, 2.0, 5.0, 4.0, 8.0, 1.0]}
-            )
-            df_out = base_downloader.get(response)
+        df_expected = pd.DataFrame(
+            {"index": [1, 2, 3, 4, 5, 9], "values": [9.0, 2.0, 5.0, 4.0, 8.0, 1.0]}
+        )
+
+        base_downloader = BaseDownloader()
+
+        df_out = base_downloader.get(response)
 
         pd.testing.assert_frame_equal(df_expected, df_out)
 
-        calls = [call("abc1"), call("abc2"), call("abc3")]
-        mock_download.assert_has_calls(calls)
+        calls = [
+            call("https:://go-here-for-blob.com/segment_0"),
+            call("https:://go-here-for-blob.com/segment_1"),
+            call("https:://go-here-for-blob.com/segment_2"),
+        ]
+        mock_remote_get.assert_has_calls(calls)
 
-    def test_get_with_text_data(self):
-        mock_backend = MagicMock()
-        base_downloader = BaseDownloader(mock_backend)
-
+    @patch("datareservoirio.storage.storage._blob_to_df")
+    def test_get_with_text_data(self, mock_remote_get):
         response = {
-            "Files": [{"Chunks": "abc1"}, {"Chunks": "abc2"}, {"Chunks": "abc3"}]
+            "Files": [
+                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]},
+                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_1"}]},
+                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_2"}]},
+            ]
         }
 
-        with patch.object(
-            base_downloader, "_download_chunks_as_dataframe"
-        ) as mock_download:
-            mock_download.side_effect = [
-                pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}).set_index(
-                    "index"
-                ),
-                pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}).set_index(
-                    "index"
-                ),
-                pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}).set_index(
-                    "index"
-                ),
-            ]
+        mock_remote_get.side_effect = [
+            pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}),
+            pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}),
+            pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}),
+        ]
 
-            df_expected = pd.DataFrame(
-                {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
-            )
-            df_out = base_downloader.get(response)
+        df_expected = pd.DataFrame(
+            {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
+        )
+
+        base_downloader = BaseDownloader()
+
+        df_out = base_downloader.get(response)
 
         pd.testing.assert_frame_equal(df_expected, df_out)
+
+        calls = [
+            call("https:://go-here-for-blob.com/segment_0"),
+            call("https:://go-here-for-blob.com/segment_1"),
+            call("https:://go-here-for-blob.com/segment_2"),
+        ]
+        mock_remote_get.assert_has_calls(calls)
+
+        # mock_backend = MagicMock()
+        # base_downloader = BaseDownloader(mock_backend)
+
+        # response = {
+        #     "Files": [{"Chunks": "abc1"}, {"Chunks": "abc2"}, {"Chunks": "abc3"}]
+        # }
+
+        # with patch.object(
+        #     base_downloader, "_download_chunks_as_dataframe"
+        # ) as mock_download:
+        #     mock_download.side_effect = [
+        #         pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}).set_index(
+        #             "index"
+        #         ),
+        #         pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}).set_index(
+        #             "index"
+        #         ),
+        #         pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}).set_index(
+        #             "index"
+        #         ),
+        #     ]
+
+        #     df_expected = pd.DataFrame(
+        #         {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
+        #     )
+        #     df_out = base_downloader.get(response)
+
+        # pd.testing.assert_frame_equal(df_expected, df_out)
 
     def test_get_empty(self):
         mock_backend = MagicMock()
@@ -306,56 +329,64 @@ class Test_BaseDownloader(unittest.TestCase):
         df_out = BaseDownloader._combine_first(df1, df2)
         pd.testing.assert_series_equal(df_expected, df_out)
 
-    def test__download_verified_chunk(self):
-        df = pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
+    @patch("datareservoirio.storage.storage._blob_to_df")
+    def test__download_verified_chunk(self, mock_remote_get):
+        chunk = {"Endpoint": "https:://go-here-for-blob.com/segment_0"}
 
-        mock_backend = MagicMock()
-        mock_backend.get.return_value = df
+        mock_remote_get.side_effect = [
+            pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
+        ]
 
-        df_expected = df.set_index("index")
+        df_expected = pd.DataFrame(
+            {"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}
+        ).set_index("index")
 
-        base_downloader = BaseDownloader(mock_backend)
-        df_out = base_downloader._download_verified_chunk("chunk")
-        mock_backend.get.assert_called_once_with("chunk")
+        base_downloader = BaseDownloader()
 
-        pd.testing.assert_frame_equal(df_expected, df_out)
-
-    def test__download_verified_chunk_w_duplicates(self):
-        df = pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
-        mock_backend = MagicMock()
-        mock_backend.get.return_value = df
-
-        df_expected = df.set_index("index")
-
-        base_downloader = BaseDownloader(mock_backend)
-        df_out = base_downloader._download_verified_chunk("chunk")
-        mock_backend.get.assert_called_once_with("chunk")
+        df_out = base_downloader._download_verified_chunk(chunk)
+        mock_remote_get.assert_called_once_with(chunk["Endpoint"])
 
         pd.testing.assert_frame_equal(df_expected, df_out)
 
-    def test__download_chunks_as_dataframe(self):
-        mock_backend = MagicMock()
-        mock_backend.get.side_effect = [
-            pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}),
-            pd.DataFrame({"index": [4, 5, 6], "values": [3.0, 4.0, 5.0]}),
-            pd.DataFrame({"index": [7, 8, 9], "values": [5.0, 6.0, 7.0]}),
+    @patch("datareservoirio.storage.storage._blob_to_df")
+    def test__download_verified_chunk_w_duplicates(self, mock_remote_get):
+        chunk = {"Endpoint": "https:://go-here-for-blob.com/segment_0"}
+
+        mock_remote_get.side_effect = [
+            pd.DataFrame({"index": [1, 2, 2, 3], "values": [1.0, 2.0, 2.0, 3.0]})
+        ]
+
+        df_expected = pd.DataFrame(
+            {"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}
+        ).set_index("index")
+
+        base_downloader = BaseDownloader()
+
+        df_out = base_downloader._download_verified_chunk(chunk)
+        mock_remote_get.assert_called_once_with(chunk["Endpoint"])
+
+        pd.testing.assert_frame_equal(df_expected, df_out)
+
+    @patch("datareservoirio.storage.storage._blob_to_df")
+    def test__download_chunks_as_dataframe(self, mock_remote_get):
+        chunk = [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]
+        mock_remote_get.side_effect = [
+            pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
         ]
 
         df_expected = pd.DataFrame(
             {
-                "index": [1, 2, 3, 4, 5, 6, 7, 8, 9],
-                "values": [1.0, 2.0, 3.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0],
+                "index": [1, 2, 3],
+                "values": [1.0, 2.0, 3.0],
             }
         ).set_index("index")
 
-        base_downloader = BaseDownloader(mock_backend)
-        df_out = base_downloader._download_chunks_as_dataframe(
-            ["chunk1", "chunk2", "chunk3"]
+        base_downloader = BaseDownloader()
+        df_out = base_downloader._download_chunks_as_dataframe(chunk)
+
+        mock_remote_get.assert_called_once_with(
+            "https:://go-here-for-blob.com/segment_0"
         )
-
-        calls = [call("chunk1"), call("chunk2"), call("chunk3")]
-        mock_backend.get.assert_has_calls(calls)
-
         pd.testing.assert_frame_equal(df_expected, df_out)
 
     def test__download_chunks_as_dataframe_no_chunks(self):
@@ -374,7 +405,7 @@ class Test_BaseDownloader(unittest.TestCase):
         pd.testing.assert_frame_equal(df_expected, df_out)
 
 
-class Test_FileCachceDownload(unittest.TestCase):
+class Test_StorageCache(unittest.TestCase):
     def setUp(self):
         makedirs_patcher = patch("datareservoirio.storage.storage.os.makedirs")
         self._makedirs_patch = makedirs_patcher.start()
@@ -388,44 +419,42 @@ class Test_FileCachceDownload(unittest.TestCase):
         cacheindex_patcher = patch("datareservoirio.storage.storage._CacheIndex")
         self._cacheindex_patch = cacheindex_patcher.start()
 
-        evict_patcher = patch(
-            "datareservoirio.storage.FileCacheDownload._evict_from_cache"
-        )
+        evict_patcher = patch("datareservoirio.storage.StorageCache._evict_from_cache")
         self._evict_patch = evict_patcher.start()
 
         self.addCleanup(patch.stopall)
 
     def test_init(self):
-        FileCacheDownload()
+        StorageCache()
         self._evict_patch.assert_called_once()
 
     def test_cache_hive(self):
-        cache = FileCacheDownload()
+        cache = StorageCache()
         self.assertEqual(cache._cache_hive, cache.STOREFORMATVERSION)
 
     def test_cache_root(self):
-        cache = FileCacheDownload()
+        cache = StorageCache()
         self.assertEqual(
             cache.cache_root, os.path.abspath(user_cache_dir("datareservoirio"))
         )
 
-        cache = FileCacheDownload(cache_folder="sometingelse")
+        cache = StorageCache(cache_folder="sometingelse")
         self.assertEqual(
             cache.cache_root, os.path.abspath(user_cache_dir("sometingelse"))
         )
 
-        cache = FileCacheDownload(cache_root="home", cache_folder="anywhere")
+        cache = StorageCache(cache_root="home", cache_folder="anywhere")
         self.assertEqual(cache.cache_root, os.path.abspath("home"))
 
     def test_cache_path(self):
-        cache = FileCacheDownload(cache_root="home")
+        cache = StorageCache(cache_root="home")
         self.assertEqual(
             os.path.join(os.path.abspath("home"), cache.STOREFORMATVERSION),
             cache._cache_path,
         )
 
     def test_reset_cache(self):
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_evict_entry_root") as mock_evict:
             cache.reset_cache()
         mock_evict.assert_called_once_with(cache.cache_root)
@@ -433,7 +462,7 @@ class Test_FileCachceDownload(unittest.TestCase):
     def test_get_cache_id_md5(self):
         chunk = {"Path": "abc-123/def_456", "ContentMd5": "md5-123"}
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         id_out, md5_out = cache._get_cache_id_md5(chunk)
         id_expected = cache._cache_format + "abc123def456"
         md5_expected = _encode_for_path_safety("md5-123")
@@ -445,7 +474,7 @@ class Test_FileCachceDownload(unittest.TestCase):
 
         df = pd.DataFrame({"values": [1.0, 2.0, 3.0]}, index=[1, 2, 3])
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.multiple(
             cache, _get_cache_id_md5=DEFAULT, _get_cached_data=DEFAULT
         ) as mocks:
@@ -473,7 +502,7 @@ class Test_FileCachceDownload(unittest.TestCase):
 
         df = pd.DataFrame({"values": [1.0, 2.0, 3.0]}, index=[1, 2, 3])
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.multiple(
             cache, _get_cache_id_md5=DEFAULT, _get_cached_data=DEFAULT
         ) as mocks:
@@ -486,30 +515,30 @@ class Test_FileCachceDownload(unittest.TestCase):
 
             data = cache.get(chunk)
 
-            pd.testing.assert_frame_equal(df, data)
+            assert data is None
             mocks["_get_cache_id_md5"].assert_called_once_with(chunk)
             mocks["_get_cached_data"].assert_called_once_with(
                 "abc123def456", _encode_for_path_safety("md5-123")
             )
-            mock_remote_get.assert_called_once_with(chunk["Endpoint"])
 
     def test_put_data_to_cache_tiny(self):
-        id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
+        chunk = {"Path": "abc123def456", "ContentMd5": "md5-123"}
         df = pd.DataFrame({"values": [1.0, 2.0, 3.0]}, index=[1, 2, 3])
 
-        cache = FileCacheDownload()
-        cache._put_data_to_cache(df, id_, md5)
+        cache = StorageCache()
+        cache.put(df, chunk)
         self._cacheindex_patch._get_filepath.assert_not_called()
 
     def test_put_data_to_cache(self):
-        id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
+        chunk = {"Path": "abc123def456", "ContentMd5": "md5-123"}
+
         df = pd.DataFrame(
             {"values": np.arange(24 * 61)}, index=np.arange(24 * 61, dtype=int)
         )
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_write") as mock_write:
-            cache._put_data_to_cache(df, id_, md5)
+            cache.put(df, chunk)
 
         self.assertEqual(self._evict_patch.call_count, 2)
         mock_write.assert_called_once()
@@ -518,14 +547,14 @@ class Test_FileCachceDownload(unittest.TestCase):
     @patch("shutil.rmtree")
     def test_evict_entry_root(self, mock_rmtree, mock_exists):
         mock_exists.return_value = False
-        cache = FileCacheDownload()
+        cache = StorageCache()
         cache._evict_entry_root("root")
 
         mock_rmtree.assert_called_once_with("root")
         self._makedirs_patch.assert_called_with("root")
 
     def test_evict_entry(self):
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_delete") as mock_delete:
             cache._evict_entry("id_", "md5")
         mock_delete.assert_called()
@@ -533,7 +562,7 @@ class Test_FileCachceDownload(unittest.TestCase):
     def test_get_cached_data_not_in_cache(self):
         id_, md5 = "abc123def456", _encode_for_path_safety("md5-123")
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache._cache_index, "exists") as mock_exists:
             mock_exists.return_value = False
 
@@ -546,7 +575,7 @@ class Test_FileCachceDownload(unittest.TestCase):
             {"values": np.arange(24 * 61)}, index=np.arange(24 * 61, dtype=int)
         )
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_cache_index") as mock_index:
             mock_index.exists.return_value = True
             mock_index.__getitem__.return_value = {
@@ -567,7 +596,7 @@ class Test_FileCachceDownload(unittest.TestCase):
             {"values": np.arange(24 * 61)}, index=np.arange(24 * 61, dtype=int)
         )
 
-        cache = FileCacheDownload()
+        cache = StorageCache()
         with patch.object(cache, "_cache_index") as mock_index:
             mock_index.exists.return_value = False
             mock_index.__getitem__.return_value = {
