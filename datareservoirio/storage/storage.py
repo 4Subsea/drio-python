@@ -84,6 +84,7 @@ class Storage:
         return
 
     def get(self, timeseries_id, start, end):
+        # (target_url | start and end already resolved in the url)
         """
         Get a range of data for a timeseries.
 
@@ -97,11 +98,20 @@ class Storage:
             End time of the range, in nanoseconds since EPOCH
 
         """
+        # make REST call to timeseries/days
+        # Unpack and put blob urls in sequence
+        # download 1-by-1 and update using dict
+        # return final merged.
+
+        # No extra logic, just download and merge in sequence.
+        # Optimal use: target_url covers only 1 day.
+
         log.debug("getting day file inventory")
         response = self._timeseries_api.download_days(timeseries_id, start, end)
         df = self._downloader.get(response)
         return df
 
+# dict merge function.
 
 class BaseDownloader:
     """
