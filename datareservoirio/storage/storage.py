@@ -6,7 +6,6 @@ import re
 import shutil
 import timeit
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
 from threading import RLock as Lock
 
 import pandas as pd
@@ -155,102 +154,6 @@ class Storage:
                     }
                 )
         return url_sequence
-
-
-class BaseDownloader:
-    """
-    Series download strategy that will download Pandas DataFrame from provided
-    cloud backend.
-
-    Multiple chunks will be downloaded in parallel using ThreadPoolExecutor.
-
-    """
-
-    def __init__(self, cacheio=None):
-        self._cacheio = cacheio
-
-    def get(self, response):
-        filechunks = [f["Chunks"] for f in response["Files"]]
-        filedatas = map(self._download_chunks_as_dataframe, filechunks)
-
-        try:
-            df = next(filedatas)
-        except StopIteration:
-            return pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
-
-        for fd in filedatas:
-            df = self._combine_first(fd, df)
-
-        df.reset_index(inplace=True)  # Temporary hotfix while waiting for refactor
-        return df
-
-    def _download_chunks_as_dataframe(self, chunks):
-        if not chunks:
-            df_chunks = pd.DataFrame(columns=("index", "values")).astype(
-                {"index": "int64"}
-            )
-            df_chunks.set_index(
-                "index", inplace=True
-            )  # Temporary hotfix while waiting for refactor
-            return df_chunks
-
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            filechunks = executor.map(self._download_verified_chunk, chunks)
-        df_chunks = pd.concat(filechunks)
-        return df_chunks
-
-    def _download_verified_chunk(self, chunk):
-        """
-        Download chunk as Pandas DataFrame and ensure the series does not contain
-        duplicates.
-        """
-        if self._cacheio is not None:
-            df = self._cacheio.get(chunk)
-
-            if df is None:
-                blob_url = chunk["Endpoint"]
-                df = _blob_to_df(blob_url)
-                self._cacheio.put(df, chunk)
-        else:
-            blob_url = chunk["Endpoint"]
-            df = _blob_to_df(blob_url)
-
-        df.set_index(
-            "index", inplace=True
-        )  # Temporary hotfix while waiting for refactor
-        if not df.index.is_unique:
-            return df[~df.index.duplicated(keep="last")]
-        return df
-
-    @staticmethod
-    def _combine_first(calling, other):
-        """
-        Faster combine first for most common scenarios and fall back to general
-        purpose Pandas combine_first for advanced cases.
-        """
-        if calling.empty or other.empty:
-            return calling
-
-        calling_index = calling.index.values
-        other_index = other.index.values
-
-        late_start = max([calling_index[0], other_index[0]])
-        early_end = min([calling_index[-1], other_index[-1]])
-
-        if late_start > early_end:  # no overlap
-            if calling_index[0] < late_start:
-                df_combined = pd.concat((calling, other))
-            else:
-                df_combined = pd.concat((other, calling))
-        elif (
-            len(calling_index) == len(other_index)
-            and (calling_index == other_index).all()
-        ):  # exact overlap
-            df_combined = calling
-        else:  # partial overlap - expensive
-            df_combined = calling.combine_first(other)
-
-        return df_combined
 
 
 class StorageCache(CacheIO):
