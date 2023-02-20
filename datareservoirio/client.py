@@ -55,9 +55,7 @@ class Client:
                     FutureWarning,
                 )
 
-        self._storage = Storage(
-            self._timeseries_api, self._auth_session, cache=cache, cache_opt=cache_opt
-        )
+        self._storage = Storage(self._auth_session, cache=cache, cache_opt=cache_opt)
 
     def ping(self):
         """
