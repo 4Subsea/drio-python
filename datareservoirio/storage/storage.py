@@ -27,15 +27,12 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, session, cache=True, cache_opt=None):
+    def __init__(self, session, cache=True, cache_opt=None):
         """
-        Initialize service for working with timeseries data in Azure Blob
-        Storage.
+        Handler for time series data from remote storage with caching.
 
         Parameters
         ----------
-        timeseries_api: TimeseriesAPI
-            Instance of timeseries API.
         session : cls
             An authenticated session that is used in all API calls. Must supply a
             valid bearer token to all API calls.
@@ -106,11 +103,25 @@ class Storage:
         except StopIteration:
             return pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
         else:
-            df = _blob_to_df(chunk_i["Endpoint"])
+            df = self._blob_to_df(chunk_i)
 
         for chunk_i in blob_sequence:
-            df.combine_first(_blob_to_df(chunk_i["Endpoint"]))
+            df.combine_first(self._blob_to_df(chunk_i))
 
+        return df
+
+    def _blob_to_df(self, chunk):
+        """
+        Wrapper around ``_blob_to_df`` with cache (if enabled).
+        """
+        if self._storage_cache is not None:
+            df = self._storage_cache.get(chunk)
+
+            if df is None:
+                df = _blob_to_df(chunk["Endpoint"])
+                self._storage_cache.put(df, chunk)
+        else:
+            df = _blob_to_df(chunk["Endpoint"])
         return df
 
     @staticmethod
