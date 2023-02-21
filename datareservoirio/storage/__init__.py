@@ -1,1 +1,1 @@
-from .storage import BaseDownloader, Storage, StorageCache
+from .storage import Storage, StorageCache

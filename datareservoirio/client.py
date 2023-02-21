@@ -277,17 +277,18 @@ class Client:
         if start >= end:
             raise ValueError("start must be before end")
 
-        # split start, end to sequence of start_day, end_day list
-        # for each start-end pair, generate url to rest call.
-        # submit each call to storage.get(target_url)  -> (it downloads and merges in sequence)
-        #    make it work sequencially first, upgrade to concurrent later.
-        # collect all in correct sequence
-        # concat collection
-        # set_index, squeeze, and slice
+        df = pd.concat(
+            [
+                self._storage.get(
+                    environment.api_base_url
+                    + f"timeseries/{series_id}/data/days?start={val_i}&end={val_i}"
+                )
+                for val_i in _days_start_end(start, end)
+            ]
+        )
 
-        log.debug("Getting series range")
         series = (
-            self._storage.get(series_id, start, end)
+            df
             .set_index("index")
             .squeeze("columns")
             .loc[start:end]
@@ -522,3 +523,17 @@ class Client:
     def _get_file_status(self, file_id):
         response = self._files_api.status(file_id)
         return response["State"]
+
+
+def _days_start_end(start, end):
+    """
+    Return a range object of "whole" days ``start`` and ``end`` covers.
+    Each day is represented by the first nanoseconds since epoch
+    of that day.
+    """
+    nanoseconds_day = 86400000000000
+
+    start = (start // nanoseconds_day) * nanoseconds_day
+    end = ((end // nanoseconds_day)) * nanoseconds_day
+
+    return range(start, end + 1, nanoseconds_day)
