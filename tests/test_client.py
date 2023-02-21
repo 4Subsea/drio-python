@@ -9,6 +9,7 @@ import requests
 
 import datareservoirio
 from datareservoirio import Client
+from datareservoirio.client import _timeseries_available_days
 
 
 # Test should not make calls to the API, but just in case!
@@ -291,25 +292,47 @@ class Test_Client(unittest.TestCase):
         self.client._timeseries_api.delete.assert_called_once_with(self.timeseries_id)
         self.assertEqual(response, expected_response)
 
-    # def test_get_with_defaults(self):
-    #     index = np.array([1, 2, 3, 4, 5, 6])
-    #     values = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    def test_get_with_defaults(self):
+        index = np.array([1, 2, 3, 4, 5, 6])
+        values = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
 
-    #     self._storage.get.return_value = pd.DataFrame(
-    #         {"index": index, "values": values}
-    #     )
-    #     response_expected = pd.Series(
-    #         values, index=pd.to_datetime(index, utc=True), name="values"
-    #     )
+        self._storage.get.return_value = pd.DataFrame(
+            {"index": index, "values": values}
+        )
+        response_expected = pd.Series(
+            values, index=pd.to_datetime(index, utc=True), name="values"
+        )
 
-    #     response = self.client.get(self.timeseries_id)
+        with patch.object(self.auth, "get") as mock_get:
+            mock_response = Mock()
+            mock_response.raise_for_status.return_value = None
+            mock_response.json.return_value = {
+                "Files": [{
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 0,
+                        },
+                    ],
+                }]
+                }
+            mock_get.return_value = mock_response
 
-    #     self.client._storage.get.assert_called_once_with(
-    #         self.timeseries_id,
-    #         datareservoirio.client._START_DEFAULT,
-    #         datareservoirio.client._END_DEFAULT - 1,
-    #     )
-    #     pd.testing.assert_series_equal(response, response_expected)
+            response = self.client.get(self.timeseries_id)
+
+        self.client._storage.get.assert_called_once_with(
+            "https://reservoir-api-qa.4subsea.net/api/timeseries/abc-123-xyz/data/days?start=0&end=0",
+        )
+        pd.testing.assert_series_equal(response, response_expected)
 
     def test_get_with_convert_date_returns_series(self):
         index = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
@@ -322,10 +345,33 @@ class Test_Client(unittest.TestCase):
         start = pd.to_datetime(1, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(10, dayfirst=True, unit="ns", utc=True).value
 
-        self.client._storage.get.return_value = pd.DataFrame(
-            {"index": index, "values": values}
-        )
-        response = self.client.get(self.timeseries_id, start, end, convert_date=True)
+        with patch.object(self.auth, "get") as mock_get:
+            mock_response = Mock()
+            mock_response.raise_for_status.return_value = None
+            mock_response.json.return_value = {
+                "Files": [{
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 0,
+                        },
+                    ],
+                }]
+                }
+            mock_get.return_value = mock_response
+            self.client._storage.get.return_value = pd.DataFrame(
+                {"index": index, "values": values}
+            )
+            response = self.client.get(self.timeseries_id, start, end, convert_date=True)
 
         self.client._storage.get.assert_called_once_with(
             f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
@@ -345,7 +391,31 @@ class Test_Client(unittest.TestCase):
         self.client._storage.get.return_value = pd.DataFrame(
             {"index": index, "values": values}
         )
-        response = self.client.get(self.timeseries_id, start, end, convert_date=False)
+
+        with patch.object(self.auth, "get") as mock_get:
+            mock_response = Mock()
+            mock_response.raise_for_status.return_value = None
+            mock_response.json.return_value = {
+                "Files": [{
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 0,
+                        },
+                    ],
+                }]
+                }
+            mock_get.return_value = mock_response
+            response = self.client.get(self.timeseries_id, start, end, convert_date=False)
 
         self.client._storage.get.assert_called_once_with(
             f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
@@ -360,11 +430,35 @@ class Test_Client(unittest.TestCase):
             {"index": index, "values": values}
         )
 
-        self.client.get(
-            self.timeseries_id,
-            start="1970-01-01 00:00:00.000000001",
-            end="1970-01-01 00:00:00.000000004",
-        )
+        with patch.object(self.auth, "get") as mock_get:
+            mock_response = Mock()
+            mock_response.raise_for_status.return_value = None
+            mock_response.json.return_value = {
+                "Files": [{
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 0,
+                        },
+                    ],
+                }]
+                }
+            mock_get.return_value = mock_response
+
+            self.client.get(
+                self.timeseries_id,
+                start="1970-01-01 00:00:00.000000001",
+                end="1970-01-01 00:00:00.000000004",
+            )
 
         self.client._storage.get.assert_called_once_with(
             f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
@@ -380,12 +474,36 @@ class Test_Client(unittest.TestCase):
         response_expected = pd.Series(dtype="float64", name="values")
         response_expected.index = pd.to_datetime(response_expected.index, utc=True)
 
-        response = self.client.get(
-            self.timeseries_id,
-            start="1970-01-01 00:00:00.000000001",
-            end="1970-01-01 00:00:00.000000004",
-            raise_empty=False,
-        )
+        with patch.object(self.auth, "get") as mock_get:
+            mock_response = Mock()
+            mock_response.raise_for_status.return_value = None
+            mock_response.json.return_value = {
+                "Files": [{
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 0,
+                        },
+                    ],
+                }]
+                }
+            mock_get.return_value = mock_response
+
+            response = self.client.get(
+                self.timeseries_id,
+                start="1970-01-01 00:00:00.000000001",
+                end="1970-01-01 00:00:00.000000004",
+                raise_empty=False,
+            )
 
         pd.testing.assert_series_equal(response, response_expected, check_dtype=False)
 
@@ -396,7 +514,31 @@ class Test_Client(unittest.TestCase):
         response_expected = pd.Series(name="values", dtype="object")
         response_expected.index = pd.to_datetime(response_expected.index, utc=True)
 
-        response = self.client.get(self.timeseries_id, 10, 20)
+        with patch.object(self.auth, "get") as mock_get:
+            mock_response = Mock()
+            mock_response.raise_for_status.return_value = None
+            mock_response.json.return_value = {
+                "Files": [{
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 0,
+                        },
+                    ],
+                }]
+                }
+            mock_get.return_value = mock_response
+
+            response = self.client.get(self.timeseries_id, 10, 20)
 
         self.client._storage.get.assert_called_once_with(
             f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
@@ -411,12 +553,36 @@ class Test_Client(unittest.TestCase):
         )
 
         with self.assertRaises(ValueError):
-            self.client.get(
-                self.timeseries_id,
-                start="1970-01-01 00:00:00.000000001",
-                end="1970-01-01 00:00:00.000000004",
-                raise_empty=True,
-            )
+            with patch.object(self.auth, "get") as mock_get:
+                mock_response = Mock()
+                mock_response.raise_for_status.return_value = None
+                mock_response.json.return_value = {
+                    "Files": [{
+                        "Index": 0,
+                        "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                        "Chunks": [
+                            {
+                                "Account": "permanentprodu003p144",
+                                "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                                "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                                "Container": "data",
+                                "Path": "segment_0.csv",
+                                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                                "ContentMd5": "md5_0",
+                                "VersionId": "2021-08-31T13:53:27.3874185Z",
+                                "DaysSinceEpoch": 0,
+                            },
+                        ],
+                    }]
+                    }
+                mock_get.return_value = mock_response
+
+                self.client.get(
+                    self.timeseries_id,
+                    start="1970-01-01 00:00:00.000000001",
+                    end="1970-01-01 00:00:00.000000004",
+                    raise_empty=True,
+                )
 
     def test_get_start_stop_exception(self):
         self.client._timeseries_api.data.return_value = self.response
@@ -436,11 +602,34 @@ class Test_Client(unittest.TestCase):
             {"index": index, "values": values}
         )
 
-        self.client.get(
-            self.timeseries_id,
-            start="1970-01-01 00:00:00.000000001",
-            end="1970-01-01 00:00:00.000000004",
-        )
+        with patch.object(self.auth, "get") as mock_get:
+            mock_response = Mock()
+            mock_response.raise_for_status.return_value = None
+            mock_response.json.return_value = {
+                "Files": [{
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 0,
+                        },
+                    ],
+                }]
+                }
+            mock_get.return_value = mock_response
+            self.client.get(
+                self.timeseries_id,
+                start="1970-01-01 00:00:00.000000001",
+                end="1970-01-01 00:00:00.000000004",
+            )
 
         self.client._storage.get.assert_called_once_with(
             "https://reservoir-api-qa.4subsea.net/api/timeseries/abc-123-xyz/data/days?start=0&end=0")
@@ -601,6 +790,62 @@ class Test_TimeSeriesClient_verify_prep_series(unittest.TestCase):
     def test_not_a_series(self):
         with self.assertRaises(ValueError):
             self.client._verify_and_prepare_series("this is wrong input")
+
+
+def test__timeseries_available_days():
+    response_json = {
+            "Files": [
+                {
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 18806,
+                        },
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_1.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_1",
+                            "ContentMd5": "md5_1",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 18807,
+                        }
+                    ],
+                },
+                {
+                    "Index": 1,
+                    "FileId": "51745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_3.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_3",
+                            "ContentMd5": "md5_3",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 18807,
+                        }
+                    ],
+                }
+            ]
+        }
+
+    expected_output = [18806 * 86400000000000, 18807 * 86400000000000]
+    output = _timeseries_available_days(response_json)
+    assert expected_output == output
 
 
 if __name__ == "__main__":
