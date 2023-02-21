@@ -102,12 +102,12 @@ class Storage:
         except StopIteration:
             return pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
         else:
-            df = self._blob_to_df(chunk_i)
+            df = self._blob_to_df(chunk_i).set_index("index")
 
         for chunk_i in blob_sequence:
-            df.combine_first(self._blob_to_df(chunk_i))
+            df = df.combine_first(self._blob_to_df(chunk_i).set_index("index"))
 
-        return df
+        return df.reset_index()
 
     def _blob_to_df(self, chunk):
         """

@@ -278,16 +278,27 @@ class Client:
         if start >= end:
             raise ValueError("start must be before end")
 
-        with ThreadPoolExecutor(max_workers=None) as e:
-            futures = [
-                e.submit(
-                    self._storage.get,
-                    environment.api_base_url
-                    + f"timeseries/{series_id}/data/days?start={val_i}&end={val_i}",
-                )
-                for val_i in _days_start_end(start, end)
-            ]
-        df = pd.concat([future_i.result() for future_i in futures])
+        # make an "expolotary" request
+        response = self._auth_session.get(
+            environment.api_base_url +
+            f"timeseries/{series_id}/data/days?start={start}&end={end}"
+        )
+        response.raise_for_status()
+        response_json = response.json()
+
+        if response_json:
+            with ThreadPoolExecutor(max_workers=None) as e:
+                futures = [
+                    e.submit(
+                        self._storage.get,
+                        environment.api_base_url
+                        + f"timeseries/{series_id}/data/days?start={val_i}&end={val_i}",
+                    )
+                    for val_i in _timeseries_available_days(response_json)
+                ]
+            df = pd.concat([future_i.result() for future_i in futures])
+        else:
+            df = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
         series = df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
         series.index.name = None
@@ -521,15 +532,24 @@ class Client:
         return response["State"]
 
 
-def _days_start_end(start, end):
+def _timeseries_available_days(response_json):
     """
-    Return a range object of "whole" days ``start`` and ``end`` covers.
+    Return list of days ``start`` and ``end`` covers.
     Each day is represented by the first nanoseconds since epoch
     of that day.
+
+    The list is obtained from the response of an "explotary" call to
+    ``api/timeseries/data/days?start={start}&end={end}``.
+
+    Notes
+    -----
+    This is a bit hacky, since it assumes a few thing about the response and
+    the inner workings of the backend.
     """
+    days = set()
     nanoseconds_day = 86400000000000
 
-    start = (start // nanoseconds_day) * nanoseconds_day
-    end = ((end // nanoseconds_day)) * nanoseconds_day
-
-    return range(start, end + 1, nanoseconds_day)
+    for file_i in response_json["Files"]:
+        for chunk_i in file_i["Chunks"]:
+            days.add(chunk_i["DaysSinceEpoch"] * nanoseconds_day)
+    return sorted(days)
