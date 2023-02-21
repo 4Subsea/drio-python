@@ -280,8 +280,8 @@ class Client:
 
         # make an "expolotary" request
         response = self._auth_session.get(
-            environment.api_base_url +
-            f"timeseries/{series_id}/data/days?start={start}&end={end}"
+            environment.api_base_url
+            + f"timeseries/{series_id}/data/days?start={start}&end={end}"
         )
         response.raise_for_status()
         response_json = response.json()

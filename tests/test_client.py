@@ -307,24 +307,26 @@ class Test_Client(unittest.TestCase):
             mock_response = Mock()
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = {
-                "Files": [{
-                    "Index": 0,
-                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_0.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_0",
-                            "ContentMd5": "md5_0",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 0,
-                        },
-                    ],
-                }]
-                }
+                "Files": [
+                    {
+                        "Index": 0,
+                        "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                        "Chunks": [
+                            {
+                                "Account": "permanentprodu003p144",
+                                "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                                "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                                "Container": "data",
+                                "Path": "segment_0.csv",
+                                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                                "ContentMd5": "md5_0",
+                                "VersionId": "2021-08-31T13:53:27.3874185Z",
+                                "DaysSinceEpoch": 0,
+                            },
+                        ],
+                    }
+                ]
+            }
             mock_get.return_value = mock_response
 
             response = self.client.get(self.timeseries_id)
@@ -349,33 +351,37 @@ class Test_Client(unittest.TestCase):
             mock_response = Mock()
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = {
-                "Files": [{
-                    "Index": 0,
-                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_0.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_0",
-                            "ContentMd5": "md5_0",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 0,
-                        },
-                    ],
-                }]
-                }
+                "Files": [
+                    {
+                        "Index": 0,
+                        "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                        "Chunks": [
+                            {
+                                "Account": "permanentprodu003p144",
+                                "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                                "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                                "Container": "data",
+                                "Path": "segment_0.csv",
+                                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                                "ContentMd5": "md5_0",
+                                "VersionId": "2021-08-31T13:53:27.3874185Z",
+                                "DaysSinceEpoch": 0,
+                            },
+                        ],
+                    }
+                ]
+            }
             mock_get.return_value = mock_response
             self.client._storage.get.return_value = pd.DataFrame(
                 {"index": index, "values": values}
             )
-            response = self.client.get(self.timeseries_id, start, end, convert_date=True)
+            response = self.client.get(
+                self.timeseries_id, start, end, convert_date=True
+            )
 
         self.client._storage.get.assert_called_once_with(
             f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
-            )
+        )
 
         pd.testing.assert_series_equal(response, series_with_dt, check_index_type=True)
 
@@ -396,30 +402,34 @@ class Test_Client(unittest.TestCase):
             mock_response = Mock()
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = {
-                "Files": [{
-                    "Index": 0,
-                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_0.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_0",
-                            "ContentMd5": "md5_0",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 0,
-                        },
-                    ],
-                }]
-                }
+                "Files": [
+                    {
+                        "Index": 0,
+                        "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                        "Chunks": [
+                            {
+                                "Account": "permanentprodu003p144",
+                                "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                                "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                                "Container": "data",
+                                "Path": "segment_0.csv",
+                                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                                "ContentMd5": "md5_0",
+                                "VersionId": "2021-08-31T13:53:27.3874185Z",
+                                "DaysSinceEpoch": 0,
+                            },
+                        ],
+                    }
+                ]
+            }
             mock_get.return_value = mock_response
-            response = self.client.get(self.timeseries_id, start, end, convert_date=False)
+            response = self.client.get(
+                self.timeseries_id, start, end, convert_date=False
+            )
 
         self.client._storage.get.assert_called_once_with(
             f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
-            )
+        )
 
         pd.testing.assert_series_equal(response, series_with_dt, check_index_type=True)
 
@@ -434,24 +444,26 @@ class Test_Client(unittest.TestCase):
             mock_response = Mock()
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = {
-                "Files": [{
-                    "Index": 0,
-                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_0.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_0",
-                            "ContentMd5": "md5_0",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 0,
-                        },
-                    ],
-                }]
-                }
+                "Files": [
+                    {
+                        "Index": 0,
+                        "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                        "Chunks": [
+                            {
+                                "Account": "permanentprodu003p144",
+                                "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                                "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                                "Container": "data",
+                                "Path": "segment_0.csv",
+                                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                                "ContentMd5": "md5_0",
+                                "VersionId": "2021-08-31T13:53:27.3874185Z",
+                                "DaysSinceEpoch": 0,
+                            },
+                        ],
+                    }
+                ]
+            }
             mock_get.return_value = mock_response
 
             self.client.get(
@@ -462,7 +474,7 @@ class Test_Client(unittest.TestCase):
 
         self.client._storage.get.assert_called_once_with(
             f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
-            )
+        )
 
     def test_get_with_emptytimeseries_return_empty(self):
         index = np.array([10, 11, 12])
@@ -478,24 +490,26 @@ class Test_Client(unittest.TestCase):
             mock_response = Mock()
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = {
-                "Files": [{
-                    "Index": 0,
-                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_0.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_0",
-                            "ContentMd5": "md5_0",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 0,
-                        },
-                    ],
-                }]
-                }
+                "Files": [
+                    {
+                        "Index": 0,
+                        "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                        "Chunks": [
+                            {
+                                "Account": "permanentprodu003p144",
+                                "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                                "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                                "Container": "data",
+                                "Path": "segment_0.csv",
+                                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                                "ContentMd5": "md5_0",
+                                "VersionId": "2021-08-31T13:53:27.3874185Z",
+                                "DaysSinceEpoch": 0,
+                            },
+                        ],
+                    }
+                ]
+            }
             mock_get.return_value = mock_response
 
             response = self.client.get(
@@ -518,46 +532,8 @@ class Test_Client(unittest.TestCase):
             mock_response = Mock()
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = {
-                "Files": [{
-                    "Index": 0,
-                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_0.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_0",
-                            "ContentMd5": "md5_0",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 0,
-                        },
-                    ],
-                }]
-                }
-            mock_get.return_value = mock_response
-
-            response = self.client.get(self.timeseries_id, 10, 20)
-
-        self.client._storage.get.assert_called_once_with(
-            f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
-            )
-        pd.testing.assert_series_equal(response, response_expected)
-
-    def test_get_with_raise_empty_throws(self):
-        index = np.array([6, 7, 8, 9, 10])
-        values = np.array([6.0, 7.0, 8.0, 9.0, 10.0])
-        self._storage.get.return_value = pd.DataFrame(
-            {"index": index, "values": values}
-        )
-
-        with self.assertRaises(ValueError):
-            with patch.object(self.auth, "get") as mock_get:
-                mock_response = Mock()
-                mock_response.raise_for_status.return_value = None
-                mock_response.json.return_value = {
-                    "Files": [{
+                "Files": [
+                    {
                         "Index": 0,
                         "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
                         "Chunks": [
@@ -573,8 +549,50 @@ class Test_Client(unittest.TestCase):
                                 "DaysSinceEpoch": 0,
                             },
                         ],
-                    }]
                     }
+                ]
+            }
+            mock_get.return_value = mock_response
+
+            response = self.client.get(self.timeseries_id, 10, 20)
+
+        self.client._storage.get.assert_called_once_with(
+            f"https://reservoir-api-qa.4subsea.net/api/timeseries/{self.timeseries_id}/data/days?start=0&end=0"
+        )
+        pd.testing.assert_series_equal(response, response_expected)
+
+    def test_get_with_raise_empty_throws(self):
+        index = np.array([6, 7, 8, 9, 10])
+        values = np.array([6.0, 7.0, 8.0, 9.0, 10.0])
+        self._storage.get.return_value = pd.DataFrame(
+            {"index": index, "values": values}
+        )
+
+        with self.assertRaises(ValueError):
+            with patch.object(self.auth, "get") as mock_get:
+                mock_response = Mock()
+                mock_response.raise_for_status.return_value = None
+                mock_response.json.return_value = {
+                    "Files": [
+                        {
+                            "Index": 0,
+                            "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                            "Chunks": [
+                                {
+                                    "Account": "permanentprodu003p144",
+                                    "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                                    "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                                    "Container": "data",
+                                    "Path": "segment_0.csv",
+                                    "Endpoint": "https://go-here-for-blob.com/segment_0",
+                                    "ContentMd5": "md5_0",
+                                    "VersionId": "2021-08-31T13:53:27.3874185Z",
+                                    "DaysSinceEpoch": 0,
+                                },
+                            ],
+                        }
+                    ]
+                }
                 mock_get.return_value = mock_response
 
                 self.client.get(
@@ -606,24 +624,26 @@ class Test_Client(unittest.TestCase):
             mock_response = Mock()
             mock_response.raise_for_status.return_value = None
             mock_response.json.return_value = {
-                "Files": [{
-                    "Index": 0,
-                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_0.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_0",
-                            "ContentMd5": "md5_0",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 0,
-                        },
-                    ],
-                }]
-                }
+                "Files": [
+                    {
+                        "Index": 0,
+                        "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                        "Chunks": [
+                            {
+                                "Account": "permanentprodu003p144",
+                                "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                                "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                                "Container": "data",
+                                "Path": "segment_0.csv",
+                                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                                "ContentMd5": "md5_0",
+                                "VersionId": "2021-08-31T13:53:27.3874185Z",
+                                "DaysSinceEpoch": 0,
+                            },
+                        ],
+                    }
+                ]
+            }
             mock_get.return_value = mock_response
             self.client.get(
                 self.timeseries_id,
@@ -632,7 +652,8 @@ class Test_Client(unittest.TestCase):
             )
 
         self.client._storage.get.assert_called_once_with(
-            "https://reservoir-api-qa.4subsea.net/api/timeseries/abc-123-xyz/data/days?start=0&end=0")
+            "https://reservoir-api-qa.4subsea.net/api/timeseries/abc-123-xyz/data/days?start=0&end=0"
+        )
 
     def test_search(self):
         self.client.search("test_namespace", "test_key", "test_name", 123)
@@ -794,54 +815,54 @@ class Test_TimeSeriesClient_verify_prep_series(unittest.TestCase):
 
 def test__timeseries_available_days():
     response_json = {
-            "Files": [
-                {
-                    "Index": 0,
-                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_0.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_0",
-                            "ContentMd5": "md5_0",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 18806,
-                        },
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_1.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_1",
-                            "ContentMd5": "md5_1",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 18807,
-                        }
-                    ],
-                },
-                {
-                    "Index": 1,
-                    "FileId": "51745116-e25d-4e9c-b7ea-5d7ae4ab004b",
-                    "Chunks": [
-                        {
-                            "Account": "permanentprodu003p144",
-                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
-                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
-                            "Container": "data",
-                            "Path": "segment_3.csv",
-                            "Endpoint": "https://go-here-for-blob.com/segment_3",
-                            "ContentMd5": "md5_3",
-                            "VersionId": "2021-08-31T13:53:27.3874185Z",
-                            "DaysSinceEpoch": 18807,
-                        }
-                    ],
-                }
-            ]
-        }
+        "Files": [
+            {
+                "Index": 0,
+                "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                "Chunks": [
+                    {
+                        "Account": "permanentprodu003p144",
+                        "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                        "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                        "Container": "data",
+                        "Path": "segment_0.csv",
+                        "Endpoint": "https://go-here-for-blob.com/segment_0",
+                        "ContentMd5": "md5_0",
+                        "VersionId": "2021-08-31T13:53:27.3874185Z",
+                        "DaysSinceEpoch": 18806,
+                    },
+                    {
+                        "Account": "permanentprodu003p144",
+                        "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                        "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                        "Container": "data",
+                        "Path": "segment_1.csv",
+                        "Endpoint": "https://go-here-for-blob.com/segment_1",
+                        "ContentMd5": "md5_1",
+                        "VersionId": "2021-08-31T13:53:27.3874185Z",
+                        "DaysSinceEpoch": 18807,
+                    },
+                ],
+            },
+            {
+                "Index": 1,
+                "FileId": "51745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                "Chunks": [
+                    {
+                        "Account": "permanentprodu003p144",
+                        "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                        "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                        "Container": "data",
+                        "Path": "segment_3.csv",
+                        "Endpoint": "https://go-here-for-blob.com/segment_3",
+                        "ContentMd5": "md5_3",
+                        "VersionId": "2021-08-31T13:53:27.3874185Z",
+                        "DaysSinceEpoch": 18807,
+                    }
+                ],
+            },
+        ]
+    }
 
     expected_output = [18806 * 86400000000000, 18807 * 86400000000000]
     output = _timeseries_available_days(response_json)

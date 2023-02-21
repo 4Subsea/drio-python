@@ -229,7 +229,7 @@ class Test_Storage(unittest.TestCase):
                             "ContentMd5": "md5_1",
                             "VersionId": "2021-08-31T13:53:27.3874185Z",
                             "DaysSinceEpoch": 18807,
-                        }
+                        },
                     ],
                 },
                 {
@@ -248,14 +248,26 @@ class Test_Storage(unittest.TestCase):
                             "DaysSinceEpoch": 18807,
                         }
                     ],
-                }
+                },
             ]
         }
 
         out_expected = [
-            {"Endpoint": "https://go-here-for-blob.com/segment_0", "Path": "segment_0.csv", "ContentMd5": "md5_0"},
-            {"Endpoint": "https://go-here-for-blob.com/segment_1", "Path": "segment_1.csv",  "ContentMd5": "md5_1"},
-            {"Endpoint": "https://go-here-for-blob.com/segment_3", "Path": "segment_3.csv", "ContentMd5": "md5_3"}
+            {
+                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                "Path": "segment_0.csv",
+                "ContentMd5": "md5_0",
+            },
+            {
+                "Endpoint": "https://go-here-for-blob.com/segment_1",
+                "Path": "segment_1.csv",
+                "ContentMd5": "md5_1",
+            },
+            {
+                "Endpoint": "https://go-here-for-blob.com/segment_3",
+                "Path": "segment_3.csv",
+                "ContentMd5": "md5_3",
+            },
         ]
 
         out = self.storage._days_response_url_sequence(response_json)

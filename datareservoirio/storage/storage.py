@@ -95,7 +95,9 @@ class Storage:
         response = self._session.request("GET", target_url)
         response.raise_for_status()
 
-        blob_sequence = iter(reversed(self._days_response_url_sequence(response.json())))
+        blob_sequence = iter(
+            reversed(self._days_response_url_sequence(response.json()))
+        )
 
         try:
             chunk_i = next(blob_sequence)
