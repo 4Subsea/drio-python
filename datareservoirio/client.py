@@ -1,6 +1,7 @@
 import logging
 import time
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 from operator import itemgetter
 
 import pandas as pd
@@ -277,23 +278,18 @@ class Client:
         if start >= end:
             raise ValueError("start must be before end")
 
-        df = pd.concat(
-            [
-                self._storage.get(
+        with ThreadPoolExecutor(max_workers=None) as e:
+            futures = [
+                e.submit(
+                    self._storage.get,
                     environment.api_base_url
-                    + f"timeseries/{series_id}/data/days?start={val_i}&end={val_i}"
+                    + f"timeseries/{series_id}/data/days?start={val_i}&end={val_i}",
                 )
                 for val_i in _days_start_end(start, end)
             ]
-        )
+        df = pd.concat([future_i.result() for future_i in futures])
 
-        series = (
-            df
-            .set_index("index")
-            .squeeze("columns")
-            .loc[start:end]
-            .copy(deep=True)
-        )
+        series = df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
         series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing
