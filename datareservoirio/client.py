@@ -543,7 +543,7 @@ def _timeseries_available_days(response_json):
 
     Notes
     -----
-    This is a bit hacky, since it assumes a few thing about the response and
+    This is a bit hacky, since it assumes a few things about the response and
     the inner workings of the backend.
     """
     days = set()
