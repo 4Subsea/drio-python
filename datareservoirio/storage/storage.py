@@ -133,7 +133,8 @@ class Storage:
         to a sequence of dictionaries with endpoint URLs, path, and
         md5 hash of blobs.
 
-        The order indicate the priority where item ``n+1`` takes presedence
+        The order indicate the priority where item ``n+1`` takes precedence
+
         over item ``n`` and so on.
 
         Notes
