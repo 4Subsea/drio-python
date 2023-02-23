@@ -538,7 +538,7 @@ def _timeseries_available_days(response_json):
     Each day is represented by the first nanoseconds since epoch
     of that day.
 
-    The list is obtained from the response of an "explotary" call to
+    The list is obtained from the response of an "exploratory" call to
     ``api/timeseries/data/days?start={start}&end={end}``.
 
     Notes
