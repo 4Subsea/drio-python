@@ -139,7 +139,8 @@ class Storage:
 
         Notes
         -----
-        This is a hacky solution assuming alot about the REST API respone from
+        This is a hacky solution assuming alot about the REST API response from
+
         ``/data/days?start={start}&end={end}``.
         """
         chunks = defaultdict(list)
