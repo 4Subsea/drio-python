@@ -286,7 +286,7 @@ class Client:
         response.raise_for_status()
         response_json = response.json()
 
-        if response_json:
+        if response_json["Files"]:
             with ThreadPoolExecutor(max_workers=None) as e:
                 futures = [
                     e.submit(
