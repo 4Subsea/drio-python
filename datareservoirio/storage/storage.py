@@ -128,7 +128,8 @@ class Storage:
     @staticmethod
     def _days_response_url_sequence(response_json):
         """
-        Flatten resposne from ``/data/days?start={start}&end={end}``
+        Flatten response from ``/data/days?start={start}&end={end}``
+
         to a sequence of dictionaries with endpoint URLs, path, and
         md5 hash of blobs.
 
