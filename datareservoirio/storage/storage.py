@@ -92,7 +92,8 @@ class Storage:
             Pandas DataFrame with two columns, ``index`` and ``values``.
 
         """
-        response = self._session.request("GET", target_url)
+        response = self._session.get(target_url)
+
         response.raise_for_status()
 
         blob_sequence = iter(
