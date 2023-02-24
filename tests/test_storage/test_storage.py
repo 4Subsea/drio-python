@@ -168,7 +168,7 @@ class Test_Storage(unittest.TestCase):
                 }
             ]
         }
-        self.session.request.return_value = mock_response
+        self.session.get.return_value = mock_response
 
         self.storage = Storage(session=self.session, cache=False)
 
