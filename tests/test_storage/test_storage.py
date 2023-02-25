@@ -10,7 +10,7 @@ import pytest
 import requests
 
 from datareservoirio.appdirs import user_cache_dir
-from datareservoirio.storage import BaseDownloader, Storage, StorageCache
+from datareservoirio.storage import Storage, StorageCache
 from datareservoirio.storage.storage import (
     _blob_to_df,
     _df_to_blob,
@@ -141,28 +141,43 @@ def bytesio_with_memory():
 class Test_Storage(unittest.TestCase):
     def setUp(self):
         self._timeseries_api = Mock()
-        self.session = Mock()
+        self.session = MagicMock()
 
         self.tid = "abc-123-xyz"
 
-        self._timeseries_api.download_days.return_value = {
+        mock_response = MagicMock()
+        mock_response.raise_for_status.return_value = None
+        mock_response.json.return_value = {
             "Files": [
                 {
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
                     "Chunks": [
-                        {"Endpoint": "https:://go-here-for-blob.com/segment_0"},
-                    ]
-                },
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "61745116e25d4e9cb7ea5d7ae4ab004b/2021/06/28/day/csv/18806.csv",
+                            "Endpoint": "https:://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "1J+DJHBbx2Kgq9S8WnsV3A==",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 18806,
+                        }
+                    ],
+                }
             ]
         }
+        self.session.get.return_value = mock_response
 
-        self.storage = Storage(self._timeseries_api, session=self.session, cache=False)
+        self.storage = Storage(session=self.session, cache=False)
 
     @patch("datareservoirio.storage.storage._blob_to_df")
     def test_get(self, mock_remote_get):
         data_remote = pd.DataFrame({"index": [1, 2, 3, 4], "values": [1, 2, 3, 4]})
         mock_remote_get.return_value = data_remote.copy()  # Inplace manipulation occurs
 
-        data_out = self.storage.get(self.tid, 2, 3)
+        data_out = self.storage.get("https://myapi/data/days?start=1&end=2")
 
         mock_remote_get.assert_called_once_with(
             "https:://go-here-for-blob.com/segment_0"
@@ -186,223 +201,295 @@ class Test_Storage(unittest.TestCase):
             *commit_request[:2], **commit_request[-1]
         )
 
-
-class Test_BaseDownloader(unittest.TestCase):
-    def test_init(self):
-        BaseDownloader()
-
-    @patch("datareservoirio.storage.storage._blob_to_df")
-    def test_get(self, mock_remote_get):
-        response = {
+    def test__days_response_url_sequence(self):
+        response_json = {
             "Files": [
-                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]},
-                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_1"}]},
-                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_2"}]},
+                {
+                    "Index": 0,
+                    "FileId": "61745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_0.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_0",
+                            "ContentMd5": "md5_0",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 18806,
+                        },
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_1.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_1",
+                            "ContentMd5": "md5_1",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 18807,
+                        },
+                    ],
+                },
+                {
+                    "Index": 1,
+                    "FileId": "51745116-e25d-4e9c-b7ea-5d7ae4ab004b",
+                    "Chunks": [
+                        {
+                            "Account": "permanentprodu003p144",
+                            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-02-21T08%3A39%3A13Z&ske=2023-02-22T08%3A39%3A13Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-02-21T14%3A34%3A50Z&sr=b&sp=r&sig=3uHDX4JkocmafBv3ZslIR8xkv4x0q2zaNjCcWfw71eI%3D",
+                            "SasKeyExpirationTime": "2023-02-21T14:34:50.8860219+00:00",
+                            "Container": "data",
+                            "Path": "segment_3.csv",
+                            "Endpoint": "https://go-here-for-blob.com/segment_3",
+                            "ContentMd5": "md5_3",
+                            "VersionId": "2021-08-31T13:53:27.3874185Z",
+                            "DaysSinceEpoch": 18807,
+                        }
+                    ],
+                },
             ]
         }
 
-        mock_remote_get.side_effect = [
-            pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}),
-            pd.DataFrame({"index": [3, 4, 5], "values": [5.0, 4.0, 5.0]}),
-            pd.DataFrame({"index": [1, 5, 9], "values": [9.0, 8.0, 1.0]}),
-        ]
-
-        df_expected = pd.DataFrame(
-            {"index": [1, 2, 3, 4, 5, 9], "values": [9.0, 2.0, 5.0, 4.0, 8.0, 1.0]}
-        )
-
-        base_downloader = BaseDownloader()
-
-        df_out = base_downloader.get(response)
-
-        pd.testing.assert_frame_equal(df_expected, df_out)
-
-        calls = [
-            call("https:://go-here-for-blob.com/segment_0"),
-            call("https:://go-here-for-blob.com/segment_1"),
-            call("https:://go-here-for-blob.com/segment_2"),
-        ]
-        mock_remote_get.assert_has_calls(calls)
-
-    @patch("datareservoirio.storage.storage._blob_to_df")
-    def test_get_with_text_data(self, mock_remote_get):
-        response = {
-            "Files": [
-                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]},
-                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_1"}]},
-                {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_2"}]},
-            ]
-        }
-
-        mock_remote_get.side_effect = [
-            pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}),
-            pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}),
-            pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}),
-        ]
-
-        df_expected = pd.DataFrame(
-            {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
-        )
-
-        base_downloader = BaseDownloader()
-
-        df_out = base_downloader.get(response)
-
-        pd.testing.assert_frame_equal(df_expected, df_out)
-
-        calls = [
-            call("https:://go-here-for-blob.com/segment_0"),
-            call("https:://go-here-for-blob.com/segment_1"),
-            call("https:://go-here-for-blob.com/segment_2"),
-        ]
-        mock_remote_get.assert_has_calls(calls)
-
-        # mock_backend = MagicMock()
-        # base_downloader = BaseDownloader(mock_backend)
-
-        # response = {
-        #     "Files": [{"Chunks": "abc1"}, {"Chunks": "abc2"}, {"Chunks": "abc3"}]
-        # }
-
-        # with patch.object(
-        #     base_downloader, "_download_chunks_as_dataframe"
-        # ) as mock_download:
-        #     mock_download.side_effect = [
-        #         pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}).set_index(
-        #             "index"
-        #         ),
-        #         pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}).set_index(
-        #             "index"
-        #         ),
-        #         pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}).set_index(
-        #             "index"
-        #         ),
-        #     ]
-
-        #     df_expected = pd.DataFrame(
-        #         {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
-        #     )
-        #     df_out = base_downloader.get(response)
-
-        # pd.testing.assert_frame_equal(df_expected, df_out)
-
-    def test_get_empty(self):
-        mock_backend = MagicMock()
-        base_downloader = BaseDownloader(mock_backend)
-
-        response = {"Files": []}
-
-        df_out = base_downloader.get(response)
-
-        df_expected = pd.DataFrame(
-            pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
-        )
-
-        mock_backend.assert_not_called()
-        pd.testing.assert_frame_equal(df_expected, df_out)
-
-    def test__combine_first_no_overlap(self):
-        df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
-        df2 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[6, 7, 8, 9])
-        df_expected = df1.combine_first(df2)
-        df_out = BaseDownloader._combine_first(df1, df2)
-        pd.testing.assert_series_equal(df_expected, df_out)
-
-    def test__combine_first_no_overlap_reversed_order(self):
-        df2 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
-        df1 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[6, 7, 8, 9])
-        df_expected = df1.combine_first(df2)
-        df_out = BaseDownloader._combine_first(df1, df2)
-        pd.testing.assert_series_equal(df_expected, df_out)
-
-    def test__combine_first_exact_overlap(self):
-        df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
-        df2 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[0, 1, 2, 3])
-        df_expected = df1.combine_first(df2)
-        df_out = BaseDownloader._combine_first(df1, df2)
-        pd.testing.assert_series_equal(df_expected, df_out)
-
-    def test__combine_first_partial_overlap(self):
-        df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
-        df2 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[2, 3, 4, 5])
-        df_expected = df1.combine_first(df2)
-        df_out = BaseDownloader._combine_first(df1, df2)
-        pd.testing.assert_series_equal(df_expected, df_out)
-
-    @patch("datareservoirio.storage.storage._blob_to_df")
-    def test__download_verified_chunk(self, mock_remote_get):
-        chunk = {"Endpoint": "https:://go-here-for-blob.com/segment_0"}
-
-        mock_remote_get.side_effect = [
-            pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
-        ]
-
-        df_expected = pd.DataFrame(
-            {"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}
-        ).set_index("index")
-
-        base_downloader = BaseDownloader()
-
-        df_out = base_downloader._download_verified_chunk(chunk)
-        mock_remote_get.assert_called_once_with(chunk["Endpoint"])
-
-        pd.testing.assert_frame_equal(df_expected, df_out)
-
-    @patch("datareservoirio.storage.storage._blob_to_df")
-    def test__download_verified_chunk_w_duplicates(self, mock_remote_get):
-        chunk = {"Endpoint": "https:://go-here-for-blob.com/segment_0"}
-
-        mock_remote_get.side_effect = [
-            pd.DataFrame({"index": [1, 2, 2, 3], "values": [1.0, 2.0, 2.0, 3.0]})
-        ]
-
-        df_expected = pd.DataFrame(
-            {"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}
-        ).set_index("index")
-
-        base_downloader = BaseDownloader()
-
-        df_out = base_downloader._download_verified_chunk(chunk)
-        mock_remote_get.assert_called_once_with(chunk["Endpoint"])
-
-        pd.testing.assert_frame_equal(df_expected, df_out)
-
-    @patch("datareservoirio.storage.storage._blob_to_df")
-    def test__download_chunks_as_dataframe(self, mock_remote_get):
-        chunk = [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]
-        mock_remote_get.side_effect = [
-            pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
-        ]
-
-        df_expected = pd.DataFrame(
+        out_expected = [
             {
-                "index": [1, 2, 3],
-                "values": [1.0, 2.0, 3.0],
-            }
-        ).set_index("index")
+                "Endpoint": "https://go-here-for-blob.com/segment_0",
+                "Path": "segment_0.csv",
+                "ContentMd5": "md5_0",
+            },
+            {
+                "Endpoint": "https://go-here-for-blob.com/segment_1",
+                "Path": "segment_1.csv",
+                "ContentMd5": "md5_1",
+            },
+            {
+                "Endpoint": "https://go-here-for-blob.com/segment_3",
+                "Path": "segment_3.csv",
+                "ContentMd5": "md5_3",
+            },
+        ]
 
-        base_downloader = BaseDownloader()
-        df_out = base_downloader._download_chunks_as_dataframe(chunk)
+        out = self.storage._days_response_url_sequence(response_json)
+        assert out == out_expected
 
-        mock_remote_get.assert_called_once_with(
-            "https:://go-here-for-blob.com/segment_0"
-        )
-        pd.testing.assert_frame_equal(df_expected, df_out)
 
-    def test__download_chunks_as_dataframe_no_chunks(self):
-        mock_backend = MagicMock()
+# class Test_BaseDownloader(unittest.TestCase):
+#     def test_init(self):
+#         BaseDownloader()
 
-        base_downloader = BaseDownloader(mock_backend)
-        df_out = base_downloader._download_chunks_as_dataframe([])
+#     @patch("datareservoirio.storage.storage._blob_to_df")
+#     def test_get(self, mock_remote_get):
+#         response = {
+#             "Files": [
+#                 {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]},
+#                 {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_1"}]},
+#                 {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_2"}]},
+#             ]
+#         }
 
-        df_expected = (
-            pd.DataFrame(columns=("index", "values"))
-            .astype({"index": "int64"})
-            .set_index("index")
-        )
+#         mock_remote_get.side_effect = [
+#             pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}),
+#             pd.DataFrame({"index": [3, 4, 5], "values": [5.0, 4.0, 5.0]}),
+#             pd.DataFrame({"index": [1, 5, 9], "values": [9.0, 8.0, 1.0]}),
+#         ]
 
-        mock_backend.assert_not_called()
-        pd.testing.assert_frame_equal(df_expected, df_out)
+#         df_expected = pd.DataFrame(
+#             {"index": [1, 2, 3, 4, 5, 9], "values": [9.0, 2.0, 5.0, 4.0, 8.0, 1.0]}
+#         )
+
+#         base_downloader = BaseDownloader()
+
+#         df_out = base_downloader.get(response)
+
+#         pd.testing.assert_frame_equal(df_expected, df_out)
+
+#         calls = [
+#             call("https:://go-here-for-blob.com/segment_0"),
+#             call("https:://go-here-for-blob.com/segment_1"),
+#             call("https:://go-here-for-blob.com/segment_2"),
+#         ]
+#         mock_remote_get.assert_has_calls(calls)
+
+#     @patch("datareservoirio.storage.storage._blob_to_df")
+#     def test_get_with_text_data(self, mock_remote_get):
+#         response = {
+#             "Files": [
+#                 {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]},
+#                 {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_1"}]},
+#                 {"Chunks": [{"Endpoint": "https:://go-here-for-blob.com/segment_2"}]},
+#             ]
+#         }
+
+#         mock_remote_get.side_effect = [
+#             pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}),
+#             pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}),
+#             pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}),
+#         ]
+
+#         df_expected = pd.DataFrame(
+#             {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
+#         )
+
+#         base_downloader = BaseDownloader()
+
+#         df_out = base_downloader.get(response)
+
+#         pd.testing.assert_frame_equal(df_expected, df_out)
+
+#         calls = [
+#             call("https:://go-here-for-blob.com/segment_0"),
+#             call("https:://go-here-for-blob.com/segment_1"),
+#             call("https:://go-here-for-blob.com/segment_2"),
+#         ]
+#         mock_remote_get.assert_has_calls(calls)
+
+#         # mock_backend = MagicMock()
+#         # base_downloader = BaseDownloader(mock_backend)
+
+#         # response = {
+#         #     "Files": [{"Chunks": "abc1"}, {"Chunks": "abc2"}, {"Chunks": "abc3"}]
+#         # }
+
+#         # with patch.object(
+#         #     base_downloader, "_download_chunks_as_dataframe"
+#         # ) as mock_download:
+#         #     mock_download.side_effect = [
+#         #         pd.DataFrame({"index": [1, 2, 3], "values": ["a", "b", "c"]}).set_index(
+#         #             "index"
+#         #         ),
+#         #         pd.DataFrame({"index": [3, 4, 5], "values": ["d", "e", "f"]}).set_index(
+#         #             "index"
+#         #         ),
+#         #         pd.DataFrame({"index": [1, 5, 9], "values": ["g", "h", "i"]}).set_index(
+#         #             "index"
+#         #         ),
+#         #     ]
+
+#         #     df_expected = pd.DataFrame(
+#         #         {"index": [1, 2, 3, 4, 5, 9], "values": ["g", "b", "d", "e", "h", "i"]}
+#         #     )
+#         #     df_out = base_downloader.get(response)
+
+#         # pd.testing.assert_frame_equal(df_expected, df_out)
+
+#     def test_get_empty(self):
+#         mock_backend = MagicMock()
+#         base_downloader = BaseDownloader(mock_backend)
+
+#         response = {"Files": []}
+
+#         df_out = base_downloader.get(response)
+
+#         df_expected = pd.DataFrame(
+#             pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+#         )
+
+#         mock_backend.assert_not_called()
+#         pd.testing.assert_frame_equal(df_expected, df_out)
+
+#     def test__combine_first_no_overlap(self):
+#         df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
+#         df2 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[6, 7, 8, 9])
+#         df_expected = df1.combine_first(df2)
+#         df_out = BaseDownloader._combine_first(df1, df2)
+#         pd.testing.assert_series_equal(df_expected, df_out)
+
+#     def test__combine_first_no_overlap_reversed_order(self):
+#         df2 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
+#         df1 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[6, 7, 8, 9])
+#         df_expected = df1.combine_first(df2)
+#         df_out = BaseDownloader._combine_first(df1, df2)
+#         pd.testing.assert_series_equal(df_expected, df_out)
+
+#     def test__combine_first_exact_overlap(self):
+#         df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
+#         df2 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[0, 1, 2, 3])
+#         df_expected = df1.combine_first(df2)
+#         df_out = BaseDownloader._combine_first(df1, df2)
+#         pd.testing.assert_series_equal(df_expected, df_out)
+
+#     def test__combine_first_partial_overlap(self):
+#         df1 = pd.Series([0.0, 1.0, 2.0, 3.0], index=[0, 1, 2, 3])
+#         df2 = pd.Series([10.0, 11.0, 12.0, 13.0], index=[2, 3, 4, 5])
+#         df_expected = df1.combine_first(df2)
+#         df_out = BaseDownloader._combine_first(df1, df2)
+#         pd.testing.assert_series_equal(df_expected, df_out)
+
+#     @patch("datareservoirio.storage.storage._blob_to_df")
+#     def test__download_verified_chunk(self, mock_remote_get):
+#         chunk = {"Endpoint": "https:://go-here-for-blob.com/segment_0"}
+
+#         mock_remote_get.side_effect = [
+#             pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
+#         ]
+
+#         df_expected = pd.DataFrame(
+#             {"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}
+#         ).set_index("index")
+
+#         base_downloader = BaseDownloader()
+
+#         df_out = base_downloader._download_verified_chunk(chunk)
+#         mock_remote_get.assert_called_once_with(chunk["Endpoint"])
+
+#         pd.testing.assert_frame_equal(df_expected, df_out)
+
+#     @patch("datareservoirio.storage.storage._blob_to_df")
+#     def test__download_verified_chunk_w_duplicates(self, mock_remote_get):
+#         chunk = {"Endpoint": "https:://go-here-for-blob.com/segment_0"}
+
+#         mock_remote_get.side_effect = [
+#             pd.DataFrame({"index": [1, 2, 2, 3], "values": [1.0, 2.0, 2.0, 3.0]})
+#         ]
+
+#         df_expected = pd.DataFrame(
+#             {"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]}
+#         ).set_index("index")
+
+#         base_downloader = BaseDownloader()
+
+#         df_out = base_downloader._download_verified_chunk(chunk)
+#         mock_remote_get.assert_called_once_with(chunk["Endpoint"])
+
+#         pd.testing.assert_frame_equal(df_expected, df_out)
+
+#     @patch("datareservoirio.storage.storage._blob_to_df")
+#     def test__download_chunks_as_dataframe(self, mock_remote_get):
+#         chunk = [{"Endpoint": "https:://go-here-for-blob.com/segment_0"}]
+#         mock_remote_get.side_effect = [
+#             pd.DataFrame({"index": [1, 2, 3], "values": [1.0, 2.0, 3.0]})
+#         ]
+
+#         df_expected = pd.DataFrame(
+#             {
+#                 "index": [1, 2, 3],
+#                 "values": [1.0, 2.0, 3.0],
+#             }
+#         ).set_index("index")
+
+#         base_downloader = BaseDownloader()
+#         df_out = base_downloader._download_chunks_as_dataframe(chunk)
+
+#         mock_remote_get.assert_called_once_with(
+#             "https:://go-here-for-blob.com/segment_0"
+#         )
+#         pd.testing.assert_frame_equal(df_expected, df_out)
+
+#     def test__download_chunks_as_dataframe_no_chunks(self):
+#         mock_backend = MagicMock()
+
+#         base_downloader = BaseDownloader(mock_backend)
+#         df_out = base_downloader._download_chunks_as_dataframe([])
+
+#         df_expected = (
+#             pd.DataFrame(columns=("index", "values"))
+#             .astype({"index": "int64"})
+#             .set_index("index")
+#         )
+
+#         mock_backend.assert_not_called()
+#         pd.testing.assert_frame_equal(df_expected, df_out)
 
 
 class Test_StorageCache(unittest.TestCase):

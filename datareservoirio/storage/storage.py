@@ -5,7 +5,7 @@ import os
 import re
 import shutil
 import timeit
-from concurrent.futures import ThreadPoolExecutor
+from collections import defaultdict
 from threading import RLock as Lock
 
 import pandas as pd
@@ -26,15 +26,12 @@ class Storage:
     Handle download and upload of timeseries data in DataReservoir.io.
     """
 
-    def __init__(self, timeseries_api, session, cache=True, cache_opt=None):
+    def __init__(self, session, cache=True, cache_opt=None):
         """
-        Initialize service for working with timeseries data in Azure Blob
-        Storage.
+        Handler for time series data from remote storage with caching.
 
         Parameters
         ----------
-        timeseries_api: TimeseriesAPI
-            Instance of timeseries API.
         session : cls
             An authenticated session that is used in all API calls. Must supply a
             valid bearer token to all API calls.
@@ -49,12 +46,10 @@ class Storage:
         """
         if cache:
             cache_opt = {} if cache_opt is None else cache_opt
-            storage_cache = StorageCache(**cache_opt)
+            self._storage_cache = StorageCache(**cache_opt)
         else:
-            storage_cache = None
+            self._storage_cache = None
 
-        self._timeseries_api = timeseries_api
-        self._downloader = BaseDownloader(storage_cache)
         self._session = session
 
     def put(self, df, target_url, commit_request):
@@ -71,10 +66,6 @@ class Storage:
             Parameteres for "commit" request. Given as `(METHOD, URL, kwargs)`.
             The tuple is passed forward to `session.request(METHOD, URL, **kwargs)`
 
-        Returns
-        -------
-            The unique file id as stored in the reservoir
-
         """
         _df_to_blob(df, target_url)
 
@@ -83,120 +74,92 @@ class Storage:
         response.raise_for_status()
         return
 
-    def get(self, timeseries_id, start, end):
+    def get(self, target_url):
         """
-        Get a range of data for a timeseries.
+        Get a Pandas Dataframe from storage.
+
+        The REST API endpoint ``target_url`` returns a collection of blob (endpoint)
+        which are downloaded and merged in sequence.
 
         Parameters
         ----------
-        timeseries_id: guid
-            Unique id of the timeseries
-        start: long
-            Start time of the range, in nanoseconds since EPOCH
-        end: long
-            End time of the range, in nanoseconds since EPOCH
+        target_url : str
+            REST API URL as ``/data/days?start={start}&end={end}``
+
+        Returns
+        -------
+        df : pd.DataFrame
+            Pandas DataFrame with two columns, ``index`` and ``values``.
 
         """
-        log.debug("getting day file inventory")
-        response = self._timeseries_api.download_days(timeseries_id, start, end)
-        df = self._downloader.get(response)
-        return df
+        response = self._session.get(target_url)
 
+        response.raise_for_status()
 
-class BaseDownloader:
-    """
-    Series download strategy that will download Pandas DataFrame from provided
-    cloud backend.
-
-    Multiple chunks will be downloaded in parallel using ThreadPoolExecutor.
-
-    """
-
-    def __init__(self, cacheio=None):
-        self._cacheio = cacheio
-
-    def get(self, response):
-        filechunks = [f["Chunks"] for f in response["Files"]]
-        filedatas = map(self._download_chunks_as_dataframe, filechunks)
+        blob_sequence = iter(
+            reversed(self._days_response_url_sequence(response.json()))
+        )
 
         try:
-            df = next(filedatas)
+            chunk_i = next(blob_sequence)
         except StopIteration:
             return pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+        else:
+            df = self._blob_to_df(chunk_i).set_index("index")
 
-        for fd in filedatas:
-            df = self._combine_first(fd, df)
+        for chunk_i in blob_sequence:
+            df = df.combine_first(self._blob_to_df(chunk_i).set_index("index"))
 
-        df.reset_index(inplace=True)  # Temporary hotfix while waiting for refactor
-        return df
+        return df.reset_index()
 
-    def _download_chunks_as_dataframe(self, chunks):
-        if not chunks:
-            df_chunks = pd.DataFrame(columns=("index", "values")).astype(
-                {"index": "int64"}
-            )
-            df_chunks.set_index(
-                "index", inplace=True
-            )  # Temporary hotfix while waiting for refactor
-            return df_chunks
-
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            filechunks = executor.map(self._download_verified_chunk, chunks)
-        df_chunks = pd.concat(filechunks)
-        return df_chunks
-
-    def _download_verified_chunk(self, chunk):
+    def _blob_to_df(self, chunk):
         """
-        Download chunk as Pandas DataFrame and ensure the series does not contain
-        duplicates.
+        Wrapper around ``_blob_to_df`` with cache (if enabled).
         """
-        if self._cacheio is not None:
-            df = self._cacheio.get(chunk)
+        if self._storage_cache is not None:
+            df = self._storage_cache.get(chunk)
 
             if df is None:
-                blob_url = chunk["Endpoint"]
-                df = _blob_to_df(blob_url)
-                self._cacheio.put(df, chunk)
+                df = _blob_to_df(chunk["Endpoint"])
+                self._storage_cache.put(df, chunk)
         else:
-            blob_url = chunk["Endpoint"]
-            df = _blob_to_df(blob_url)
-
-        df.set_index(
-            "index", inplace=True
-        )  # Temporary hotfix while waiting for refactor
-        if not df.index.is_unique:
-            return df[~df.index.duplicated(keep="last")]
+            df = _blob_to_df(chunk["Endpoint"])
         return df
 
     @staticmethod
-    def _combine_first(calling, other):
+    def _days_response_url_sequence(response_json):
         """
-        Faster combine first for most common scenarios and fall back to general
-        purpose Pandas combine_first for advanced cases.
+        Flatten response from ``/data/days?start={start}&end={end}``
+
+        to a sequence of dictionaries with endpoint URLs, path, and
+        md5 hash of blobs.
+
+        The order indicate the priority where item ``n+1`` takes precedence
+
+        over item ``n`` and so on.
+
+        Notes
+        -----
+        This is a hacky solution assuming alot about the REST API response from
+
+        ``/data/days?start={start}&end={end}``.
         """
-        if calling.empty or other.empty:
-            return calling
+        chunks = defaultdict(list)
+        for file_i in response_json["Files"]:
+            for chunk_i in file_i["Chunks"]:
+                chunks[chunk_i.pop("DaysSinceEpoch")].append(chunk_i)
 
-        calling_index = calling.index.values
-        other_index = other.index.values
-
-        late_start = max([calling_index[0], other_index[0]])
-        early_end = min([calling_index[-1], other_index[-1]])
-
-        if late_start > early_end:  # no overlap
-            if calling_index[0] < late_start:
-                df_combined = pd.concat((calling, other))
-            else:
-                df_combined = pd.concat((other, calling))
-        elif (
-            len(calling_index) == len(other_index)
-            and (calling_index == other_index).all()
-        ):  # exact overlap
-            df_combined = calling
-        else:  # partial overlap - expensive
-            df_combined = calling.combine_first(other)
-
-        return df_combined
+        url_sequence = []
+        for day_i in sorted(chunks):
+            for blob_item in chunks[day_i]:
+                url_sequence.append(
+                    {
+                        "Endpoint": blob_item["Endpoint"],
+                        "Path": blob_item["Path"],
+                        "ContentMd5": blob_item["ContentMd5"],
+                    }
+                )
+        return url_sequence
 
 
 class StorageCache(CacheIO):
@@ -366,9 +329,9 @@ def _blob_to_df(blob_url):
 
     Return
     ------
-    series : pandas.Series
-        Pandas series where index is nano-seconds since epoch and values are ``str``
-        or ``float64``.
+    df : pandas.DataFrame
+        Pandas DataFrame where column ``index`` is nano-seconds since epoch
+        (``Int64``) and column ``values`` are ``str`` or ``float64``.
     """
 
     response = requests.get(blob_url, stream=True)
@@ -399,9 +362,9 @@ def _df_to_blob(df, blob_url):
 
     Parameters
     ----------
-    series : pandas.Series
-        Pandas series where index is nano-seconds since epoch (``Int64``) and
-        values are ``str`` or ``float64``.
+    df : pandas.DataFrame
+        Pandas DataFrame where column ``index`` is nano-seconds since epoch
+        (``Int64``) and column ``values`` are ``str`` or ``float64``.
     """
     if not isinstance(df, pd.DataFrame):
         raise ValueError

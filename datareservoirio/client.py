@@ -1,7 +1,7 @@
 import logging
 import time
-import timeit
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 from operator import itemgetter
 
 import pandas as pd
@@ -56,9 +56,7 @@ class Client:
                     FutureWarning,
                 )
 
-        self._storage = Storage(
-            self._timeseries_api, self._auth_session, cache=cache, cache_opt=cache_opt
-        )
+        self._storage = Storage(self._auth_session, cache=cache, cache_opt=cache_opt)
 
     def ping(self):
         """
@@ -280,16 +278,29 @@ class Client:
         if start >= end:
             raise ValueError("start must be before end")
 
-        time_start = timeit.default_timer()
-
-        log.debug("Getting series range")
-        series = (
-            self._storage.get(series_id, start, end)
-            .set_index("index")
-            .squeeze("columns")
-            .loc[start:end]
-            .copy(deep=True)
+        # make an "exploratory" request
+        response = self._auth_session.get(
+            environment.api_base_url
+            + f"timeseries/{series_id}/data/days?start={start}&end={end}"
         )
+        response.raise_for_status()
+        response_json = response.json()
+
+        if response_json["Files"]:
+            with ThreadPoolExecutor(max_workers=None) as e:
+                futures = [
+                    e.submit(
+                        self._storage.get,
+                        environment.api_base_url
+                        + f"timeseries/{series_id}/data/days?start={val_i}&end={val_i}",
+                    )
+                    for val_i in _timeseries_available_days(response_json)
+                ]
+            df = pd.concat([future_i.result() for future_i in futures])
+        else:
+            df = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+
+        series = df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
         series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing
@@ -297,9 +308,6 @@ class Client:
 
         if convert_date:
             series.index = pd.to_datetime(series.index, utc=True)
-
-        time_end = timeit.default_timer()
-        log.info(f"Download series dataframe took {time_end - time_start} seconds")
 
         return series
 
@@ -522,3 +530,26 @@ class Client:
     def _get_file_status(self, file_id):
         response = self._files_api.status(file_id)
         return response["State"]
+
+
+def _timeseries_available_days(response_json):
+    """
+    Return list of days ``start`` and ``end`` covers.
+    Each day is represented by the first nanoseconds since epoch
+    of that day.
+
+    The list is obtained from the response of an "exploratory" call to
+    ``api/timeseries/data/days?start={start}&end={end}``.
+
+    Notes
+    -----
+    This is a bit hacky, since it assumes a few things about the response and
+    the inner workings of the backend.
+    """
+    days = set()
+    nanoseconds_day = 86400000000000
+
+    for file_i in response_json["Files"]:
+        for chunk_i in file_i["Chunks"]:
+            days.add(chunk_i["DaysSinceEpoch"] * nanoseconds_day)
+    return sorted(days)
