@@ -60,7 +60,7 @@ def get_response():
 @pytest.fixture
 def mock_requests_get(monkeypatch, get_response):
     def mock_get(url, *args, **kwargs):
-        content_path = TEST_PATH / "testdata" / url
+        content_path = TEST_PATH / "testdata" / url.replace("/", "_")
         get_response._content_path = content_path
         return get_response
 
