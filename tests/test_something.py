@@ -20,7 +20,7 @@ def test_something():
 
 
 def test_another_thing(mock_requests_get):
-    df_out = drio.storage.storage._blob_to_df("example_drio_blob_file.csv")
+    df_out = drio.storage.storage._blob_to_df("example/drio/blob/file.csv")
 
     df_expect = pd.read_csv(
         TEST_PATH / "testdata" / "example_drio_blob_file.csv",
