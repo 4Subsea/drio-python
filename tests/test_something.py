@@ -1,11 +1,10 @@
 from pathlib import Path
-from unittest.mock import Mock
 
 import pandas as pd
 import pytest
+import requests
 
 import datareservoirio as drio
-
 
 TEST_PATH = Path(__file__).parent
 
@@ -23,13 +22,12 @@ def test_something():
 class Test__blob_to_df:
     @pytest.fixture
     def mock_response_get(self, monkeypatch, get_response):
-
         def mock_get(*args, **kwargs):
             content_path = TEST_PATH / "testdata" / "example_drio_blob_file.csv"
             get_response._content_path = content_path
             return get_response
 
-        monkeypatch.setattr(drio.storage.storage.requests, "get", mock_get)
+        monkeypatch.setattr(requests, "get", mock_get)
 
     @pytest.fixture
     def df_expect(self):
