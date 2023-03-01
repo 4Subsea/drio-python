@@ -43,8 +43,8 @@ class MockResponse:
 @pytest.fixture
 def mock_requests_get(monkeypatch):
     def mock_get(url, **kwargs):
-        path = TEST_PATH / "testdata" / url.replace("/", "_")
-        path_matches = glob.glob(str(path) + "*")
+        url = url.replace("/", "_")
+        path_matches = glob.glob(str(TEST_PATH / "testdata" / url) + "*")
         if len(path_matches) > 1:
             raise ValueError()
 
