@@ -31,7 +31,6 @@ def get_response():
             self._stream = False
             self._raise_for_status = False
             self._content_path = None
-            super().__init__()
 
         def raise_for_status(self):
             if self._raise_for_status:
