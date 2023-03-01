@@ -1,7 +1,7 @@
-import pytest
-from unittest.mock import Mock
 import json
+from unittest.mock import Mock
 
+import pytest
 import requests
 
 

@@ -1,9 +1,10 @@
-import pytest
-from unittest.mock import Mock
 from pathlib import Path
-import datareservoirio as drio
-import pandas as pd
+from unittest.mock import Mock
 
+import pandas as pd
+import pytest
+
+import datareservoirio as drio
 
 TEST_PATH = Path(__file__).parent
 
@@ -19,11 +20,11 @@ def test_something():
 
 
 class Test__blob_to_df:
-
     @pytest.fixture
     def mock_response_get(self, monkeypatch, get_response):
-
-        get_response._content_path = TEST_PATH / "testdata" / "example_drio_blob_file.csv"
+        get_response._content_path = (
+            TEST_PATH / "testdata" / "example_drio_blob_file.csv"
+        )
 
         mock_get = Mock()
         mock_get.return_value = get_response
@@ -32,7 +33,6 @@ class Test__blob_to_df:
 
     @pytest.fixture
     def df_expect(self):
-
         df = pd.read_csv(
             TEST_PATH / "testdata" / "example_drio_blob_file.csv",
             header=None,
