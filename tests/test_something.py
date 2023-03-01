@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import Mock
 from pathlib import Path
 import datareservoirio as drio
+import pandas as pd
 
 
 TEST_PATH = Path(__file__).parent
@@ -29,5 +30,19 @@ class Test__blob_to_df:
 
         monkeypatch.setattr("datareservoirio.storage.storage.requests.get", mock_get)
 
-    def test__blob_to_df(self, mock_response_get):
-        df = drio.storage.storage._blob_to_df("some/url")
+    @pytest.fixture
+    def df_expect(self):
+
+        df = pd.read_csv(
+            TEST_PATH / "testdata" / "example_drio_blob_file.csv",
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "str"},
+            encoding="utf-8",
+        ).astype({"values": "float64"}, errors="ignore")
+
+        return df
+
+    def test__blob_to_df(self, mock_response_get, df_expect):
+        df_out = drio.storage.storage._blob_to_df("some/url")
+        pd.testing.assert_frame_equal(df_out, df_expect)
