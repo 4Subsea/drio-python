@@ -43,10 +43,10 @@ def get_response():
 
         def iter_content(self, chunk_size=1, decode_unicode=False):
             with open(self._content_path, mode="rb") as f:
-                content_iter = [
-                    f.read(chunk_size).decode() if decode_unicode else f.read(chunk_size)
-                ]
-            return content_iter
+                while content_i := f.read(chunk_size):
+                    if decode_unicode:
+                        yield content_i.decode()
+                    yield content_i
 
         def json(self, **kwargs):
             return json.loads(self.content, **kwargs)
