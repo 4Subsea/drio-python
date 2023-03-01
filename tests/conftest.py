@@ -44,6 +44,9 @@ def get_response():
             return content
 
         def iter_content(self, chunk_size=1, decode_unicode=False):
+            if not self._stream:
+                chunk_size = -1   # read all data
+
             with open(self._content_path, mode="rb") as f:
                 while content_i := f.read(chunk_size):
                     if decode_unicode:
