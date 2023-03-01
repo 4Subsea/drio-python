@@ -1,3 +1,4 @@
+import glob
 import json
 from pathlib import Path
 from unittest.mock import Mock
@@ -62,8 +63,13 @@ def get_response():
 @pytest.fixture
 def mock_requests_get(monkeypatch, get_response):
     def mock_get(url, *args, **kwargs):
-        content_path = TEST_PATH / "testdata" / url.replace("/", "_")
-        get_response._content_path = content_path
+        path = TEST_PATH / "testdata" / url.replace("/", "_")
+        path_matches = glob.glob(str(path) + "*")
+        if len(path_matches) > 1:
+            raise ValueError()
+
+        get_response._content_path = path_matches[0]
+
         return get_response
 
     monkeypatch.setattr(requests, "get", mock_get)

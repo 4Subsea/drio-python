@@ -42,3 +42,13 @@ def test_one_more_thing(mock_requests_get):
         dict_expect = json.load(f)
 
     assert dict_out == dict_expect
+
+
+def test_yet_another_thing(mock_requests_get):
+    response = drio.storage.storage.requests.get("example/drio/api/output")
+    dict_out = response.json()
+
+    with open(TEST_PATH / "testdata" / "example_drio_api_output.json", mode="r") as f:
+        dict_expect = json.load(f)
+
+    assert dict_out == dict_expect
