@@ -1,8 +1,11 @@
 import json
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
 import requests
+
+TEST_PATH = Path(__file__).parent
 
 
 @pytest.fixture
@@ -52,3 +55,13 @@ def get_response():
             return json.loads(self.content, **kwargs)
 
     return ResponseFactory()
+
+
+@pytest.fixture
+def mock_requests_get(monkeypatch, get_response):
+    def mock_get(url, *args, **kwargs):
+        content_path = TEST_PATH / "testdata" / url
+        get_response._content_path = content_path
+        return get_response
+
+    monkeypatch.setattr(requests, "get", mock_get)
