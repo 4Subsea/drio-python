@@ -9,6 +9,18 @@ import requests
 TEST_PATH = Path(__file__).parent
 
 
+def url_to_file(url):
+    path = str(TEST_PATH / "testdata" / url.replace("/", "_"))
+    path_matches = glob.glob(path + "*")
+
+    if len(path_matches) > 1:
+        raise ValueError
+
+    file_path = path_matches[0]
+
+    return file_path
+
+
 class MockResponse:
     def __init__(self, content_path=None, stream=False, **kwargs):
         self._content_path = content_path
@@ -43,13 +55,8 @@ class MockResponse:
 @pytest.fixture
 def mock_requests_get(monkeypatch):
     def mock_get(url, **kwargs):
-        url = url.replace("/", "_")
-        path_matches = glob.glob(str(TEST_PATH / "testdata" / url) + "*")
-        if len(path_matches) > 1:
-            raise ValueError()
+        file_path = url_to_file(url)
 
-        content_path = path_matches[0]
-
-        return MockResponse(content_path=content_path, **kwargs)
+        return MockResponse(content_path=file_path, **kwargs)
 
     monkeypatch.setattr(requests, "get", mock_get)
