@@ -10,8 +10,8 @@ TEST_PATH = Path(__file__).parent
 
 
 def url_to_file(url):
-    path = str(TEST_PATH / "testdata" / url.replace("/", "_"))
-    path_matches = glob.glob(path + "*")
+    path_without_extension = str(TEST_PATH / "testdata" / url.replace("/", "_"))
+    path_matches = glob.glob(path_without_extension + ".*")
 
     if len(path_matches) > 1:
         raise ValueError
@@ -56,7 +56,6 @@ class MockResponse:
 def mock_requests_get(monkeypatch):
     def mock_get(url, **kwargs):
         file_path = url_to_file(url)
-
         return MockResponse(content_path=file_path, **kwargs)
 
     monkeypatch.setattr(requests, "get", mock_get)
