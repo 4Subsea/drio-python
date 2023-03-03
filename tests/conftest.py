@@ -9,7 +9,6 @@ TEST_PATH = Path(__file__).parent
 
 URI_CONTENT_MAP = {
     "example/drio/blob/file": str(TEST_PATH / "testdata" / "example_drio_blob_file.csv"),
-    "example/drio/api/output": str(TEST_PATH / "testdata" / "example_drio_api_output.json"),
 }
 
 
