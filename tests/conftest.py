@@ -30,7 +30,6 @@ class MockGetResponse:
     def __init__(
         self,
         content_path=None,
-        status_code=None,
         raise_for_status=False,
         stream=False,
         **kwargs,
