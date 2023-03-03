@@ -1,7 +1,5 @@
-import glob
 import json
 from pathlib import Path
-from unittest.mock import Mock
 
 import pytest
 import requests
@@ -9,16 +7,16 @@ import requests
 TEST_PATH = Path(__file__).parent
 
 
+URI_CONTENT_MAP = {
+    "example/drio/blob/file": str(TEST_PATH / "testdata" / "example_drio_blob_file.csv"),
+    "example/drio/api/output": str(TEST_PATH / "testdata" / "example_drio_api_output.json"),
+}
+
+
 def url_to_file(url):
-    path_without_extension = str(TEST_PATH / "testdata" / url.replace("/", "_"))
-    path_matches = glob.glob(path_without_extension + ".*")
-
-    if len(path_matches) > 1:
+    if url not in URI_CONTENT_MAP:
         raise ValueError
-
-    file_path = path_matches[0]
-
-    return file_path
+    return URI_CONTENT_MAP[url]
 
 
 class MockResponse:
