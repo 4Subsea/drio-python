@@ -1,16 +1,15 @@
-import pytest
 from pathlib import Path
+
 import pandas as pd
+import pytest
 import requests
 
 import datareservoirio as drio
-
 
 TEST_PATH = Path(__file__).parent
 
 
 class Test__blob_to_df:
-
     def test__blob_to_df(self, mock_requests_get):
         """Tests ``_blob_to_df`` function."""
         blob_url = "example/drio/blob/file"
