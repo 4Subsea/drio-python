@@ -10,12 +10,10 @@ TEST_PATH = Path(__file__).parent
 URI_RESPONSE_MAP = {
     "example/drio/blob/file": {
         "content_path": str(TEST_PATH / "testdata" / "example_drio_blob_file.csv"),
-        "status_code": 200,
         "raise_for_status": False,
     },
     "example/no/exist": {
         "content_path": None,
-        "status_code": 404,
         "raise_for_status": True,
     },
 }
@@ -38,13 +36,8 @@ class MockGetResponse:
         **kwargs,
     ):
         self._content_path = content_path
-        self._status_code = status_code
         self._raise_for_status = raise_for_status
         self._stream = stream
-
-    @property
-    def status_code(self):
-        return self._status_code
 
     def raise_for_status(self):
         if self._raise_for_status:
