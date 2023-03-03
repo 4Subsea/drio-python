@@ -7,15 +7,17 @@ import requests
 TEST_PATH = Path(__file__).parent
 
 
-URI_CONTENT_MAP = {
-    "example/drio/blob/file": str(TEST_PATH / "testdata" / "example_drio_blob_file.csv"),
+URI_RESPONSE_MAP = {
+    "example/drio/blob/file": {
+        "content_path": str(TEST_PATH / "testdata" / "example_drio_blob_file.csv"),
+    }
 }
 
 
-def url_to_file(url):
-    if url not in URI_CONTENT_MAP:
+def uri_to_file(uri):
+    if uri not in URI_RESPONSE_MAP:
         raise ValueError
-    return URI_CONTENT_MAP[url]
+    return URI_RESPONSE_MAP[uri]["content_path"]
 
 
 class MockGetResponse:
@@ -52,7 +54,7 @@ class MockGetResponse:
 @pytest.fixture
 def mock_requests_get(monkeypatch):
     def mock_get(url, **kwargs):
-        file_path = url_to_file(url)
+        file_path = uri_to_file(url)
         return MockGetResponse(content_path=file_path, **kwargs)
 
     monkeypatch.setattr(requests, "get", mock_get)
