@@ -52,3 +52,21 @@ def test_yet_another_thing(mock_requests_get):
         dict_expect = json.load(f)
 
     assert dict_out == dict_expect
+
+
+def test1(mock_requests_get):
+    response = drio.storage.storage.requests.get("example/drio/api/output")
+    response_json = response.json()
+
+    endpoint = response_json["Files"][0]["Chunks"][0]["Endpoint"]
+    df_out = drio.storage.storage._blob_to_df(endpoint)
+
+    df_expect = pd.read_csv(
+        TEST_PATH / "testdata" / "example_drio_blob_file.csv",
+        header=None,
+        names=("index", "values"),
+        dtype={"index": "int64", "values": "str"},
+        encoding="utf-8",
+    ).astype({"values": "float64"}, errors="ignore")
+
+    pd.testing.assert_frame_equal(df_out, df_expect)
