@@ -21,7 +21,7 @@ def test_something():
 
 
 def test_another_thing(mock_requests_get):
-    df_out = drio.storage.storage._blob_to_df("example/drio/blob/file.csv")
+    df_out = drio.storage.storage._blob_to_df("example/drio/blob/file")
 
     df_expect = pd.read_csv(
         TEST_PATH / "testdata" / "example_drio_blob_file.csv",
@@ -35,7 +35,7 @@ def test_another_thing(mock_requests_get):
 
 
 def test_one_more_thing(mock_requests_get):
-    response = drio.storage.storage.requests.get("example/drio/api/output.json")
+    response = drio.storage.storage.requests.get("example/drio/api/output")
     dict_out = response.json()
 
     with open(TEST_PATH / "testdata" / "example_drio_api_output.json", mode="r") as f:
