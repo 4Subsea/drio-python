@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
@@ -54,6 +53,7 @@ class MockGetResponse:
     **kwargs :
         Optional keyword arguments passed to the `get` method (which returns the response).
     """
+
     def __init__(
         self,
         content_path=None,
@@ -103,6 +103,7 @@ def mock_requests_get(monkeypatch):
     The response configuration is determined by the endpoint url (and possibly other
     keyword arguments) passed to :func:`requests.get`.
     """
+
     def mock_get(url, **kwargs):
         config = uri_to_config(url)
         return MockGetResponse(**config, **kwargs)
