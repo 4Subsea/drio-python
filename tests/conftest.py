@@ -31,16 +31,28 @@ def uri_to_config(uri):
 
 
 class MockGetResponse:
+    """
+    `requests` response mock.
+
+    Paramters
+    ---------
+    content_path : str, optional
+        Path to file with the response content.
+    raise_for_status : bool
+        Weather to raise a :class:`requests.HTTPError` when the :meth:`raise_for_status`
+        method is called.
+    **kwargs :
+        Optional keyword arguments passed to the `get` method (which returns the response).
+    """
     def __init__(
         self,
         content_path=None,
         raise_for_status=False,
-        stream=False,
         **kwargs,
     ):
         self._content_path = content_path
         self._raise_for_status = raise_for_status
-        self._stream = stream
+        self._stream = kwargs.get("stream", False)
 
     def raise_for_status(self):
         if self._raise_for_status:
