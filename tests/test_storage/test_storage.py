@@ -15,6 +15,7 @@ class Test__blob_to_df:
 
     TODO: add one test where the blob file contains string values.
     """
+
     def test__blob_to_df(self, mock_requests_get):
         """Tests ``_blob_to_df`` function."""
         blob_url = "example/drio/blob/file"
