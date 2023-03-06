@@ -22,7 +22,14 @@ URI_RESPONSE_MAP = {
 
 
 def uri_to_config(uri):
-    """Get response mock configuration from ``uri``"""
+    """
+    Get response mock configuration from a URI.
+
+    Parameters
+    ----------
+    uri : str
+        URI identifying a response.
+    """
     try:
         config = URI_RESPONSE_MAP[uri]
     except KeyError:
@@ -32,7 +39,10 @@ def uri_to_config(uri):
 
 class MockGetResponse:
     """
-    `requests` response mock.
+    Mocks a :class:`requests.Response` object.
+
+    Configure the mock by setting appropriate values for the configuration parameters
+    given during initialization.
 
     Paramters
     ---------
@@ -81,6 +91,12 @@ class MockGetResponse:
 
 @pytest.fixture
 def mock_requests_get(monkeypatch):
+    """
+    Mocks the :func:`requests.get` function.
+
+    The response configuration is determined by the endpoint url (and possibly other
+    keyword arguments) passed to :func:`requests.get`.
+    """
     def mock_get(url, **kwargs):
         config = uri_to_config(url)
         return MockGetResponse(**config, **kwargs)
