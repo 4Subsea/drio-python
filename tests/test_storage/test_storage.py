@@ -10,6 +10,11 @@ TEST_PATH = Path(__file__).parent
 
 
 class Test__blob_to_df:
+    """
+    Tests the :func:`_blob_to_df` function.
+
+    TODO: add one test where the blob file contains string values.
+    """
     def test__blob_to_df(self, mock_requests_get):
         """Tests ``_blob_to_df`` function."""
         blob_url = "example/drio/blob/file"
