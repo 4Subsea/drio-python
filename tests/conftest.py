@@ -71,11 +71,17 @@ class MockGetResponse:
 
     @property
     def content(self):
+        if not self._content_path:
+            raise ValueError("No content available")
+
         with open(self._content_path, mode="rb") as f:
             content = f.read()
         return content
 
     def iter_content(self, chunk_size=1, decode_unicode=False):
+        if not self._content_path:
+            raise ValueError("No content available")
+
         if not self._stream:
             chunk_size = -1  # read all data
 
