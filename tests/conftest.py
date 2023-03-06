@@ -23,9 +23,11 @@ URI_RESPONSE_MAP = {
 
 def uri_to_config(uri):
     """Get response mock configuration from ``uri``"""
-    if uri not in URI_RESPONSE_MAP:
-        raise ValueError
-    return URI_RESPONSE_MAP[uri]
+    try:
+        config = URI_RESPONSE_MAP[uri]
+    except KeyError:
+        raise ValueError(f"Unrecognized URL: {uri}")
+    return config
 
 
 class MockGetResponse:
