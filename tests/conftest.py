@@ -159,9 +159,7 @@ def response():
 def mock_requests_get2(monkeypatch, response):
     def mock_get(url, **kwargs):
         config = uri_to_config(url)
-
         response._config.update(config)
-
         return response
 
     monkeypatch.setattr(requests, "get", mock_get)
