@@ -74,8 +74,11 @@ class Test__df_to_blob:
     def csv_float_expect(self):
         """Binary csv based on DataFrame with float values"""
         return (
-            b"1640995215379000000,-0.2\n1640995219176000000,-0.1\n1640995227270000000,"
-            b"0.2\n1640995267223000000,0.1\n1640995271472000000,1.2\n"
+            b"1640995215379000000,-0.2\n"
+            b"1640995219176000000,-0.1\n"
+            b"1640995227270000000,0.2\n"
+            b"1640995267223000000,0.1\n"
+            b"1640995271472000000,1.2\n"
         )
 
     def test__df_to_blob(self, monkeypatch, df_float, csv_float_expect):
