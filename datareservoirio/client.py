@@ -6,12 +6,15 @@ from operator import itemgetter
 
 import pandas as pd
 import requests
+from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 from .globalsettings import environment
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import Storage
 
 log = logging.getLogger(__name__)
+CONNECTION_STRING = "InstrumentationKey=43eacbb6-eed8-4ef1-bc81-10d7959b91e2;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/"
+log.addHandler(AzureLogHandler(connection_string=CONNECTION_STRING))
 
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
@@ -234,6 +237,7 @@ class Client:
         """
         return self._timeseries_api.delete(series_id)
 
+    @timer
     def get(
         self,
         series_id,
@@ -275,6 +279,10 @@ class Client:
         start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).value - 1
 
+        # latency 1024 ms.  
+        # period for query
+
+        # X min / day latency.
         if start >= end:
             raise ValueError("start must be before end")
 
@@ -553,3 +561,16 @@ def _timeseries_available_days(response_json):
         for chunk_i in file_i["Chunks"]:
             days.add(chunk_i["DaysSinceEpoch"] * nanoseconds_day)
     return sorted(days)
+
+
+def timer(func):
+    def wrapper(self, *args, **kwargs):
+        series_id, start, end, *_ = args
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        properties = {"custom_dimensions": {"series_id": series_id, "start": start, "end": end, "elapsed": elapsed_time}}
+        log.info("Timer", extra=properties)
+        return result
+    return wrapper
