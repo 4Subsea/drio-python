@@ -9,11 +9,11 @@ TEST_PATH = Path(__file__).parent
 
 
 URI_RESPONSE_MAP = {
-    "example/drio/blob/file": {
+    "http://example/drio/blob/file": {
         "content_path": str(TEST_PATH / "testdata" / "example_drio_blob_file.csv"),
         "raise_for_status": False,
     },
-    "example/no/exist": {
+    "http://example/no/exist": {
         "content_path": None,
         "raise_for_status": True,
     },

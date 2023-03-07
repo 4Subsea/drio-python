@@ -18,7 +18,7 @@ class Test__blob_to_df:
 
     def test__blob_to_df(self, mock_requests_get):
         """Tests ``_blob_to_df`` function."""
-        blob_url = "example/drio/blob/file"
+        blob_url = "http://example/drio/blob/file"
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
         csv_file = TEST_PATH.parent / "testdata" / "example_drio_blob_file.csv"
@@ -35,5 +35,5 @@ class Test__blob_to_df:
     def test_raise_for_status(self, mock_requests_get):
         """Tests if ``raise_for_status`` is called"""
         with pytest.raises(requests.HTTPError):
-            blob_url = "example/no/exist"
+            blob_url = "http://example/no/exist"
             _ = drio.storage.storage._blob_to_df(blob_url)
