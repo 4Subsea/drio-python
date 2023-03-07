@@ -48,7 +48,7 @@ class MockGetResponse:
     content_path : str, optional
         Path to file with the response content.
     raise_for_status : bool
-        Weather to raise a :class:`requests.HTTPError` when the :meth:`raise_for_status`
+        Whether to raise a :class:`requests.HTTPError` when the :meth:`raise_for_status`
         method is called.
     **kwargs :
         Optional keyword arguments passed to the `get` method (which returns the response).
