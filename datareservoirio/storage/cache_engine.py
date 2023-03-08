@@ -19,9 +19,6 @@ class CacheIO:
 
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def _write(self, data, filepath):
         pre_filepath = filepath + ".uncommitted"
         with io.open(pre_filepath, "wb") as file_:
