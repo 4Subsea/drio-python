@@ -17,10 +17,6 @@ from .cache_engine import CacheIO, _CacheIndex
 log = logging.getLogger(__name__)
 
 
-def _encode_for_path_safety(value):
-    return str(base64.urlsafe_b64encode(str(value).encode()).decode())
-
-
 class Storage:
     """
     Handle download and upload of timeseries data in DataReservoir.io.
