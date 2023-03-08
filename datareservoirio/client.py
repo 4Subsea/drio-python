@@ -14,12 +14,14 @@ from .storage import Storage
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-log.addHandler(AzureLogHandler(connection_string=environment._application_insight_connectionstring))
-log.addHandler(logging.StreamHandler())
+log.addHandler(
+    AzureLogHandler(connection_string=environment._application_insight_connectionstring)
+)
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
 _START_DEFAULT = -9214560000000000000  # 1678-01-01
+
 
 def timer(func):
     def wrapper(self, *args, **kwargs):
@@ -28,10 +30,19 @@ def timer(func):
         result = func(self, *args, **kwargs)
         end_time = time.perf_counter()
         elapsed_time = end_time - start_time
-        properties = {"custom_dimensions": {"series_id": series_id, "start": start, "end": end, "elapsed": elapsed_time}}
+        properties = {
+            "custom_dimensions": {
+                "series_id": series_id,
+                "start": start,
+                "end": end,
+                "elapsed": elapsed_time,
+            }
+        }
         log.info("Timer", extra=properties)
         return result
+
     return wrapper
+
 
 class Client:
     """
@@ -290,7 +301,7 @@ class Client:
         start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).value
         end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).value - 1
 
-        # latency 1024 ms.  
+        # latency 1024 ms.
         # period for query
 
         # X min / day latency.
