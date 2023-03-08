@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod
 from oauthlib.oauth2 import (
     BackendApplicationClient,
     InvalidGrantError,
+    MissingTokenError,
     WebApplicationClient,
 )
 from requests_oauthlib import OAuth2Session
@@ -93,7 +94,7 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
         else:
             try:
                 token = self.refresh_token()
-            except (KeyError, ValueError, InvalidGrantError):
+            except (KeyError, ValueError, InvalidGrantError, MissingTokenError):
                 token = self.fetch_token()
 
         if self.token_updater:
