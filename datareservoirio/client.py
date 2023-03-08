@@ -13,14 +13,26 @@ from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import Storage
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 CONNECTION_STRING = "InstrumentationKey=43eacbb6-eed8-4ef1-bc81-10d7959b91e2;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/"
 log.addHandler(AzureLogHandler(connection_string=CONNECTION_STRING))
-
+log.addHandler(logging.StreamHandler())
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
 _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
+def timer(func):
+    def wrapper(self, *args, **kwargs):
+        series_id, start, end, *_ = args
+        start_time = time.perf_counter()
+        result = func(self, *args, **kwargs)
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        properties = {"custom_dimensions": {"series_id": series_id, "start": start, "end": end, "elapsed": elapsed_time}}
+        log.info("Timer", extra=properties)
+        return result
+    return wrapper
 
 class Client:
     """
@@ -562,15 +574,3 @@ def _timeseries_available_days(response_json):
             days.add(chunk_i["DaysSinceEpoch"] * nanoseconds_day)
     return sorted(days)
 
-
-def timer(func):
-    def wrapper(self, *args, **kwargs):
-        series_id, start, end, *_ = args
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
-        properties = {"custom_dimensions": {"series_id": series_id, "start": start, "end": end, "elapsed": elapsed_time}}
-        log.info("Timer", extra=properties)
-        return result
-    return wrapper
