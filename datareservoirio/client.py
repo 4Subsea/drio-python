@@ -14,8 +14,7 @@ from .storage import Storage
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-CONNECTION_STRING = "InstrumentationKey=43eacbb6-eed8-4ef1-bc81-10d7959b91e2;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/"
-log.addHandler(AzureLogHandler(connection_string=CONNECTION_STRING))
+log.addHandler(AzureLogHandler(connection_string=environment._application_insight_connectionstring))
 log.addHandler(logging.StreamHandler())
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
@@ -573,4 +572,3 @@ def _timeseries_available_days(response_json):
         for chunk_i in file_i["Chunks"]:
             days.add(chunk_i["DaysSinceEpoch"] * nanoseconds_day)
     return sorted(days)
-
