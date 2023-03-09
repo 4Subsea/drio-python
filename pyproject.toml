@@ -31,9 +31,9 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/4Subsea/datareservoirio-python"
-"Bug Tracker" = "https://github.com/4Subsea/datareservoirio-python/issues"
-"Documentation" = "https://docs.4insight.io/datareservoirio/python/latest/"
+"Homepage" = "https://github.com/4Subsea/drio-python"
+"Bug Tracker" = "https://github.com/4Subsea/drio-python/issues"
+"Documentation" = "https://docs.4insight.io/dataanalytics/reservoir/python/latest/"
 
 [tool.setuptools.dynamic]
 version = {attr = "datareservoirio.__version__"}
