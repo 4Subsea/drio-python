@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "datareservoirio"
 authors = [
-    { name="4Subsea", email="python@4subsea.com" }
+    { name="4Subsea", email="support@4subsea.com" }
 ]
 dynamic = ["version"]
 description = "DataReservoir.io Python API"
