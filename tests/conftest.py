@@ -1,10 +1,12 @@
 # import json
 from io import BytesIO
 from pathlib import Path
-# from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 import requests
+
+# from unittest.mock import MagicMock, PropertyMock
+
 
 TEST_PATH = Path(__file__).parent
 
@@ -21,7 +23,7 @@ RESPONSE_CASES = {
         "reason": "OK",
         "cookies": None,
         "elapsed": None,
-        "request": None
+        "request": None,
     },
     # description: blob do not exist in remote storage
     ("GET", "http://example/no/exist"): {
@@ -34,8 +36,8 @@ RESPONSE_CASES = {
         "reason": "Not Found",
         "cookies": None,
         "elapsed": None,
-        "request": None
-    }
+        "request": None,
+    },
 }
 
 
