@@ -21,13 +21,13 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
 ]
 dependencies = [
-    "numpy"
-    "oauthlib"
-    "pandas"
-    "pyarrow"
-    "requests"
-    "requests-oauthlib"
-    "importlib_resources"
+    "numpy",
+    "oauthlib",
+    "pandas",
+    "pyarrow",
+    "requests",
+    "requests-oauthlib",
+    "importlib_resources",
 ]
 
 [project.urls]
@@ -64,3 +64,4 @@ deps =
     sphinx==5.3.0
     pydata-sphinx-theme==0.11.0
     myst_parser
+"""
