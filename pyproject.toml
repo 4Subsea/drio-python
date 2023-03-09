@@ -1,6 +1,66 @@
 [build-system]
-requires = [
-    "setuptools>=46.4.0",
-    "wheel"
-]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "datareservoirio"
+authors = [
+    { name="4Subsea", email="python@4subsea.com" }
+]
+dynamic = ["version"]
+description = "DataReservoir.io Python API"
+readme = "README.rst"
+license = { file="LICENSE" }
+requires-python = ">3.8"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "numpy"
+    "oauthlib"
+    "pandas"
+    "pyarrow"
+    "requests"
+    "requests-oauthlib"
+    "importlib_resources"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/4Subsea/datareservoirio-python"
+"Bug Tracker" = "https://github.com/4Subsea/datareservoirio-python/issues"
+"Documentation" = "https://docs.4insight.io/datareservoirio/python/latest/"
+
+[tool.setuptools.dynamic]
+version = {attr = "datareservoirio.__version__"}
+
+[tool.pytest.ini_options]
+pythonpath = [".", "src"]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+isolated_build = True
+envlist =
+    py
+    docs
+
+[testenv]
+commands =
+    pytest --cov=datareservoirio --cov-report html:cov_html-{envname} ./tests
+deps =
+    pytest
+    pytest-cov
+
+
+[testenv:docs]
+basepython = python3.9
+commands = sphinx-build -W -b html -d {toxworkdir}/docs_doctree docs {toxworkdir}/docs_out
+deps =
+    sphinx==5.3.0
+    pydata-sphinx-theme==0.11.0
+    myst_parser
