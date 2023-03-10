@@ -83,6 +83,13 @@ class Test__df_to_blob:
         blob_url = "http://example/blob/url"
         _ = drio.storage.storage._df_to_blob(df_float, blob_url)
 
+    def test__df_to_blob_raises_series(self):
+        series = pd.Series(data=(1, 2, 3, 4), index=(0, 1, 2, 3))
+
+        with pytest.raises(ValueError):
+            blob_url = "http://example/blob/url"
+            _ = drio.storage.storage._df_to_blob(series, blob_url)
+
     def test__df_to_blob_call_args(self, monkeypatch, df_float, csv_float_expect):
         mock_response = Mock()
 
