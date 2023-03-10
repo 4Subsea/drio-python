@@ -39,6 +39,11 @@ RESPONSE_CASES = {
         "status_code": 404,
         "reason": "Not Found",
     },
+    # description: put data to blob
+    ("PUT", "http://example/blob/url"): {
+        "status_code": 201,
+        "reason": "Created",
+    },
 }
 
 
