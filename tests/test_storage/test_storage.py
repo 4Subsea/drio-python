@@ -101,7 +101,7 @@ class Test__df_to_blob:
 
         mock_response.raise_for_status.assert_called_once()
 
-    def test__df_to_blob2(self, monkeypatch, df_float, csv_float_expect):
+    def test__df_to_blob2(self, df_float):
 
         blob_url = "http://example/blob/url"
         _ = drio.storage.storage._df_to_blob(df_float, blob_url)
