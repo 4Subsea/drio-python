@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import ANY, Mock
 
 import pandas as pd
 import pytest
@@ -37,3 +38,65 @@ class Test__blob_to_df:
         with pytest.raises(requests.HTTPError):
             blob_url = "http://example/no/exist"
             _ = drio.storage.storage._blob_to_df(blob_url)
+
+
+class Test__df_to_blob:
+    """
+    Tests the :func:`_df_to_blob` function.
+    TODO:
+        * Test for DataFrame with string values.
+        * Check that raises ValueError if df is not DataFrame
+    """
+
+    @pytest.fixture
+    def df_float(self):
+        """DataFrame with float values"""
+        index_list = (
+            1640995215379000000,
+            1640995219176000000,
+            1640995227270000000,
+            1640995267223000000,
+            1640995271472000000,
+        )
+
+        values_list = (-0.2, -0.1, 0.2, 0.1, 1.2)
+
+        df = pd.DataFrame(data={"index": index_list, "values": values_list}).astype(
+            {"index": "int64", "values": "float64"}
+        )
+
+        return df
+
+    @pytest.fixture
+    def csv_float_expect(self):
+        """Binary csv based on DataFrame with float values"""
+        return (
+            b"1640995215379000000,-0.2\n"
+            b"1640995219176000000,-0.1\n"
+            b"1640995227270000000,0.2\n"
+            b"1640995267223000000,0.1\n"
+            b"1640995271472000000,1.2\n"
+        )
+
+    def test__df_to_blob(self, monkeypatch, df_float, csv_float_expect):
+        mock_response = Mock()
+
+        def put_side_effect(*args, **kwargs):
+            if data := kwargs.get("data"):
+                assert data.read() == csv_float_expect
+            return mock_response
+
+        mock_put = Mock(side_effect=put_side_effect)
+
+        monkeypatch.setattr(requests, "put", mock_put)
+
+        blob_url = "http://foo/bar/baz"
+        _ = drio.storage.storage._df_to_blob(df_float, blob_url)
+
+        mock_put.assert_called_once_with(
+            blob_url,
+            headers={"x-ms-blob-type": "BlockBlob"},
+            data=ANY,
+        )
+
+        mock_response.raise_for_status.assert_called_once()
