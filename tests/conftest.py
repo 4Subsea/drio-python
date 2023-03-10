@@ -70,6 +70,6 @@ def response_factory(_, method, url, *args, **kwargs):
     for attr, value in spec.items():
         setattr(response, attr, value)
 
-    response.mock_calls = call(*args, **kwargs)
+    response.mock_calls = call(method, url, *args, **kwargs)
 
     return response
