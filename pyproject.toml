@@ -35,6 +35,11 @@ dependencies = [
 "Bug Tracker" = "https://github.com/4Subsea/drio-python/issues"
 "Documentation" = "https://docs.4insight.io/dataanalytics/reservoir/python/latest/"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["datareservoirio*"]
+namespaces = false
+
 [tool.setuptools.dynamic]
 version = {attr = "datareservoirio.__version__"}
 
