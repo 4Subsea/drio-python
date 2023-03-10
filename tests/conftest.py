@@ -36,25 +36,12 @@ RESPONSE_CASES = {
             TEST_PATH / "testdata" / "example_drio_blob_file.csv"
         ).read_bytes(),
         "status_code": 200,
-        "headers": None,
-        "history": None,
-        "encoding": None,
         "reason": "OK",
-        "cookies": None,
-        "elapsed": None,
-        "request": None,
     },
     # description: blob do not exist in remote storage
     ("GET", "http://example/no/exist"): {
-        "_content": None,
         "status_code": 404,
-        "headers": None,
-        "history": None,
-        "encoding": None,
         "reason": "Not Found",
-        "cookies": None,
-        "elapsed": None,
-        "request": None,
     },
 }
 
@@ -82,11 +69,11 @@ def response_factory(_, *args, **kwargs):
     except KeyError:
         raise ValueError(f"Unrecognized URL: {url}")
     else:
-        spec.update({"url": url, "_content": BytesIO(spec["_content"])})
+        spec.update({"url": url, "_content": BytesIO(spec.get("_content", None))})
 
     response = requests.Response()
 
-    response.raw = spec.pop("_content")
+    response.raw = spec.pop("_content", None)
     for attr, value in spec.items():
         setattr(response, attr, value)
 
