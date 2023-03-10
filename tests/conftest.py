@@ -52,7 +52,7 @@ def mock_requests(monkeypatch):
     monkeypatch.setattr("requests.sessions.Session.request", response_factory)
 
 
-def response_factory(_, *args, **kwargs):
+def response_factory(_, method, url, *args, **kwargs):
     """
     Generate response based on request call and lookup in ``RESPONSE_CASES``.
     Attributes assigned to ``requests.Response`` object.
@@ -62,18 +62,15 @@ def response_factory(_, *args, **kwargs):
     The first argument, ``_`` will be an instance of ``requests.sessions.Session``
     since ``self`` passed to the ``request`` method. See ``mock_requests``.
     """
-    method, url = kwargs["method"].upper(), kwargs["url"]
-
     try:
-        spec = RESPONSE_CASES[(method, url)]
+        spec = RESPONSE_CASES[(method.upper(), url)]
     except KeyError:
         raise ValueError(f"Unrecognized URL: {url}")
     else:
-        spec.update({"url": url, "_content": BytesIO(spec.get("_content", None))})
+        spec.update({"url": url, "raw": BytesIO(spec.pop("_content", None))})
 
     response = requests.Response()
 
-    response.raw = spec.pop("_content", None)
     for attr, value in spec.items():
         setattr(response, attr, value)
 
