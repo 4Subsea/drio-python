@@ -78,7 +78,11 @@ class Test__df_to_blob:
             b"1640995271472000000,1.2\n"
         )
 
-    def test__df_to_blob(self, monkeypatch, df_float, csv_float_expect):
+    def test__df_to_blob(self, df_float):
+        blob_url = "http://example/blob/url"
+        _ = drio.storage.storage._df_to_blob(df_float, blob_url)
+
+    def test__df_to_blob_call_args(self, monkeypatch, df_float, csv_float_expect):
         mock_response = Mock()
 
         def put_side_effect(*args, **kwargs):
@@ -100,8 +104,3 @@ class Test__df_to_blob:
         )
 
         mock_response.raise_for_status.assert_called_once()
-
-    def test__df_to_blob2(self, df_float):
-
-        blob_url = "http://example/blob/url"
-        _ = drio.storage.storage._df_to_blob(df_float, blob_url)
