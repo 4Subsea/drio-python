@@ -1,6 +1,7 @@
 # import json
 from io import BytesIO
 from pathlib import Path
+from unittest.mock import call
 
 import pytest
 import requests
@@ -11,11 +12,29 @@ import requests
 TEST_PATH = Path(__file__).parent
 
 
+"""
+RESPONSE_CASES defines attributes assigned to ``requests.Response`` object. The
+following attributes can be used as needed:
+
+    * ``_content``
+    * ``status_code``
+    * ``headers``
+    * ``history``
+    * ``encoding``
+    * ``reason``
+    * ``cookies``
+    * ``elapsed``
+    * ``request``
+
+Note that ``url`` is defined as part of the key in RESPONSE_CASES.
+See ``requests.Response`` source code for more details.
+"""
 RESPONSE_CASES = {
     # description: blob (numeric) from remote storage
     ("GET", "http://example/drio/blob/file"): {
-        "_content_path": str(TEST_PATH / "testdata" / "example_drio_blob_file.csv"),
-        "_content": None,
+        "_content": (
+            TEST_PATH / "testdata" / "example_drio_blob_file.csv"
+        ).read_bytes(),
         "status_code": 200,
         "headers": None,
         "history": None,
@@ -27,7 +46,6 @@ RESPONSE_CASES = {
     },
     # description: blob do not exist in remote storage
     ("GET", "http://example/no/exist"): {
-        "_content_path": None,
         "_content": None,
         "status_code": 404,
         "headers": None,
@@ -47,15 +65,14 @@ def mock_requests(monkeypatch):
     monkeypatch.setattr("requests.sessions.Session.request", response_factory)
 
 
-def response_factory(*args, **kwargs):
+def response_factory(_, *args, **kwargs):
     """
     Generate response based on request call and lookup in ``RESPONSE_CASES``.
-    Attributes assigned to ``requests.Response`` object. Note that ``_content``
-    takes precedence over ``_content_path``.
+    Attributes assigned to ``requests.Response`` object.
 
     Notes
     -----
-    0th element of ``args`` will be an instance of ``requests.sessions.Session``
+    The first argument, ``_`` will be an instance of ``requests.sessions.Session``
     since ``self`` passed to the ``request`` method. See ``mock_requests``.
     """
     method, url = kwargs["method"].upper(), kwargs["url"]
@@ -64,21 +81,16 @@ def response_factory(*args, **kwargs):
         spec = RESPONSE_CASES[(method, url)]
     except KeyError:
         raise ValueError(f"Unrecognized URL: {url}")
-
-    content_path = spec.pop("_content_path")
-
-    if content_path and not spec["_content"]:
-        with open(content_path, "rb") as fp:
-            spec["_content"] = BytesIO(fp.read())
     else:
-        spec["_content"] = BytesIO(spec["_content"])
+        spec.update({"url": url, "_content": BytesIO(spec["_content"])})
 
     response = requests.Response()
-    response.url = url
 
     response.raw = spec.pop("_content")
     for attr, value in spec.items():
         setattr(response, attr, value)
+
+    response.mock_calls = call(*args, **kwargs)
 
     return response
 
