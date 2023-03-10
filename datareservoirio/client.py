@@ -1,14 +1,13 @@
-from functools import wraps
 import logging
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
 from operator import itemgetter
 
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
-
 
 from .globalsettings import environment
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
