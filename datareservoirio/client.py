@@ -1,3 +1,4 @@
+from functools import wraps
 import logging
 import time
 import warnings
@@ -6,13 +7,18 @@ from operator import itemgetter
 
 import pandas as pd
 import requests
+from opencensus.ext.azure.log_exporter import AzureLogHandler
+
 
 from .globalsettings import environment
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import Storage
 
 log = logging.getLogger(__name__)
-
+log.setLevel(logging.DEBUG)
+log.addHandler(
+    AzureLogHandler(connection_string=environment._application_insight_connectionstring)
+)
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
@@ -234,6 +240,27 @@ class Client:
         """
         return self._timeseries_api.delete(series_id)
 
+    @staticmethod
+    def timer(func):
+        @wraps(func)
+        def wrapper(self, series_id, start=None, end=None, **kwargs):
+            start_time = time.perf_counter()
+            result = func(self, series_id, start, end, **kwargs)
+            end_time = time.perf_counter()
+            elapsed_time = end_time - start_time
+            properties = {
+                "custom_dimensions": {
+                    "series_id": series_id,
+                    "start": start,
+                    "end": end,
+                    "elapsed": elapsed_time,
+                }
+            }
+            log.info("Timer", extra=properties)
+            return result
+        return wrapper
+
+    @timer
     def get(
         self,
         series_id,
