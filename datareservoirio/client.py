@@ -258,6 +258,7 @@ class Client:
             }
             log.info("Timer", extra=properties)
             return result
+
         return wrapper
 
     @timer
