@@ -1,3 +1,4 @@
+import logging
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import Mock
@@ -6,6 +7,16 @@ import pytest
 import requests
 
 TEST_PATH = Path(__file__).parent
+
+
+@pytest.fixture(autouse=True)
+def disable_logging():
+    """Disable logging to Application Insight"""
+    logger = logging.getLogger("datareservoirio.client_metric_appinsight")
+    disabled = logger.disabled
+    logger.disabled = True
+    yield None
+    logger.disabled = disabled
 
 
 """
