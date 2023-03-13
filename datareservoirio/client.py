@@ -14,8 +14,10 @@ from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import Storage
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-log.addHandler(
+
+metric = logging.getLogger(__name__ + "_metric_appinsight")
+metric.setLevel(logging.DEBUG)
+metric.addHandler(
     AzureLogHandler(connection_string=environment._application_insight_connectionstring)
 )
 
@@ -256,7 +258,7 @@ class Client:
                     "elapsed": elapsed_time,
                 }
             }
-            log.info("Timer", extra=properties)
+            metric.info("Timer", extra=properties)
             return result
 
         return wrapper
