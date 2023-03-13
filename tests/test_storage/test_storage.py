@@ -110,3 +110,18 @@ class Test__df_to_blob:
         )
 
         mock_response.raise_for_status.assert_called_once()
+
+    def test__df_to_blob_call_args_2(
+        self, mock_requests, bytesio_with_memory, df_float, csv_float_expect
+    ):
+        blob_url = "http://example/blob/url"
+        _ = drio.storage.storage._df_to_blob(df_float, blob_url)
+
+        mock_requests.assert_called_once_with(
+            method="put",
+            url=blob_url,
+            headers={"x-ms-blob-type": "BlockBlob"},
+            data=ANY,
+        )
+
+        assert mock_requests.call_args.kwargs["data"].memory == csv_float_expect
