@@ -1,6 +1,6 @@
 import io
 from pathlib import Path
-from unittest.mock import ANY, Mock
+from unittest.mock import ANY
 
 import pandas as pd
 import pytest
@@ -12,17 +12,28 @@ TEST_PATH = Path(__file__).parent
 
 
 class DataHandler:
+    """
+    Handles conversion of data series.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        Data as series.
+    """
     def __init__(self, series):
         self._series = series
 
     def as_series(self):
+        """Return data as a ``pandas.Series`` object."""
         return self._series.copy(deep=True)
 
     def as_dataframe(self):
+        """Return data as a ``pandas.DataFrame`` object."""
         return self.as_series().reset_index()
 
     def as_binary_csv(self):
         df = self.as_dataframe()
+        """Return data as a binary string (representing tha data in CSV format)."""
         with io.BytesIO() as fp:
             kwargs = {"header": False, "index": False, "encoding": "utf-8", "mode": "wb"}
             df.to_csv(fp, lineterminator="\n", **kwargs)
@@ -85,36 +96,6 @@ class Test__df_to_blob:
 
         return data_handler
 
-    # @pytest.fixture
-    # def df_float(self):
-    #     """DataFrame with float values"""
-    #     index_list = (
-    #         1640995215379000000,
-    #         1640995219176000000,
-    #         1640995227270000000,
-    #         1640995267223000000,
-    #         1640995271472000000,
-    #     )
-
-    #     values_list = (-0.2, -0.1, 0.2, 0.1, 1.2)
-
-    #     df = pd.DataFrame(data={"index": index_list, "values": values_list}).astype(
-    #         {"index": "int64", "values": "float64"}
-    #     )
-
-    #     return df
-
-    # @pytest.fixture
-    # def csv_float_expect(self):
-    #     """Binary csv based on DataFrame with float values"""
-    #     return (
-    #         b"1640995215379000000,-0.2\n"
-    #         b"1640995219176000000,-0.1\n"
-    #         b"1640995227270000000,0.2\n"
-    #         b"1640995267223000000,0.1\n"
-    #         b"1640995271472000000,1.2\n"
-    #     )
-
     def test__df_to_blob(self, data_float):
         blob_url = "http://example/blob/url"
         _ = drio.storage.storage._df_to_blob(data_float.as_dataframe(), blob_url)
@@ -123,29 +104,6 @@ class Test__df_to_blob:
         with pytest.raises(ValueError):
             blob_url = "http://example/blob/url"
             _ = drio.storage.storage._df_to_blob(data_float.as_series(), blob_url)
-
-    # def test__df_to_blob_call_args(self, monkeypatch, df_float, csv_float_expect):
-    #     mock_response = Mock()
-
-    #     def put_side_effect(*args, **kwargs):
-    #         if data := kwargs.get("data"):
-    #             assert data.read() == csv_float_expect
-    #         return mock_response
-
-    #     mock_put = Mock(side_effect=put_side_effect)
-
-    #     monkeypatch.setattr(requests, "put", mock_put)
-
-    #     blob_url = "http://foo/bar/baz"
-    #     _ = drio.storage.storage._df_to_blob(df_float, blob_url)
-
-    #     mock_put.assert_called_once_with(
-    #         blob_url,
-    #         headers={"x-ms-blob-type": "BlockBlob"},
-    #         data=ANY,
-    #     )
-
-    #     mock_response.raise_for_status.assert_called_once()
 
     def test__df_to_blob_call_args_2(
         self, mock_requests, bytesio_with_memory, data_float
