@@ -28,6 +28,7 @@ dependencies = [
     "requests",
     "requests-oauthlib",
     "importlib_resources",
+    "opencensus-ext-azure"
 ]
 
 [project.urls]
