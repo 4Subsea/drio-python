@@ -20,6 +20,7 @@ class DataHandler:
     series : pandas.Series
         Data as series.
     """
+
     def __init__(self, series):
         self._series = series
 
@@ -35,7 +36,12 @@ class DataHandler:
         df = self.as_dataframe()
         """Return data as a binary string (representing tha data in CSV format)."""
         with io.BytesIO() as fp:
-            kwargs = {"header": False, "index": False, "encoding": "utf-8", "mode": "wb"}
+            kwargs = {
+                "header": False,
+                "index": False,
+                "encoding": "utf-8",
+                "mode": "wb",
+            }
             df.to_csv(fp, lineterminator="\n", **kwargs)
             csv = fp.getvalue()
         return csv
@@ -118,4 +124,6 @@ class Test__df_to_blob:
             data=ANY,
         )
 
-        assert mock_requests.call_args.kwargs["data"].memory == data_float.as_binary_csv()
+        assert (
+            mock_requests.call_args.kwargs["data"].memory == data_float.as_binary_csv()
+        )
