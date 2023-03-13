@@ -241,6 +241,7 @@ class Client:
 
     def _timer(func):
         """Decorator used to log latency of the ``get`` method"""
+
         @wraps(func)
         def wrapper(self, series_id, start=None, end=None, **kwargs):
             start_time = time.perf_counter()
