@@ -239,12 +239,12 @@ class Client:
         """
         return self._timeseries_api.delete(series_id)
 
-    @staticmethod
-    def timer(func):
+    def _timer(func):
+        """Decorator used to log latency of the ``get`` method"""
         @wraps(func)
         def wrapper(self, series_id, start=None, end=None, **kwargs):
             start_time = time.perf_counter()
-            result = func(self, series_id, start, end, **kwargs)
+            result = func(self, series_id, start=start, end=end, **kwargs)
             end_time = time.perf_counter()
             elapsed_time = end_time - start_time
             properties = {
@@ -260,7 +260,7 @@ class Client:
 
         return wrapper
 
-    @timer
+    @_timer
     def get(
         self,
         series_id,
