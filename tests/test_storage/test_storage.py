@@ -1,3 +1,4 @@
+import io
 from pathlib import Path
 from unittest.mock import ANY, Mock
 
@@ -8,6 +9,25 @@ import requests
 import datareservoirio as drio
 
 TEST_PATH = Path(__file__).parent
+
+
+class DataHandler:
+    def __init__(self, series):
+        self._series = series
+
+    def as_series(self):
+        return self._series.copy(deep=True)
+
+    def as_dataframe(self):
+        return self.as_series().reset_index()
+
+    def as_csv_binary(self):
+        df = self.as_dataframe()
+        with io.BytesIO() as fp:
+            kwargs = {"header": False, "index": False, "encoding": "utf-8", "mode": "wb"}
+            df.to_csv(fp, lineterminator="\n", **kwargs)
+            csv = fp.getvalue()
+        return csv
 
 
 class Test__blob_to_df:
@@ -46,6 +66,24 @@ class Test__df_to_blob:
 
     TODO: Test for DataFrame with string values.
     """
+
+    @pytest.fixture
+    def data_float(self):
+        index_list = (
+            1640995215379000000,
+            1640995219176000000,
+            1640995227270000000,
+            1640995267223000000,
+            1640995271472000000,
+        )
+
+        values_list = (-0.2, -0.1, 0.2, 0.1, 1.2)
+
+        series = pd.Series(data=values_list, index=index_list, name="values")
+
+        data_handler = DataHandler(series)
+
+        return data_handler
 
     @pytest.fixture
     def df_float(self):
