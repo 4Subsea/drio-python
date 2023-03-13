@@ -33,8 +33,8 @@ class DataHandler:
         return self.as_series().reset_index()
 
     def as_binary_csv(self):
-        df = self.as_dataframe()
         """Return data as a binary string (representing tha data in CSV format)."""
+        df = self.as_dataframe()
         with io.BytesIO() as fp:
             kwargs = {
                 "header": False,
