@@ -1,6 +1,6 @@
 from io import BytesIO
 from pathlib import Path
-from unittest.mock import call
+from unittest.mock import Mock
 
 import pytest
 import requests
@@ -39,16 +39,23 @@ RESPONSE_CASES = {
         "status_code": 404,
         "reason": "Not Found",
     },
+    # description: put data to blob
+    ("PUT", "http://example/blob/url"): {
+        "status_code": 201,
+        "reason": "Created",
+    },
 }
 
 
 @pytest.fixture(autouse=True)
 def mock_requests(monkeypatch):
     """Patch requests.sessions.Session.request for all tests."""
-    monkeypatch.setattr("requests.sessions.Session.request", response_factory)
+    mock = Mock(wraps=response_factory)
+    monkeypatch.setattr("requests.sessions.Session.request", mock)
+    return mock
 
 
-def response_factory(_, method, url, *args, **kwargs):
+def response_factory(method, url, *args, **kwargs):
     """
     Generate response based on request call and lookup in ``RESPONSE_CASES``.
     Attributes assigned to ``requests.Response`` object.
@@ -70,6 +77,14 @@ def response_factory(_, method, url, *args, **kwargs):
     for attr, value in spec.items():
         setattr(response, attr, value)
 
-    response.mock_calls = call(method, url, *args, **kwargs)
-
     return response
+
+
+@pytest.fixture()
+def bytesio_with_memory(monkeypatch):
+    class BytesIOMemory(BytesIO):
+        def close(self, *args, **kwargs):
+            self.memory = self.getvalue()
+            super().close(*args, **kwargs)
+
+    monkeypatch.setattr("io.BytesIO", BytesIOMemory)
