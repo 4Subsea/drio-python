@@ -6,17 +6,15 @@ from unittest.mock import Mock
 import pytest
 import requests
 
+import datareservoirio as drio
+
 TEST_PATH = Path(__file__).parent
 
 
 @pytest.fixture(autouse=True)
-def disable_logging():
+def disable_logging(monkeypatch):
     """Disable logging to Application Insight"""
-    logger = logging.getLogger("datareservoirio.client_metric_appinsight")
-    disabled = logger.disabled
-    logger.disabled = True
-    yield None
-    logger.disabled = disabled
+    monkeypatch.setattr(drio.client, "AzureLogHandler", logging.NullHandler())
 
 
 """
