@@ -1,6 +1,6 @@
 import io
 from pathlib import Path
-from unittest.mock import ANY
+from unittest.mock import ANY, Mock
 
 import pandas as pd
 import pytest
@@ -127,3 +127,17 @@ class Test__df_to_blob:
         assert (
             mock_requests.call_args.kwargs["data"].memory == data_float.as_binary_csv()
         )
+
+
+class Test_Storage:
+    """
+    Tests the ``datareservoirio.storage.Storage`` class.
+
+    TODO:
+        * Test ``__init__`` with cache and cache options.
+    """
+    def test__init__(self, auth_session):
+        storage = drio.storage.Storage(auth_session, cache=False, cache_opt=None)
+
+        assert storage._storage_cache is None
+        assert storage._session is auth_session
