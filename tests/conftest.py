@@ -101,4 +101,4 @@ def bytesio_with_memory(monkeypatch):
 
 @pytest.fixture
 def auth_session():
-    return Mock(spec=drio.Authenticator)
+    return requests.Session()
