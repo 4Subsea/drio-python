@@ -150,3 +150,17 @@ class Test_Storage:
     def test_get_raise_for_status(self, storage_no_cache):
         with pytest.raises(HTTPError):
             _ = storage_no_cache.get("http://example/no/exist")
+
+    def test_get(self, storage_no_cache):
+        target_url = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
+        df_out = storage_no_cache.get(target_url)
+
+        df_expect = pd.read_csv(
+            TEST_PATH.parent / "testdata" / "TIMESERIES_ID=2fee7f8a-664a-41c9-9b71-25090517c275_START=2022-12-30T0000_END=2023-01-02T2359" / "dataframe.csv",
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "float64"},
+            encoding="utf-8",
+        )
+
+        pd.testing.assert_frame_equal(df_out, df_expect)
