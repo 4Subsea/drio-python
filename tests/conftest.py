@@ -6,7 +6,6 @@ from unittest.mock import Mock
 import pytest
 import requests
 
-import datareservoirio as drio
 
 TEST_PATH = Path(__file__).parent
 
