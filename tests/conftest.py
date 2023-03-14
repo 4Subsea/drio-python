@@ -12,7 +12,7 @@ TEST_PATH = Path(__file__).parent
 @pytest.fixture(autouse=True)
 def disable_logging(monkeypatch):
     """Disable logging to Application Insight"""
-    monkeypatch.setattr("drio.client.AzureLogHandler", logging.NullHandler())
+    monkeypatch.setattr("datareservoirio.client.AzureLogHandler", logging.NullHandler())
 
 
 """
