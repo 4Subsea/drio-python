@@ -5,6 +5,7 @@ from unittest.mock import ANY, Mock
 import pandas as pd
 import pytest
 import requests
+from requests import HTTPError
 
 import datareservoirio as drio
 
@@ -136,8 +137,16 @@ class Test_Storage:
     TODO:
         * Test ``__init__`` with cache and cache options.
     """
+    @pytest.fixture
+    def storage_no_cache(self, auth_session):
+        return drio.storage.Storage(auth_session, cache=False, cache_opt=None)
+
     def test__init__(self, auth_session):
         storage = drio.storage.Storage(auth_session, cache=False, cache_opt=None)
 
         assert storage._storage_cache is None
         assert storage._session is auth_session
+
+    def test_get_raise_for_status(self, storage_no_cache):
+        with pytest.raises(HTTPError):
+            _ = storage_no_cache.get("http://example/no/exist")
