@@ -137,6 +137,7 @@ class Test_Storage:
     TODO:
         * Test ``__init__`` with cache and cache options.
     """
+
     @pytest.fixture
     def storage_no_cache(self, auth_session):
         return drio.storage.Storage(auth_session, cache=False, cache_opt=None)
@@ -156,7 +157,10 @@ class Test_Storage:
         df_out = storage_no_cache.get(target_url)
 
         df_expect = pd.read_csv(
-            TEST_PATH.parent / "testdata" / "TIMESERIES_ID=2fee7f8a-664a-41c9-9b71-25090517c275_START=2022-12-30T0000_END=2023-01-02T2359" / "dataframe.csv",
+            TEST_PATH.parent
+            / "testdata"
+            / "TIMESERIES_ID=2fee7f8a-664a-41c9-9b71-25090517c275_START=2022-12-30T0000_END=2023-01-02T2359"
+            / "dataframe.csv",
             header=None,
             names=("index", "values"),
             dtype={"index": "int64", "values": "float64"},
