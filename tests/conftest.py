@@ -6,6 +6,8 @@ from unittest.mock import Mock
 import pytest
 import requests
 
+import datareservoirio as drio
+
 TEST_PATH = Path(__file__).parent
 
 
@@ -95,3 +97,8 @@ def bytesio_with_memory(monkeypatch):
             super().close(*args, **kwargs)
 
     monkeypatch.setattr("io.BytesIO", BytesIOMemory)
+
+
+@pytest.fixture
+def auth_session():
+    return Mock(spec=drio.Authenticator)
