@@ -2,10 +2,12 @@ import logging
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
+from functools import wraps
 from operator import itemgetter
 
 import pandas as pd
 import requests
+from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 from .globalsettings import environment
 from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
@@ -13,6 +15,11 @@ from .storage import Storage
 
 log = logging.getLogger(__name__)
 
+metric = logging.getLogger(__name__ + "_metric_appinsight")
+metric.setLevel(logging.DEBUG)
+metric.addHandler(
+    AzureLogHandler(connection_string=environment._application_insight_connectionstring)
+)
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
@@ -234,6 +241,29 @@ class Client:
         """
         return self._timeseries_api.delete(series_id)
 
+    def _timer(func):
+        """Decorator used to log latency of the ``get`` method"""
+
+        @wraps(func)
+        def wrapper(self, series_id, start=None, end=None, **kwargs):
+            start_time = time.perf_counter()
+            result = func(self, series_id, start=start, end=end, **kwargs)
+            end_time = time.perf_counter()
+            elapsed_time = end_time - start_time
+            properties = {
+                "custom_dimensions": {
+                    "series_id": series_id,
+                    "start": start,
+                    "end": end,
+                    "elapsed": elapsed_time,
+                }
+            }
+            metric.info("Timer", extra=properties)
+            return result
+
+        return wrapper
+
+    @_timer
     def get(
         self,
         series_id,
