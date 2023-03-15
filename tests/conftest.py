@@ -38,7 +38,10 @@ RESPONSE_CASES_GENERAL = {
     # description: blob (numeric) from remote storage
     ("GET", "http://example/drio/blob/file"): {
         "_content": (
-            TEST_PATH / "testdata" / "example_drio_blob_file.csv"
+            TEST_PATH
+            / "testdata"
+            / "RESPONSE_CASES_GENERAL"
+            / "example_drio_blob_file.csv"
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",
@@ -66,10 +69,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH
-            / "testdata"
-            / "RESPONSE_GROUP1"
-            / "TimeSeries_API_output.json"
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output.json"
         ).read_bytes(),
     },
     # Azure Blob Storage response
@@ -80,10 +80,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH
-            / "testdata"
-            / "RESPONSE_GROUP1"
-            / "19356.csv"
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19356.csv"
         ).read_bytes(),
     },
     # Azure Blob Storage response
@@ -94,10 +91,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH
-            / "testdata"
-            / "RESPONSE_GROUP1"
-            / "19357.csv"
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19357.csv"
         ).read_bytes(),
     },
     # Azure Blob Storage response
@@ -108,10 +102,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH
-            / "testdata"
-            / "RESPONSE_GROUP1"
-            / "19358.csv"
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19358.csv"
         ).read_bytes(),
     },
     # Azure Blob Storage response
@@ -122,10 +113,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH
-            / "testdata"
-            / "RESPONSE_GROUP1"
-            / "19359.csv"
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19359.csv"
         ).read_bytes(),
     },
 }

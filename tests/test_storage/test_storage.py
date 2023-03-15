@@ -60,7 +60,12 @@ class Test__blob_to_df:
         blob_url = "http://example/drio/blob/file"
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
-        csv_file = TEST_PATH.parent / "testdata" / "example_drio_blob_file.csv"
+        csv_file = (
+            TEST_PATH.parent
+            / "testdata"
+            / "RESPONSE_CASES_GENERAL"
+            / "example_drio_blob_file.csv"
+        )
         df_expect = pd.read_csv(
             csv_file,
             header=None,
@@ -157,10 +162,7 @@ class Test_Storage:
         df_out = storage_no_cache.get(target_url)
 
         df_expect = pd.read_csv(
-            TEST_PATH.parent
-            / "testdata"
-            / "RESPONSE_GROUP1"
-            / "dataframe.csv",
+            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
             header=None,
             names=("index", "values"),
             dtype={"index": "int64", "values": "float64"},
