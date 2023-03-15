@@ -34,7 +34,7 @@ following attributes can be used as needed:
 Note that ``url`` is defined as part of the key in RESPONSE_CASES.
 See ``requests.Response`` source code for more details.
 """
-RESPONSE_CASES = {
+RESPONSE_CASES_GENERAL = {
     # description: blob (numeric) from remote storage
     ("GET", "http://example/drio/blob/file"): {
         "_content": (
@@ -53,7 +53,12 @@ RESPONSE_CASES = {
         "status_code": 201,
         "reason": "Created",
     },
-    # TimeSeries API output for series_id="2fee7f8a-664a-41c9-9b71-25090517c275", start=1672358400000000000, end=1672703939999999999
+}
+
+
+RESPONSE_GROUP1 = {
+    # TimeSeries API response
+    # series_id="2fee7f8a-664a-41c9-9b71-25090517c275", start=1672358400000000000, end=1672703939999999999
     (
         "GET",
         "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999",
@@ -67,7 +72,7 @@ RESPONSE_CASES = {
             / "TimeSeries_API_output.json"
         ).read_bytes(),
     },
-    # azure blob file #1
+    # Azure Blob Storage response
     (
         "GET",
         "https://permanentprodu000p169.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv?versionid=2023-03-14T14:56:10.8583280Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A58Z&ske=2023-03-15T13%3A50%3A57Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=QTYi%2FAeiMFg72EyxC8d%2BV0M0lmgbYek%2BfGXhAXvme1U%3D",
@@ -81,7 +86,7 @@ RESPONSE_CASES = {
             / "19356.csv"
         ).read_bytes(),
     },
-    # azure blob file #2
+    # Azure Blob Storage response
     (
         "GET",
         "https://permanentprodu003p208.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2022/12/31/day/csv/19357.csv?versionid=2023-03-14T14:56:11.0377879Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T14%3A00%3A24Z&ske=2023-03-15T14%3A00%3A24Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=MIchFxo2gfRsa82kqTgHtq1DRY7cQldsZ0jQi4ySPZE%3D",
@@ -95,7 +100,7 @@ RESPONSE_CASES = {
             / "19357.csv"
         ).read_bytes(),
     },
-    # azure blob file #3
+    # Azure Blob Storage response
     (
         "GET",
         "https://permanentprodu003p153.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2023/01/01/day/csv/19358.csv?versionid=2023-03-14T14:56:11.1047474Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A44%3A11Z&ske=2023-03-15T13%3A43%3A49Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=Uo5EqCiYRXcWDjifsiom9uGi7CNhFkGZQ4lBsGgEmC8%3D",
@@ -109,7 +114,7 @@ RESPONSE_CASES = {
             / "19358.csv"
         ).read_bytes(),
     },
-    # azure blob file #4
+    # Azure Blob Storage response
     (
         "GET",
         "https://permanentprodu002p192.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2023/01/02/day/csv/19359.csv?versionid=2023-03-14T14:56:11.1906071Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A18Z&ske=2023-03-15T13%3A50%3A18Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=bto08GDGsK7M%2FZLXOQ%2Bhm3sgYd%2B23g6rs5fI0nCq9AQ%3D",
@@ -124,6 +129,9 @@ RESPONSE_CASES = {
         ).read_bytes(),
     },
 }
+
+
+RESPONSE_CASES = {**RESPONSE_CASES_GENERAL, **RESPONSE_GROUP1}
 
 
 @pytest.fixture(autouse=True)
