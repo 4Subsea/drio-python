@@ -60,20 +60,30 @@ RESPONSE_CASES_GENERAL = {
 
 
 RESPONSE_GROUP1 = {
-    # This 'group' of response cases represents the drio backend responses and
-    # azure blob storage responses when requesting data for a timeries with:
+    # =========================================================================
+    # This 'group' of response cases represents the DataReservoir.io backend response
+    # and Azure Blob Storage responses when requesting data for a timeries with:
     #   * ID = "2fee7f8a-664a-41c9-9b71-25090517c275"
     #   * start = 1672358400000000000
     #   * end = 1672703939999999999
     #
-    # The differnet responses represents:
-    #   * A: TimeSeries API response, containing a list of 'chunks'
-    #   * B: Azure Blob Storage response for the first chunk of data
-    #   * C: Azure Blob Storage response for the second chunk of data
+    # The given response cases represents:
+    #   * A: TimeSeries API response, containing a list of 'chunks'.
+    #   * B: Azure Blob Storage response for the first chunk of data.
+    #   * C: Azure Blob Storage response for the second chunk of data.
     #   * Etc.
-
-
+    #
+    # These response cases will mock the backend for the following `get` call with
+    # the `datareservoirio` client:
+    #   client.get(
+    #       "2fee7f8a-664a-41c9-9b71-25090517c275",
+    #       start=1672358400000000000,
+    #       end=1672703939999999999
+    #   )
+    # =========================================================================
+    #
     # A (TimeSeries API response)
+    # ---------------------------
     (
         "GET",
         "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999",
@@ -85,6 +95,7 @@ RESPONSE_GROUP1 = {
         ).read_bytes(),
     },
     # B (Azure Blob Storage response)
+    # -------------------------------
     (
         "GET",
         "https://permanentprodu000p169.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv?versionid=2023-03-14T14:56:10.8583280Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A58Z&ske=2023-03-15T13%3A50%3A57Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=QTYi%2FAeiMFg72EyxC8d%2BV0M0lmgbYek%2BfGXhAXvme1U%3D",
@@ -96,6 +107,7 @@ RESPONSE_GROUP1 = {
         ).read_bytes(),
     },
     # C (Azure Blob Storage response)
+    # -------------------------------
     (
         "GET",
         "https://permanentprodu003p208.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2022/12/31/day/csv/19357.csv?versionid=2023-03-14T14:56:11.0377879Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T14%3A00%3A24Z&ske=2023-03-15T14%3A00%3A24Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=MIchFxo2gfRsa82kqTgHtq1DRY7cQldsZ0jQi4ySPZE%3D",
@@ -107,6 +119,7 @@ RESPONSE_GROUP1 = {
         ).read_bytes(),
     },
     # D (Azure Blob Storage response)
+    # -------------------------------
     (
         "GET",
         "https://permanentprodu003p153.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2023/01/01/day/csv/19358.csv?versionid=2023-03-14T14:56:11.1047474Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A44%3A11Z&ske=2023-03-15T13%3A43%3A49Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=Uo5EqCiYRXcWDjifsiom9uGi7CNhFkGZQ4lBsGgEmC8%3D",
@@ -118,6 +131,7 @@ RESPONSE_GROUP1 = {
         ).read_bytes(),
     },
     # E (Azure Blob Storage response)
+    # -------------------------------
     (
         "GET",
         "https://permanentprodu002p192.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2023/01/02/day/csv/19359.csv?versionid=2023-03-14T14:56:11.1906071Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A18Z&ske=2023-03-15T13%3A50%3A18Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=bto08GDGsK7M%2FZLXOQ%2Bhm3sgYd%2B23g6rs5fI0nCq9AQ%3D",
