@@ -5,7 +5,6 @@ from unittest.mock import Mock
 
 import pytest
 import requests
-
 from response_cases import RESPONSE_CASES
 
 TEST_PATH = Path(__file__).parent

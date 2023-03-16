@@ -17,7 +17,6 @@ See ``requests.Response`` source code for more details.
 """
 from pathlib import Path
 
-
 TEST_PATH = Path(__file__).parent
 
 
@@ -54,7 +53,7 @@ RESPONSE_GROUP1 = {
     #   * start = 1672358400000000000
     #   * end = 1672703939999999999
     #
-    # The given response cases represents:
+    # The responses are:
     #   * A: TimeSeries API response, containing a list of 'chunks'.
     #   * B: Azure Blob Storage response for the first chunk of data.
     #   * C: Azure Blob Storage response for the second chunk of data.
@@ -62,11 +61,13 @@ RESPONSE_GROUP1 = {
     #
     # These response cases will mock the backend for the following `get` call with
     # the `datareservoirio` client:
+    #
     #   client.get(
     #       "2fee7f8a-664a-41c9-9b71-25090517c275",
     #       start=1672358400000000000,
     #       end=1672703939999999999
     #   )
+    #
     # =========================================================================
     #
     # A (TimeSeries API response)
