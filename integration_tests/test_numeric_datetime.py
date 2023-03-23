@@ -1,13 +1,3 @@
-"""
-Integration test for creating/appending/deleting timeseries with numeric values
-and datetime index.
-
-Tests the following:
-    * Create a timeseries in DataReservoir.io.
-    * Append more data to the created timeseries.
-    * Delete the timeseries from DataReservoir.io
-
-"""
 import numpy as np
 import pandas as pd
 
@@ -15,6 +5,17 @@ import datareservoirio as drio
 
 
 def test_numeric_datetime(client):
+    """
+    Integration test for creating/appending/deleting timeseries with numeric values
+    and datetime index.
+
+    Tests the following:
+        * Create a timeseries in DataReservoir.io.
+        * Append more data to the created timeseries.
+        * Delete the timeseries from DataReservoir.io
+
+    """
+
     # Set environment to 'TEST'
     env = drio.environments.Environment()
     env.set_test()
