@@ -19,8 +19,7 @@ def store_created_series(monkeypatch, series_created):
     class ClientStoreCreated(drio.Client):
         def create(self, *args, **kwargs):
             return_value = super().create(*args, **kwargs)
-            series_id = return_value["TimeSeriesId"]
-            series_created.add(series_id)
+            series_created.add(return_value["TimeSeriesId"])
             return return_value
 
     monkeypatch.setattr("datareservoirio.Client", ClientStoreCreated)
@@ -39,7 +38,7 @@ def client(auth_session, store_created_series, series_created):
 
     yield client
 
-    # Delete all created timeseries from DataReservoir.io
+    # Delete all created timeseries from DataReservoir.io (if not already deleted)
     while series_created:
         series_id_i = series_created.pop()
         try:
