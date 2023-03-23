@@ -5,12 +5,13 @@ import datareservoirio as drio
 
 @pytest.fixture
 def series_created():
+    """List of created timeseries IDs"""
     return set()
 
 
 @pytest.fixture
-def store_created(monkeypatch, series_created):
-
+def store_created_series(monkeypatch, series_created):
+    """Store created timeseries IDs to the ``series_created`` list"""
     class ClientStoreCreated(drio.Client):
         def create(self, *args, **kwargs):
             return_value = super().create(*args, **kwargs)
@@ -29,12 +30,13 @@ def auth_session():
 
 
 @pytest.fixture
-def client(auth_session, store_created, series_created):
+def client(auth_session, store_created_series, series_created):
 
     client = drio.Client(auth_session)
 
     yield client
 
+    # Delete all created timeseries from DataReservoir.io
     while series_created:
         series_id_i = series_created.pop()
         try:
