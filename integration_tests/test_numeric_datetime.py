@@ -9,11 +9,11 @@ Tests the following:
 """
 import numpy as np
 import pandas as pd
+
 import datareservoirio as drio
 
 
 def test_numeric_datetime(client):
-
     # Set environment to 'TEST'
     # -------------------------
     env = drio.environments.Environment()
@@ -27,7 +27,9 @@ def test_numeric_datetime(client):
     end_a = "2023-01-02 00:00"
     freq_a = pd.to_timedelta(0.1, "s")
 
-    timestamps_a = pd.date_range(start_a, end_a, freq=freq_a, tz="utc", inclusive="left")
+    timestamps_a = pd.date_range(
+        start_a, end_a, freq=freq_a, tz="utc", inclusive="left"
+    )
     values_a = np.random.random(len(timestamps_a))
 
     series_a = pd.Series(data=values_a, index=timestamps_a, name="values")
@@ -37,7 +39,9 @@ def test_numeric_datetime(client):
     end_b = "2023-01-02 03:00"
     freq_b = pd.to_timedelta(0.1, "s")
 
-    timestamps_b = pd.date_range(start_b, end_b, freq=freq_b, tz="utc", inclusive="left")
+    timestamps_b = pd.date_range(
+        start_b, end_b, freq=freq_b, tz="utc", inclusive="left"
+    )
     values_b = np.random.random(len(timestamps_b))
 
     series_b = pd.Series(data=values_b, index=timestamps_b, name="values")
