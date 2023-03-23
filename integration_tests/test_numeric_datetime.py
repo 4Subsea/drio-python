@@ -38,7 +38,7 @@ def test_numeric_datetime(client):
 
     series_a_and_b = pd.concat([series_a, series_b])
 
-    # Create and upload timeseries to DataReservoi.io
+    # Create and upload timeseries to DataReservoir.io
     response_create = client.create(series=series_a, wait_on_verification=True)
     series_id = response_create["TimeSeriesId"]
 
@@ -61,5 +61,5 @@ def test_numeric_datetime(client):
         series_a_and_b, series_full_after_append, check_freq=False
     )
 
-    # Delete timeseries from DataReservoi.io
+    # Delete timeseries from DataReservoir.io
     client.delete(series_id)
