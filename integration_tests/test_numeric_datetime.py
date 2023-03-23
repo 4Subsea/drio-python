@@ -1,8 +1,9 @@
 """
-Integration test for numeric data with datetime index.
+Integration test for creating/appending/deleting timeseries with numeric values
+and datetime index.
 
 Tests the following:
-    * Create timeseries in DataReservoir.io.
+    * Create a timeseries in DataReservoir.io.
     * Append more data to the created timeseries.
     * Delete the timeseries from DataReservoir.io
 
