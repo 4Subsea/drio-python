@@ -3,8 +3,6 @@ import pandas as pd
 import pytest
 from requests import HTTPError
 
-import datareservoirio as drio
-
 
 def test_numeric_datetime(client):
     """
@@ -17,10 +15,6 @@ def test_numeric_datetime(client):
         * Delete the timeseries from DataReservoir.io
 
     """
-
-    # Set environment to 'TEST'
-    env = drio.environments.Environment()
-    env.set_test()
 
     # Create some dummy data
     start_a = "2022-12-28 00:00"

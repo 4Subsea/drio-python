@@ -6,20 +6,23 @@ from requests import HTTPError
 import datareservoirio as drio
 
 
-@pytest.fixture
-def series_created():
-    """List of created timeseries IDs"""
-    return set()
+@pytest.fixture(autouse=True, scope="session")
+def set_environment_qa():
+    """Set environment to 'QA'"""
+    env = drio.environments.Environment()
+    env.set_qa()
 
 
 @pytest.fixture
-def store_created_series(monkeypatch, series_created):
-    """Store created timeseries IDs to the ``series_created`` list"""
+def store_created_series(monkeypatch):
+    """Store created timeseries IDs"""
 
     class ClientStoreCreated(drio.Client):
+        _series_created = set()
+
         def create(self, *args, **kwargs):
             return_value = super().create(*args, **kwargs)
-            series_created.add(return_value["TimeSeriesId"])
+            self._series_created.add(return_value["TimeSeriesId"])
             return return_value
 
     monkeypatch.setattr("datareservoirio.Client", ClientStoreCreated)
@@ -33,14 +36,14 @@ def auth_session():
 
 
 @pytest.fixture
-def client(auth_session, store_created_series, series_created):
+def client(auth_session, store_created_series):
     client = drio.Client(auth_session)
 
     yield client
 
     # Delete all created timeseries from DataReservoir.io (if not already deleted)
-    while series_created:
-        series_id_i = series_created.pop()
+    while client._series_created:
+        series_id_i = client._series_created.pop()
         try:
             client.delete(series_id_i)
         except HTTPError:
