@@ -1,10 +1,13 @@
+import os
 import numpy as np
 import pandas as pd
 import pytest
 from requests import HTTPError
 
+import datareservoirio as drio
 
-def test_numeric_datetime(client):
+
+def test_numeric_datetime(cleanup_series):
     """
     Integration test for creating/appending/deleting timeseries with numeric values
     and datetime index.
@@ -15,6 +18,13 @@ def test_numeric_datetime(client):
         * Delete the timeseries from DataReservoir.io
 
     """
+
+    # Initialize client
+    auth_session = drio.authenticate.ClientAuthenticator(
+        os.getenv("DRIO_CLIENT_ID"),
+        os.getenv("DRIO_CLIENT_SECRET")
+    )
+    client = drio.Client(auth_session)
 
     # Create some dummy data
     start_a = "2022-12-28 00:00"
@@ -38,6 +48,7 @@ def test_numeric_datetime(client):
     # Create and upload timeseries to DataReservoir.io
     response_create = client.create(series=series_a, wait_on_verification=True)
     series_id = response_create["TimeSeriesId"]
+    cleanup_series.add(series_id)
 
     # Get data from DataReservoir.io (before data is appended)
     series_full_before_append = client.get(series_id, start=None, end=None)
