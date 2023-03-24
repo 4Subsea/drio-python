@@ -23,7 +23,6 @@ def client():
 
 @pytest.fixture()
 def cleanup_series(client):
-
     series_created = set()
 
     yield series_created

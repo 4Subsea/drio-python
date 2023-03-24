@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -21,8 +22,7 @@ def test_numeric_datetime(cleanup_series):
 
     # Initialize client
     auth_session = drio.authenticate.ClientAuthenticator(
-        os.getenv("DRIO_CLIENT_ID"),
-        os.getenv("DRIO_CLIENT_SECRET")
+        os.getenv("DRIO_CLIENT_ID"), os.getenv("DRIO_CLIENT_SECRET")
     )
     client = drio.Client(auth_session)
 
