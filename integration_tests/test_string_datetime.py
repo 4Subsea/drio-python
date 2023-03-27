@@ -1,10 +1,10 @@
 import os
+import random
+import string
 
 import pandas as pd
 import pytest
 from requests import HTTPError
-import random
-import string
 
 import datareservoirio as drio
 
