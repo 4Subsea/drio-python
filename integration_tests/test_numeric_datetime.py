@@ -27,7 +27,7 @@ def test_numeric_datetime(cleanup_series):
     client = drio.Client(auth_session)
 
     # Create some dummy data
-    start_a = "2022-12-28 00:00"
+    start_a = "2022-12-30 00:00"
     end_a = "2023-01-02 00:00"
     freq_a = pd.to_timedelta(0.1, "s")
     index_a = pd.date_range(start_a, end_a, freq=freq_a, tz="utc", inclusive="left")
