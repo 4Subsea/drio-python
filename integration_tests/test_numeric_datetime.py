@@ -69,6 +69,17 @@ def test_numeric_datetime(cleanup_series):
         series_a_and_b, series_full_after_append, check_freq=False
     )
 
+    # Get data between two dates from DataReservoir.io
+    start = pd.to_datetime("2023-01-01 00:00", utc=True)
+    end = pd.to_datetime("2023-01-01 03:00", utc=True)
+    delta = pd.to_timedelta(1, "ns")
+    series_partial = client.get(series_id, start=start, end=end)
+
+    # Check downloaded data
+    pd.testing.assert_series_equal(
+        series_a_and_b.loc[start : end - delta], series_partial, check_freq=False
+    )
+
     # Delete timeseries from DataReservoir.io
     client.delete(series_id)
 
