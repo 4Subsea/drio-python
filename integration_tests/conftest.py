@@ -14,10 +14,15 @@ def set_environment_qa():
 
 
 @pytest.fixture(scope="session")
-def client():
+def auth_session():
     client_id = os.getenv("DRIO_CLIENT_ID")
     client_secret = os.getenv("DRIO_CLIENT_SECRET")
     auth_session = drio.authenticate.ClientAuthenticator(client_id, client_secret)
+    return auth_session
+
+
+@pytest.fixture()
+def client(auth_session):
     return drio.Client(auth_session)
 
 
