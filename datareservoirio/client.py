@@ -250,13 +250,12 @@ class Client:
             result = func(self, series_id, start=start, end=end, **kwargs)
             end_time = time.perf_counter()
             elapsed_time = end_time - start_time
-            format = "%Y-%m-%DT%H:%M:%S.%f%z"
             start_date_as_str = pd.to_datetime(
                 start, dayfirst=True, unit="ns", utc=True
-            ).strftime(format)
+            ).isoformat()
             end_date_as_str = pd.to_datetime(
                 end, dayfirst=True, unit="ns", utc=True
-            ).strftime(format)
+            ).isoformat()
             properties = {
                 "custom_dimensions": {
                     "series_id": series_id,
