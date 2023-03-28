@@ -48,7 +48,7 @@ def test_overlapping_data(cleanup_series):
     df_b = series_b.to_frame()
     df_c = series_c.to_frame()
 
-    df_ab = df_a.combine_first(df_b)  # B overlapping A
+    df_ab = df_b.combine_first(df_a)  # B overlapping A
     df_abc = df_c.combine_first(df_ab)  # C overlapping B overlapping A
 
     # Create and upload timeseries A to DataReservoir.io
