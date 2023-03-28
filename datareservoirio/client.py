@@ -256,12 +256,14 @@ class Client:
             end_date_as_str = pd.to_datetime(
                 end, dayfirst=True, unit="ns", utc=True
             ).isoformat()
+            number_of_samples = len(result)
             properties = {
                 "custom_dimensions": {
                     "series_id": series_id,
                     "start": start_date_as_str,
                     "end": end_date_as_str,
                     "elapsed": elapsed_time,
+                    "number-of-samples": number_of_samples
                 }
             }
             metric.info("Timer", extra=properties)
