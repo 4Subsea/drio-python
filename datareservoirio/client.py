@@ -263,7 +263,7 @@ class Client:
                     "start": start_date_as_str,
                     "end": end_date_as_str,
                     "elapsed": elapsed_time,
-                    "number-of-samples": number_of_samples
+                    "number-of-samples": number_of_samples,
                 }
             }
             metric.info("Timer", extra=properties)
