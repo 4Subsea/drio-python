@@ -2,15 +2,18 @@ import os
 
 import numpy as np
 import pandas as pd
-import pytest
-from requests import HTTPError
 
 import datareservoirio as drio
 
 
-def test_numeric_datetime(cleanup_series):
+def test_overlapping_data(cleanup_series):
     """
     Integration test for overlapping data.
+
+    Tests the following:
+        * Create a timeseries A in DataReservoir.io.
+        * Append overlapping timeseries B.
+        * Append overlapping timeseries C.
 
     """
 
@@ -45,26 +48,31 @@ def test_numeric_datetime(cleanup_series):
     df_b = series_b.to_frame()
     df_c = series_c.to_frame()
 
-    # Create and upload timeseries to DataReservoir.io
+    df_ab = df_a.combine_first(df_b)  # B overlapping A
+    df_abc = df_c.combine_first(df_ab)  # C overlapping B overlapping A
+
+    # Create and upload timeseries A to DataReservoir.io
     response_create = client.create(series=series_a, wait_on_verification=True)
     series_id = response_create["TimeSeriesId"]
     cleanup_series.add(series_id)
 
-    # Append overlapping data
+    # Append timeseries B
     _ = client.append(series_b, series_id, wait_on_verification=True)
 
-    # Append more overlapping data
+    # Get data from DataReservoir.io
+    series_ab_out = client.get(series_id, start=None, end=None)
+
+    # Append timeseris C
     _ = client.append(series_c, series_id, wait_on_verification=True)
 
     # Get data from DataReservoir.io
-    series_full_out = client.get(series_id, start=None, end=None)
+    series_abc_out = client.get(series_id, start=None, end=None)
 
     # Check downloaded data
-    df_full_expect = df_c.combine_first(df_b).combine_first(df_a)
-    series_full_expect = df_full_expect["values"]
-    pd.testing.assert_series_equal(
-        series_full_out, series_full_expect, check_freq=False
-    )
+    series_ab_expect = df_ab["values"]
+    series_abc_expect = df_abc["values"]
+    pd.testing.assert_series_equal(series_ab_out, series_ab_expect, check_freq=False)
+    pd.testing.assert_series_equal(series_abc_out, series_abc_expect, check_freq=False)
 
     # Delete timeseries from DataReservoir.io
     client.delete(series_id)
