@@ -254,10 +254,14 @@ class Client:
                 start_date_as_str = pd.to_datetime(
                     start, dayfirst=True, unit="ns", utc=True
                 ).isoformat()
+            else:
+                start_date_as_str = None
             if end:
                 end_date_as_str = pd.to_datetime(
                     end, dayfirst=True, unit="ns", utc=True
                 ).isoformat()
+            else:
+                start_date_as_str = None
             number_of_samples = len(result)
             properties = {
                 "custom_dimensions": {
