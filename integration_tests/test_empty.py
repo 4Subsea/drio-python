@@ -9,13 +9,10 @@ import datareservoirio as drio
 
 def test_empty(cleanup_series):
     """
-    Integration test for creating/appending/deleting timeseries with numeric values
-    and datetime index.
+    Integration test for empty timeseries.
 
     Tests the following:
-        * Create a timeseries in DataReservoir.io.
-        * Append more data to the created timeseries.
-        * Delete the timeseries from DataReservoir.io
+        * Create an empty timeseries in DataReservoir.io.
 
     """
 
