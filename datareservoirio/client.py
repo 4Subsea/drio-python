@@ -250,18 +250,16 @@ class Client:
             result = func(self, series_id, start=start, end=end, **kwargs)
             end_time = time.perf_counter()
             elapsed_time = end_time - start_time
+            start_date_as_str=None
+            end_date_as_str=None
             if start:
                 start_date_as_str = pd.to_datetime(
                     start, dayfirst=True, unit="ns", utc=True
                 ).isoformat()
-            else:
-                start_date_as_str = None
             if end:
                 end_date_as_str = pd.to_datetime(
                     end, dayfirst=True, unit="ns", utc=True
                 ).isoformat()
-            else:
-                start_date_as_str = None
             number_of_samples = len(result)
             properties = {
                 "custom_dimensions": {
