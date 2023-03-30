@@ -42,7 +42,7 @@ def test_numeric_datetime_cached(cleanup_series, tmp_path):
     # Create some dummy data
     start_a = "2022-12-30 00:00"
     end_a = "2023-01-02 00:00"
-    freq_a = pd.to_timedelta(0.1, "s")
+    freq_a = pd.to_timedelta(10, "s")
     index_a = pd.date_range(start_a, end_a, freq=freq_a, tz="utc", inclusive="left")
     series_a = pd.Series(
         data=np.random.random(len(index_a)), index=index_a, name="values"
