@@ -30,9 +30,7 @@ def test_numeric_datetime_cached(cleanup_series, tmp_path):
         os.getenv("DRIO_CLIENT_ID"), os.getenv("DRIO_CLIENT_SECRET")
     )
     client = drio.Client(
-        auth_session,
-        cache=True,
-        cache_opt={"cache_root": CACHE_ROOT, "max_size": 1024}
+        auth_session, cache=True, cache_opt={"cache_root": CACHE_ROOT, "max_size": 1024}
     )
 
     # Check that the cache folder is made, and that it is empty

@@ -30,9 +30,7 @@ def test_numeric_datetime_caching(cleanup_series, tmp_path):
         os.getenv("DRIO_CLIENT_ID"), os.getenv("DRIO_CLIENT_SECRET")
     )
     client = drio.Client(
-        auth_session,
-        cache=True,
-        cache_opt={"cache_root": CACHE_ROOT, "max_size": 1024}
+        auth_session, cache=True, cache_opt={"cache_root": CACHE_ROOT, "max_size": 1024}
     )
 
     # Check that the cache folder is made
@@ -43,9 +41,7 @@ def test_numeric_datetime_caching(cleanup_series, tmp_path):
     end = "2023-01-02 23:59"
     freq = pd.to_timedelta(10, "s")
     index = pd.date_range(start, end, freq=freq, tz="utc", inclusive="left")
-    series = pd.Series(
-        data=np.random.random(len(index)), index=index, name="values"
-    )
+    series = pd.Series(data=np.random.random(len(index)), index=index, name="values")
 
     # Create and upload timeseries to DataReservoir.io
     response_create = client.create(series=series, wait_on_verification=True)
@@ -66,17 +62,13 @@ def test_numeric_datetime_caching(cleanup_series, tmp_path):
     assert len(list(CACHE_PATH.iterdir())) != 0
 
     # Check downloaded data
-    pd.testing.assert_series_equal(
-        series, series_full_before_cached, check_freq=False
-    )
+    pd.testing.assert_series_equal(series, series_full_before_cached, check_freq=False)
 
     # Get data from DataReservoir.io (after data is cached)
     series_full_after_cached = client.get(series_id, start=None, end=None)
 
     # Check downloaded data
-    pd.testing.assert_series_equal(
-        series, series_full_after_cached, check_freq=False
-    )
+    pd.testing.assert_series_equal(series, series_full_after_cached, check_freq=False)
 
     # # Get data between two dates from DataReservoir.io
     # start = pd.to_datetime("2023-01-01 00:00", utc=True)
