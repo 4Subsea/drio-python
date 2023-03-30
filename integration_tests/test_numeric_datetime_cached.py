@@ -77,9 +77,6 @@ def test_numeric_datetime_cached(cleanup_series, tmp_path):
     # Append more data to the timeseries
     _ = client.append(series_b, series_id, wait_on_verification=True)
 
-    # Check that the cache folder now containt four days of data
-    assert len(list(CACHE_PATH.iterdir())) == 4
-
     # Get data from DataReservoir.io (after data is appended)
     series_full_after_append = client.get(series_id, start=None, end=None)
 
@@ -87,6 +84,9 @@ def test_numeric_datetime_cached(cleanup_series, tmp_path):
     pd.testing.assert_series_equal(
         series_a_and_b, series_full_after_append, check_freq=False
     )
+
+    # Check that the cache folder now containt four days of data
+    assert len(list(CACHE_PATH.iterdir())) == 4
 
     # Get data between two dates from DataReservoir.io
     start = pd.to_datetime("2023-01-01 00:00", utc=True)
