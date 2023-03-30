@@ -71,7 +71,7 @@ def test_numeric_datetime_cached(cleanup_series, tmp_path):
         series_a, series_full_before_append, check_freq=False
     )
 
-    # Check that the cache folder now containt three days of data
+    # Check that the cache folder now contains three days of data
     assert len(list(CACHE_PATH.iterdir())) == 3
 
     # Append more data to the timeseries
@@ -85,7 +85,7 @@ def test_numeric_datetime_cached(cleanup_series, tmp_path):
         series_a_and_b, series_full_after_append, check_freq=False
     )
 
-    # Check that the cache folder now containt four days of data
+    # Check that the cache folder now contains four days of data
     assert len(list(CACHE_PATH.iterdir())) == 4
 
     # Get data between two dates from DataReservoir.io
