@@ -83,7 +83,7 @@ Example:
     client = drio.Client(
         auth,
         cache=True,
-        cache_opt={'max_size': 32*1024, 'cache_root': r'c:\project\drio_cache'}
+        cache_opt={"max_size": 32*1024, "cache_root": r"c:\project\drio_cache"}
     )
 
 The cache has near disk-bound performance and will benefit greatly from fast
