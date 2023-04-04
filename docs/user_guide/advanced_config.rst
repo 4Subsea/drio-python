@@ -63,7 +63,6 @@ downloads. Beside turning the cache on and off, several aspects of it can be
 configured during instantiation. The configuration is passed on as a
 dictionary:
 
-* ``format``: format used to store series on disk, either 'parquet' or 'csv'. Default is 'parquet'.
 * ``max_size``: size in megabytes that the cache is allowed to use. Default is 1024MB.
 * ``cache_root``: control the cache storage location. Default locations are:
     
@@ -81,9 +80,11 @@ Example:
     auth = drio.Authenticator()
 
     # Initiate a client with 32GB cache in the 'c:\project\drio_cache'
-    client = drio.Client(auth, cache=True,
-                         cache_opt={'format': 'parquet', 'max_size': 32*1024,
-                                    'cache_root': r'c:\project\drio_cache'})
+    client = drio.Client(
+        auth,
+        cache=True,
+        cache_opt={"max_size": 32*1024, "cache_root": r"c:\project\drio_cache"}
+    )
 
 The cache has near disk-bound performance and will benefit greatly from fast
 low-latency solid state drives.
@@ -143,4 +144,4 @@ The following log names can be used to fine-tune the desired log output:
 * datareservoirio.rest_api: API module with logging of request parameters and responses
 
 If you require even more detailed logging, consider using loggers from
-:py:mod:`requests`, :py:mod:`oauthlib`, :py:mod:`requests-oauthlib` and :py:mod:`azure-storage-blob`
+:py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
