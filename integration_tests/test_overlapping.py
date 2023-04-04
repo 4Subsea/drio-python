@@ -2,6 +2,8 @@ import os
 
 import numpy as np
 import pandas as pd
+import pytest
+from requests import HTTPError
 
 import datareservoirio as drio
 
@@ -76,3 +78,7 @@ def test_overlapping_data(cleanup_series):
 
     # Delete timeseries from DataReservoir.io
     client.delete(series_id)
+
+    # Check that the timeseries is deleted
+    with pytest.raises(HTTPError):
+        _ = client.get(series_id)
