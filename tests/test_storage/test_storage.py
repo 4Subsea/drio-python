@@ -1,10 +1,11 @@
 import io
 from pathlib import Path
-from unittest.mock import ANY
+from unittest.mock import ANY, Mock
 
 import pandas as pd
 import pytest
 import requests
+from requests import HTTPError
 
 import datareservoirio as drio
 
@@ -59,7 +60,12 @@ class Test__blob_to_df:
         blob_url = "http://example/drio/blob/file"
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
-        csv_file = TEST_PATH.parent / "testdata" / "example_drio_blob_file.csv"
+        csv_file = (
+            TEST_PATH.parent
+            / "testdata"
+            / "RESPONSE_CASES_GENERAL"
+            / "example_drio_blob_file.csv"
+        )
         df_expect = pd.read_csv(
             csv_file,
             header=None,
@@ -127,3 +133,46 @@ class Test__df_to_blob:
         assert (
             mock_requests.call_args.kwargs["data"].memory == data_float.as_binary_csv()
         )
+
+
+class Test_Storage:
+    """
+    Tests the ``datareservoirio.storage.Storage`` class.
+
+    What is currently tested:
+        * Partially tested ``__init__``.
+        * Partially tested ``get``.
+
+    TODO:
+        * Test ``__init__`` with cache and cache options.
+        * Test ``get`` with no data available.
+        * Test ``get`` with more than one overlapping File.
+    """
+
+    @pytest.fixture
+    def storage_no_cache(self, auth_session):
+        return drio.storage.Storage(auth_session, cache=False, cache_opt=None)
+
+    def test__init__(self, auth_session):
+        storage = drio.storage.Storage(auth_session, cache=False, cache_opt=None)
+
+        assert storage._storage_cache is None
+        assert storage._session is auth_session
+
+    def test_get_raise_for_status(self, storage_no_cache):
+        with pytest.raises(HTTPError):
+            _ = storage_no_cache.get("http://example/no/exist")
+
+    def test_get(self, storage_no_cache):
+        target_url = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
+        df_out = storage_no_cache.get(target_url)
+
+        df_expect = pd.read_csv(
+            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "float64"},
+            encoding="utf-8",
+        )
+
+        pd.testing.assert_frame_equal(df_out, df_expect)

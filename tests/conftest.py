@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 import requests
+from response_cases import RESPONSE_CASES
 
 TEST_PATH = Path(__file__).parent
 
@@ -13,45 +14,6 @@ TEST_PATH = Path(__file__).parent
 def disable_logging(monkeypatch):
     """Disable logging to Application Insight"""
     monkeypatch.setattr("datareservoirio.client.AzureLogHandler", logging.NullHandler())
-
-
-"""
-RESPONSE_CASES defines attributes assigned to ``requests.Response`` object. The
-following attributes can be used as needed:
-
-    * ``_content``
-    * ``status_code``
-    * ``headers``
-    * ``history``
-    * ``encoding``
-    * ``reason``
-    * ``cookies``
-    * ``elapsed``
-    * ``request``
-
-Note that ``url`` is defined as part of the key in RESPONSE_CASES.
-See ``requests.Response`` source code for more details.
-"""
-RESPONSE_CASES = {
-    # description: blob (numeric) from remote storage
-    ("GET", "http://example/drio/blob/file"): {
-        "_content": (
-            TEST_PATH / "testdata" / "example_drio_blob_file.csv"
-        ).read_bytes(),
-        "status_code": 200,
-        "reason": "OK",
-    },
-    # description: blob do not exist in remote storage
-    ("GET", "http://example/no/exist"): {
-        "status_code": 404,
-        "reason": "Not Found",
-    },
-    # description: put data to blob
-    ("PUT", "http://example/blob/url"): {
-        "status_code": 201,
-        "reason": "Created",
-    },
-}
 
 
 @pytest.fixture(autouse=True)
@@ -95,3 +57,8 @@ def bytesio_with_memory(monkeypatch):
             super().close(*args, **kwargs)
 
     monkeypatch.setattr("io.BytesIO", BytesIOMemory)
+
+
+@pytest.fixture
+def auth_session():
+    return requests.Session()
