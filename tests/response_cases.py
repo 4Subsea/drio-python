@@ -130,6 +130,54 @@ RESPONSE_GROUP1 = {
             TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19359.csv"
         ).read_bytes(),
     },
+    # F (TimeSeries API response for day 1672358400000000000)
+    # ---------------------------
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672358400000000000",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output_1672358400000000000.json"
+        ).read_bytes(),
+    },
+    # G (TimeSeries API response for day 1672444800000000000)
+    # ---------------------------
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672444800000000000&end=1672444800000000000",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output_1672444800000000000.json"
+        ).read_bytes(),
+    },
+    # H (TimeSeries API response for day 1672531200000000000)
+    # ---------------------------
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672531200000000000&end=1672531200000000000",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output_1672531200000000000.json"
+        ).read_bytes(),
+    },
+    # I (TimeSeries API response for day 1672617600000000000)
+    # ---------------------------
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672617600000000000&end=1672617600000000000",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output_1672617600000000000.json"
+        ).read_bytes(),
+    },
 }
 
 

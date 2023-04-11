@@ -32,11 +32,11 @@ class Test_Client:
         )
 
         df_expect = pd.read_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
             header=None,
             names=("index", "values"),
             dtype={"index": "int64", "values": "float64"},
             encoding="utf-8",
         )
 
-        pd.testing.assert_frame_equal(series_out, df_expect["values"])
+        pd.testing.assert_series_equal(series_out, df_expect["values"])

@@ -1,0 +1,21 @@
+{
+    "Files": [
+        {
+            "Index": 0,
+            "FileId": "1b0d906b-34ce-40d6-9520-e46f49a54545",
+            "Chunks": [
+                {
+                    "Account": "permanentprodu002p192",
+                    "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A18Z&ske=2023-03-15T13%3A50%3A18Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=bto08GDGsK7M%2FZLXOQ%2Bhm3sgYd%2B23g6rs5fI0nCq9AQ%3D",
+                    "SasKeyExpirationTime": "2023-03-14T17:21:07.9168664+00:00",
+                    "Container": "data",
+                    "Path": "1b0d906b34ce40d69520e46f49a54545/2023/01/02/day/csv/19359.csv",
+                    "Endpoint": "https://permanentprodu002p192.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2023/01/02/day/csv/19359.csv?versionid=2023-03-14T14:56:11.1906071Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A18Z&ske=2023-03-15T13%3A50%3A18Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=bto08GDGsK7M%2FZLXOQ%2Bhm3sgYd%2B23g6rs5fI0nCq9AQ%3D",
+                    "ContentMd5": "CYS6gLUWLhZO6fFcGdbItg==",
+                    "VersionId": "2023-03-14T14:56:11.1906071Z",
+                    "DaysSinceEpoch": 19359
+                }
+            ]
+        }
+    ]
+}
