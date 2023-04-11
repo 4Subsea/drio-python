@@ -1,8 +1,9 @@
 from pathlib import Path
-import pytest
-import pandas as pd
-import datareservoirio as drio
 
+import pandas as pd
+import pytest
+
+import datareservoirio as drio
 
 TEST_PATH = Path(__file__).parent
 
@@ -11,6 +12,7 @@ class Test_Client:
     """
     Tests the ``datareservoirio.Client`` class.
     """
+
     @pytest.fixture
     def client(self, auth_session):
         return drio.Client(auth_session, cache=False)
@@ -31,7 +33,7 @@ class Test_Client:
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=start,
             end=end,
-            convert_date=True
+            convert_date=True,
         )
 
         df_expect = pd.read_csv(
@@ -55,7 +57,7 @@ class Test_Client:
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=start,
             end=end,
-            convert_date=False
+            convert_date=False,
         )
 
         df_expect = pd.read_csv(
@@ -78,7 +80,7 @@ class Test_Client:
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=start,
             end=end,
-            convert_date=True
+            convert_date=True,
         )
 
         df_expect = pd.read_csv(
@@ -102,7 +104,7 @@ class Test_Client:
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=start,
             end=end,
-            convert_date=True
+            convert_date=True,
         )
 
         df_expect = pd.read_csv(

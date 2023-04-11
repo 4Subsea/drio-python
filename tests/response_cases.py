@@ -139,7 +139,10 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output_1672358400000000000.json"
+            TEST_PATH
+            / "testdata"
+            / "RESPONSE_GROUP1"
+            / "TimeSeries_API_output_1672358400000000000.json"
         ).read_bytes(),
     },
     # G (TimeSeries API response for day 1672444800000000000)
@@ -151,7 +154,10 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output_1672444800000000000.json"
+            TEST_PATH
+            / "testdata"
+            / "RESPONSE_GROUP1"
+            / "TimeSeries_API_output_1672444800000000000.json"
         ).read_bytes(),
     },
     # H (TimeSeries API response for day 1672531200000000000)
@@ -163,7 +169,10 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output_1672531200000000000.json"
+            TEST_PATH
+            / "testdata"
+            / "RESPONSE_GROUP1"
+            / "TimeSeries_API_output_1672531200000000000.json"
         ).read_bytes(),
     },
     # I (TimeSeries API response for day 1672617600000000000)
@@ -175,7 +184,10 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "TimeSeries_API_output_1672617600000000000.json"
+            TEST_PATH
+            / "testdata"
+            / "RESPONSE_GROUP1"
+            / "TimeSeries_API_output_1672617600000000000.json"
         ).read_bytes(),
     },
 }
