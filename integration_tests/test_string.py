@@ -9,7 +9,7 @@ from requests import HTTPError
 import datareservoirio as drio
 
 
-def test_string_datetime(cleanup_series):
+def test_string(cleanup_series):
     """
     Integration test for creating/appending/deleting timeseries with text/string values
     and datetime index.

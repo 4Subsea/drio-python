@@ -8,7 +8,7 @@ from requests import HTTPError
 import datareservoirio as drio
 
 
-def test_numeric_datetime(cleanup_series):
+def test_numeric(cleanup_series):
     """
     Integration test for creating/appending/deleting timeseries with numeric values
     and datetime index.

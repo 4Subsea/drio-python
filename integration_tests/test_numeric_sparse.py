@@ -8,7 +8,7 @@ from requests import HTTPError
 import datareservoirio as drio
 
 
-def test_sparse_data(cleanup_series):
+def test_numeric_sparse(cleanup_series):
     """
     Integration test for sparse data (2-hours sampling rate).
 

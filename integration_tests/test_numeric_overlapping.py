@@ -8,7 +8,7 @@ from requests import HTTPError
 import datareservoirio as drio
 
 
-def test_overlapping_data(cleanup_series):
+def test_numeric_overlapping(cleanup_series):
     """
     Integration test for overlapping data.
 
