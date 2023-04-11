@@ -25,10 +25,13 @@ class Test_Client:
         assert isinstance(client._storage, drio.storage.Storage)
 
     def test_get(self, client):
+        start = 1672358400000000000
+        end = 1672703940000000000
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
-            start=1672358400000000000,
-            end=1672703940000000000
+            start=start,
+            end=end,
+            convert_date=False
         )
 
         df_expect = pd.read_csv(
@@ -39,4 +42,7 @@ class Test_Client:
             encoding="utf-8",
         )
 
-        pd.testing.assert_series_equal(series_out, df_expect["values"])
+        series_expect = df_expect.set_index("index").squeeze("columns")#.loc[start:end]
+        series_expect.index.name = None
+
+        pd.testing.assert_series_equal(series_out, series_expect)
