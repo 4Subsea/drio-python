@@ -10,7 +10,7 @@ import datareservoirio as drio
 
 def test_numeric_sparse(cleanup_series):
     """
-    Integration test for sparse data (2-hours sampling rate).
+    Integration test for sparse numeric data (2-hours sampling rate).
 
     Tests the following:
         * Create a sparse data timeseries in DataReservoir.io.

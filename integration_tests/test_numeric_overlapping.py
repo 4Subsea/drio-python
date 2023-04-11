@@ -10,7 +10,7 @@ import datareservoirio as drio
 
 def test_numeric_overlapping(cleanup_series):
     """
-    Integration test for overlapping data.
+    Integration test for overlapping numeric data.
 
     Tests the following:
         * Create a timeseries A in DataReservoir.io.
