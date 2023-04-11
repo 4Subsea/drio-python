@@ -23,7 +23,7 @@ def auth_session():
 
 @pytest.fixture()
 def client(auth_session):
-    return drio.Client(auth_session)
+    return drio.Client(auth_session, cache=False)
 
 
 @pytest.fixture()

@@ -25,7 +25,7 @@ def test_string(cleanup_series):
     auth_session = drio.authenticate.ClientAuthenticator(
         os.getenv("DRIO_CLIENT_ID"), os.getenv("DRIO_CLIENT_SECRET")
     )
-    client = drio.Client(auth_session)
+    client = drio.Client(auth_session, cache=False)
 
     # Create some dummy data
     start_a = "2022-12-30 00:00"
