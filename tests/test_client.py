@@ -48,25 +48,25 @@ class Test_Client:
 
         pd.testing.assert_series_equal(series_out, series_expect)
 
-    # def test_get_no_convert(self, client):
-    #     start = 1672358400000000000
-    #     end = 1672703940000000000
-    #     series_out = client.get(
-    #         "2fee7f8a-664a-41c9-9b71-25090517c275",
-    #         start=start,
-    #         end=end,
-    #         convert_date=False
-    #     )
+    def test_get_no_convert(self, client):
+        start = 1672358400000000000
+        end = 1672703940000000000
+        series_out = client.get(
+            "2fee7f8a-664a-41c9-9b71-25090517c275",
+            start=start,
+            end=end,
+            convert_date=False
+        )
 
-    #     df_expect = pd.read_csv(
-    #         TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
-    #         header=None,
-    #         names=("index", "values"),
-    #         dtype={"index": "int64", "values": "float64"},
-    #         encoding="utf-8",
-    #     )
+        df_expect = pd.read_csv(
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "float64"},
+            encoding="utf-8",
+        )
 
-    #     series_expect = df_expect.set_index("index").squeeze("columns")#.loc[start:end]
-    #     series_expect.index.name = None
+        series_expect = df_expect.set_index("index").squeeze("columns")#.loc[start:end]
+        series_expect.index.name = None
 
-    #     pd.testing.assert_series_equal(series_out, series_expect)
+        pd.testing.assert_series_equal(series_out, series_expect)
