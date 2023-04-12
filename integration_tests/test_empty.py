@@ -20,7 +20,7 @@ def test_empty(cleanup_series):
     auth_session = drio.authenticate.ClientAuthenticator(
         os.getenv("DRIO_CLIENT_ID"), os.getenv("DRIO_CLIENT_SECRET")
     )
-    client = drio.Client(auth_session)
+    client = drio.Client(auth_session, cache=False)
 
     # Create and upload timeseries to DataReservoir.io
     response_create = client.create(series=None, wait_on_verification=True)

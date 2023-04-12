@@ -9,7 +9,7 @@ from requests import HTTPError
 import datareservoirio as drio
 
 
-def test_string_datetime(cleanup_series):
+def test_string(cleanup_series):
     """
     Integration test for creating/appending/deleting timeseries with text/string values
     and datetime index.
@@ -25,7 +25,7 @@ def test_string_datetime(cleanup_series):
     auth_session = drio.authenticate.ClientAuthenticator(
         os.getenv("DRIO_CLIENT_ID"), os.getenv("DRIO_CLIENT_SECRET")
     )
-    client = drio.Client(auth_session)
+    client = drio.Client(auth_session, cache=False)
 
     # Create some dummy data
     start_a = "2022-12-30 00:00"
