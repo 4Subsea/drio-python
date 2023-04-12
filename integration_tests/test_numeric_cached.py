@@ -103,7 +103,7 @@ def test_numeric_cached(cleanup_series, tmp_path):
     _ = client.get(series_id, start=None, end=None)
     time_after_get = time.time()
     for cache_file_i in CACHE_PATH.iterdir():
-        time_access_file_i = os.path.getatime(cache_file_i)   # last access time
+        time_access_file_i = os.path.getatime(cache_file_i)  # last access time
         assert time_before_get < time_access_file_i < time_after_get
 
     # Delete timeseries from DataReservoir.io
