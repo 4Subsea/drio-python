@@ -8,9 +8,9 @@ from requests import HTTPError
 import datareservoirio as drio
 
 
-def test_overlapping_data(cleanup_series):
+def test_numeric_overlapping(cleanup_series):
     """
-    Integration test for overlapping data.
+    Integration test for overlapping numeric data.
 
     Tests the following:
         * Create a timeseries A in DataReservoir.io.
@@ -23,7 +23,7 @@ def test_overlapping_data(cleanup_series):
     auth_session = drio.authenticate.ClientAuthenticator(
         os.getenv("DRIO_CLIENT_ID"), os.getenv("DRIO_CLIENT_SECRET")
     )
-    client = drio.Client(auth_session)
+    client = drio.Client(auth_session, cache=False)
 
     # Create some dummy data (overlapping)
     start_full = "2022-12-30 00:00"

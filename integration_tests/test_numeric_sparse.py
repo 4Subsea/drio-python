@@ -8,14 +8,13 @@ from requests import HTTPError
 import datareservoirio as drio
 
 
-def test_numeric_datetime(cleanup_series):
+def test_numeric_sparse(cleanup_series):
     """
-    Integration test for creating/appending/deleting timeseries with numeric values
-    and datetime index.
+    Integration test for sparse numeric data (2-hours sampling rate).
 
     Tests the following:
-        * Create a timeseries in DataReservoir.io.
-        * Append more data to the created timeseries.
+        * Create a sparse data timeseries in DataReservoir.io.
+        * Append more sparse data to the created timeseries.
         * Delete the timeseries from DataReservoir.io
 
     """
@@ -24,12 +23,12 @@ def test_numeric_datetime(cleanup_series):
     auth_session = drio.authenticate.ClientAuthenticator(
         os.getenv("DRIO_CLIENT_ID"), os.getenv("DRIO_CLIENT_SECRET")
     )
-    client = drio.Client(auth_session)
+    client = drio.Client(auth_session, cache=False)
 
     # Create some dummy data
     start_a = "2022-12-30 00:00"
     end_a = "2023-01-02 00:00"
-    freq_a = pd.to_timedelta(0.1, "s")
+    freq_a = pd.to_timedelta(2, "h")
     index_a = pd.date_range(start_a, end_a, freq=freq_a, tz="utc", inclusive="left")
     series_a = pd.Series(
         data=np.random.random(len(index_a)), index=index_a, name="values"
@@ -37,7 +36,7 @@ def test_numeric_datetime(cleanup_series):
 
     start_b = "2023-01-02 00:00"
     end_b = "2023-01-02 03:00"
-    freq_b = pd.to_timedelta(0.1, "s")
+    freq_b = pd.to_timedelta(2, "h")
     index_b = pd.date_range(start_b, end_b, freq=freq_b, tz="utc", inclusive="left")
     series_b = pd.Series(
         data=np.random.random(len(index_b)), index=index_b, name="values"
