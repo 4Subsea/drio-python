@@ -28,6 +28,21 @@ class DataHandler:
 
         self._series = series
 
+    @classmethod
+    def from_csv(cls, path):
+        df = pd.read_csv(
+            path,
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "str"},
+            encoding="utf-8",
+        ).astype({"values": "float64"}, errors="ignore")
+
+        series = df.set_index("index").squeeze("columns")
+        series.index.name = None
+
+        return cls(series)
+
     def as_series(self):
         """Return data as a ``pandas.Series`` object."""
         return self._series.copy(deep=True)
