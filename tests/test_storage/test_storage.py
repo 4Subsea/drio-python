@@ -30,6 +30,7 @@ class DataHandler:
 
     @classmethod
     def from_csv(cls, path):
+        """Read data from CSV file"""
         df = pd.read_csv(
             path,
             header=None,
