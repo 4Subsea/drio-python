@@ -78,11 +78,14 @@ class Test__blob_to_df:
             (
                 "http://example/drio/blob/dayfile/numeric",
                 TEST_PATH.parent
-                / "testdata/RESPONSE_CASES_GENERAL/dayfile_numeric.csv",
+                / "testdata"
+                / "RESPONSE_CASES_GENERAL/dayfile_numeric.csv",
             ),
             (
                 "http://example/drio/blob/dayfile/string",
-                TEST_PATH.parent / "testdata/RESPONSE_CASES_GENERAL/dayfile_string.csv",
+                TEST_PATH.parent
+                / "testdata"
+                / "RESPONSE_CASES_GENERAL/dayfile_string.csv",
             ),
         ],
     )
