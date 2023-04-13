@@ -152,9 +152,7 @@ class Test__df_to_blob:
             data=ANY,
         )
 
-        assert (
-            mock_requests.call_args.kwargs["data"].memory == data.as_binary_csv()
-        )
+        assert mock_requests.call_args.kwargs["data"].memory == data.as_binary_csv()
 
 
 class Test_Storage:
