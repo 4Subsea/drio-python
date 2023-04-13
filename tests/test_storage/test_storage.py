@@ -70,8 +70,6 @@ class DataHandler:
 class Test__blob_to_df:
     """
     Tests the :func:`_blob_to_df` function.
-
-    TODO: add one test where the blob file contains string values.
     """
 
     @pytest.mark.parametrize(
