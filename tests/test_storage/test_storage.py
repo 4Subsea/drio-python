@@ -78,19 +78,12 @@ class Test__blob_to_df:
         blob_url = "http://example/drio/blob/file"
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
-        csv_file = (
+        df_expect = DataHandler.from_csv(
             TEST_PATH.parent
             / "testdata"
             / "RESPONSE_CASES_GENERAL"
             / "example_drio_blob_file.csv"
-        )
-        df_expect = pd.read_csv(
-            csv_file,
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "str"},
-            encoding="utf-8",
-        ).astype({"values": "float64"}, errors="ignore")
+        ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
