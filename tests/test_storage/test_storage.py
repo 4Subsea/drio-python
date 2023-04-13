@@ -132,16 +132,20 @@ class Test__df_to_blob:
         blob_url = "http://example/blob/url"
         _ = drio.storage.storage._df_to_blob(data.as_dataframe(), blob_url)
 
-    def test__df_to_blob_raises_series(self, data_float):
+    @pytest.mark.parametrize("data", ("data_float", "data_string"))
+    def test__df_to_blob_raises_series(self, data, request):
+        data = request.getfixturevalue(data)
         with pytest.raises(ValueError):
             blob_url = "http://example/blob/url"
-            _ = drio.storage.storage._df_to_blob(data_float.as_series(), blob_url)
+            _ = drio.storage.storage._df_to_blob(data.as_series(), blob_url)
 
+    @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__df_to_blob_call_args_2(
-        self, mock_requests, bytesio_with_memory, data_float
+        self, mock_requests, bytesio_with_memory, data, request
     ):
+        data = request.getfixturevalue(data)
         blob_url = "http://example/blob/url"
-        _ = drio.storage.storage._df_to_blob(data_float.as_dataframe(), blob_url)
+        _ = drio.storage.storage._df_to_blob(data.as_dataframe(), blob_url)
 
         mock_requests.assert_called_once_with(
             method="put",
@@ -151,7 +155,7 @@ class Test__df_to_blob:
         )
 
         assert (
-            mock_requests.call_args.kwargs["data"].memory == data_float.as_binary_csv()
+            mock_requests.call_args.kwargs["data"].memory == data.as_binary_csv()
         )
 
 
