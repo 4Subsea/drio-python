@@ -32,6 +32,22 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
     },
+    # description: blob day file (numeric) from remote storage
+    ("GET", "http://example/drio/blob/dayfile/numeric"): {
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "dayfile_numeric.csv"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
+    # description: blob day file (string) from remote storage
+    ("GET", "http://example/drio/blob/dayfile/string"): {
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "dayfile_string.csv"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
     # description: blob do not exist in remote storage
     ("GET", "http://example/no/exist"): {
         "status_code": 404,

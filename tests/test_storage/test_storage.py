@@ -74,17 +74,25 @@ class Test__blob_to_df:
     TODO: add one test where the blob file contains string values.
     """
 
-    def test__blob_to_df(self):
+    @pytest.mark.parametrize(
+        "blob_url, path_csv",
+        [
+            (
+                "http://example/drio/blob/dayfile/numeric",
+                TEST_PATH.parent
+                / "testdata/RESPONSE_CASES_GENERAL/dayfile_numeric.csv",
+            ),
+            (
+                "http://example/drio/blob/dayfile/string",
+                TEST_PATH.parent / "testdata/RESPONSE_CASES_GENERAL/dayfile_string.csv",
+            ),
+        ],
+    )
+    def test__blob_to_df(self, blob_url, path_csv):
         """Tests ``_blob_to_df`` function."""
-        blob_url = "http://example/drio/blob/file"
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
-        df_expect = DataHandler.from_csv(
-            TEST_PATH.parent
-            / "testdata"
-            / "RESPONSE_CASES_GENERAL"
-            / "example_drio_blob_file.csv"
-        ).as_dataframe()
+        df_expect = DataHandler.from_csv(path_csv).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
