@@ -198,12 +198,8 @@ class Test_Storage:
         target_url = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
         df_out = storage_no_cache.get(target_url)
 
-        df_expect = pd.read_csv(
+        df_expect = DataHandler.from_csv(
             TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "float64"},
-            encoding="utf-8",
-        )
+        ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
