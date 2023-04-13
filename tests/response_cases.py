@@ -21,17 +21,6 @@ TEST_PATH = Path(__file__).parent
 
 
 RESPONSE_CASES_GENERAL = {
-    # description: blob (numeric) from remote storage
-    ("GET", "http://example/drio/blob/file"): {
-        "_content": (
-            TEST_PATH
-            / "testdata"
-            / "RESPONSE_CASES_GENERAL"
-            / "example_drio_blob_file.csv"
-        ).read_bytes(),
-        "status_code": 200,
-        "reason": "OK",
-    },
     # description: blob day file (numeric) from remote storage
     ("GET", "http://example/drio/blob/dayfile/numeric"): {
         "_content": (
