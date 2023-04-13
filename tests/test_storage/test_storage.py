@@ -1,6 +1,6 @@
 import io
 from pathlib import Path
-from unittest.mock import ANY, Mock
+from unittest.mock import ANY
 
 import pandas as pd
 import pytest
