@@ -126,9 +126,11 @@ class Test__df_to_blob:
 
         return data_handler
 
-    def test__df_to_blob(self, data_float):
+    @pytest.mark.parametrize("data", ("data_float", "data_string"))
+    def test__df_to_blob(self, data, request):
+        data = request.getfixturevalue(data)
         blob_url = "http://example/blob/url"
-        _ = drio.storage.storage._df_to_blob(data_float.as_dataframe(), blob_url)
+        _ = drio.storage.storage._df_to_blob(data.as_dataframe(), blob_url)
 
     def test__df_to_blob_raises_series(self, data_float):
         with pytest.raises(ValueError):
