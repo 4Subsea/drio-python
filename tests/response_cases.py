@@ -22,7 +22,7 @@ TEST_PATH = Path(__file__).parent
 
 RESPONSE_CASES_GENERAL = {
     # description: blob day file (numeric) from remote storage
-    ("GET", "http://example/drio/blob/dayfile/numeric"): {
+    ("GET", "http://blob/dayfile/numeric"): {
         "_content": (
             TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "dayfile_numeric.csv"
         ).read_bytes(),
@@ -30,7 +30,7 @@ RESPONSE_CASES_GENERAL = {
         "reason": "OK",
     },
     # description: blob day file (string) from remote storage
-    ("GET", "http://example/drio/blob/dayfile/string"): {
+    ("GET", "http://blob/dayfile/string"): {
         "_content": (
             TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "dayfile_string.csv"
         ).read_bytes(),
