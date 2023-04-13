@@ -86,8 +86,6 @@ class Test__blob_to_df:
 class Test__df_to_blob:
     """
     Tests the :func:`_df_to_blob` function.
-
-    TODO: Test for DataFrame with string values.
     """
 
     @pytest.fixture
