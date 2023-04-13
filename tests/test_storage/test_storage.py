@@ -23,6 +23,9 @@ class DataHandler:
     """
 
     def __init__(self, series):
+        assert series.name == "values"
+        assert series.index.name is None
+
         self._series = series
 
     def as_series(self):
