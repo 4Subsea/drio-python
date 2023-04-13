@@ -35,7 +35,7 @@ def response_factory(method, url, *args, **kwargs):
     since ``self`` passed to the ``request`` method. See ``mock_requests``.
     """
     try:
-        spec = RESPONSE_CASES[(method.upper(), url)]
+        spec = RESPONSE_CASES[(method.upper(), url)].copy()
     except KeyError:
         raise ValueError(f"Unrecognized URL: {url}")
     else:
