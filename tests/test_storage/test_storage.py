@@ -217,3 +217,17 @@ class Test_Storage:
         ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_get_overlapping(self, storage_no_cache):
+        target_url = "https://reservoir-api.4subsea.net/api/timeseries/693cb0b2-3599-46d3-b263-ea913a648535/data/days?start=1672358400000000000&end=1672617600000000000"
+        df_out = storage_no_cache.get(target_url)
+
+        df_expect = pd.read_csv(
+            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv",
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "float64"},
+            encoding="utf-8",
+        )
+
+        pd.testing.assert_frame_equal(df_out, df_expect)
