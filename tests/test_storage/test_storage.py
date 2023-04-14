@@ -23,8 +23,10 @@ class DataHandler:
     """
 
     def __init__(self, series):
-        assert series.name == "values"
-        assert series.index.name is None
+        if not series.name == "values":
+            raise ValueError()
+        if not series.index.name is None:
+            raise ValueError()
 
         self._series = series
 
