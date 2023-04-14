@@ -186,12 +186,10 @@ class Test_Storage:
 
     What is currently tested:
         * Partially tested ``__init__``.
-        * Partially tested ``get``.
+        * Tested ``get``.
 
     TODO:
         * Test ``__init__`` with cache and cache options.
-        * Test ``get`` with no data available.
-        * Test ``get`` with more than one overlapping File.
     """
 
     @pytest.fixture
