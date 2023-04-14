@@ -203,8 +203,8 @@ RESPONSE_GROUP2 = {
     # This 'group' of response cases represents the DataReservoir.io backend responses
     # and Azure Blob Storage responses when requesting data for a timeseries with:
     #   * ID = "693cb0b2-3599-46d3-b263-ea913a648535"
-    #   * start = 1672358400000000000
-    #   * end = 1672617600000000000
+    #   * start = 1672358400000000000 (i.e., 2022-12-30T00:00)
+    #   * end = 1672617600000000000 (i.e., 2023-01-02T00:00)
     #
     # Comments:
     #   * Overlapping data (i.e., several 'Files')
