@@ -23,7 +23,30 @@ class DataHandler:
     """
 
     def __init__(self, series):
+        if not isinstance(series, pd.Series):
+            raise ValueError()
+        if not series.name == "values":
+            raise ValueError()
+        if not series.index.name is None:
+            raise ValueError()
+
         self._series = series
+
+    @classmethod
+    def from_csv(cls, path):
+        """Read data from CSV file"""
+        df = pd.read_csv(
+            path,
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "str"},
+            encoding="utf-8",
+        ).astype({"values": "float64"}, errors="ignore")
+
+        series = df.set_index("index").squeeze("columns")
+        series.index.name = None
+
+        return cls(series)
 
     def as_series(self):
         """Return data as a ``pandas.Series`` object."""
@@ -51,28 +74,30 @@ class DataHandler:
 class Test__blob_to_df:
     """
     Tests the :func:`_blob_to_df` function.
-
-    TODO: add one test where the blob file contains string values.
     """
 
-    def test__blob_to_df(self):
+    @pytest.mark.parametrize(
+        "blob_url, path_csv",
+        [
+            (
+                "http://blob/dayfile/numeric",
+                TEST_PATH.parent
+                / "testdata"
+                / "RESPONSE_CASES_GENERAL/dayfile_numeric.csv",
+            ),
+            (
+                "http://blob/dayfile/string",
+                TEST_PATH.parent
+                / "testdata"
+                / "RESPONSE_CASES_GENERAL/dayfile_string.csv",
+            ),
+        ],
+    )
+    def test__blob_to_df(self, blob_url, path_csv):
         """Tests ``_blob_to_df`` function."""
-        blob_url = "http://example/drio/blob/file"
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
-        csv_file = (
-            TEST_PATH.parent
-            / "testdata"
-            / "RESPONSE_CASES_GENERAL"
-            / "example_drio_blob_file.csv"
-        )
-        df_expect = pd.read_csv(
-            csv_file,
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "str"},
-            encoding="utf-8",
-        ).astype({"values": "float64"}, errors="ignore")
+        df_expect = DataHandler.from_csv(path_csv).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
@@ -187,12 +212,8 @@ class Test_Storage:
         target_url = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
         df_out = storage_no_cache.get(target_url)
 
-        df_expect = pd.read_csv(
+        df_expect = DataHandler.from_csv(
             TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "float64"},
-            encoding="utf-8",
-        )
+        ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
