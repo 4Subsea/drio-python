@@ -227,3 +227,11 @@ class Test_Storage:
         ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_get_empty(self, storage_no_cache):
+        target_url = "https://reservoir-api.4subsea.net/api/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/data/days"
+        df_out = storage_no_cache.get(target_url)
+
+        df_expect = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+
+        pd.testing.assert_frame_equal(df_out, df_expect)
