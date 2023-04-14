@@ -23,6 +23,8 @@ class DataHandler:
     """
 
     def __init__(self, series):
+        if not isinstance(series, pd.Series):
+            raise ValueError()
         if not series.name == "values":
             raise ValueError()
         if not series.index.name is None:
