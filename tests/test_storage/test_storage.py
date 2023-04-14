@@ -27,7 +27,7 @@ class DataHandler:
             raise ValueError()
         if not series.name == "values":
             raise ValueError()
-        if not series.index.name is None:
+        if series.index.name is not None:
             raise ValueError()
 
         self._series = series
