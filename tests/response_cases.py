@@ -231,7 +231,7 @@ RESPONSE_GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "TimeSeries_API_response.json"
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "data_days.json"
         ).read_bytes(),
     },
     # B (Azure Blob Storage response)
