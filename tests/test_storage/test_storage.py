@@ -199,7 +199,7 @@ class Test_Storage:
         storage = drio.storage.Storage(
             auth_session,
             cache=True,
-            cache_opt={"max_size": 1024, "cache_root": ".cache"}
+            cache_opt={"max_size": 1024, "cache_root": ".cache"},
         )
 
         assert isinstance(storage._storage_cache, drio.storage.StorageCache)
