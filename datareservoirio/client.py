@@ -332,12 +332,8 @@ class Client:
         if response_json["Files"]:
             with ThreadPoolExecutor(max_workers=2) as e:
                 futures = [
-                    e.submit(
-                        self._storage.get,
-                        environment.api_base_url
-                        + f"timeseries/{series_id}/data/days?start={val_i}&end={val_i}",
-                    )
-                    for val_i in _timeseries_available_days(response_json)
+                    e.submit(self._storage.get, blob_sequence_day_i)
+                    for blob_sequence_day_i in _blob_sequence_days(response_json)
                 ]
             df = pd.concat([future_i.result() for future_i in futures])
         else:
