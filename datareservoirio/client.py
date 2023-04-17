@@ -595,3 +595,22 @@ def _timeseries_available_days(response_json):
         for chunk_i in file_i["Chunks"]:
             days.add(chunk_i["DaysSinceEpoch"] * nanoseconds_day)
     return sorted(days)
+
+
+def _blob_sequence_days(response_json):
+    """
+    TODO
+    """
+
+    blob_sequences = defaultdict(list)
+    for file_i in response_json["Files"]:
+        for chunk_i in file_i["Chunks"]:
+            blob_sequences[chunk_i["DaysSinceEpoch"]].append(
+                {
+                    "Endpoint": chunk_i["Endpoint"],
+                    "Path": chunk_i["Path"],
+                    "ContentMd5": chunk_i["ContentMd5"],
+                }
+            )
+
+    return dict(blob_sequences)
