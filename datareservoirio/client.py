@@ -586,7 +586,6 @@ def _blob_sequence_days(response_json):
             blob_sequences[chunk_i["DaysSinceEpoch"]].append(
                 {
                     "Endpoint": chunk_i["Endpoint"],
-                    "Path": chunk_i["Path"],
                     "ContentMd5": chunk_i["ContentMd5"],
                 }
             )
