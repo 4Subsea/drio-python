@@ -183,13 +183,6 @@ class Test__df_to_blob:
 class Test_Storage:
     """
     Tests the ``datareservoirio.storage.Storage`` class.
-
-    What is currently tested:
-        * Partially tested ``__init__``.
-        * Tested ``get``.
-
-    TODO:
-        * Test ``__init__`` with cache and cache options.
     """
 
     @pytest.fixture
@@ -200,6 +193,16 @@ class Test_Storage:
         storage = drio.storage.Storage(auth_session, cache=False, cache_opt=None)
 
         assert storage._storage_cache is None
+        assert storage._session is auth_session
+
+    def test__init__cache(self, auth_session):
+        storage = drio.storage.Storage(
+            auth_session,
+            cache=True,
+            cache_opt={"max_size": 1024, "cache_root": ".cache"}
+        )
+
+        assert isinstance(storage._storage_cache, drio.storage.StorageCache)
         assert storage._session is auth_session
 
     def test_get_raise_for_status(self, storage_no_cache):
