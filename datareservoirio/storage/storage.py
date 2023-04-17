@@ -78,13 +78,13 @@ class Storage:
         """
         Get a Pandas Dataframe from storage.
 
-        The REST API endpoint ``target_url`` returns a collection of blob (endpoint)
-        which are downloaded and merged in sequence.
-
         Parameters
         ----------
-        target_url : str
-            REST API URL as ``/data/days?start={start}&end={end}``
+        blob_sequence : list-like
+            Sequence of blobs from which to download data. Each element in the sequence
+            should be a ``dict`` which contains an 'Endpoint' and a 'ContentMd5'.
+            If the sequence contains overlapping data, the last element is kept
+            when merging.
 
         Returns
         -------
