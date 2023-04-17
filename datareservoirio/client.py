@@ -332,7 +332,9 @@ class Client:
             with ThreadPoolExecutor(max_workers=2) as e:
                 futures = [
                     e.submit(self._storage.get, blob_sequence_i)
-                    for _, blob_sequence_i in _blob_sequence_days(response_json).items()
+                    for _, blob_sequence_i in sorted(
+                        _blob_sequence_days(response_json).items()
+                    )
                 ]
             df = pd.concat([future_i.result() for future_i in futures])
         else:
@@ -585,6 +587,7 @@ def _blob_sequence_days(response_json):
         for chunk_i in file_i["Chunks"]:
             blob_sequences[chunk_i["DaysSinceEpoch"]].append(
                 {
+                    "Path": chunk_i["Path"],
                     "Endpoint": chunk_i["Endpoint"],
                     "ContentMd5": chunk_i["ContentMd5"],
                 }
