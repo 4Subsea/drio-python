@@ -321,7 +321,6 @@ class Client:
         if start >= end:
             raise ValueError("start must be before end")
 
-        # make an "exploratory" request
         response = self._auth_session.get(
             environment.api_base_url
             + f"timeseries/{series_id}/data/days?start={start}&end={end}"
