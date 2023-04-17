@@ -332,8 +332,8 @@ class Client:
         if response_json["Files"]:
             with ThreadPoolExecutor(max_workers=2) as e:
                 futures = [
-                    e.submit(self._storage.get, blob_sequence_day_i)
-                    for blob_sequence_day_i in _blob_sequence_days(response_json)
+                    e.submit(self._storage.get, blob_sequence_i)
+                    for _, blob_sequence_i in _blob_sequence_days(response_json).items()
                 ]
             df = pd.concat([future_i.result() for future_i in futures])
         else:
