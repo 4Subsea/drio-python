@@ -47,6 +47,17 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 201,
         "reason": "Created",
     },
+    # description: TimeSeries API response (empty data)
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/data/days",
+    ): {
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "data_days_empty.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
 }
 
 
@@ -198,4 +209,104 @@ RESPONSE_GROUP1 = {
 }
 
 
-RESPONSE_CASES = {**RESPONSE_CASES_GENERAL, **RESPONSE_GROUP1}
+RESPONSE_GROUP2 = {
+    # =========================================================================
+    # This 'group' of response cases represents the DataReservoir.io backend responses
+    # and Azure Blob Storage responses when requesting data for a timeseries with:
+    #   * ID = "693cb0b2-3599-46d3-b263-ea913a648535"
+    #   * start = 1672358400000000000 (i.e., 2022-12-30T00:00)
+    #   * end = 1672617600000000000 (i.e., 2023-01-02T00:00)
+    #
+    # Comments:
+    #   * Overlapping data (i.e., several 'Files')
+    #
+    # =========================================================================
+    #
+    # A (TimeSeries API response)
+    # ---------------------------
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/693cb0b2-3599-46d3-b263-ea913a648535/data/days?start=1672358400000000000&end=1672617600000000000",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "data_days.json"
+        ).read_bytes(),
+    },
+    # B (Azure Blob Storage response)
+    # -------------------------------
+    (
+        "GET",
+        "https: //permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        ).read_bytes(),
+    },
+    # C (Azure Blob Storage response)
+    # -------------------------------
+    (
+        "GET",
+        "https: //permanentprodu001p067.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:17:44.6722101Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A51%3A15Z&ske=2023-04-14T15%3A51%3A15Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=TMfeXQYlcAe%2BdZGSGy5Z1WTytf41uIUQlQKBlDOQ3b4%3D",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19357.csv"
+        ).read_bytes(),
+    },
+    # D (Azure Blob Storage response)
+    # -------------------------------
+    (
+        "GET",
+        "https: //permanentprodu002p193.blob.core.windows.net/data/629504a5fe3449049370049874b69fe0/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:18:26.1211914Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A55%3A52Z&ske=2023-04-14T15%3A55%3A51Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=dwqY3aiVKRb6MEwQYw%2B34y4LJcp0VHLat1BBNl9sUX8%3D",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19356_1.csv"
+        ).read_bytes(),
+    },
+    # E (Azure Blob Storage response)
+    # -------------------------------
+    (
+        "GET",
+        "https: //permanentprodu001p232.blob.core.windows.net/data/629504a5fe3449049370049874b69fe0/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:18:26.2782276Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A53%3A09Z&ske=2023-04-14T15%3A53%3A09Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=DmRXb%2F7p%2B%2BYp%2FcPvJV5jTUzLJGgsjfEyA6PL8Kv4LTo%3D",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19357_1.csv"
+        ).read_bytes(),
+    },
+    # F (Azure Blob Storage response)
+    # -------------------------------
+    (
+        "GET",
+        "https: //permanentprodu002p003.blob.core.windows.net/data/1d9d844990bc45d6b24432b33a324156/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:19:41.2836525Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A57%3A15Z&ske=2023-04-14T15%3A57%3A15Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=7tMAHyWBldWmECe3fyb%2B9D8RcN9xKNk%2FIJva%2B5vkpW0%3D",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19357_2.csv"
+        ).read_bytes(),
+    },
+    # G (Azure Blob Storage response)
+    # -------------------------------
+    (
+        "GET",
+        "https: //permanentprodu002p058.blob.core.windows.net/data/1d9d844990bc45d6b24432b33a324156/2023/01/01/day/csv/19358.csv?versionid=2023-04-14T13:19:41.5175166Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=YRmhRwUe0Fw40bj2Jh2XMFFtsAKNE6E5FVqK4rbIGhg%3D",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19358.csv"
+        ).read_bytes(),
+    },
+}
+
+
+RESPONSE_CASES = {**RESPONSE_CASES_GENERAL, **RESPONSE_GROUP1, **RESPONSE_GROUP2}

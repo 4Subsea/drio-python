@@ -1,4 +1,3 @@
-import io
 from pathlib import Path
 from unittest.mock import ANY
 
@@ -8,67 +7,9 @@ import requests
 from requests import HTTPError
 
 import datareservoirio as drio
+from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
-
-
-class DataHandler:
-    """
-    Handles conversion of data series.
-
-    Parameters
-    ----------
-    series : pandas.Series
-        Data as series.
-    """
-
-    def __init__(self, series):
-        if not isinstance(series, pd.Series):
-            raise ValueError()
-        if not series.name == "values":
-            raise ValueError()
-        if not series.index.name is None:
-            raise ValueError()
-
-        self._series = series
-
-    @classmethod
-    def from_csv(cls, path):
-        """Read data from CSV file"""
-        df = pd.read_csv(
-            path,
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "str"},
-            encoding="utf-8",
-        ).astype({"values": "float64"}, errors="ignore")
-
-        series = df.set_index("index").squeeze("columns")
-        series.index.name = None
-
-        return cls(series)
-
-    def as_series(self):
-        """Return data as a ``pandas.Series`` object."""
-        return self._series.copy(deep=True)
-
-    def as_dataframe(self):
-        """Return data as a ``pandas.DataFrame`` object."""
-        return self.as_series().reset_index()
-
-    def as_binary_csv(self):
-        """Return data as a binary string (representing tha data in CSV format)."""
-        df = self.as_dataframe()
-        with io.BytesIO() as fp:
-            kwargs = {
-                "header": False,
-                "index": False,
-                "encoding": "utf-8",
-                "mode": "wb",
-            }
-            df.to_csv(fp, lineterminator="\n", **kwargs)
-            csv = fp.getvalue()
-        return csv
 
 
 class Test__blob_to_df:
@@ -183,15 +124,6 @@ class Test__df_to_blob:
 class Test_Storage:
     """
     Tests the ``datareservoirio.storage.Storage`` class.
-
-    What is currently tested:
-        * Partially tested ``__init__``.
-        * Partially tested ``get``.
-
-    TODO:
-        * Test ``__init__`` with cache and cache options.
-        * Test ``get`` with no data available.
-        * Test ``get`` with more than one overlapping File.
     """
 
     @pytest.fixture
@@ -202,6 +134,16 @@ class Test_Storage:
         storage = drio.storage.Storage(auth_session, cache=False, cache_opt=None)
 
         assert storage._storage_cache is None
+        assert storage._session is auth_session
+
+    def test__init__cache(self, auth_session):
+        storage = drio.storage.Storage(
+            auth_session,
+            cache=True,
+            cache_opt={"max_size": 1024, "cache_root": ".cache"},
+        )
+
+        assert isinstance(storage._storage_cache, drio.storage.StorageCache)
         assert storage._session is auth_session
 
     def test_get_raise_for_status(self, storage_no_cache):
@@ -215,5 +157,23 @@ class Test_Storage:
         df_expect = DataHandler.from_csv(
             TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
         ).as_dataframe()
+
+        pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_get_overlapping(self, storage_no_cache):
+        target_url = "https://reservoir-api.4subsea.net/api/timeseries/693cb0b2-3599-46d3-b263-ea913a648535/data/days?start=1672358400000000000&end=1672617600000000000"
+        df_out = storage_no_cache.get(target_url)
+
+        df_expect = DataHandler.from_csv(
+            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv",
+        ).as_dataframe()
+
+        pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_get_empty(self, storage_no_cache):
+        target_url = "https://reservoir-api.4subsea.net/api/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/data/days"
+        df_out = storage_no_cache.get(target_url)
+
+        df_expect = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
         pd.testing.assert_frame_equal(df_out, df_expect)
