@@ -121,41 +121,6 @@ class Storage:
             df = _blob_to_df(chunk["Endpoint"])
         return df
 
-    @staticmethod
-    def _days_response_url_sequence(response_json):
-        """
-        Flatten response from ``/data/days?start={start}&end={end}``
-
-        to a sequence of dictionaries with endpoint URLs, path, and
-        md5 hash of blobs.
-
-        The order indicate the priority where item ``n+1`` takes precedence
-
-        over item ``n`` and so on.
-
-        Notes
-        -----
-        This is a hacky solution assuming alot about the REST API response from
-
-        ``/data/days?start={start}&end={end}``.
-        """
-        chunks = defaultdict(list)
-        for file_i in response_json["Files"]:
-            for chunk_i in file_i["Chunks"]:
-                chunks[chunk_i.pop("DaysSinceEpoch")].append(chunk_i)
-
-        url_sequence = []
-        for day_i in sorted(chunks):
-            for blob_item in chunks[day_i]:
-                url_sequence.append(
-                    {
-                        "Endpoint": blob_item["Endpoint"],
-                        "Path": blob_item["Path"],
-                        "ContentMd5": blob_item["ContentMd5"],
-                    }
-                )
-        return url_sequence
-
 
 class StorageCache(CacheIO):
     """
