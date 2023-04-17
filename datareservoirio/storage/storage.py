@@ -74,7 +74,7 @@ class Storage:
         response.raise_for_status()
         return
 
-    def get(self, target_url):
+    def get(self, blob_sequence):
         """
         Get a Pandas Dataframe from storage.
 
@@ -92,13 +92,15 @@ class Storage:
             Pandas DataFrame with two columns, ``index`` and ``values``.
 
         """
-        response = self._session.get(target_url)
+        # response = self._session.get(target_url)
 
-        response.raise_for_status()
+        # response.raise_for_status()
 
-        blob_sequence = iter(
-            reversed(self._days_response_url_sequence(response.json()))
-        )
+        # blob_sequence = iter(
+        #     reversed(self._days_response_url_sequence(response.json()))
+        # )
+
+        blob_sequence = iter(reversed(blob_sequence))
 
         try:
             chunk_i = next(blob_sequence)
