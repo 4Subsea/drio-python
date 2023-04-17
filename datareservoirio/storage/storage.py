@@ -92,13 +92,6 @@ class Storage:
             Pandas DataFrame with two columns, ``index`` and ``values``.
 
         """
-        # response = self._session.get(target_url)
-
-        # response.raise_for_status()
-
-        # blob_sequence = iter(
-        #     reversed(self._days_response_url_sequence(response.json()))
-        # )
 
         blob_sequence = iter(reversed(blob_sequence))
 
