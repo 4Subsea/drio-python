@@ -236,3 +236,9 @@ class Test_Storage:
         df_expect = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
         pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_get_raises(self, storage_no_cache):
+        target_url = "http://example/no/exist"
+
+        with pytest.raises(HTTPError):
+            storage_no_cache.get(target_url)
