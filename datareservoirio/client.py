@@ -596,7 +596,12 @@ def _timeseries_available_days(response_json):
 
 def _blob_sequence_days(response_json):
     """
-    TODO
+    Returns blob sequences grouped by days and sorted by 'Files'.
+
+    Parameters
+    ----------
+    response_json : dict
+        TimeSeries API JSON response.
     """
 
     blob_sequences = defaultdict(list)
