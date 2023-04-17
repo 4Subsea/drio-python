@@ -1,6 +1,7 @@
 import logging
 import time
 import warnings
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from operator import itemgetter
