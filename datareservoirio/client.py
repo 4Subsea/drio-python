@@ -571,29 +571,6 @@ class Client:
         return response["State"]
 
 
-def _timeseries_available_days(response_json):
-    """
-    Return list of days ``start`` and ``end`` covers.
-    Each day is represented by the first nanoseconds since epoch
-    of that day.
-
-    The list is obtained from the response of an "exploratory" call to
-    ``api/timeseries/data/days?start={start}&end={end}``.
-
-    Notes
-    -----
-    This is a bit hacky, since it assumes a few things about the response and
-    the inner workings of the backend.
-    """
-    days = set()
-    nanoseconds_day = 86400000000000
-
-    for file_i in response_json["Files"]:
-        for chunk_i in file_i["Chunks"]:
-            days.add(chunk_i["DaysSinceEpoch"] * nanoseconds_day)
-    return sorted(days)
-
-
 def _blob_sequence_days(response_json):
     """
     Returns blob sequences grouped by days and sorted by 'Files'.
