@@ -74,6 +74,11 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 204,
         "reason": "No Content",
     },
+    # description: put raises error
+    ("PUT", "http://example/put/raises"): {
+        "status_code": 500,
+        "reason": "Internal Server Error",
+    },
 }
 
 
