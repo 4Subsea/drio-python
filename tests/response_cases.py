@@ -146,7 +146,7 @@ RESPONSE_GROUP1 = {
             TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19359.csv"
         ).read_bytes(),
     },
-    # A (TimeSeries API response)
+    # F (TimeSeries API response)
     # ---------------------------
     (
         "GET",
