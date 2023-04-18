@@ -70,7 +70,7 @@ class Storage:
         _df_to_blob(df, target_url)
 
         method, url, kwargs = commit_request
-        response = self._session.request(method, url, **kwargs)
+        response = self._session.request(method=method, url=url, **kwargs)
         response.raise_for_status()
         return
 

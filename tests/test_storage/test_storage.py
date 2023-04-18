@@ -513,8 +513,8 @@ class Test_Storage:
                 data=ANY,
             ),
             call(
-                "POST",
-                "https://reservoir-api.4subsea.net/api/files/commit",
+                method="POST",
+                url="https://reservoir-api.4subsea.net/api/files/commit",
                 json={"FileId": "1234"},
             ),
         ]
