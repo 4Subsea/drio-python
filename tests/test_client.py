@@ -158,3 +158,10 @@ class Test_Client:
         series_expect.index = pd.to_datetime(series_expect.index, utc=True)
 
         pd.testing.assert_series_equal(series_out, series_expect)
+
+    def test_get_raise_empty(self, client):
+        with pytest.raises(ValueError):
+            client.get(
+                "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
+                raise_empty=True
+            )
