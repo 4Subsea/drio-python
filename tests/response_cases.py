@@ -69,6 +69,11 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
     },
+    # description: commit files
+    ("POST", "https://reservoir-api.4subsea.net/api/files/commit"): {
+        "status_code": 204,
+        "reason": "No Content",
+    },
 }
 
 

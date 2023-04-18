@@ -491,5 +491,15 @@ class Test_Storage:
         # Check that the cache folder now contains one file
         assert len(list(CACHE_PATH.iterdir())) == 1
 
-    def test_put(self, storage_no_cache):
-        pass
+    def test_put(self, storage_no_cache, data_float):
+        df = data_float.as_dataframe()
+
+        storage_no_cache.put(
+            df,
+            "http://example/blob/url",
+            (
+                "POST",
+                "https://reservoir-api.4subsea.net/api/files/commit",
+                {"json": {"FileId": "1234"}}
+            )
+        )
