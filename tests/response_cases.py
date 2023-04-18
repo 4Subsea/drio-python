@@ -69,17 +69,17 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
     },
-    # description: commit files
+    # description: commit file for processing
     ("POST", "https://reservoir-api.4subsea.net/api/files/commit"): {
         "status_code": 204,
         "reason": "No Content",
     },
-    # description: put raises error
+    # description: PUT raises error
     ("PUT", "http://example/put/raises"): {
         "status_code": 500,
         "reason": "Internal Server Error",
     },
-    # description: put raises error
+    # description: POST raises error
     ("POST", "http://example/post/raises"): {
         "status_code": 500,
         "reason": "Internal Server Error",
