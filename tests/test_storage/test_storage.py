@@ -1,7 +1,7 @@
 import os
 import time
 from pathlib import Path
-from unittest.mock import ANY
+from unittest.mock import ANY, call
 
 import pandas as pd
 import pytest
@@ -492,6 +492,7 @@ class Test_Storage:
         assert len(list(CACHE_PATH.iterdir())) == 1
 
     def test_put(self, storage_no_cache, data_float):
+    def test_put(self, mock_requests, bytesio_with_memory, storage_no_cache, data_float):
         df = data_float.as_dataframe()
 
         storage_no_cache.put(
@@ -503,3 +504,21 @@ class Test_Storage:
                 {"json": {"FileId": "1234"}}
             )
         )
+
+        calls_expected = [
+            call(
+                method="put",
+                url="http://example/blob/url",
+                headers={"x-ms-blob-type": "BlockBlob"},
+                data=ANY,
+            ),
+            call(
+                "POST",
+                "https://reservoir-api.4subsea.net/api/files/commit",
+                json={"FileId": "1234"},
+            ),
+        ]
+
+        assert mock_requests.call_args_list[0].kwargs["data"].memory == data_float.as_binary_csv()
+
+        mock_requests.assert_has_calls(calls_expected)
