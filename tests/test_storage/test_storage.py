@@ -31,6 +31,7 @@ def data_float():
 
     return data_handler
 
+
 @pytest.fixture
 def data_string():
     index_list = (
@@ -495,7 +496,9 @@ class Test_Storage:
     def test_put(self, mock_requests, bytesio_with_memory, storage_no_cache, data_float):
         df = data_float.as_dataframe()
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
-    def test_put(self, request, mock_requests, bytesio_with_memory, storage_no_cache, data):
+    def test_put(
+        self, request, mock_requests, bytesio_with_memory, storage_no_cache, data
+    ):
         data = request.getfixturevalue(data)
 
         df = data.as_dataframe()
@@ -506,8 +509,8 @@ class Test_Storage:
             (
                 "POST",
                 "https://reservoir-api.4subsea.net/api/files/commit",
-                {"json": {"FileId": "1234"}}
-            )
+                {"json": {"FileId": "1234"}},
+            ),
         )
 
         calls_expected = [
@@ -524,6 +527,9 @@ class Test_Storage:
             ),
         ]
 
-        assert mock_requests.call_args_list[0].kwargs["data"].memory == data.as_binary_csv()
+        assert (
+            mock_requests.call_args_list[0].kwargs["data"].memory
+            == data.as_binary_csv()
+        )
 
         mock_requests.assert_has_calls(calls_expected)
