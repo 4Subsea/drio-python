@@ -79,6 +79,11 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 500,
         "reason": "Internal Server Error",
     },
+    # description: put raises error
+    ("POST", "http://example/post/raises"): {
+        "status_code": 500,
+        "reason": "Internal Server Error",
+    },
 }
 
 
