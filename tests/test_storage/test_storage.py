@@ -494,6 +494,11 @@ class Test_Storage:
     def test_put(self, storage_no_cache, data_float):
     def test_put(self, mock_requests, bytesio_with_memory, storage_no_cache, data_float):
         df = data_float.as_dataframe()
+    @pytest.mark.parametrize("data", ("data_float", "data_string"))
+    def test_put(self, request, mock_requests, bytesio_with_memory, storage_no_cache, data):
+        data = request.getfixturevalue(data)
+
+        df = data.as_dataframe()
 
         storage_no_cache.put(
             df,
@@ -519,6 +524,6 @@ class Test_Storage:
             ),
         ]
 
-        assert mock_requests.call_args_list[0].kwargs["data"].memory == data_float.as_binary_csv()
+        assert mock_requests.call_args_list[0].kwargs["data"].memory == data.as_binary_csv()
 
         mock_requests.assert_has_calls(calls_expected)
