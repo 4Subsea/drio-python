@@ -329,7 +329,7 @@ class Client:
         response_json = response.json()
 
         if response_json["Files"]:
-            with ThreadPoolExecutor(max_workers=2) as e:
+            with ThreadPoolExecutor(max_workers=None) as e:
                 futures = [
                     e.submit(self._storage.get, blob_sequence_i)
                     for _, blob_sequence_i in sorted(
