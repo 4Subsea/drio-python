@@ -64,7 +64,7 @@ class Storage:
             Blob storage URL.
         commit_request : tuple
             Parameteres for "commit" request. Given as `(METHOD, URL, kwargs)`.
-            The tuple is passed forward to `session.request(METHOD, URL, **kwargs)`
+            The tuple is passed forward to `session.request(method=METHOD, url=URL, **kwargs)`
 
         """
         _df_to_blob(df, target_url)
