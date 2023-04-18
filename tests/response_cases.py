@@ -50,7 +50,7 @@ RESPONSE_CASES_GENERAL = {
     # description: TimeSeries API response (empty data)
     (
         "GET",
-        "https://reservoir-api.4subsea.net/api/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/data/days",
+        "https://reservoir-api.4subsea.net/api/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/data/days?start=-9214560000000000000&end=9214646399999999999",
     ): {
         "_content": (
             TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "data_days_empty.json"
