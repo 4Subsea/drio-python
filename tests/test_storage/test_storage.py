@@ -535,7 +535,6 @@ class Test_Storage:
         mock_requests.assert_has_calls(calls_expected)
 
     def test_put_raise_for_status(self, storage_no_cache, data_float):
-
         df = data_float.as_dataframe()
 
         with pytest.raises(HTTPError):
@@ -550,7 +549,6 @@ class Test_Storage:
             )
 
     def test_put_raise_for_status2(self, storage_no_cache, data_float):
-
         df = data_float.as_dataframe()
 
         with pytest.raises(HTTPError):
