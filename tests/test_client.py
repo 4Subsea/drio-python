@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+import requests
 
 import datareservoirio as drio
 
@@ -51,6 +52,12 @@ class Test_Client:
         series_expect.index = pd.to_datetime(series_expect.index, utc=True)
 
         pd.testing.assert_series_equal(series_out, series_expect)
+
+        # Check that the correct HTTP request is made
+        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
+        requests.sessions.Session.request.call_args_list[0].kwargs[
+            "url"
+        ] = request_url_expect
 
     def test_get_no_convert(self, client):
         start = 1672358400000000000
@@ -145,6 +152,12 @@ class Test_Client:
 
         pd.testing.assert_series_equal(series_out, series_expect)
 
+        # Check that the correct HTTP request is made
+        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=-9214560000000000000&end=9214646399999999999"
+        requests.sessions.Session.request.call_args_list[0].kwargs[
+            "url"
+        ] = request_url_expect
+
     def test_get_empty(self, client):
         series_out = client.get(
             "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
@@ -161,7 +174,4 @@ class Test_Client:
 
     def test_get_raise_empty(self, client):
         with pytest.raises(ValueError):
-            client.get(
-                "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
-                raise_empty=True
-            )
+            client.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0", raise_empty=True)
