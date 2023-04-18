@@ -74,15 +74,15 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 204,
         "reason": "No Content",
     },
-    # description: PUT raises error
+    # description: PUT raises status
     ("PUT", "http://example/put/raises"): {
-        "status_code": 500,
-        "reason": "Internal Server Error",
+        "status_code": 501,
+        "reason": "Not Implemented",
     },
-    # description: POST raises error
+    # description: POST raises status
     ("POST", "http://example/post/raises"): {
-        "status_code": 500,
-        "reason": "Internal Server Error",
+        "status_code": 501,
+        "reason": "Not Implemented",
     },
 }
 
