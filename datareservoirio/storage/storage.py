@@ -5,7 +5,6 @@ import os
 import re
 import shutil
 import timeit
-from collections import defaultdict
 from threading import RLock as Lock
 
 import pandas as pd
@@ -82,7 +81,7 @@ class Storage:
         ----------
         blob_sequence : list-like
             Sequence of blobs from which to download data. Each element in the sequence
-            should be a ``dict`` which contains an 'Endpoint' and a 'ContentMd5'.
+            should be a ``dict`` which contains 'Endpoint', 'Path', and 'ContentMd5' keys.
             If the sequence contains overlapping data, the last element is kept
             when merging.
 
