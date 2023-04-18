@@ -5,7 +5,6 @@ import os
 import re
 import shutil
 import timeit
-from collections import defaultdict
 from threading import RLock as Lock
 
 import pandas as pd
@@ -74,17 +73,17 @@ class Storage:
         response.raise_for_status()
         return
 
-    def get(self, target_url):
+    def get(self, blob_sequence):
         """
         Get a Pandas Dataframe from storage.
 
-        The REST API endpoint ``target_url`` returns a collection of blob (endpoint)
-        which are downloaded and merged in sequence.
-
         Parameters
         ----------
-        target_url : str
-            REST API URL as ``/data/days?start={start}&end={end}``
+        blob_sequence : list-like
+            Sequence of blobs from which to download data. Each element in the sequence
+            should be a ``dict`` which contains 'Endpoint', 'Path', and 'ContentMd5' keys.
+            If the sequence contains overlapping data, the last element is kept
+            when merging.
 
         Returns
         -------
@@ -92,13 +91,8 @@ class Storage:
             Pandas DataFrame with two columns, ``index`` and ``values``.
 
         """
-        response = self._session.get(target_url)
 
-        response.raise_for_status()
-
-        blob_sequence = iter(
-            reversed(self._days_response_url_sequence(response.json()))
-        )
+        blob_sequence = iter(reversed(blob_sequence))
 
         try:
             chunk_i = next(blob_sequence)
@@ -125,41 +119,6 @@ class Storage:
         else:
             df = _blob_to_df(chunk["Endpoint"])
         return df
-
-    @staticmethod
-    def _days_response_url_sequence(response_json):
-        """
-        Flatten response from ``/data/days?start={start}&end={end}``
-
-        to a sequence of dictionaries with endpoint URLs, path, and
-        md5 hash of blobs.
-
-        The order indicate the priority where item ``n+1`` takes precedence
-
-        over item ``n`` and so on.
-
-        Notes
-        -----
-        This is a hacky solution assuming alot about the REST API response from
-
-        ``/data/days?start={start}&end={end}``.
-        """
-        chunks = defaultdict(list)
-        for file_i in response_json["Files"]:
-            for chunk_i in file_i["Chunks"]:
-                chunks[chunk_i.pop("DaysSinceEpoch")].append(chunk_i)
-
-        url_sequence = []
-        for day_i in sorted(chunks):
-            for blob_item in chunks[day_i]:
-                url_sequence.append(
-                    {
-                        "Endpoint": blob_item["Endpoint"],
-                        "Path": blob_item["Path"],
-                        "ContentMd5": blob_item["ContentMd5"],
-                    }
-                )
-        return url_sequence
 
 
 class StorageCache(CacheIO):

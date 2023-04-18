@@ -1,6 +1,7 @@
 import logging
 import time
 import warnings
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from operator import itemgetter
@@ -320,7 +321,6 @@ class Client:
         if start >= end:
             raise ValueError("start must be before end")
 
-        # make an "exploratory" request
         response = self._auth_session.get(
             environment.api_base_url
             + f"timeseries/{series_id}/data/days?start={start}&end={end}"
@@ -329,14 +329,12 @@ class Client:
         response_json = response.json()
 
         if response_json["Files"]:
-            with ThreadPoolExecutor(max_workers=2) as e:
+            with ThreadPoolExecutor(max_workers=None) as e:
                 futures = [
-                    e.submit(
-                        self._storage.get,
-                        environment.api_base_url
-                        + f"timeseries/{series_id}/data/days?start={val_i}&end={val_i}",
+                    e.submit(self._storage.get, blob_sequence_i)
+                    for _, blob_sequence_i in sorted(
+                        _blob_sequence_days(response_json).items()
                     )
-                    for val_i in _timeseries_available_days(response_json)
                 ]
             df = pd.concat([future_i.result() for future_i in futures])
         else:
@@ -574,24 +572,25 @@ class Client:
         return response["State"]
 
 
-def _timeseries_available_days(response_json):
+def _blob_sequence_days(response_json):
     """
-    Return list of days ``start`` and ``end`` covers.
-    Each day is represented by the first nanoseconds since epoch
-    of that day.
+    Returns blob sequences grouped by days and sorted by 'Files'.
 
-    The list is obtained from the response of an "exploratory" call to
-    ``api/timeseries/data/days?start={start}&end={end}``.
-
-    Notes
-    -----
-    This is a bit hacky, since it assumes a few things about the response and
-    the inner workings of the backend.
+    Parameters
+    ----------
+    response_json : dict
+        TimeSeries API JSON response.
     """
-    days = set()
-    nanoseconds_day = 86400000000000
 
+    blob_sequences = defaultdict(list)
     for file_i in response_json["Files"]:
         for chunk_i in file_i["Chunks"]:
-            days.add(chunk_i["DaysSinceEpoch"] * nanoseconds_day)
-    return sorted(days)
+            blob_sequences[chunk_i["DaysSinceEpoch"]].append(
+                {
+                    "Path": chunk_i["Path"],
+                    "Endpoint": chunk_i["Endpoint"],
+                    "ContentMd5": chunk_i["ContentMd5"],
+                }
+            )
+
+    return dict(blob_sequences)
