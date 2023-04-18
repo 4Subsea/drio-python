@@ -29,7 +29,7 @@ class Test_Client:
     def test__init__(self, auth_session):
         drio.Client(auth_session, cache=False)
 
-    def test_get(self, client):
+    def test_get(self, mock_requests, client):
         start = 1672358400000000000
         end = 1672703940000000000
         series_out = client.get(
@@ -55,9 +55,7 @@ class Test_Client:
 
         # Check that the correct HTTP request is made
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
-        requests.sessions.Session.request.call_args_list[0].kwargs[
-            "url"
-        ] = request_url_expect
+        mock_requests.call_args_list[0].kwargs["url"] = request_url_expect
 
     def test_get_no_convert(self, client):
         start = 1672358400000000000
@@ -130,7 +128,7 @@ class Test_Client:
 
         pd.testing.assert_series_equal(series_out, series_expect)
 
-    def test_get_start_end_as_none(self, client):
+    def test_get_start_end_as_none(self, mock_requests, client):
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=None,
@@ -154,9 +152,7 @@ class Test_Client:
 
         # Check that the correct HTTP request is made
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=-9214560000000000000&end=9214646399999999999"
-        requests.sessions.Session.request.call_args_list[0].kwargs[
-            "url"
-        ] = request_url_expect
+        mock_requests.call_args_list[0].kwargs["url"] = request_url_expect
 
     def test_get_empty(self, client):
         series_out = client.get(
