@@ -311,25 +311,22 @@ def _blob_to_df(blob_url):
 
         stream.seek(0)
         if _check_malformatted(stream.getvalue()):
-            df = pd.read_csv(
-                stream,
-                sep="^([0-9]+),",
-                usecols=(1, 2),
-                engine="python",
-                header=None,
-                names=("index", "values"),
-                dtype={"index": "int64", "values": "str"},
-                encoding="utf-8",
-            ).astype({"values": "float64"}, errors="ignore")
+            kwargs = {
+                "sep": "^([0-9]+),",
+                "usecols": (1, 2),
+                "engine": "python",
+            }
         else:
-            df = pd.read_csv(
-                stream,
-                sep=",",
-                header=None,
-                names=("index", "values"),
-                dtype={"index": "int64", "values": "str"},
-                encoding="utf-8",
-            ).astype({"values": "float64"}, errors="ignore")
+            kwargs = {"sep": ","}
+
+        df = pd.read_csv(
+            stream,
+            header=None,
+            names=("index", "values"),
+            dtype={"index": "int64", "values": "str"},
+            encoding="utf-8",
+            **kwargs
+        ).astype({"values": "float64"}, errors="ignore")
 
     return df
 
