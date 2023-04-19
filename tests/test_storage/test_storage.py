@@ -48,6 +48,32 @@ class Test__blob_to_df:
             blob_url = "http://example/no/exist"
             _ = drio.storage.storage._blob_to_df(blob_url)
 
+    def test__blob_to_df_malformatted(self):
+        """Test with malformatted CSV file"""
+        blob_url = "http://blob/dayfile/string/malformatted"
+        df_out = drio.storage.storage._blob_to_df(blob_url)
+
+        index_expect = (
+            1640995215379000000,
+            1640995219176000000,
+            1640995227270000000,
+            1640995267223000000,
+            1640995271472000000,
+        )
+        values_expect = (
+            "nzvic",
+            "pyccm",
+            "zc,zsz",
+            "cemxl",
+            "ieoos",
+        )
+        df_expect = pd.DataFrame(
+            data={"index": index_expect, "values": values_expect},
+            dtype="str"
+        ).astype({"index": "int64", "values": "float64"}, errors="ignore")
+
+        pd.testing.assert_frame_equal(df_out, df_expect)
+
 
 class Test__df_to_blob:
     """
