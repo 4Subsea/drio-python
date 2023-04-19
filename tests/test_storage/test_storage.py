@@ -61,11 +61,11 @@ class Test__blob_to_df:
             1640995271472000000,
         )
         values_expect = (
-            "nzvic",
-            "pyccm",
+            "nz,vic",
+            "py,ccm",
             "zc,zsz",
-            "cemxl",
-            "ieoos",
+            "c,emxl",
+            "ieoo,s",
         )
         df_expect = pd.DataFrame(
             data={"index": index_expect, "values": values_expect},
