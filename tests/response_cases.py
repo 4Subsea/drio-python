@@ -37,6 +37,17 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
     },
+    # description: blob day file (malformatted string) from remote storage
+    ("GET", "http://blob/dayfile/string/malformatted"): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "RESPONSE_CASES_GENERAL"
+            / "dayfile_string_malformatted.csv"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
     # description: blob do not exist in remote storage
     ("GET", "http://example/no/exist"): {
         "status_code": 404,
