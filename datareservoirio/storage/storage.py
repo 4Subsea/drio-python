@@ -325,7 +325,7 @@ def _blob_to_df(blob_url):
             names=("index", "values"),
             dtype={"index": "int64", "values": "str"},
             encoding="utf-8",
-            **kwargs
+            **kwargs,
         ).astype({"values": "float64"}, errors="ignore")
 
     return df

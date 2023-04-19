@@ -40,7 +40,10 @@ RESPONSE_CASES_GENERAL = {
     # description: blob day file (malformatted string) from remote storage
     ("GET", "http://blob/dayfile/string/malformatted"): {
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "dayfile_string_malformatted.csv"
+            TEST_PATH
+            / "testdata"
+            / "RESPONSE_CASES_GENERAL"
+            / "dayfile_string_malformatted.csv"
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",

@@ -68,8 +68,7 @@ class Test__blob_to_df:
             "ieoo,s",
         )
         df_expect = pd.DataFrame(
-            data={"index": index_expect, "values": values_expect},
-            dtype="str"
+            data={"index": index_expect, "values": values_expect}, dtype="str"
         ).astype({"index": "int64", "values": "float64"}, errors="ignore")
 
         pd.testing.assert_frame_equal(df_out, df_expect)
