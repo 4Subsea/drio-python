@@ -276,14 +276,13 @@ class StorageCache(CacheIO):
             )
 
 
-def _check_malformatted(stream):
+def _check_malformatted(csv_as_bytes):
     """
     Check if CSV file/stream is malformatted
     """
-    content = stream.read()
-    num_lines = content.count(b"\n")
-    num_commas = content.count(b",")
-    return num_commas / num_lines != 1
+    num_lines = csv_as_bytes.count(b"\n")
+    num_commas = csv_as_bytes.count(b",")
+    return num_commas != num_lines
 
 
 def _blob_to_df(blob_url):
@@ -311,8 +310,7 @@ def _blob_to_df(blob_url):
             stream.write(chunk)
 
         stream.seek(0)
-        if _check_malformatted(stream):
-            stream.seek(0)
+        if _check_malformatted(stream.getvalue()):
             df = pd.read_csv(
                 stream,
                 sep="^([0-9]+),",
@@ -324,7 +322,6 @@ def _blob_to_df(blob_url):
                 encoding="utf-8",
             ).astype({"values": "float64"}, errors="ignore")
         else:
-            stream.seek(0)
             df = pd.read_csv(
                 stream,
                 sep=",",
