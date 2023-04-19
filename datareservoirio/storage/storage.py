@@ -277,6 +277,9 @@ class StorageCache(CacheIO):
 
 
 def _check_malformatted(stream):
+    """
+    Check if CSV file/stream is malformatted
+    """
     content = stream.read()
     num_lines = content.count(b"\n")
     num_commas = content.count(b",")
