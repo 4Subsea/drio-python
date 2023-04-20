@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 
 import pandas as pd
 import pytest
@@ -73,3 +74,18 @@ class Test_CacheIO:
 
         df_expect = data.as_dataframe()
         pd.testing.assert_frame_equal(df_out, df_expect)
+
+    @pytest.mark.parametrize("filename", ("data_float.parquet", "data_string.parquet"))
+    def terst__delete(self, filename, tmp_path):
+
+        # Copy file to temporary folder (so that we can test deleting it)
+        src = TEST_PATH.parent / "testdata" / filename
+        dst = tmp_path / filename
+        shutil.copyfile(src, dst)
+
+        filepath = dst
+        assert filepath.exists()
+
+        CacheIO._delete(filepath)
+
+        assert not filepath.exists()
