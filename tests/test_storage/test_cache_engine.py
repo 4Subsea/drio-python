@@ -79,13 +79,11 @@ class Test_CacheIO:
     def terst__delete(self, filename, tmp_path):
 
         # Copy file to temporary folder (so that we can test deleting it)
-        src = TEST_PATH.parent / "testdata" / filename
-        dst = tmp_path / filename
-        shutil.copyfile(src, dst)
+        src_path = TEST_PATH.parent / "testdata" / filename
+        dst_path = tmp_path / filename
+        shutil.copyfile(src_path, dst_path)
 
-        filepath = dst
+        filepath = dst_path
         assert filepath.exists()
-
         CacheIO._delete(filepath)
-
         assert not filepath.exists()
