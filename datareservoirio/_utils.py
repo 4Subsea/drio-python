@@ -8,10 +8,10 @@ def _check_malformatted(filepath_or_buffer):
     Check if CSV file is malformatted
     """
     try:
+        csv_as_bytes = filepath_or_buffer.getvalue()
+    except AttributeError:
         with open(filepath_or_buffer, mode="rb") as f:
             csv_as_bytes = f.read()
-    except TypeError:
-        csv_as_bytes = filepath_or_buffer.getvalue()
 
     num_lines = csv_as_bytes.count(b"\n")
     num_commas = csv_as_bytes.count(b",")
