@@ -505,7 +505,18 @@ class Test_Storage:
             ),
         ],
     )
-    def test__blob_to_df_with_cache(self, storage_with_cache, chunk, file_path):
+    def test__blob_to_df_with_cache(self, tmp_path, storage_with_cache, chunk, file_path):
+
+        STOREFORMATVERSION = "v3"
+        CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
+
+        # Check that the cache folder is made, and that it is empty
+        assert CACHE_PATH.exists()
+        assert len(list(CACHE_PATH.iterdir())) == 0
+
         df_out = storage_with_cache._blob_to_df(chunk)
         df_expect = DataHandler.from_csv(file_path).as_dataframe()
         pd.testing.assert_frame_equal(df_out, df_expect)
+
+        # Check that the cache folder now contains one file
+        assert len(list(CACHE_PATH.iterdir())) == 1
