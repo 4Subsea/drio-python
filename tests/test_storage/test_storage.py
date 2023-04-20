@@ -288,7 +288,9 @@ class Test_Storage:
 
         # Get from cache (and check that the data actually is read from cache files)
         time_before_get = time.time()
+        time.sleep(0.1)
         df_out = storage_with_cache.get(blob_sequence)
+        time.sleep(0.1)
         time_after_get = time.time()
         for cache_file_i in CACHE_PATH.iterdir():
             time_access_file_i = os.path.getatime(cache_file_i)  # last access time
@@ -351,7 +353,9 @@ class Test_Storage:
 
         # Get from cache (and check that the data actually is read from cache files)
         time_before_get = time.time()
+        time.sleep(0.1)
         df_out = storage_with_cache.get(blob_sequence)
+        time.sleep(0.1)
         time_after_get = time.time()
         for cache_file_i in CACHE_PATH.iterdir():
             time_access_file_i = os.path.getatime(cache_file_i)  # last access time
