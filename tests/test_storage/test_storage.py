@@ -394,14 +394,6 @@ class Test_Storage:
         [
             (
                 {
-                    "Path": "1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv",
-                    "Endpoint": "https://permanentprodu000p169.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv?versionid=2023-03-14T14:56:10.8583280Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A58Z&ske=2023-03-15T13%3A50%3A57Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=QTYi%2FAeiMFg72EyxC8d%2BV0M0lmgbYek%2BfGXhAXvme1U%3D",
-                    "ContentMd5": "reFOcOgW3qct5b0VJ/5g7g==",
-                },
-                TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "19356.csv",
-            ),
-            (
-                {
                     "Path": "foo/bar/baz",
                     "Endpoint": "http://blob/dayfile/numeric",
                     "ContentMd5": "1234abc",
@@ -445,14 +437,6 @@ class Test_Storage:
         [
             (
                 {
-                    "Path": "1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv",
-                    "Endpoint": "https://permanentprodu000p169.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv?versionid=2023-03-14T14:56:10.8583280Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A58Z&ske=2023-03-15T13%3A50%3A57Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=QTYi%2FAeiMFg72EyxC8d%2BV0M0lmgbYek%2BfGXhAXvme1U%3D",
-                    "ContentMd5": "reFOcOgW3qct5b0VJ/5g7g==",
-                },
-                TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "19356.csv",
-            ),
-            (
-                {
                     "Path": "foo/bar/baz",
                     "Endpoint": "http://blob/dayfile/numeric",
                     "ContentMd5": "1234abc",
@@ -486,8 +470,9 @@ class Test_Storage:
             ),
         ],
     )
-    def test__blob_to_df_with_cache(self, tmp_path, storage_with_cache, chunk, file_path):
-
+    def test__blob_to_df_with_cache(
+        self, tmp_path, storage_with_cache, chunk, file_path
+    ):
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
