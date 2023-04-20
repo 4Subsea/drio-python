@@ -306,7 +306,7 @@ class Test_Storage:
         # Check that the cache folder now contains four files
         assert len(list(CACHE_PATH.iterdir())) == 4
 
-        # Get from cache
+        # Get from cache (and check that the data actually is read from cache files)
         time_before_get = time.time()
         df_out = storage_with_cache.get(blob_sequence)
         time_after_get = time.time()
