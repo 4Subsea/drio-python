@@ -1,8 +1,12 @@
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
 from datareservoirio._utils import DataHandler
 from datareservoirio.storage.cache_engine import CacheIO
+
+TEST_PATH = Path(__file__).parent
 
 
 class Test_CacheIO:
@@ -56,3 +60,16 @@ class Test_CacheIO:
         assert filepath.exists()
         df_from_file = pd.read_parquet(filepath)
         pd.testing.assert_frame_equal(df_from_file, df)
+
+    @pytest.mark.parametrize(
+        "filename, data",
+        [("data_float.parquet", "data_float"), ("data_string.parquet", "data_string")],
+    )
+    def test__read(self, request, filename, data):
+        data = request.getfixturevalue(data)
+
+        path = TEST_PATH.parent / "testdata" / filename
+        df_out = CacheIO._read(path)
+
+        df_expect = data.as_dataframe()
+        pd.testing.assert_frame_equal(df_out, df_expect)
