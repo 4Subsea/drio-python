@@ -1,13 +1,11 @@
+import pandas as pd
 import pytest
 
-import pandas as pd
-import datareservoirio as drio
-from datareservoirio.storage.cache_engine import CacheIO
 from datareservoirio._utils import DataHandler
+from datareservoirio.storage.cache_engine import CacheIO
 
 
 class Test_CacheIO:
-
     @pytest.fixture
     def data_float(self):
         index_list = (
