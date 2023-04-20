@@ -3,6 +3,21 @@ import io
 import pandas as pd
 
 
+def _check_malformatted(filepath_or_buffer):
+    """
+    Check if CSV file is malformatted
+    """
+    try:
+        csv_as_bytes = filepath_or_buffer.getvalue()
+    except AttributeError:
+        with open(filepath_or_buffer, mode="rb") as f:
+            csv_as_bytes = f.read()
+
+    num_lines = csv_as_bytes.count(b"\n")
+    num_commas = csv_as_bytes.count(b",")
+    return num_commas != num_lines
+
+
 class DataHandler:
     """
     Handles conversion of data series.
@@ -26,12 +41,22 @@ class DataHandler:
     @classmethod
     def from_csv(cls, path):
         """Read data from CSV file"""
+        if _check_malformatted(path):
+            kwargs = {
+                "sep": "^([0-9]+),",
+                "usecols": (1, 2),
+                "engine": "python",
+            }
+        else:
+            kwargs = {"sep": ","}
+
         df = pd.read_csv(
             path,
             header=None,
             names=("index", "values"),
             dtype={"index": "int64", "values": "str"},
             encoding="utf-8",
+            **kwargs,
         ).astype({"values": "float64"}, errors="ignore")
 
         series = df.set_index("index").squeeze("columns")
