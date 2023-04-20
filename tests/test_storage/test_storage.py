@@ -161,7 +161,7 @@ class Test_Storage:
     def storage_with_cache(self, monkeypatch, auth_session, tmp_path):
         # Cache all files by setting CACHE_THRESHOLD=0
         monkeypatch.setattr(drio.storage.StorageCache, "CACHE_THRESHOLD", 0)
-        cache_opt = {"cache_root": ".cache", "max_size": 1024}
+        cache_opt = {"cache_root": tmp_path / ".cache", "max_size": 1024}
         return drio.storage.Storage(auth_session, cache=True, cache_opt=cache_opt)
 
     def test__init__(self, auth_session):
@@ -262,9 +262,10 @@ class Test_Storage:
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_with_cache(self, storage_with_cache):
+    def test_get_with_cache(self, storage_with_cache, tmp_path):
 
-        CACHE_PATH = Path(storage_with_cache._storage_cache._cache_path)
+        STOREFORMATVERSION = "v3"
+        CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
         # Check that the cache folder is made, and that it is empty
         assert CACHE_PATH.exists()
