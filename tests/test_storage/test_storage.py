@@ -441,17 +441,17 @@ class Test_Storage:
                 / "RESPONSE_CASES_GENERAL"
                 / "dayfile_string.csv",
             ),
-            # (
-            #     {
-            #         "Path": "foo/bar/baz",
-            #         "Endpoint": "http://blob/dayfile/string/malformatted",
-            #         "ContentMd5": "1234abc",
-            #     },
-            #     TEST_PATH.parent
-            #     / "testdata"
-            #     / "RESPONSE_CASES_GENERAL"
-            #     / "dayfile_string_malformatted.csv",
-            # ),
+            (
+                {
+                    "Path": "foo/bar/baz",
+                    "Endpoint": "http://blob/dayfile/string/malformatted",
+                    "ContentMd5": "1234abc",
+                },
+                TEST_PATH.parent
+                / "testdata"
+                / "RESPONSE_CASES_GENERAL"
+                / "dayfile_string_malformatted.csv",
+            ),
         ],
     )
     def test__blob_to_df(self, storage_no_cache, chunk, file_path):
