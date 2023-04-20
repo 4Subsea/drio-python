@@ -46,7 +46,7 @@ class Test_CacheIO:
     def test__write(self, request, data, tmp_path):
         data = request.getfixturevalue(data)
 
-        filepath = tmp_path / "foobar"
+        filepath = tmp_path / "foobar.parquet"
 
         assert not filepath.exists()
 
