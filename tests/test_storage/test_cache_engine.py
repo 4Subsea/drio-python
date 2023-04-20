@@ -1,5 +1,5 @@
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -77,7 +77,6 @@ class Test_CacheIO:
 
     @pytest.mark.parametrize("filename", ("data_float.parquet", "data_string.parquet"))
     def terst__delete(self, filename, tmp_path):
-
         # Copy file to temporary folder (so that we can test deleting it)
         src_path = TEST_PATH.parent / "testdata" / filename
         dst_path = tmp_path / filename
