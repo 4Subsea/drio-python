@@ -1,12 +1,12 @@
+import os
+import time
 from pathlib import Path
 from unittest.mock import ANY
-import os
 
 import pandas as pd
 import pytest
 import requests
 from requests import HTTPError
-import time
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
@@ -263,7 +263,6 @@ class Test_Storage:
         pd.testing.assert_frame_equal(df_out, df_expect)
 
     def test_get_with_cache(self, storage_with_cache, tmp_path):
-
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
@@ -317,7 +316,6 @@ class Test_Storage:
         pd.testing.assert_frame_equal(df_out, df_expect)
 
     def test_get_overlapping_with_cache(self, storage_with_cache, tmp_path):
-
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
@@ -408,4 +406,22 @@ class Test_Storage:
         # Get data again (still from remote storage, since no cache files are made)
         df_out = storage_with_cache.get(blob_sequence)
 
+        pd.testing.assert_frame_equal(df_out, df_expect)
+
+    @pytest.mark.parametrize(
+        "chunk, file_path",
+        [
+            (
+                {
+                    "Path": "1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv",
+                    "Endpoint": "https://permanentprodu000p169.blob.core.windows.net/data/1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv?versionid=2023-03-14T14:56:10.8583280Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-03-14T13%3A50%3A58Z&ske=2023-03-15T13%3A50%3A57Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-03-14T17%3A21%3A07Z&sr=b&sp=r&sig=QTYi%2FAeiMFg72EyxC8d%2BV0M0lmgbYek%2BfGXhAXvme1U%3D",
+                    "ContentMd5": "reFOcOgW3qct5b0VJ/5g7g==",
+                },
+                TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "19356.csv",
+            )
+        ],
+    )
+    def test__blob_to_df(self, storage_no_cache, chunk, file_path):
+        df_out = storage_no_cache._blob_to_df(chunk)
+        df_expect = DataHandler.from_csv(file_path).as_dataframe()
         pd.testing.assert_frame_equal(df_out, df_expect)
