@@ -379,3 +379,33 @@ class Test_Storage:
             assert time_before_get < time_access_file_i < time_after_get
 
         pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_get_empty_with_cache(self, storage_with_cache, tmp_path):
+        """
+        Empty data will not be cached since the number of rows is below the CACHE_THRESHOLD
+        """
+
+        STOREFORMATVERSION = "v3"
+        CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
+
+        # Check that the cache folder is made, and that it is empty
+        assert CACHE_PATH.exists()
+        assert len(list(CACHE_PATH.iterdir())) == 0
+
+        blob_sequence = []
+
+        df_expect = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+
+        # Get from remote storage
+        df_out = storage_with_cache.get(blob_sequence)
+
+        pd.testing.assert_frame_equal(df_out, df_expect)
+
+        # Check that the cache folder still contains zero files
+        # (since the number of rows is below the CACHE_THRESHOLD)
+        assert len(list(CACHE_PATH.iterdir())) == 0
+
+        # Get data again (still from remote storage, since no cache files are made)
+        df_out = storage_with_cache.get(blob_sequence)
+
+        pd.testing.assert_frame_equal(df_out, df_expect)
