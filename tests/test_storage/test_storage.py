@@ -6,7 +6,6 @@ from unittest.mock import ANY
 import pandas as pd
 import pytest
 import requests
-from requests import HTTPError
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
