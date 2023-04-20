@@ -3,15 +3,19 @@ import io
 import pandas as pd
 
 
-def _check_malformatted(csv_path):
+def _check_malformatted(filepath_or_buffer):
     """
     Check if CSV file is malformatted
     """
-    with open(csv_path, mode="rb") as f:
-        csv_content = f.read()
-        num_lines = csv_content.count(b"\n")
-        num_commas = csv_content.count(b",")
-        return num_commas != num_lines
+    try:
+        with open(filepath_or_buffer, mode="rb") as f:
+            csv_as_bytes = f.read()
+    except TypeError:
+        csv_as_bytes = filepath_or_buffer.getvalue()
+
+    num_lines = csv_as_bytes.count(b"\n")
+    num_commas = csv_as_bytes.count(b",")
+    return num_commas != num_lines
 
 
 class DataHandler:
