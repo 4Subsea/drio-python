@@ -155,6 +155,11 @@ class Test_Storage:
     def storage_no_cache(self, auth_session):
         return drio.storage.Storage(auth_session, cache=False, cache_opt=None)
 
+    @pytest.fixture
+    def storage_with_cache(self, auth_session):
+        cache_opt = {"cache_root": ".cache", "max_size": 1024}
+        return drio.storage.Storage(auth_session, cache=True, cache_opt=cache_opt)
+
     def test__init__(self, auth_session):
         storage = drio.storage.Storage(auth_session, cache=False, cache_opt=None)
 
