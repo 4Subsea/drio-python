@@ -10,7 +10,6 @@ TEST_PATH = Path(__file__).parent
 
 
 class Test_CacheIO:
-
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__write(self, request, data, tmp_path):
         data = request.getfixturevalue(data)
