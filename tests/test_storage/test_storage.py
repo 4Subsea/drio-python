@@ -6,6 +6,7 @@ from unittest.mock import ANY, call
 import pandas as pd
 import pytest
 import requests
+from requests import HTTPError
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
@@ -492,9 +493,6 @@ class Test_Storage:
         # Check that the cache folder now contains one file
         assert len(list(CACHE_PATH.iterdir())) == 1
 
-    def test_put(self, storage_no_cache, data_float):
-    def test_put(self, mock_requests, bytesio_with_memory, storage_no_cache, data_float):
-        df = data_float.as_dataframe()
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test_put(
         self, request, mock_requests, bytesio_with_memory, storage_no_cache, data
