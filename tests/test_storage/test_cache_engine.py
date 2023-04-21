@@ -4,7 +4,6 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from datareservoirio._utils import DataHandler
 from datareservoirio.storage.cache_engine import CacheIO
 
 TEST_PATH = Path(__file__).parent
