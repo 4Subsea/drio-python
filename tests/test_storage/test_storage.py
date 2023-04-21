@@ -1,16 +1,55 @@
 import os
 import time
 from pathlib import Path
-from unittest.mock import ANY
+from unittest.mock import ANY, call
 
 import pandas as pd
 import pytest
 import requests
+from requests import HTTPError
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
+
+
+@pytest.fixture
+def data_float():
+    index_list = (
+        1640995215379000000,
+        1640995219176000000,
+        1640995227270000000,
+        1640995267223000000,
+        1640995271472000000,
+    )
+
+    values_list = (-0.2, -0.1, 0.2, 0.1, 1.2)
+
+    series = pd.Series(data=values_list, index=index_list, name="values")
+
+    data_handler = DataHandler(series)
+
+    return data_handler
+
+
+@pytest.fixture
+def data_string():
+    index_list = (
+        1640995215379000000,
+        1640995219176000000,
+        1640995227270000000,
+        1640995267223000000,
+        1640995271472000000,
+    )
+
+    values_list = ("foo", "bar", "baz", "foobar", "abcd")
+
+    series = pd.Series(data=values_list, index=index_list, name="values")
+
+    data_handler = DataHandler(series)
+
+    return data_handler
 
 
 class Test__blob_to_df:
@@ -60,42 +99,6 @@ class Test__df_to_blob:
     """
     Tests the :func:`_df_to_blob` function.
     """
-
-    @pytest.fixture
-    def data_float(self):
-        index_list = (
-            1640995215379000000,
-            1640995219176000000,
-            1640995227270000000,
-            1640995267223000000,
-            1640995271472000000,
-        )
-
-        values_list = (-0.2, -0.1, 0.2, 0.1, 1.2)
-
-        series = pd.Series(data=values_list, index=index_list, name="values")
-
-        data_handler = DataHandler(series)
-
-        return data_handler
-
-    @pytest.fixture
-    def data_string(self):
-        index_list = (
-            1640995215379000000,
-            1640995219176000000,
-            1640995227270000000,
-            1640995267223000000,
-            1640995271472000000,
-        )
-
-        values_list = ("foo", "bar", "baz", "foobar", "abcd")
-
-        series = pd.Series(data=values_list, index=index_list, name="values")
-
-        data_handler = DataHandler(series)
-
-        return data_handler
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__df_to_blob(self, data, request):
@@ -489,3 +492,70 @@ class Test_Storage:
 
         # Check that the cache folder now contains one file
         assert len(list(CACHE_PATH.iterdir())) == 1
+
+    @pytest.mark.parametrize("data", ("data_float", "data_string"))
+    def test_put(
+        self, request, mock_requests, bytesio_with_memory, storage_no_cache, data
+    ):
+        data = request.getfixturevalue(data)
+
+        df = data.as_dataframe()
+
+        storage_no_cache.put(
+            df,
+            "http://example/blob/url",
+            (
+                "POST",
+                "https://reservoir-api.4subsea.net/api/files/commit",
+                {"json": {"FileId": "1234"}},
+            ),
+        )
+
+        calls_expected = [
+            call(
+                method="put",
+                url="http://example/blob/url",
+                headers={"x-ms-blob-type": "BlockBlob"},
+                data=ANY,
+            ),
+            call(
+                method="POST",
+                url="https://reservoir-api.4subsea.net/api/files/commit",
+                json={"FileId": "1234"},
+            ),
+        ]
+
+        assert (
+            mock_requests.call_args_list[0].kwargs["data"].memory
+            == data.as_binary_csv()
+        )
+
+        mock_requests.assert_has_calls(calls_expected)
+
+    def test_put_raise_for_status(self, storage_no_cache, data_float):
+        df = data_float.as_dataframe()
+
+        with pytest.raises(HTTPError):
+            storage_no_cache.put(
+                df,
+                "http://example/put/raises",
+                (
+                    "POST",
+                    "https://reservoir-api.4subsea.net/api/files/commit",
+                    {"json": {"FileId": "1234"}},
+                ),
+            )
+
+    def test_put_raise_for_status2(self, storage_no_cache, data_float):
+        df = data_float.as_dataframe()
+
+        with pytest.raises(HTTPError):
+            storage_no_cache.put(
+                df,
+                "http://example/blob/url",
+                (
+                    "POST",
+                    "http://example/post/raises",
+                    {"json": {"FileId": "1234"}},
+                ),
+            )
