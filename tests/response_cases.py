@@ -69,6 +69,21 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
     },
+    # description: commit file for processing
+    ("POST", "https://reservoir-api.4subsea.net/api/files/commit"): {
+        "status_code": 204,
+        "reason": "No Content",
+    },
+    # description: PUT raises status
+    ("PUT", "http://example/put/raises"): {
+        "status_code": 501,
+        "reason": "Not Implemented",
+    },
+    # description: POST raises status
+    ("POST", "http://example/post/raises"): {
+        "status_code": 501,
+        "reason": "Not Implemented",
+    },
 }
 
 

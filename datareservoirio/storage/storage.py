@@ -10,6 +10,7 @@ from threading import RLock as Lock
 import pandas as pd
 import requests
 
+from .._utils import _check_malformatted
 from ..appdirs import user_cache_dir
 from .cache_engine import CacheIO, _CacheIndex
 
@@ -63,13 +64,13 @@ class Storage:
             Blob storage URL.
         commit_request : tuple
             Parameteres for "commit" request. Given as `(METHOD, URL, kwargs)`.
-            The tuple is passed forward to `session.request(METHOD, URL, **kwargs)`
+            The tuple is passed forward to `session.request(method=METHOD, url=URL, **kwargs)`
 
         """
         _df_to_blob(df, target_url)
 
         method, url, kwargs = commit_request
-        response = self._session.request(method, url, **kwargs)
+        response = self._session.request(method=method, url=url, **kwargs)
         response.raise_for_status()
         return
 
@@ -276,15 +277,6 @@ class StorageCache(CacheIO):
             )
 
 
-def _check_malformatted(csv_as_bytes):
-    """
-    Check if CSV file/stream is malformatted
-    """
-    num_lines = csv_as_bytes.count(b"\n")
-    num_commas = csv_as_bytes.count(b",")
-    return num_commas != num_lines
-
-
 def _blob_to_df(blob_url):
     """
     Download blob from remote storage and present as a Pandas Series.
@@ -310,7 +302,7 @@ def _blob_to_df(blob_url):
             stream.write(chunk)
 
         stream.seek(0)
-        if _check_malformatted(stream.getvalue()):
+        if _check_malformatted(stream):
             kwargs = {
                 "sep": "^([0-9]+),",
                 "usecols": (1, 2),
