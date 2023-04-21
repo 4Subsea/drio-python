@@ -14,44 +14,6 @@ from datareservoirio._utils import DataHandler
 TEST_PATH = Path(__file__).parent
 
 
-@pytest.fixture
-def data_float():
-    index_list = (
-        1640995215379000000,
-        1640995219176000000,
-        1640995227270000000,
-        1640995267223000000,
-        1640995271472000000,
-    )
-
-    values_list = (-0.2, -0.1, 0.2, 0.1, 1.2)
-
-    series = pd.Series(data=values_list, index=index_list, name="values")
-
-    data_handler = DataHandler(series)
-
-    return data_handler
-
-
-@pytest.fixture
-def data_string():
-    index_list = (
-        1640995215379000000,
-        1640995219176000000,
-        1640995227270000000,
-        1640995267223000000,
-        1640995271472000000,
-    )
-
-    values_list = ("foo", "bar", "baz", "foobar", "abcd")
-
-    series = pd.Series(data=values_list, index=index_list, name="values")
-
-    data_handler = DataHandler(series)
-
-    return data_handler
-
-
 class Test__blob_to_df:
     """
     Tests the :func:`_blob_to_df` function.
