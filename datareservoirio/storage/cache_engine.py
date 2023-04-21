@@ -19,7 +19,8 @@ class CacheIO:
 
     """
 
-    def _write(self, data, filepath):
+    @staticmethod
+    def _write(data, filepath):
         pre_filepath = filepath + ".uncommitted"
         with io.open(pre_filepath, "wb") as file_:
             try:
@@ -31,13 +32,15 @@ class CacheIO:
         log.debug(f"Commit {pre_filepath} as {filepath}")
         os.rename(pre_filepath, filepath)
 
-    def _read(self, filepath):
+    @staticmethod
+    def _read(filepath):
         with io.open(filepath, "rb") as file_:
             data = pd.read_parquet(file_)
         os.utime(filepath)
         return data
 
-    def _delete(self, filepath):
+    @staticmethod
+    def _delete(filepath):
         try:
             log.debug(f"Evict {filepath}")
             os.remove(filepath)
