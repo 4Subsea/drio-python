@@ -58,7 +58,9 @@ class Test__CacheIndex:
     def cache_index(self):
         CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
         CACHE_PATH = CACHE_ROOT / "v3"
-        return _CacheIndex(CACHE_PATH, 1024)
+        max_size_mb = 1025
+        max_size_b = max_size_mb * 1024 * 1024   # MB to B
+        return _CacheIndex(CACHE_PATH, max_size_b)
 
     def test__init__(self):
         CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
@@ -172,3 +174,6 @@ class Test__CacheIndex:
 
         assert keys_list_after_touch[-1] == keys_list_before_touch[0]
         assert keys_list_after_touch[0] == keys_list_before_touch[1]
+
+    def test_less_than_max(self, cache_index):
+        assert cache_index.size_less_than_max is True
