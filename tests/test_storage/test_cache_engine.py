@@ -1,4 +1,3 @@
-import re
 import shutil
 from collections.abc import MutableMapping
 from pathlib import Path
@@ -69,16 +68,36 @@ class Test__CacheIndex:
 
         assert isinstance(cache_index, MutableMapping)
 
-    # def test_exists(self, cache_index):
-    #     id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
-    #     md5 = "fJ85MDJqsTW6zDJbd+Fa4A=="
-    #     assert cache_index.exists(id_, md5) is True
-
-    def test_exists(self, cache_index):
-        path = "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv"
-        md5 = "fJ85MDJqsTW6zDJbd+Fa4A=="
-
-        id_ = "parquet" + re.sub(r"-|_|/|\.", "", path)
+    @pytest.mark.parametrize(
+        "path, md5",
+        [
+            (
+                "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv",
+                "fJ85MDJqsTW6zDJbd+Fa4A==",
+            ),
+            (
+                "03fc12505d3d41fea77df405b2563e49/2022/12/31/day/csv/19357.csv",
+                "wXZFUzjC6SIs09OqkttZWQ==",
+            ),
+            (
+                "629504a5fe3449049370049874b69fe0/2022/12/30/day/csv/19356.csv",
+                "JQAxeHMZ69WSsEuanKMJHA==",
+            ),
+            (
+                "629504a5fe3449049370049874b69fe0/2022/12/31/day/csv/19357.csv",
+                "n5FdtLw0noj575zc0gilog==",
+            ),
+            (
+                "1d9d844990bc45d6b24432b33a324156/2022/12/31/day/csv/19357.csv",
+                "c4cRzdbJCUkYa1JkprsUWw==",
+            ),
+            (
+                "1d9d844990bc45d6b24432b33a324156/2023/01/01/day/csv/19358.csv",
+                "6BmmWa7uXis3+xZdR2tVwg==",
+            ),
+        ],
+    )
+    def test_exists(self, cache_index, path, md5):
+        id_ = "parquet" + path.replace("/", "").replace(".", "")
         md5 = _encode_for_path_safety(md5)
-
         assert cache_index.exists(id_, md5) is True
