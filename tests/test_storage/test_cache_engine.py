@@ -158,3 +158,17 @@ class Test__CacheIndex:
         shutil.copyfile(SRC_CACHE_PATH / filename, CACHE_PATH / filename)
         assert cache_index.exists(id_, md5) is True
         assert len(cache_index) == 1
+
+    def test_touch(self, cache_index):
+        keys_list_before_touch = list(cache_index.keys())
+
+        # Mark the 'last used' entry as 'recently used'
+        idx_last_used = 0
+        key = keys_list_before_touch[idx_last_used]
+        id_, md5 = key.split("_")
+        cache_index.touch(id_, md5)
+
+        keys_list_after_touch = list(cache_index.keys())
+
+        assert keys_list_after_touch[-1] == keys_list_before_touch[0]
+        assert keys_list_after_touch[0] == keys_list_before_touch[1]
