@@ -218,3 +218,11 @@ class Test__CacheIndex:
 
         assert id_out == id_expect
         item_out.items() >= item_expect.items()  # check is subset since 'time' is not known
+
+    def test__key(self, cache_index):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        key_out = cache_index._key(id_, md5)
+
+        key_expect = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv_Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        assert key_out == key_expect
