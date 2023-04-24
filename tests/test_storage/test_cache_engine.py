@@ -251,3 +251,13 @@ class Test__CacheIndex:
         id_ = "nonexistingid"
         md5 = "abcd"
         assert cache_index._file_exists(id_, md5) is False
+
+    def test__test_register_file(self, cache_index):
+        # Pop an item to register later
+        id_popped, item_popped = cache_index.popitem()
+        key_popped = cache_index._key(id_popped, item_popped["md5"])
+
+        # Register the popped file
+        assert key_popped not in cache_index
+        cache_index._register_file(id_popped, item_popped["md5"])
+        assert key_popped in cache_index
