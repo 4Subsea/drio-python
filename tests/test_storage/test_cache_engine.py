@@ -101,3 +101,10 @@ class Test__CacheIndex:
         id_ = "parquet" + path.replace("/", "").replace(".", "")
         md5 = _encode_for_path_safety(md5)
         assert cache_index.exists(id_, md5) is True
+
+    def test_no_exists(self, cache_index):
+        path = "foo/bar/baz.csv"
+        md5 = "6BmmWa7uXis3+xZdR2tVwg=="
+        id_ = "parquet" + path.replace("/", "").replace(".", "")
+        md5 = _encode_for_path_safety(md5)
+        assert cache_index.exists(id_, md5) is False
