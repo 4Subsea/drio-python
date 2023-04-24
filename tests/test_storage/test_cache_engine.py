@@ -211,6 +211,7 @@ class Test__CacheIndex:
 
     def test_popitem(self, cache_index):
         id_out, item_out = cache_index.popitem()
+        key = id_out + "_" + item_out["md5"]
 
         id_expect = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
         item_expect = {
@@ -221,6 +222,7 @@ class Test__CacheIndex:
 
         assert id_out == id_expect
         item_out.items() >= item_expect.items()  # check is subset since 'time' is not known
+        assert key not in cache_index
 
     def test__key(self, cache_index):
         id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
