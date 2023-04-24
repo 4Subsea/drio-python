@@ -193,3 +193,12 @@ class Test__CacheIndex:
 
     def test_size(self, cache_index):
         assert cache_index.size == 690851
+
+    def test__update_size(self, cache_index):
+        assert cache_index.size == 690851
+
+        key = "parquet03fc12505d3d41fea77df405b2563e4920221231daycsv19357csv_d1haRlV6akM2U0lzMDlPcWt0dFpXUT09"
+        cache_index[key]["size"] -= 51
+
+        cache_index._update_size()
+        cache_index.size == 690800
