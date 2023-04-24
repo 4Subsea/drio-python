@@ -254,7 +254,7 @@ class Test__CacheIndex:
         assert cache_index._file_exists(id_, md5) is True
 
         id_ = "nonexistingid"
-        md5 = "abcd"
+        md5 = "foobar"
         assert cache_index._file_exists(id_, md5) is False
 
     def test__test_register_file(self, cache_index):
