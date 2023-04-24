@@ -238,7 +238,7 @@ class Test__CacheIndex:
             "id": "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv",
             "md5": "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09",
             "size": 123,
-            "time": 1.2
+            "time": 1.2,
         }
 
         assert index_item_out == index_item_expect
