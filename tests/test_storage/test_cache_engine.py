@@ -59,7 +59,7 @@ class Test__CacheIndex:
         CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
         CACHE_PATH = CACHE_ROOT / "v3"
         max_size_mb = 1025
-        max_size_b = max_size_mb * 1024 * 1024   # MB to B
+        max_size_b = max_size_mb * 1024 * 1024  # MB to B
         return _CacheIndex(CACHE_PATH, max_size_b)
 
     def test__init__(self):
@@ -70,6 +70,15 @@ class Test__CacheIndex:
 
         assert isinstance(cache_index, MutableMapping)
         assert cache_index._current_size == 690851
+
+        key = "parquet03fc12505d3d41fea77df405b2563e4920221231daycsv19357csv_d1haRlV6akM2U0lzMDlPcWt0dFpXUT09"
+        assert set(cache_index[key].keys()) == {"id", "md5", "size", "time"}
+        assert cache_index[key]["md5"] == "d1haRlV6akM2U0lzMDlPcWt0dFpXUT09"
+        assert cache_index[key]["size"] == 81265
+        assert (
+            cache_index[key]["id"]
+            == "parquet03fc12505d3d41fea77df405b2563e4920221231daycsv19357csv"
+        )
 
     @pytest.mark.parametrize(
         "path, md5",
