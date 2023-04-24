@@ -2,6 +2,7 @@ import shutil
 from collections.abc import MutableMapping
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -195,10 +196,12 @@ class Test__CacheIndex:
         assert cache_index.size == 690851
 
     def test__update_size(self, cache_index):
-        assert cache_index.size == 690851
+        sum_ = 0
+        for _, val_i in cache_index.items():
+            size_update_i = np.random.randint(0, 100)
+            val_i["size"] = size_update_i  # update size with random values
+            sum_ += size_update_i
 
-        key = "parquet03fc12505d3d41fea77df405b2563e4920221231daycsv19357csv_d1haRlV6akM2U0lzMDlPcWt0dFpXUT09"
-        cache_index[key]["size"] -= 51
-
+        assert cache_index.size == 690851  # old size
         cache_index._update_size()
-        cache_index.size == 690800
+        assert cache_index.size == sum_  # updated size
