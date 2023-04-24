@@ -181,3 +181,6 @@ class Test__CacheIndex:
         # Lower the `max_size`, and check that size becomes greater than max
         cache_index._max_size = 1024
         assert cache_index.size_less_than_max is False
+
+    def test_size(self, cache_index):
+        assert cache_index.size == 690851
