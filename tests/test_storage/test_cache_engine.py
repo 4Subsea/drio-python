@@ -226,3 +226,19 @@ class Test__CacheIndex:
 
         key_expect = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv_Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
         assert key_out == key_expect
+
+    def test__index_item(self):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        size = 123
+        time = 1.2
+        index_item_out = _CacheIndex._index_item(id_, md5, size, time)
+
+        index_item_expect = {
+            "id": "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv",
+            "md5": "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09",
+            "size": 123,
+            "time": 1.2
+        }
+
+        assert index_item_out == index_item_expect
