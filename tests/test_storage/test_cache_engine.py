@@ -205,3 +205,16 @@ class Test__CacheIndex:
         assert cache_index.size == 690851  # old size
         cache_index._update_size()
         assert cache_index.size == sum_  # updated size
+
+    def test_popitem(self, cache_index):
+        id_out, item_out = cache_index.popitem()
+
+        id_expect = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        item_expect = {
+            "id": "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv",
+            "md5": "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09",
+            "size": 162347,
+        }
+
+        assert id_out == id_expect
+        item_out.items() >= item_expect.items()  # check is subset since 'time' is not known
