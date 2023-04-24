@@ -210,18 +210,16 @@ class Test__CacheIndex:
         assert cache_index.size == sum_  # updated size
 
     def test_popitem(self, cache_index):
+        key_last = list(cache_index.keys())[0]
+        item_last = cache_index[key_last]
+
         id_out, item_out = cache_index.popitem()
         key = id_out + "_" + item_out["md5"]
 
-        id_expect = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
-        item_expect = {
-            "id": "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv",
-            "md5": "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09",
-            "size": 162347,
-        }
-
+        id_expect = item_last["id"]
+        item_expect = item_last
         assert id_out == id_expect
-        item_out.items() >= item_expect.items()  # check is subset since 'time' is not known
+        assert item_out == item_expect
         assert key not in cache_index
 
     def test__key(self, cache_index):
