@@ -1,10 +1,11 @@
 import shutil
+from collections.abc import MutableMapping
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from datareservoirio.storage.cache_engine import CacheIO
+from datareservoirio.storage.cache_engine import CacheIO, _CacheIndex
 
 TEST_PATH = Path(__file__).parent
 
@@ -49,3 +50,13 @@ class Test_CacheIO:
         assert filepath.exists()
         CacheIO._delete(filepath)
         assert not filepath.exists()
+
+
+class Test__CacheIndex:
+    def test__init__(self):
+        CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
+        CACHE_PATH = CACHE_ROOT / "v3"
+
+        cache_index = _CacheIndex(CACHE_PATH, 1024)
+
+        assert isinstance(cache_index, MutableMapping)
