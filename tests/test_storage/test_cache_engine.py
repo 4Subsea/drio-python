@@ -1,3 +1,4 @@
+import re
 import shutil
 from collections.abc import MutableMapping
 from pathlib import Path
@@ -6,6 +7,7 @@ import pandas as pd
 import pytest
 
 from datareservoirio.storage.cache_engine import CacheIO, _CacheIndex
+from datareservoirio.storage.storage import _encode_for_path_safety
 
 TEST_PATH = Path(__file__).parent
 
@@ -53,6 +55,12 @@ class Test_CacheIO:
 
 
 class Test__CacheIndex:
+    @pytest.fixture
+    def cache_index(self):
+        CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
+        CACHE_PATH = CACHE_ROOT / "v3"
+        return _CacheIndex(CACHE_PATH, 1024)
+
     def test__init__(self):
         CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
         CACHE_PATH = CACHE_ROOT / "v3"
@@ -60,3 +68,17 @@ class Test__CacheIndex:
         cache_index = _CacheIndex(CACHE_PATH, 1024)
 
         assert isinstance(cache_index, MutableMapping)
+
+    # def test_exists(self, cache_index):
+    #     id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+    #     md5 = "fJ85MDJqsTW6zDJbd+Fa4A=="
+    #     assert cache_index.exists(id_, md5) is True
+
+    def test_exists(self, cache_index):
+        path = "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv"
+        md5 = "fJ85MDJqsTW6zDJbd+Fa4A=="
+
+        id_ = "parquet" + re.sub(r"-|_|/|\.", "", path)
+        md5 = _encode_for_path_safety(md5)
+
+        assert cache_index.exists(id_, md5) is True
