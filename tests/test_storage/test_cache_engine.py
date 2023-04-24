@@ -242,3 +242,12 @@ class Test__CacheIndex:
         }
 
         assert index_item_out == index_item_expect
+
+    def test__file_exists(self, cache_index):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        assert cache_index._file_exists(id_, md5) is True
+
+        id_ = "nonexistingid"
+        md5 = "abcd"
+        assert cache_index._file_exists(id_, md5) is False
