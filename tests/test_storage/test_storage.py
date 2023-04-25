@@ -632,7 +632,7 @@ class Test_StorageCache:
 
         pd.testing.assert_frame_equal(data_out, data_expect)
 
-    def test_get_cache_empty(self, storage_cache_empty):
+    def test_get_empty(self, storage_cache_empty):
         chunk = {
             "Account": "permanentprodu000p106",
             "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
