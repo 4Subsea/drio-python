@@ -1,3 +1,4 @@
+import os
 import shutil
 from collections.abc import MutableMapping
 from pathlib import Path
@@ -265,3 +266,14 @@ class Test__CacheIndex:
         assert key_popped not in cache_index
         cache_index._register_file(id_popped, item_popped["md5"])
         assert key_popped in cache_index
+
+    def test__get_filepath(self, cache_index):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        filepath_out = cache_index._get_filepath(id_, md5)
+
+        CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
+        CACHE_PATH = CACHE_ROOT / "v3"
+        filepath_expect = os.path.normpath(CACHE_PATH / f"{id_}_{md5}")
+
+        assert filepath_out == filepath_expect
