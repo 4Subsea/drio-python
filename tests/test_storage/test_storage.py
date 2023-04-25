@@ -541,15 +541,29 @@ class Test_StorageCache:
         assert storage_cache._max_size == 1024 * 1024**2
 
     def test__init__cache_root(self, tmp_path, STOREFORMATVERSION):
+        assert not (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
+
         StorageCache(
-            cache_root=tmp_path / ".cache",
+            cache_root=tmp_path / ".cache_",
         )
 
-        assert (tmp_path / ".cache" / STOREFORMATVERSION).exists()
+        assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
 
     def test__init_cache_dir(self, storage_cache, tmp_path, STOREFORMATVERSION):
-        cache_root = tmp_path / ".cache"
+        cache_root = tmp_path / ".cache_"
         cache_folder = "datareservoirio"
+        assert not (cache_root / STOREFORMATVERSION).exists()
+        storage_cache._init_cache_dir(cache_root, cache_folder)
+        assert (cache_root / STOREFORMATVERSION).exists()
+
+    def test__init_cache_dir_exists(self, storage_cache, tmp_path, STOREFORMATVERSION):
+        cache_root = tmp_path / ".cache_"
+        cache_path = cache_root / STOREFORMATVERSION
+        cache_folder = "datareservoirio"
+
+        # create the `cache_path` folder, so that it alread exists
+        os.makedirs(cache_path)
+
         storage_cache._init_cache_dir(cache_root, cache_folder)
 
         assert (cache_root / STOREFORMATVERSION).exists()
