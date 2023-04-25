@@ -2,6 +2,7 @@ import os
 import time
 from pathlib import Path
 from unittest.mock import ANY, call
+import shutil
 
 import pandas as pd
 import pytest
@@ -533,6 +534,25 @@ class Test_StorageCache:
         )
         return storage_cache
 
+    @pytest.fixture
+    def tmp_cache_root_with_data(self, tmp_path, STOREFORMATVERSION):
+        # copy cache files to a temporary cache folder
+        dst_cache_root = tmp_path
+        dst_cache_path = dst_cache_root / STOREFORMATVERSION
+        dst_cache_path.mkdir()
+        src_cache_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
+        for src_cache_file_i in src_cache_path.iterdir():
+            shutil.copyfile(src_cache_file_i, dst_cache_path / src_cache_file_i.name)
+        return dst_cache_root
+
+    @pytest.fixture
+    def storage_cache_with_data(self, tmp_cache_root_with_data):
+        storage_cache = StorageCache(
+            max_size=1024,
+            cache_root=tmp_cache_root_with_data,
+        )
+        return storage_cache
+
     def test__init__(self):
         storage_cache = StorageCache(
             max_size=1024, cache_root=None, cache_folder="datareservoirio"
@@ -581,3 +601,11 @@ class Test_StorageCache:
     def test__cache_path(self, storage_cache, tmp_path, STOREFORMATVERSION):
         cache_path_expect = str(tmp_path / ".cache" / STOREFORMATVERSION)
         assert storage_cache._cache_path == cache_path_expect
+
+    def test_reset_cache(self, storage_cache_with_data, tmp_cache_root_with_data):
+        assert len(list(tmp_cache_root_with_data.iterdir())) != 0
+
+        storage_cache_with_data.reset_cache()
+
+        assert tmp_cache_root_with_data.exists()
+        assert len(list(tmp_cache_root_with_data.iterdir())) == 0
