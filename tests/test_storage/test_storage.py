@@ -572,8 +572,12 @@ class Test_StorageCache:
         assert storage_cache._root == str(root_expect)
         assert os.path.exists(cache_path_expect)
 
-    def test_cache_hive(self, storage_cache, STOREFORMATVERSION):
+    def test__cache_hive(self, storage_cache, STOREFORMATVERSION):
         assert storage_cache._cache_hive == STOREFORMATVERSION
 
     def test_cache_root(self, storage_cache, tmp_path):
         assert storage_cache.cache_root == str(tmp_path / ".cache")
+
+    def test__cache_path(self, storage_cache, tmp_path, STOREFORMATVERSION):
+        cache_path_expect = str(tmp_path / ".cache" / STOREFORMATVERSION)
+        assert storage_cache._cache_path == cache_path_expect
