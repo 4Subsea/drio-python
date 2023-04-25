@@ -653,9 +653,13 @@ class Test_StorageCache:
         data = DataHandler.from_csv(data_path).as_dataframe()
 
         storage_cache_empty.put(data, chunk)
-        assert len(os.listdir(storage_cache_empty._cache_path)) == 1
+
+        n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
+        assert n_files_cached == 1
 
     def test_put_tiny(self, storage_cache_empty, chunk, data_float):
         data_tiny = data_float.as_dataframe()   # tiny file
         storage_cache_empty.put(data_tiny, chunk)
-        assert len(os.listdir(storage_cache_empty._cache_path)) == 0
+
+        n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
+        assert n_files_cached == 0
