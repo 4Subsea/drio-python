@@ -555,3 +555,9 @@ class Test_StorageCache:
         assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
         storage_cache._init_cache_dir(tmp_path / "cache_", "datareservoirio")
         assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
+
+    def test__init_cache_dir_default(self, storage_cache, STOREFORMATVERSION):
+        storage_cache._init_cache_dir(None, "datareservoirio")
+        cache_root_expect = drio.appdirs.user_cache_dir("datareservoirio")
+        cache_path_expect = os.path.join(cache_root_expect, STOREFORMATVERSION)
+        assert os.path.exists(cache_path_expect)
