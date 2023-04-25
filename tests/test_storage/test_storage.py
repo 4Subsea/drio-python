@@ -537,7 +537,7 @@ class Test_StorageCache:
 
     @pytest.fixture
     def tmp_root_with_data(self, tmp_path, STOREFORMATVERSION):
-        # copy cache files to a temporary cache folder
+        """Temporary cache root (with data)"""
         dst_cache_root = tmp_path
         dst_cache_path = dst_cache_root / STOREFORMATVERSION
         dst_cache_path.mkdir()
