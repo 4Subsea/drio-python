@@ -9,6 +9,7 @@ import requests
 from requests import HTTPError
 
 import datareservoirio as drio
+from datareservoirio.storage import StorageCache
 from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
@@ -521,3 +522,15 @@ class Test_Storage:
                     {"json": {"FileId": "1234"}},
                 ),
             )
+
+
+class Test_StorageCache:
+    def test__init__(self, tmp_path):
+        storage_cache = StorageCache(
+            max_size=1024,
+            cache_root=tmp_path / ".cache",
+            cache_folder="datareservoirio"
+        )
+
+        assert storage_cache._max_size == 1024 * 1024 ** 2
+        assert (tmp_path / ".cache" / "v3").exists()
