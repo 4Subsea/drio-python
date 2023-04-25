@@ -574,3 +574,6 @@ class Test_StorageCache:
 
     def test_cache_hive(self, storage_cache, STOREFORMATVERSION):
         assert storage_cache._cache_hive == STOREFORMATVERSION
+
+    def test_cache_root(self, storage_cache, tmp_path):
+        assert storage_cache.cache_root == str(tmp_path / ".cache")
