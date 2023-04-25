@@ -43,7 +43,7 @@ class Test_CacheIO:
         pd.testing.assert_frame_equal(df_out, df_expect)
 
     @pytest.mark.parametrize("filename", ("data_float.parquet", "data_string.parquet"))
-    def terst__delete(self, filename, tmp_path):
+    def test__delete(self, filename, tmp_path):
         # Copy file to temporary folder (so that we can test deleting it)
         src_path = TEST_PATH.parent / "testdata" / filename
         dst_path = tmp_path / filename
