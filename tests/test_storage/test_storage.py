@@ -525,12 +525,18 @@ class Test_Storage:
 
 
 class Test_StorageCache:
-    def test__init__(self, tmp_path):
+    def test__init__(self):
         storage_cache = StorageCache(
             max_size=1024,
-            cache_root=tmp_path / ".cache",
+            cache_root=None,
             cache_folder="datareservoirio"
         )
 
         assert storage_cache._max_size == 1024 * 1024 ** 2
+
+    def test__init__cache_root(self, tmp_path):
+        StorageCache(
+            cache_root=tmp_path / ".cache",
+        )
+
         assert (tmp_path / ".cache" / "v3").exists()
