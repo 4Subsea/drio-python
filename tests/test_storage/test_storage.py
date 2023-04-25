@@ -627,19 +627,7 @@ class Test_StorageCache:
         assert tmp_root_with_data.exists()
         assert len(list(tmp_root_with_data.iterdir())) == 0
 
-    def test_get(self, storage_cache):
-        chunk = {
-            "Account": "permanentprodu000p106",
-            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
-            "SasKeyExpirationTime": "2023-04-14T15: 27: 42.3326841+00: 00",
-            "Container": "data",
-            "Path": "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv",
-            "Endpoint": "https: //permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
-            "ContentMd5": "fJ85MDJqsTW6zDJbd+Fa4A==",
-            "VersionId": "2023-04-14T13: 17: 44.5067517Z",
-            "DaysSinceEpoch": 19356
-        }
-
+    def test_get(self, storage_cache, chunk):
         data_out = storage_cache.get(chunk)
 
         data_expect_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
@@ -647,21 +635,8 @@ class Test_StorageCache:
 
         pd.testing.assert_frame_equal(data_out, data_expect)
 
-    def test_get_empty(self, storage_cache_empty):
-        chunk = {
-            "Account": "permanentprodu000p106",
-            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
-            "SasKeyExpirationTime": "2023-04-14T15: 27: 42.3326841+00: 00",
-            "Container": "data",
-            "Path": "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv",
-            "Endpoint": "https: //permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
-            "ContentMd5": "fJ85MDJqsTW6zDJbd+Fa4A==",
-            "VersionId": "2023-04-14T13: 17: 44.5067517Z",
-            "DaysSinceEpoch": 19356
-        }
-
+    def test_get_empty(self, storage_cache_empty, chunk):
         data_out = storage_cache_empty.get(chunk)
-
         assert data_out is None
 
     def test__get_cache_id_md5(self, storage_cache_empty, chunk):
