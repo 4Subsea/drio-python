@@ -654,3 +654,8 @@ class Test_StorageCache:
 
         storage_cache_empty.put(data, chunk)
         assert len(os.listdir(storage_cache_empty._cache_path)) == 1
+
+    def test_put_tiny(self, storage_cache_empty, chunk, data_float):
+        data_tiny = data_float.as_dataframe()   # tiny file
+        storage_cache_empty.put(data_tiny, chunk)
+        assert len(os.listdir(storage_cache_empty._cache_path)) == 0
