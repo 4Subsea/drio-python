@@ -105,3 +105,8 @@ def data_string():
     data_handler = DataHandler(series)
 
     return data_handler
+
+
+@pytest.fixture
+def STOREFORMATVERSION():
+    return "v3"
