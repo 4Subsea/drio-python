@@ -9,8 +9,8 @@ import requests
 from requests import HTTPError
 
 import datareservoirio as drio
-from datareservoirio.storage import StorageCache
 from datareservoirio._utils import DataHandler
+from datareservoirio.storage import StorageCache
 
 TEST_PATH = Path(__file__).parent
 
@@ -525,14 +525,20 @@ class Test_Storage:
 
 
 class Test_StorageCache:
-    def test__init__(self):
+    @pytest.fixture
+    def storage_cache(self, tmp_path):
         storage_cache = StorageCache(
             max_size=1024,
-            cache_root=None,
-            cache_folder="datareservoirio"
+            cache_root=tmp_path / ".cache",
+        )
+        return storage_cache
+
+    def test__init__(self):
+        storage_cache = StorageCache(
+            max_size=1024, cache_root=None, cache_folder="datareservoirio"
         )
 
-        assert storage_cache._max_size == 1024 * 1024 ** 2
+        assert storage_cache._max_size == 1024 * 1024**2
 
     def test__init__cache_root(self, tmp_path):
         StorageCache(
@@ -540,3 +546,6 @@ class Test_StorageCache:
         )
 
         assert (tmp_path / ".cache" / "v3").exists()
+
+    def test__init_cache_dir(self):
+        pass
