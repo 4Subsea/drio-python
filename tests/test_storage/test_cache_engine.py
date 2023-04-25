@@ -54,6 +54,10 @@ class Test_CacheIO:
         CacheIO._delete(filepath)
         assert not filepath.exists()
 
+    def test__delete_filenotfound(self, tmp_path):
+        filepath = tmp_path / "no_existing_file.txt"
+        CacheIO._delete(filepath)
+
 
 class Test__CacheIndex:
     @pytest.fixture
