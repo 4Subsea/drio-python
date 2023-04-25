@@ -656,9 +656,10 @@ class Test_StorageCache:
 
         n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
         assert n_files_cached == 1
-        id_expect = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
-        md5_expect = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
-        assert storage_cache_empty._cache_index.exists(id_expect, md5_expect)
+        assert storage_cache_empty._cache_index.exists(
+            "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv",
+            "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        )
 
     def test_put_tiny(self, storage_cache_empty, chunk, data_float):
         data_tiny = data_float.as_dataframe()   # tiny file
