@@ -547,17 +547,27 @@ class Test_StorageCache:
 
     def test__init_cache_dir(self, storage_cache, tmp_path, STOREFORMATVERSION):
         assert not (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
+
         storage_cache._init_cache_dir(tmp_path / ".cache_", "datareservoirio")
-        assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
+
+        root_expect = tmp_path / ".cache_"
+        assert storage_cache._root == str(root_expect)
+        assert (root_expect / STOREFORMATVERSION).exists()
 
     def test__init_cache_dir_exists(self, storage_cache, tmp_path, STOREFORMATVERSION):
         os.makedirs(tmp_path / ".cache_" / STOREFORMATVERSION)
         assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
-        storage_cache._init_cache_dir(tmp_path / "cache_", "datareservoirio")
-        assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
+
+        storage_cache._init_cache_dir(tmp_path / ".cache_", "datareservoirio")
+
+        root_expect = tmp_path / ".cache_"
+        assert storage_cache._root == str(root_expect)
+        assert (root_expect / STOREFORMATVERSION).exists()
 
     def test__init_cache_dir_default(self, storage_cache, STOREFORMATVERSION):
         storage_cache._init_cache_dir(None, "datareservoirio")
-        cache_root_expect = drio.appdirs.user_cache_dir("datareservoirio")
-        cache_path_expect = os.path.join(cache_root_expect, STOREFORMATVERSION)
+
+        root_expect = drio.appdirs.user_cache_dir("datareservoirio")
+        cache_path_expect = os.path.join(root_expect, STOREFORMATVERSION)
+        assert storage_cache._root == str(root_expect)
         assert os.path.exists(cache_path_expect)
