@@ -1,8 +1,8 @@
 import os
+import shutil
 import time
 from pathlib import Path
 from unittest.mock import ANY, call
-import shutil
 
 import pandas as pd
 import pytest
@@ -541,7 +541,9 @@ class Test_StorageCache:
         dst_cache_root = tmp_path
         dst_cache_path = dst_cache_root / STOREFORMATVERSION
         dst_cache_path.mkdir()
-        src_cache_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
+        src_cache_path = (
+            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
+        )
         for src_cache_file_i in src_cache_path.iterdir():
             shutil.copyfile(src_cache_file_i, dst_cache_path / src_cache_file_i.name)
         return dst_cache_root
@@ -566,7 +568,7 @@ class Test_StorageCache:
             "Endpoint": "https: //permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
             "ContentMd5": "fJ85MDJqsTW6zDJbd+Fa4A==",
             "VersionId": "2023-04-14T13: 17: 44.5067517Z",
-            "DaysSinceEpoch": 19356
+            "DaysSinceEpoch": 19356,
         }
         return chunk
 
@@ -591,7 +593,9 @@ class Test_StorageCache:
         assert storage_cache_empty._root == str(root_expect)
         assert (root_expect / STOREFORMATVERSION).exists()
 
-    def test__init_cache_dir_exists(self, storage_cache_empty, tmp_path, STOREFORMATVERSION):
+    def test__init_cache_dir_exists(
+        self, storage_cache_empty, tmp_path, STOREFORMATVERSION
+    ):
         os.makedirs(tmp_path / ".cache_" / STOREFORMATVERSION)
         assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
 
@@ -630,7 +634,9 @@ class Test_StorageCache:
     def test_get(self, storage_cache, chunk):
         data_out = storage_cache.get(chunk)
 
-        data_expect_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        data_expect_path = (
+            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        )
         data_expect = DataHandler.from_csv(data_expect_path).as_dataframe()
 
         pd.testing.assert_frame_equal(data_out, data_expect)
@@ -658,11 +664,11 @@ class Test_StorageCache:
         assert n_files_cached == 1
         assert storage_cache_empty._cache_index.exists(
             "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv",
-            "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+            "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09",
         )
 
     def test_put_tiny(self, storage_cache_empty, chunk, data_float):
-        data_tiny = data_float.as_dataframe()   # tiny file
+        data_tiny = data_float.as_dataframe()  # tiny file
         storage_cache_empty.put(data_tiny, chunk)
 
         n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
