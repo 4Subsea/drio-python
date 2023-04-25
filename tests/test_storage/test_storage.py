@@ -527,7 +527,8 @@ class Test_Storage:
 
 class Test_StorageCache:
     @pytest.fixture
-    def storage_cache(self, tmp_path):
+    def storage_cache_empty(self, tmp_path):
+        """StorageCache instance with empty cache"""
         storage_cache = StorageCache(
             max_size=1024,
             cache_root=tmp_path / ".cache",
@@ -546,7 +547,8 @@ class Test_StorageCache:
         return dst_cache_root
 
     @pytest.fixture
-    def storage_cache_with_data(self, tmp_root_with_data):
+    def storage_cache(self, tmp_root_with_data):
+        """StorageCache instance with data"""
         storage_cache = StorageCache(
             max_size=1024,
             cache_root=tmp_root_with_data,
@@ -565,72 +567,52 @@ class Test_StorageCache:
         StorageCache(cache_root=tmp_path / ".cache_")
         assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
 
-    def test__init_cache_dir(self, storage_cache, tmp_path, STOREFORMATVERSION):
+    def test__init_cache_dir(self, storage_cache_empty, tmp_path, STOREFORMATVERSION):
         assert not (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
 
-        storage_cache._init_cache_dir(tmp_path / ".cache_", "datareservoirio")
+        storage_cache_empty._init_cache_dir(tmp_path / ".cache_", "datareservoirio")
 
         root_expect = tmp_path / ".cache_"
-        assert storage_cache._root == str(root_expect)
+        assert storage_cache_empty._root == str(root_expect)
         assert (root_expect / STOREFORMATVERSION).exists()
 
-    def test__init_cache_dir_exists(self, storage_cache, tmp_path, STOREFORMATVERSION):
+    def test__init_cache_dir_exists(self, storage_cache_empty, tmp_path, STOREFORMATVERSION):
         os.makedirs(tmp_path / ".cache_" / STOREFORMATVERSION)
         assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
 
-        storage_cache._init_cache_dir(tmp_path / ".cache_", "datareservoirio")
+        storage_cache_empty._init_cache_dir(tmp_path / ".cache_", "datareservoirio")
 
         root_expect = tmp_path / ".cache_"
-        assert storage_cache._root == str(root_expect)
+        assert storage_cache_empty._root == str(root_expect)
         assert (root_expect / STOREFORMATVERSION).exists()
 
-    def test__init_cache_dir_default(self, storage_cache, STOREFORMATVERSION):
-        storage_cache._init_cache_dir(None, "datareservoirio")
+    def test__init_cache_dir_default(self, storage_cache_empty, STOREFORMATVERSION):
+        storage_cache_empty._init_cache_dir(None, "datareservoirio")
 
         root_expect = drio.appdirs.user_cache_dir("datareservoirio")
         cache_path_expect = os.path.join(root_expect, STOREFORMATVERSION)
-        assert storage_cache._root == str(root_expect)
+        assert storage_cache_empty._root == str(root_expect)
         assert os.path.exists(cache_path_expect)
 
-    def test__cache_hive(self, storage_cache, STOREFORMATVERSION):
-        assert storage_cache._cache_hive == STOREFORMATVERSION
+    def test__cache_hive(self, storage_cache_empty, STOREFORMATVERSION):
+        assert storage_cache_empty._cache_hive == STOREFORMATVERSION
 
-    def test_cache_root(self, storage_cache, tmp_path):
-        assert storage_cache.cache_root == str(tmp_path / ".cache")
+    def test_cache_root(self, storage_cache_empty, tmp_path):
+        assert storage_cache_empty.cache_root == str(tmp_path / ".cache")
 
-    def test__cache_path(self, storage_cache, tmp_path, STOREFORMATVERSION):
+    def test__cache_path(self, storage_cache_empty, tmp_path, STOREFORMATVERSION):
         cache_path_expect = str(tmp_path / ".cache" / STOREFORMATVERSION)
-        assert storage_cache._cache_path == cache_path_expect
+        assert storage_cache_empty._cache_path == cache_path_expect
 
-    def test_reset_cache(self, storage_cache_with_data, tmp_root_with_data):
+    def test_reset_cache(self, storage_cache, tmp_root_with_data):
         assert len(list(tmp_root_with_data.iterdir())) != 0
 
-        storage_cache_with_data.reset_cache()
+        storage_cache.reset_cache()
 
         assert tmp_root_with_data.exists()
         assert len(list(tmp_root_with_data.iterdir())) == 0
 
-    def test_get(self, storage_cache_with_data):
-        chunk = {
-            "Account": "permanentprodu000p106",
-            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
-            "SasKeyExpirationTime": "2023-04-14T15: 27: 42.3326841+00: 00",
-            "Container": "data",
-            "Path": "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv",
-            "Endpoint": "https: //permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
-            "ContentMd5": "fJ85MDJqsTW6zDJbd+Fa4A==",
-            "VersionId": "2023-04-14T13: 17: 44.5067517Z",
-            "DaysSinceEpoch": 19356
-        }
-
-        data_out = storage_cache_with_data.get(chunk)
-
-        data_expect_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
-        data_expect = DataHandler.from_csv(data_expect_path).as_dataframe()
-
-        pd.testing.assert_frame_equal(data_out, data_expect)
-
-    def test_get_cache_empty(self, storage_cache):
+    def test_get(self, storage_cache):
         chunk = {
             "Account": "permanentprodu000p106",
             "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
@@ -644,5 +626,25 @@ class Test_StorageCache:
         }
 
         data_out = storage_cache.get(chunk)
+
+        data_expect_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        data_expect = DataHandler.from_csv(data_expect_path).as_dataframe()
+
+        pd.testing.assert_frame_equal(data_out, data_expect)
+
+    def test_get_cache_empty(self, storage_cache_empty):
+        chunk = {
+            "Account": "permanentprodu000p106",
+            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
+            "SasKeyExpirationTime": "2023-04-14T15: 27: 42.3326841+00: 00",
+            "Container": "data",
+            "Path": "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv",
+            "Endpoint": "https: //permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
+            "ContentMd5": "fJ85MDJqsTW6zDJbd+Fa4A==",
+            "VersionId": "2023-04-14T13: 17: 44.5067517Z",
+            "DaysSinceEpoch": 19356
+        }
+
+        data_out = storage_cache_empty.get(chunk)
 
         assert data_out is None
