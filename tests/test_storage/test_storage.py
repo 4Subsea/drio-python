@@ -647,3 +647,10 @@ class Test_StorageCache:
 
         assert id_out == id_expect
         assert md5_out == md5_expect
+
+    def test_put(self, storage_cache_empty, chunk):
+        data_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        data = DataHandler.from_csv(data_path).as_dataframe()
+
+        storage_cache_empty.put(data, chunk)
+        assert len(os.listdir(storage_cache_empty._cache_path)) == 1
