@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 from pathlib import Path
 from unittest.mock import ANY, call
@@ -10,6 +11,8 @@ from requests import HTTPError
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
+from datareservoirio.storage import StorageCache
+from datareservoirio.storage.cache_engine import CacheIO
 
 TEST_PATH = Path(__file__).parent
 
@@ -521,3 +524,201 @@ class Test_Storage:
                     {"json": {"FileId": "1234"}},
                 ),
             )
+
+
+class Test_StorageCache:
+    @pytest.fixture
+    def cache_root(self, tmp_path):
+        """Temporary cache root"""
+        return tmp_path / ".cache"
+
+    @pytest.fixture
+    def fill_cache(self, STOREFORMATVERSION):
+        src = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
+
+        def fill_cache(root):
+            root.mkdir()
+            dst = root / STOREFORMATVERSION
+            dst.mkdir()
+            for src_file_i in src.iterdir():
+                shutil.copyfile(src_file_i, dst / src_file_i.name)
+
+        return fill_cache
+
+    @pytest.fixture
+    def storage_cache_empty(self, cache_root):
+        """``StorageCache`` instance (empty cache)"""
+        storage_cache = StorageCache(
+            max_size=1024,
+            cache_root=cache_root,
+        )
+        return storage_cache
+
+    @pytest.fixture
+    def storage_cache(self, cache_root, fill_cache):
+        """``StorageCache`` instance (with data)"""
+        fill_cache(cache_root)  # fill cache with data
+        storage_cache = StorageCache(
+            max_size=1024,
+            cache_root=cache_root,
+        )
+        return storage_cache
+
+    @pytest.fixture
+    def chunk(self):
+        chunk = {
+            "Account": "permanentprodu000p106",
+            "SasKey": "skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
+            "SasKeyExpirationTime": "2023-04-14T15: 27: 42.3326841+00: 00",
+            "Container": "data",
+            "Path": "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv",
+            "Endpoint": "https: //permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
+            "ContentMd5": "fJ85MDJqsTW6zDJbd+Fa4A==",
+            "VersionId": "2023-04-14T13: 17: 44.5067517Z",
+            "DaysSinceEpoch": 19356,
+        }
+
+        return chunk
+
+    @pytest.fixture
+    def chunk_id_md5(self):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        return id_, md5
+
+    @pytest.fixture
+    def chunk_data(self):
+        data_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        return DataHandler.from_csv(data_path)
+
+    def test__init__(self):
+        storage_cache = StorageCache(
+            max_size=1024, cache_root=None, cache_folder="datareservoirio"
+        )
+
+        assert isinstance(storage_cache, CacheIO)
+        assert storage_cache._max_size == 1024 * 1024**2
+
+    def test__init__cache_root(self, tmp_path, STOREFORMATVERSION):
+        cache_root = tmp_path / ".cache"
+        assert not (cache_root / STOREFORMATVERSION).exists()
+        StorageCache(cache_root=cache_root)
+        assert (cache_root / STOREFORMATVERSION).exists()
+
+    def test__init_cache_dir(self, storage_cache_empty, tmp_path, STOREFORMATVERSION):
+        assert not (tmp_path / "foo" / STOREFORMATVERSION).exists()
+
+        storage_cache_empty._init_cache_dir(tmp_path / "foo", "datareservoirio")
+
+        root_expect = tmp_path / "foo"
+        assert storage_cache_empty._root == str(root_expect)
+        assert (root_expect / STOREFORMATVERSION).exists()
+
+    def test__init_cache_dir_default(self, storage_cache_empty, STOREFORMATVERSION):
+        storage_cache_empty._init_cache_dir(None, "datareservoirio")
+
+        root_expect = drio.appdirs.user_cache_dir("datareservoirio")
+        cache_path_expect = os.path.join(root_expect, STOREFORMATVERSION)
+        assert storage_cache_empty._root == root_expect
+        assert os.path.exists(cache_path_expect)
+
+    def test__cache_hive(self, storage_cache_empty, STOREFORMATVERSION):
+        assert storage_cache_empty._cache_hive == STOREFORMATVERSION
+
+    def test_cache_root(self, storage_cache_empty, cache_root):
+        cache_root_expect = str(cache_root)
+        assert storage_cache_empty.cache_root == cache_root_expect
+
+    def test__cache_path(self, storage_cache_empty, cache_root, STOREFORMATVERSION):
+        cache_path_expect = str(cache_root / STOREFORMATVERSION)
+        assert storage_cache_empty._cache_path == cache_path_expect
+
+    def test_reset_cache(self, storage_cache, cache_root):
+        assert len(list(cache_root.iterdir())) != 0
+
+        storage_cache.reset_cache()
+
+        assert cache_root.exists()
+        assert len(list(cache_root.iterdir())) == 0
+
+    def test_get(self, storage_cache, chunk, chunk_data):
+        data_out = storage_cache.get(chunk)
+        data_expect = chunk_data.as_dataframe()
+        pd.testing.assert_frame_equal(data_out, data_expect)
+
+    def test_get_empty(self, storage_cache_empty, chunk):
+        data_out = storage_cache_empty.get(chunk)
+        assert data_out is None
+
+    def test__get_cache_id_md5(self, storage_cache_empty, chunk, chunk_id_md5):
+        id_out, md5_out = storage_cache_empty._get_cache_id_md5(chunk)
+
+        id_expect, md5_expect = chunk_id_md5
+        assert id_out == id_expect
+        assert md5_out == md5_expect
+
+    def test_put(self, storage_cache_empty, chunk, chunk_id_md5, chunk_data):
+        data = chunk_data.as_dataframe()
+        storage_cache_empty.put(data, chunk)
+
+        id_expect, md5_expect = chunk_id_md5
+        n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
+        assert n_files_cached == 1
+        assert storage_cache_empty._cache_index.exists(id_expect, md5_expect)
+
+    def test_put_tiny(self, storage_cache_empty, chunk, data_float):
+        data_tiny = data_float.as_dataframe()  # tiny file
+        storage_cache_empty.put(data_tiny, chunk)
+
+        n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
+        assert n_files_cached == 0  # tiny files are not cached
+
+    def test__get_cached_data(self, storage_cache, chunk_id_md5, chunk_data):
+        id_, md5 = chunk_id_md5
+        data_out = storage_cache._get_cached_data(id_, md5)
+
+        data_expect = chunk_data.as_dataframe()
+        pd.testing.assert_frame_equal(data_out, data_expect)
+        key_cached_last = list(storage_cache._cache_index.keys())[-1]
+        assert key_cached_last == f"{id_}_{md5}"
+
+    def test__get_cached_data_empty(self, storage_cache_empty, chunk_id_md5):
+        id_, md5 = chunk_id_md5
+        data_out = storage_cache_empty._get_cached_data(id_, md5)
+        assert data_out is None
+
+    def test__evict_entry_root(self, storage_cache, cache_root):
+        assert len(list(cache_root.iterdir())) != 0
+
+        storage_cache._evict_entry_root(cache_root)
+
+        assert cache_root.exists()
+        assert len(list(cache_root.iterdir())) == 0
+
+    def test__evict_entry(self, storage_cache, chunk_id_md5):
+        id_, md5 = chunk_id_md5
+
+        filepath = storage_cache._cache_index._get_filepath(id_, md5)
+        assert os.path.exists(filepath)
+
+        storage_cache._evict_entry(id_, md5)
+        assert not os.path.exists(filepath)
+
+    def test__evict_from_cache(self, storage_cache):
+        storage_cache._evict_from_cache()
+        assert storage_cache._cache_index.size_less_than_max
+
+    def test__evict_from_cache2(self, storage_cache):
+        # Get size of last cached item
+        key_cached_last = list(storage_cache._cache_index.keys())[-1]
+        size_of_last_cached_item = storage_cache._cache_index[key_cached_last]["size"]
+
+        # Override the ``max_size`` so that eviction only keeps the last cached item
+        storage_cache._cache_index._max_size = size_of_last_cached_item + 1
+
+        assert not storage_cache._cache_index.size_less_than_max
+
+        storage_cache._evict_from_cache()
+
+        assert storage_cache._cache_index.size_less_than_max
+        assert storage_cache._cache_index.size == size_of_last_cached_item
