@@ -672,4 +672,17 @@ class Test_StorageCache:
         storage_cache_empty.put(data_tiny, chunk)
 
         n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
-        assert n_files_cached == 0   # tiny files are not cached
+        assert n_files_cached == 0  # tiny files are not cached
+
+    def test__get_cached_data(self, storage_cache):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        data_out = storage_cache._get_cached_data(id_, md5)
+
+        data_expect = DataHandler.from_csv(
+            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        ).as_dataframe()
+
+        pd.testing.assert_frame_equal(data_out, data_expect)
+        key_cached_last = list(storage_cache._cache_index.keys())[-1]
+        assert key_cached_last == f"{id_}_{md5}"
