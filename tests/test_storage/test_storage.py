@@ -686,3 +686,10 @@ class Test_StorageCache:
         pd.testing.assert_frame_equal(data_out, data_expect)
         key_cached_last = list(storage_cache._cache_index.keys())[-1]
         assert key_cached_last == f"{id_}_{md5}"
+
+    def test__get_cached_data_empty(self, storage_cache_empty):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        data_out = storage_cache_empty._get_cached_data(id_, md5)
+
+        assert data_out is None
