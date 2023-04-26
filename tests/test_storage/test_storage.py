@@ -556,7 +556,7 @@ class Test_StorageCache:
     @pytest.fixture
     def storage_cache(self, cache_root, fill_cache):
         """``StorageCache`` instance (with data)"""
-        fill_cache(cache_root)
+        fill_cache(cache_root)   # fill cache with data
         storage_cache = StorageCache(
             max_size=1024,
             cache_root=cache_root,
