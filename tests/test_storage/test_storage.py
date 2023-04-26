@@ -526,10 +526,6 @@ class Test_Storage:
 
 
 class Test_StorageCache:
-    # @pytest.fixture
-    # def cache_root_empty(self, tmp_path):
-    #     """Temporary cache root (empty)"""
-    #     return tmp_path / ".cache"
 
     @pytest.fixture
     def cache_root(self, tmp_path):
