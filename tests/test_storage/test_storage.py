@@ -631,9 +631,7 @@ class Test_StorageCache:
         cache_root_expect = str(cache_root)
         assert storage_cache_empty.cache_root == cache_root_expect
 
-    def test__cache_path(
-        self, storage_cache_empty, cache_root, STOREFORMATVERSION
-    ):
+    def test__cache_path(self, storage_cache_empty, cache_root, STOREFORMATVERSION):
         cache_path_expect = str(cache_root / STOREFORMATVERSION)
         assert storage_cache_empty._cache_path == cache_path_expect
 
