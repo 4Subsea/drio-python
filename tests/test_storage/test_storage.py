@@ -526,12 +526,17 @@ class Test_Storage:
 
 
 class Test_StorageCache:
+
     @pytest.fixture
-    def storage_cache_empty(self, tmp_path):
+    def cache_root_empty(self, tmp_path):
+        return tmp_path / ".cache"
+
+    @pytest.fixture
+    def storage_cache_empty(self, cache_root_empty):
         """StorageCache instance with empty cache"""
         storage_cache = StorageCache(
             max_size=1024,
-            cache_root=tmp_path / ".cache",
+            cache_root=cache_root_empty,
         )
         return storage_cache
 
@@ -616,11 +621,12 @@ class Test_StorageCache:
     def test__cache_hive(self, storage_cache_empty, STOREFORMATVERSION):
         assert storage_cache_empty._cache_hive == STOREFORMATVERSION
 
-    def test_cache_root(self, storage_cache_empty, tmp_path):
-        assert storage_cache_empty.cache_root == str(tmp_path / ".cache")
+    def test_cache_root(self, storage_cache_empty, cache_root_empty):
+        cache_root_expect = str(cache_root_empty)
+        assert storage_cache_empty.cache_root == cache_root_expect
 
-    def test__cache_path(self, storage_cache_empty, tmp_path, STOREFORMATVERSION):
-        cache_path_expect = str(tmp_path / ".cache" / STOREFORMATVERSION)
+    def test__cache_path(self, storage_cache_empty, cache_root_empty, STOREFORMATVERSION):
+        cache_path_expect = str(cache_root_empty / STOREFORMATVERSION)
         assert storage_cache_empty._cache_path == cache_path_expect
 
     def test_reset_cache(self, storage_cache, tmp_root_with_data):
@@ -702,7 +708,7 @@ class Test_StorageCache:
         assert tmp_root_with_data.exists()
         assert len(list(tmp_root_with_data.iterdir())) == 0
 
-    def test__evict_entry(self, storage_cache, tmp_root_with_data):
+    def test__evict_entry(self, storage_cache):
         id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
         md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
 
