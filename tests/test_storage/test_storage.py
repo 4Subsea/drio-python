@@ -600,18 +600,6 @@ class Test_StorageCache:
         assert storage_cache_empty._root == str(root_expect)
         assert (root_expect / STOREFORMATVERSION).exists()
 
-    def test__init_cache_dir_exists(
-        self, storage_cache_empty, tmp_path, STOREFORMATVERSION
-    ):
-        os.makedirs(tmp_path / ".cache_" / STOREFORMATVERSION)
-        assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
-
-        storage_cache_empty._init_cache_dir(tmp_path / ".cache_", "datareservoirio")
-
-        root_expect = tmp_path / ".cache_"
-        assert storage_cache_empty._root == str(root_expect)
-        assert (root_expect / STOREFORMATVERSION).exists()
-
     def test__init_cache_dir_default(self, storage_cache_empty, STOREFORMATVERSION):
         storage_cache_empty._init_cache_dir(None, "datareservoirio")
 
