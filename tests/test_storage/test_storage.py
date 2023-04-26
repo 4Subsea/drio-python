@@ -576,7 +576,19 @@ class Test_StorageCache:
             "VersionId": "2023-04-14T13: 17: 44.5067517Z",
             "DaysSinceEpoch": 19356,
         }
+
         return chunk
+
+    @pytest.fixture
+    def chunk_id_md5(self):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        return id_, md5
+
+    @pytest.fixture
+    def chunk_data(self):
+        data_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        return DataHandler.from_csv(data_path)
 
     def test__init__(self):
         storage_cache = StorageCache(
@@ -627,41 +639,31 @@ class Test_StorageCache:
         assert cache_root.exists()
         assert len(list(cache_root.iterdir())) == 0
 
-    def test_get(self, storage_cache, chunk):
+    def test_get(self, storage_cache, chunk, chunk_data):
         data_out = storage_cache.get(chunk)
-
-        data_expect_path = (
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
-        )
-        data_expect = DataHandler.from_csv(data_expect_path).as_dataframe()
-
+        data_expect = chunk_data.as_dataframe()
         pd.testing.assert_frame_equal(data_out, data_expect)
 
     def test_get_empty(self, storage_cache_empty, chunk):
         data_out = storage_cache_empty.get(chunk)
         assert data_out is None
 
-    def test__get_cache_id_md5(self, storage_cache_empty, chunk):
+    def test__get_cache_id_md5(self, storage_cache_empty, chunk, chunk_id_md5):
         id_out, md5_out = storage_cache_empty._get_cache_id_md5(chunk)
 
-        id_expect = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
-        md5_expect = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+        id_expect, md5_expect = chunk_id_md5
 
         assert id_out == id_expect
         assert md5_out == md5_expect
 
-    def test_put(self, storage_cache_empty, chunk):
-        data_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
-        data = DataHandler.from_csv(data_path).as_dataframe()
-
+    def test_put(self, storage_cache_empty, chunk, chunk_id_md5, chunk_data):
+        data = chunk_data.as_dataframe()
         storage_cache_empty.put(data, chunk)
 
+        id_expect, md5_expect = chunk_id_md5
         n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
         assert n_files_cached == 1
-        assert storage_cache_empty._cache_index.exists(
-            "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv",
-            "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09",
-        )
+        assert storage_cache_empty._cache_index.exists(id_expect, md5_expect)
 
     def test_put_tiny(self, storage_cache_empty, chunk, data_float):
         data_tiny = data_float.as_dataframe()  # tiny file
@@ -670,24 +672,18 @@ class Test_StorageCache:
         n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
         assert n_files_cached == 0  # tiny files are not cached
 
-    def test__get_cached_data(self, storage_cache):
-        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
-        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+    def test__get_cached_data(self, storage_cache, chunk_id_md5, chunk_data):
+        id_, md5 = chunk_id_md5
         data_out = storage_cache._get_cached_data(id_, md5)
 
-        data_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
-        ).as_dataframe()
-
+        data_expect = chunk_data.as_dataframe()
         pd.testing.assert_frame_equal(data_out, data_expect)
         key_cached_last = list(storage_cache._cache_index.keys())[-1]
         assert key_cached_last == f"{id_}_{md5}"
 
-    def test__get_cached_data_empty(self, storage_cache_empty):
-        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
-        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+    def test__get_cached_data_empty(self, storage_cache_empty, chunk_id_md5):
+        id_, md5 = chunk_id_md5
         data_out = storage_cache_empty._get_cached_data(id_, md5)
-
         assert data_out is None
 
     def test__evict_entry_root(self, storage_cache, cache_root):
@@ -698,9 +694,8 @@ class Test_StorageCache:
         assert cache_root.exists()
         assert len(list(cache_root.iterdir())) == 0
 
-    def test__evict_entry(self, storage_cache):
-        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
-        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+    def test__evict_entry(self, storage_cache, chunk_id_md5):
+        id_, md5 = chunk_id_md5
 
         filepath = storage_cache._cache_index._get_filepath(id_, md5)
         assert os.path.exists(filepath)
