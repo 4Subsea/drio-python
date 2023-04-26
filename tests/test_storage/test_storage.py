@@ -526,7 +526,6 @@ class Test_Storage:
 
 
 class Test_StorageCache:
-
     @pytest.fixture
     def cache_root(self, tmp_path):
         """Temporary cache root (with data)"""
@@ -587,9 +586,10 @@ class Test_StorageCache:
         assert storage_cache._max_size == 1024 * 1024**2
 
     def test__init__cache_root(self, tmp_path, STOREFORMATVERSION):
-        assert not (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
-        StorageCache(cache_root=tmp_path / ".cache_")
-        assert (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
+        cache_root = tmp_path / ".cache"
+        assert not (cache_root / STOREFORMATVERSION).exists()
+        StorageCache(cache_root=cache_root)
+        assert (cache_root / STOREFORMATVERSION).exists()
 
     def test__init_cache_dir(self, storage_cache_empty, tmp_path, STOREFORMATVERSION):
         assert not (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
