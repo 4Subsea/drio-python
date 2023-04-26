@@ -540,22 +540,41 @@ class Test_StorageCache:
         )
         return storage_cache
 
-    @pytest.fixture
-    def cache_root(self, tmp_path, STOREFORMATVERSION):
-        """Temporary cache root (with data)"""
-        dst_cache_root = tmp_path
-        dst_cache_path = dst_cache_root / STOREFORMATVERSION
-        dst_cache_path.mkdir()
-        src_cache_path = (
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
-        )
-        for src_cache_file_i in src_cache_path.iterdir():
-            shutil.copyfile(src_cache_file_i, dst_cache_path / src_cache_file_i.name)
-        return dst_cache_root
+    # @pytest.fixture
+    # def cache_root(self, tmp_path, STOREFORMATVERSION):
+    #     """Temporary cache root (with data)"""
+    #     dst_cache_root = tmp_path
+    #     dst_cache_path = dst_cache_root / STOREFORMATVERSION
+    #     dst_cache_path.mkdir()
+    #     src_cache_path = (
+    #         TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
+    #     )
+    #     for src_cache_file_i in src_cache_path.iterdir():
+    #         shutil.copyfile(src_cache_file_i, dst_cache_path / src_cache_file_i.name)
+    #     return dst_cache_root
 
     @pytest.fixture
-    def storage_cache(self, cache_root):
+    def cache_root(self, tmp_path):
+        """Temporary cache root (with data)"""
+        return tmp_path / ".cache"
+
+    @pytest.fixture
+    def fill_cache(self, STOREFORMATVERSION):
+        src = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
+
+        def fill_cache(root):
+            root.mkdir()
+            dst = root / STOREFORMATVERSION
+            dst.mkdir()
+            for src_file_i in src.iterdir():
+                shutil.copyfile(src_file_i, dst / src_file_i.name)
+
+        return fill_cache
+
+    @pytest.fixture
+    def storage_cache(self, cache_root, fill_cache):
         """``StorageCache`` instance (with data)"""
+        fill_cache(cache_root)
         storage_cache = StorageCache(
             max_size=1024,
             cache_root=cache_root,
