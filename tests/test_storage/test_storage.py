@@ -654,7 +654,6 @@ class Test_StorageCache:
         id_out, md5_out = storage_cache_empty._get_cache_id_md5(chunk)
 
         id_expect, md5_expect = chunk_id_md5
-
         assert id_out == id_expect
         assert md5_out == md5_expect
 
