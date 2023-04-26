@@ -693,3 +693,11 @@ class Test_StorageCache:
         data_out = storage_cache_empty._get_cached_data(id_, md5)
 
         assert data_out is None
+
+    def test__evict_entry_root(self, storage_cache, tmp_root_with_data):
+        assert len(list(tmp_root_with_data.iterdir())) != 0
+
+        storage_cache._evict_entry_root(tmp_root_with_data)
+
+        assert tmp_root_with_data.exists()
+        assert len(list(tmp_root_with_data.iterdir())) == 0
