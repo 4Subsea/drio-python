@@ -701,3 +701,13 @@ class Test_StorageCache:
 
         assert tmp_root_with_data.exists()
         assert len(list(tmp_root_with_data.iterdir())) == 0
+
+    def test__evict_entry(self, storage_cache, tmp_root_with_data):
+        id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
+        md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
+
+        filepath = storage_cache._cache_index._get_filepath(id_, md5)
+        assert os.path.exists(filepath)
+
+        storage_cache._evict_entry(id_, md5)
+        assert not os.path.exists(filepath)
