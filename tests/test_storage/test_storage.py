@@ -672,4 +672,4 @@ class Test_StorageCache:
         storage_cache_empty.put(data_tiny, chunk)
 
         n_files_cached = len(os.listdir(storage_cache_empty._cache_path))
-        assert n_files_cached == 0
+        assert n_files_cached == 0   # tiny files are not cached
