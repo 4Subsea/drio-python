@@ -529,11 +529,12 @@ class Test_StorageCache:
 
     @pytest.fixture
     def cache_root_empty(self, tmp_path):
+        """Temporary cache root (empty)"""
         return tmp_path / ".cache"
 
     @pytest.fixture
     def storage_cache_empty(self, cache_root_empty):
-        """StorageCache instance with empty cache"""
+        """``StorageCache`` instance (empty cache)"""
         storage_cache = StorageCache(
             max_size=1024,
             cache_root=cache_root_empty,
@@ -541,7 +542,7 @@ class Test_StorageCache:
         return storage_cache
 
     @pytest.fixture
-    def tmp_root_with_data(self, tmp_path, STOREFORMATVERSION):
+    def cache_root(self, tmp_path, STOREFORMATVERSION):
         """Temporary cache root (with data)"""
         dst_cache_root = tmp_path
         dst_cache_path = dst_cache_root / STOREFORMATVERSION
@@ -554,11 +555,11 @@ class Test_StorageCache:
         return dst_cache_root
 
     @pytest.fixture
-    def storage_cache(self, tmp_root_with_data):
-        """StorageCache instance with data"""
+    def storage_cache(self, cache_root):
+        """``StorageCache`` instance (with data)"""
         storage_cache = StorageCache(
             max_size=1024,
-            cache_root=tmp_root_with_data,
+            cache_root=cache_root,
         )
         return storage_cache
 
@@ -629,13 +630,13 @@ class Test_StorageCache:
         cache_path_expect = str(cache_root_empty / STOREFORMATVERSION)
         assert storage_cache_empty._cache_path == cache_path_expect
 
-    def test_reset_cache(self, storage_cache, tmp_root_with_data):
-        assert len(list(tmp_root_with_data.iterdir())) != 0
+    def test_reset_cache(self, storage_cache, cache_root):
+        assert len(list(cache_root.iterdir())) != 0
 
         storage_cache.reset_cache()
 
-        assert tmp_root_with_data.exists()
-        assert len(list(tmp_root_with_data.iterdir())) == 0
+        assert cache_root.exists()
+        assert len(list(cache_root.iterdir())) == 0
 
     def test_get(self, storage_cache, chunk):
         data_out = storage_cache.get(chunk)
@@ -700,13 +701,13 @@ class Test_StorageCache:
 
         assert data_out is None
 
-    def test__evict_entry_root(self, storage_cache, tmp_root_with_data):
-        assert len(list(tmp_root_with_data.iterdir())) != 0
+    def test__evict_entry_root(self, storage_cache, cache_root):
+        assert len(list(cache_root.iterdir())) != 0
 
-        storage_cache._evict_entry_root(tmp_root_with_data)
+        storage_cache._evict_entry_root(cache_root)
 
-        assert tmp_root_with_data.exists()
-        assert len(list(tmp_root_with_data.iterdir())) == 0
+        assert cache_root.exists()
+        assert len(list(cache_root.iterdir())) == 0
 
     def test__evict_entry(self, storage_cache):
         id_ = "parquet03fc12505d3d41fea77df405b2563e4920221230daycsv19356csv"
