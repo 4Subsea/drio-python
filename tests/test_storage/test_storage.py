@@ -526,7 +526,6 @@ class Test_Storage:
 
 
 class Test_StorageCache:
-
     @pytest.fixture
     def cache_root_empty(self, tmp_path):
         """Temporary cache root (empty)"""
@@ -626,7 +625,9 @@ class Test_StorageCache:
         cache_root_expect = str(cache_root_empty)
         assert storage_cache_empty.cache_root == cache_root_expect
 
-    def test__cache_path(self, storage_cache_empty, cache_root_empty, STOREFORMATVERSION):
+    def test__cache_path(
+        self, storage_cache_empty, cache_root_empty, STOREFORMATVERSION
+    ):
         cache_path_expect = str(cache_root_empty / STOREFORMATVERSION)
         assert storage_cache_empty._cache_path == cache_path_expect
 
