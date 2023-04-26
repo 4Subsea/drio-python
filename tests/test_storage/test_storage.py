@@ -605,7 +605,7 @@ class Test_StorageCache:
 
         root_expect = drio.appdirs.user_cache_dir("datareservoirio")
         cache_path_expect = os.path.join(root_expect, STOREFORMATVERSION)
-        assert storage_cache_empty._root == str(root_expect)
+        assert storage_cache_empty._root == root_expect
         assert os.path.exists(cache_path_expect)
 
     def test__cache_hive(self, storage_cache_empty, STOREFORMATVERSION):
