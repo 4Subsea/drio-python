@@ -592,11 +592,11 @@ class Test_StorageCache:
         assert (cache_root / STOREFORMATVERSION).exists()
 
     def test__init_cache_dir(self, storage_cache_empty, tmp_path, STOREFORMATVERSION):
-        assert not (tmp_path / ".cache_" / STOREFORMATVERSION).exists()
+        assert not (tmp_path / "foo" / STOREFORMATVERSION).exists()
 
-        storage_cache_empty._init_cache_dir(tmp_path / ".cache_", "datareservoirio")
+        storage_cache_empty._init_cache_dir(tmp_path / "foo", "datareservoirio")
 
-        root_expect = tmp_path / ".cache_"
+        root_expect = tmp_path / "foo"
         assert storage_cache_empty._root == str(root_expect)
         assert (root_expect / STOREFORMATVERSION).exists()
 
