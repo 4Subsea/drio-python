@@ -711,3 +711,22 @@ class Test_StorageCache:
 
         storage_cache._evict_entry(id_, md5)
         assert not os.path.exists(filepath)
+
+    def test__evict_from_cache(self, storage_cache):
+        storage_cache._evict_from_cache()
+        assert storage_cache._cache_index.size_less_than_max
+
+    def test__evict_from_cache2(self, storage_cache):
+        # Get size of last cached item
+        key_cached_last = list(storage_cache._cache_index.keys())[-1]
+        size_of_last_cached_item = storage_cache._cache_index[key_cached_last]["size"]
+
+        # Override the ``max_size`` so that eviction only keeps the last cached item
+        storage_cache._cache_index._max_size = size_of_last_cached_item + 1
+
+        assert not storage_cache._cache_index.size_less_than_max
+
+        storage_cache._evict_from_cache()
+
+        assert storage_cache._cache_index.size_less_than_max
+        assert storage_cache._cache_index.size == size_of_last_cached_item
