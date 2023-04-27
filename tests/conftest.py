@@ -27,7 +27,19 @@ def mock_requests(monkeypatch):
     return mock
 
 
-def response_factory(method, url, *args, **kwargs):
+def response_factory(
+    method,
+    url,
+    headers=None,
+    files=None,
+    data=None,
+    json=None,
+    params=None,
+    auth=None,
+    cookies=None,
+    hooks=None,
+    **kwargs,
+):
     """
     Generate response based on request call and lookup in ``RESPONSE_CASES``.
     Attributes assigned to ``requests.Response`` object.
@@ -48,6 +60,23 @@ def response_factory(method, url, *args, **kwargs):
 
     for attr, value in spec.items():
         setattr(response, attr, value)
+
+    # Create the Request.
+    req = requests.Request(
+        method=method.upper(),
+        url=url,
+        headers=headers,
+        files=files,
+        data=data or {},
+        json=json,
+        params=params or {},
+        auth=auth,
+        cookies=cookies,
+        hooks=hooks,
+    )
+    prep = req.prepare()
+
+    response.request = prep
 
     return response
 

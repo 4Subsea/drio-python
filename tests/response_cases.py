@@ -92,7 +92,6 @@ RESPONSE_CASES_GENERAL = {
         "_content": (
             TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "ping.json"
         ).read_bytes(),
-        "request": Request("GET", "https://reservoir-api.4subsea.net/api/ping"),
     },
 }
 
