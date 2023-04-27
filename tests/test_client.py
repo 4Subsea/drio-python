@@ -14,14 +14,6 @@ TEST_PATH = Path(__file__).parent
 class Test_Client:
     """
     Tests the ``datareservoirio.Client`` class.
-
-    What is currently tested:
-        * Tested ``__init__``.
-        * Partially tested ``get``.
-
-    TODO:
-        * Test ``get`` with start/end as None.
-        * Test ``get`` with empty data.
     """
 
     @pytest.fixture
