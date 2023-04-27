@@ -16,6 +16,7 @@ Note that ``url`` is defined as part of the key in RESPONSE_CASES.
 See ``requests.Response`` source code for more details.
 """
 from pathlib import Path
+from requests import Request
 
 TEST_PATH = Path(__file__).parent
 
@@ -83,6 +84,15 @@ RESPONSE_CASES_GENERAL = {
     ("POST", "http://example/post/raises"): {
         "status_code": 501,
         "reason": "Not Implemented",
+    },
+    # description: ping the DataReservoir.io
+    ("GET", "https://reservoir-api.4subsea.net/api/ping"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "ping.json"
+        ).read_bytes(),
+        "request": Request("GET", "https://reservoir-api.4subsea.net/api/ping"),
     },
 }
 
