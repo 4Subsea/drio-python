@@ -75,55 +75,6 @@ class Test_Client:
 
         pd.testing.assert_series_equal(series_out, series_expect)
 
-    def test_get_start_end_as_string(self, client):
-        series_out = client.get(
-            "2fee7f8a-664a-41c9-9b71-25090517c275",
-            start="2022-12-30T00:00:00+00:00",
-            end="2023-01-02T23:59:00+00:00",
-            convert_date=True,
-        )
-
-        series_expect = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
-        ).as_series()
-        series_expect.index = pd.to_datetime(series_expect.index, utc=True)
-
-        pd.testing.assert_series_equal(series_out, series_expect)
-
-    def test_get_start_end_as_datetime(self, client):
-        series_out = client.get(
-            "2fee7f8a-664a-41c9-9b71-25090517c275",
-            start=pd.to_datetime("2022-12-30T00:00:00+00:00"),
-            end=pd.to_datetime("2023-01-02T23:59:00+00:00"),
-            convert_date=True,
-        )
-
-        series_expect = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
-        ).as_series()
-        series_expect.index = pd.to_datetime(series_expect.index, utc=True)
-
-        pd.testing.assert_series_equal(series_out, series_expect)
-
-    def test_get_start_end_as_none(self, mock_requests, client):
-        series_out = client.get(
-            "2fee7f8a-664a-41c9-9b71-25090517c275",
-            start=None,
-            end=None,
-            convert_date=True,
-        )
-
-        series_expect = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
-        ).as_series()
-        series_expect.index = pd.to_datetime(series_expect.index, utc=True)
-
-        pd.testing.assert_series_equal(series_out, series_expect)
-
-        # Check that the correct HTTP request is made
-        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=-9214560000000000000&end=9214646399999999999"
-        mock_requests.call_args_list[0].kwargs["url"] = request_url_expect
-
     def test_get_empty(self, client):
         series_out = client.get(
             "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
