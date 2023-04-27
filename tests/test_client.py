@@ -154,3 +154,13 @@ class Test_Client:
             assert time_before_get < time_access_file_i < time_after_get
 
         pd.testing.assert_series_equal(series_out, series_expect)
+
+    def test_get_raises_end_not_after_start(self, client):
+        start = 1672358400000000000
+        end = start - 1
+        with pytest.raises(ValueError):
+            client.get(
+                "2fee7f8a-664a-41c9-9b71-25090517c275",
+                start=start,
+                end=end,
+            )
