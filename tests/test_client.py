@@ -30,6 +30,14 @@ class Test_Client:
         return data
 
     @pytest.fixture
+    def group2_data(self):
+        """Overlapping data"""
+        data = DataHandler.from_csv(
+            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv"
+        )
+        return data
+
+    @pytest.fixture
     def client(self, auth_session):
         return drio.Client(auth_session, cache=False)
 
@@ -93,3 +101,14 @@ class Test_Client:
     def test_get_raise_empty(self, client):
         with pytest.raises(ValueError):
             client.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0", raise_empty=True)
+
+    def test_get_overlapping(self, client, group2_data):
+        series_out = client.get(
+            "693cb0b2-3599-46d3-b263-ea913a648535",
+            start=1672358400000000000,
+            end=1672617600000000000 + 1,
+            convert_date=False,
+        )
+
+        series_expect = group2_data.as_series()
+        pd.testing.assert_series_equal(series_out, series_expect)
