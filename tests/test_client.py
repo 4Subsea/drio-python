@@ -1,5 +1,7 @@
 import shutil
 from pathlib import Path
+import time
+import os
 
 import pandas as pd
 import pytest
@@ -43,16 +45,25 @@ class Test_Client:
         return drio.Client(auth_session, cache=False)
 
     @pytest.fixture
-    def client_with_cache(self, auth_session, tmp_path, STOREFORMATVERSION):
-        root = tmp_path / ".cache"
+    def cache_root(self, tmp_path):
+        return tmp_path / ".cache"
 
-        # Copy files from source to the temporary cache root
-        src_root = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
-        assert (src_root / STOREFORMATVERSION).exists()
-        shutil.copytree(src_root, root)
-
-        cache_opt = {"max_size": 1024, "cache_root": root}
+    @pytest.fixture
+    def client_with_cache(self, auth_session, cache_root):
+        cache_opt = {"max_size": 1024, "cache_root": cache_root}
         return drio.Client(auth_session, cache=True, cache_opt=cache_opt)
+
+    # @pytest.fixture
+    # def client_with_cache_filled(self, auth_session, tmp_path, STOREFORMATVERSION):
+    #     root = tmp_path / ".cache"
+
+    #     # Copy files from source to the temporary cache root
+    #     src_root = TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "cache"
+    #     assert (src_root / STOREFORMATVERSION).exists()
+    #     shutil.copytree(src_root, root)
+
+    #     cache_opt = {"max_size": 1024, "cache_root": root}
+    #     return drio.Client(auth_session, cache=True, cache_opt=cache_opt)
 
     def test__init__(self, auth_session, tmp_path):
         cache_opt = {
@@ -124,4 +135,39 @@ class Test_Client:
         )
 
         series_expect = group2_data.as_series()
+        pd.testing.assert_series_equal(series_out, series_expect)
+
+    def test_get_with_cache(
+        self, client_with_cache, cache_root, STOREFORMATVERSION, group2_data
+    ):
+        series_out = client_with_cache.get(
+            "693cb0b2-3599-46d3-b263-ea913a648535",
+            start=1672358400000000000,
+            end=1672617600000000000 + 1,
+            convert_date=False,
+        )
+
+        series_expect = group2_data.as_series()
+        pd.testing.assert_series_equal(series_out, series_expect)
+
+        # Check that the cache folder now contains four files
+        cache_path_expect = cache_root / STOREFORMATVERSION
+        assert cache_path_expect.exists()
+        assert len(list(cache_path_expect.iterdir())) == 6
+
+        # Get from cache (and check that the data actually is read from cache files)
+        time_before_get = time.time()
+        time.sleep(0.1)
+        series_out = client_with_cache.get(
+            "693cb0b2-3599-46d3-b263-ea913a648535",
+            start=1672358400000000000,
+            end=1672617600000000000 + 1,
+            convert_date=False,
+        )
+        time.sleep(0.1)
+        time_after_get = time.time()
+        for cache_file_i in cache_path_expect.iterdir():
+            time_access_file_i = os.path.getatime(cache_file_i)  # last access time
+            assert time_before_get < time_access_file_i < time_after_get
+
         pd.testing.assert_series_equal(series_out, series_expect)
