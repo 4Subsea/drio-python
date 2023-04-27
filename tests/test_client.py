@@ -27,7 +27,7 @@ class Test_Client:
 
     def test__init__(self, auth_session, tmp_path):
         cache_opt = {
-            "max_size":1024,
+            "max_size": 1024,
             "cache_root": tmp_path / ".cache",
         }
         drio.Client(auth_session, cache=True, cache_opt=cache_opt)
