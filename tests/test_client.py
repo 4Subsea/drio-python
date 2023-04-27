@@ -157,8 +157,6 @@ class Test_Client:
         pd.testing.assert_series_equal(series_out, series_expect)
 
         # Check that the cache folder now contains six files
-        cache_path_expect = cache_root / STOREFORMATVERSION
-        assert cache_path_expect.exists()
         assert len(list(cache_path_expect.iterdir())) == 6
 
         # Get data (from cache)
