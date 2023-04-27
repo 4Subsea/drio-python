@@ -23,6 +23,13 @@ class Test_Client:
     """
 
     @pytest.fixture
+    def group1_data(self):
+        data = DataHandler.from_csv(
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
+        )
+        return data
+
+    @pytest.fixture
     def client(self, auth_session):
         return drio.Client(auth_session, cache=False)
 
@@ -42,7 +49,7 @@ class Test_Client:
             (None, None),
         ],
     )
-    def test_get(self, mock_requests, client, start, end):
+    def test_get(self, mock_requests, client, start, end, group1_data):
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=start,
@@ -50,17 +57,13 @@ class Test_Client:
             convert_date=False,
         )
 
-        series_expect = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
-        ).as_series()
-
+        series_expect = group1_data.as_series()
         pd.testing.assert_series_equal(series_out, series_expect)
-
         # Check that the correct HTTP request is made
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
         mock_requests.call_args_list[0].kwargs["url"] = request_url_expect
 
-    def test_get_convert_date(self, client):
+    def test_get_convert_date(self, client, group1_data):
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=1672358400000000000,
@@ -68,9 +71,7 @@ class Test_Client:
             convert_date=True,
         )
 
-        series_expect = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
-        ).as_series()
+        series_expect = group1_data.as_series()
         series_expect.index = pd.to_datetime(series_expect.index, utc=True)
 
         pd.testing.assert_series_equal(series_out, series_expect)
