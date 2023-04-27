@@ -183,3 +183,10 @@ class Test_Client:
             info_expect = json.load(f)
 
         assert info_out == info_expect
+
+    def test_delete(self, client, mock_requests):
+        client.delete("7bd106dd-d87f-4504-a888-6aeaff1ec31f")
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f"
+        mock_requests.call_args.kwargs["url"] = request_url_expect

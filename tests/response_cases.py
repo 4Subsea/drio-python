@@ -16,7 +16,6 @@ Note that ``url`` is defined as part of the key in RESPONSE_CASES.
 See ``requests.Response`` source code for more details.
 """
 from pathlib import Path
-from requests import Request
 
 TEST_PATH = Path(__file__).parent
 
@@ -100,6 +99,11 @@ RESPONSE_CASES_GENERAL = {
         "_content": (
             TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "info.json"
         ).read_bytes(),
+    },
+    # description: delete a timeseries
+    ("DELETE", "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f"): {
+        "status_code": 200,
+        "reason": "OK",
     },
 }
 
