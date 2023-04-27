@@ -34,12 +34,10 @@ class Test_Client:
         drio.Client(auth_session, cache=True, cache_opt=cache_opt)
 
     def test_get(self, mock_requests, client):
-        start = 1672358400000000000
-        end = 1672703940000000000
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
-            start=start,
-            end=end,
+            start=1672358400000000000,
+            end=1672703940000000000,
             convert_date=True,
         )
 
@@ -55,12 +53,10 @@ class Test_Client:
         mock_requests.call_args_list[0].kwargs["url"] = request_url_expect
 
     def test_get_no_convert(self, client):
-        start = 1672358400000000000
-        end = 1672703940000000000
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
-            start=start,
-            end=end,
+            start=1672358400000000000,
+            end=1672703940000000000,
             convert_date=False,
         )
 
@@ -71,12 +67,10 @@ class Test_Client:
         pd.testing.assert_series_equal(series_out, series_expect)
 
     def test_get_start_end_as_string(self, client):
-        start = "2022-12-30T00:00:00+00:00"
-        end = "2023-01-02T23:59:00+00:00"
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
-            start=start,
-            end=end,
+            start="2022-12-30T00:00:00+00:00",
+            end="2023-01-02T23:59:00+00:00",
             convert_date=True,
         )
 
@@ -88,12 +82,10 @@ class Test_Client:
         pd.testing.assert_series_equal(series_out, series_expect)
 
     def test_get_start_end_as_datetime(self, client):
-        start = pd.to_datetime("2022-12-30T00:00:00+00:00")
-        end = pd.to_datetime("2023-01-02T23:59:00+00:00")
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
-            start=start,
-            end=end,
+            start=pd.to_datetime("2022-12-30T00:00:00+00:00"),
+            end=pd.to_datetime("2023-01-02T23:59:00+00:00"),
             convert_date=True,
         )
 
