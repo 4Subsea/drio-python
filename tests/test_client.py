@@ -64,16 +64,9 @@ class Test_Client:
             convert_date=False,
         )
 
-        df_expect = pd.read_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "float64"},
-            encoding="utf-8",
-        )
-
-        series_expect = df_expect.set_index("index").squeeze("columns")
-        series_expect.index.name = None
+        series_expect = DataHandler.from_csv(
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
+        ).as_series()
 
         pd.testing.assert_series_equal(series_out, series_expect)
 
@@ -87,16 +80,9 @@ class Test_Client:
             convert_date=True,
         )
 
-        df_expect = pd.read_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "float64"},
-            encoding="utf-8",
-        )
-
-        series_expect = df_expect.set_index("index").squeeze("columns")
-        series_expect.index.name = None
+        series_expect = DataHandler.from_csv(
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
+        ).as_series()
         series_expect.index = pd.to_datetime(series_expect.index, utc=True)
 
         pd.testing.assert_series_equal(series_out, series_expect)
@@ -111,16 +97,9 @@ class Test_Client:
             convert_date=True,
         )
 
-        df_expect = pd.read_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "float64"},
-            encoding="utf-8",
-        )
-
-        series_expect = df_expect.set_index("index").squeeze("columns")
-        series_expect.index.name = None
+        series_expect = DataHandler.from_csv(
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
+        ).as_series()
         series_expect.index = pd.to_datetime(series_expect.index, utc=True)
 
         pd.testing.assert_series_equal(series_out, series_expect)
@@ -133,16 +112,9 @@ class Test_Client:
             convert_date=True,
         )
 
-        df_expect = pd.read_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
-            header=None,
-            names=("index", "values"),
-            dtype={"index": "int64", "values": "float64"},
-            encoding="utf-8",
-        )
-
-        series_expect = df_expect.set_index("index").squeeze("columns")
-        series_expect.index.name = None
+        series_expect = DataHandler.from_csv(
+            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
+        ).as_series()
         series_expect.index = pd.to_datetime(series_expect.index, utc=True)
 
         pd.testing.assert_series_equal(series_out, series_expect)
