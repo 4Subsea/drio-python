@@ -1,7 +1,7 @@
-import shutil
-from pathlib import Path
-import time
 import os
+import shutil
+import time
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -140,6 +140,12 @@ class Test_Client:
     def test_get_with_cache(
         self, client_with_cache, cache_root, STOREFORMATVERSION, group2_data
     ):
+        # Check that the cache folder is empty
+        cache_path_expect = cache_root / STOREFORMATVERSION
+        assert cache_path_expect.exists()
+        assert len(list(cache_path_expect.iterdir())) == 0
+
+        # Get data (and store in cache)
         series_out = client_with_cache.get(
             "693cb0b2-3599-46d3-b263-ea913a648535",
             start=1672358400000000000,
@@ -150,12 +156,12 @@ class Test_Client:
         series_expect = group2_data.as_series()
         pd.testing.assert_series_equal(series_out, series_expect)
 
-        # Check that the cache folder now contains four files
+        # Check that the cache folder now contains six files
         cache_path_expect = cache_root / STOREFORMATVERSION
         assert cache_path_expect.exists()
         assert len(list(cache_path_expect.iterdir())) == 6
 
-        # Get from cache (and check that the data actually is read from cache files)
+        # Get data (from cache)
         time_before_get = time.time()
         time.sleep(0.1)
         series_out = client_with_cache.get(
