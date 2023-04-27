@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pandas as pd
@@ -40,6 +41,18 @@ class Test_Client:
     @pytest.fixture
     def client(self, auth_session):
         return drio.Client(auth_session, cache=False)
+
+    @pytest.fixture
+    def client_with_cache(self, auth_session, tmp_path, STOREFORMATVERSION):
+        root = tmp_path / ".cache"
+
+        # Copy files from source to the temporary cache root
+        src_root = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache"
+        assert (src_root / STOREFORMATVERSION).exists()
+        shutil.copytree(src_root, root)
+
+        cache_opt = {"max_size": 1024, "cache_root": root}
+        return drio.Client(auth_session, cache=True, cache_opt=cache_opt)
 
     def test__init__(self, auth_session, tmp_path):
         cache_opt = {
