@@ -50,7 +50,18 @@ def response_factory(method, url, **kwargs):
         setattr(response, attr, value)
 
     # Create the Request.
-    req = requests.Request(method=method.upper(), url=url)
+    req = requests.Request(
+        method=method.upper(),
+        url=url,
+        headers=kwargs.get("headers"),
+        files=kwargs.get("files"),
+        data=kwargs.get("data") or {},
+        json=kwargs.get("json"),
+        params=kwargs.get("params") or {},
+        auth=kwargs.get("auth"),
+        cookies=kwargs.get("cookies"),
+        hooks=kwargs.get("hooks"),
+    )
     response.request = req.prepare()
 
     return response
