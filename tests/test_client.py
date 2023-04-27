@@ -174,3 +174,12 @@ class Test_Client:
             ping_expect = json.load(f)
 
         assert ping_out == ping_expect
+
+    def test_info(self, client):
+        info_out = client.info("2fee7f8a-664a-41c9-9b71-25090517c275")
+
+        info_json = TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "info.json"
+        with open(info_json, mode="r") as f:
+            info_expect = json.load(f)
+
+        assert info_out == info_expect

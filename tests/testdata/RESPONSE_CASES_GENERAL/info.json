@@ -1,0 +1,26 @@
+{
+    "TimeSeriesId": "2fee7f8a-664a-41c9-9b71-25090517c275",
+    "TimeOfFirstSample": 1672185600000000000,
+    "TimeOfLastSample": 1672700400000000000,
+    "LastModifiedByEmail": null,
+    "Created": "2023-03-14T14:56:16.8928077+00:00",
+    "LastModified": null,
+    "CreatedByEmail": "vrs@4subsea.com",
+    "Metadata": [
+        {
+            "Id": "bd32932e-c08b-40ea-ea60-08d5c5f9f191",
+            "Namespace": "system.reservoir",
+            "Key": "Organization.2c4ee56262614018a1b18837ab526944",
+            "Value": {
+                "some_name": "tress",
+                "some_value": "emerald"
+            },
+            "TimeSeriesReferenceCount": 1,
+            "LastModifiedByEmail": null,
+            "LastModified": "2023-01-26T11:34:07.8630181+00:00",
+            "Created": "2018-05-30T06:52:47.6786499+00:00",
+            "CreatedByEmail": null
+        }
+    ],
+    "Aliases": []
+}
