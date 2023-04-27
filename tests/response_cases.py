@@ -91,24 +91,17 @@ RESPONSE_GROUP1 = {
     # =========================================================================
     # This 'group' of response cases represents the DataReservoir.io backend response
     # and Azure Blob Storage responses when requesting data for a timeries with:
+    #
     #   * ID = "2fee7f8a-664a-41c9-9b71-25090517c275"
     #   * start = 1672358400000000000
     #   * end = 1672703939999999999
     #
-    # The responses are:
-    #   * A: TimeSeries API response, containing a list of 'chunks'.
-    #   * B: Azure Blob Storage response for the first chunk of data.
-    #   * C: Azure Blob Storage response for the second chunk of data.
-    #   * Etc.
+    # I.e.,
+    #   /api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
     #
-    # These response cases will mock the backend for the following `get` call with
-    # the `datareservoirio` client:
-    #
-    #   client.get(
-    #       "2fee7f8a-664a-41c9-9b71-25090517c275",
-    #       start=1672358400000000000,
-    #       end=1672703940000000000
-    #   )
+    # Comments:
+    #   * Numeric data
+    #   * No overlap (i.e., only one 'File')
     #
     # =========================================================================
     #
@@ -191,9 +184,13 @@ RESPONSE_GROUP2 = {
     # =========================================================================
     # This 'group' of response cases represents the DataReservoir.io backend responses
     # and Azure Blob Storage responses when requesting data for a timeseries with:
+    #
     #   * ID = "693cb0b2-3599-46d3-b263-ea913a648535"
     #   * start = 1672358400000000000 (i.e., 2022-12-30T00:00)
     #   * end = 1672617600000000000 (i.e., 2023-01-02T00:00)
+    #
+    # I.e.,
+    #   /api/timeseries/693cb0b2-3599-46d3-b263-ea913a648535/data/days?start=1672358400000000000&end=1672617600000000000
     #
     # Comments:
     #   * Overlapping data (i.e., several 'Files')
