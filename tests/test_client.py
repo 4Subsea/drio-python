@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 import json
+from unittest.mock import call, ANY
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
@@ -201,7 +202,7 @@ class Test_Client:
         create_expect = {"TimeSeriesId": "9f74b0b1-54c2-4148-8854-5f78b81bb592"}
         assert create_out == create_expect
 
-    def test_create_with_data(self, client, data_float):
+    def test_create_with_data(self, client, data_float, mock_requests):
         create_out = client.create(series=data_float.as_series(), wait_on_verification=False)
 
         create_expect = {
@@ -212,3 +213,16 @@ class Test_Client:
         }
 
         assert create_out == create_expect
+
+        # Check HTTP calls
+        def url_from_call(call_):
+            try:
+                url = call_.kwargs["url"]
+            except KeyError:
+                url = call_.args[1]
+            return url
+
+        assert url_from_call(mock_requests.call_args_list[0]) == "https://reservoir-api.4subsea.net/api/files/upload"
+        assert url_from_call(mock_requests.call_args_list[1]) == "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D"
+        assert url_from_call(mock_requests.call_args_list[2]) == "https://reservoir-api.4subsea.net/api/files/commit"
+        assert url_from_call(mock_requests.call_args_list[3]) == "https://reservoir-api.4subsea.net/api/timeseries/create"
