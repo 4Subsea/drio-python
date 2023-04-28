@@ -113,6 +113,14 @@ RESPONSE_CASES_GENERAL = {
             TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "create.json"
         ).read_bytes(),
     },
+    # description: allocate a new blob
+    ("POST", "https://reservoir-api.4subsea.net/api/files/upload"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "files_upload.json"
+        ).read_bytes(),
+    },
 }
 
 

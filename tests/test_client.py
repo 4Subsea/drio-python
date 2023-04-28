@@ -200,3 +200,6 @@ class Test_Client:
 
         create_expect = {"TimeSeriesId": "9f74b0b1-54c2-4148-8854-5f78b81bb592"}
         assert create_out == create_expect
+
+    def test_create_with_data(self, client, data_float):
+        create_out = client.create(series=data_float.as_series(), wait_on_verification=True)
