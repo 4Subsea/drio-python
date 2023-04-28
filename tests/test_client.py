@@ -219,7 +219,7 @@ class Test_Client:
         url_expect = "https://reservoir-api.4subsea.net/api/files/upload"
         assert url == url_expect
 
-        # Check second HTTP call to /api/files/{id}
+        # Check second HTTP call to blob
         url = mock_requests.call_args_list[1].kwargs["url"]
         url_expect = "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D"
         assert url == url_expect
@@ -233,3 +233,6 @@ class Test_Client:
         url = mock_requests.call_args_list[3].args[1]
         url_expect = "https://reservoir-api.4subsea.net/api/timeseries/create"
         assert url == url_expect
+        data = mock_requests.call_args_list[3].kwargs["data"]
+        data_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
+        assert data == data_expect
