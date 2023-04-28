@@ -40,14 +40,16 @@ def response_case_handler():
 
         def __init__(self):
             self._response_cases = {}
-            self.add_label("default")
+            self.toggle_on("default")
 
-        def add(self, dict_):
+        def update(self, dict_):
             self._response_cases.update(dict_)
 
-        def add_label(self, label):
-            self._response_cases.update(self._CASES[label])
+        def toggle_on(self, label):
+            cases = self._CASES[label]
+            self._response_cases.update(cases)
 
+        @property
         def values(self):
             return self._response_cases
 
@@ -59,7 +61,7 @@ def response_case_handler():
 @pytest.fixture(autouse=True)
 def mock_requests(monkeypatch, response_case_handler):
     """Patch requests.sessions.Session.request for all tests."""
-    mock = Mock(wraps=ResponseFactory(response_case_handler.values()))
+    mock = Mock(wraps=ResponseFactory(response_case_handler.values))
     monkeypatch.setattr("requests.sessions.Session.request", mock)
     return mock
 
