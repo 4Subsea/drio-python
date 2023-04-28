@@ -202,4 +202,13 @@ class Test_Client:
         assert create_out == create_expect
 
     def test_create_with_data(self, client, data_float):
-        create_out = client.create(series=data_float.as_series(), wait_on_verification=True)
+        create_out = client.create(series=data_float.as_series(), wait_on_verification=False)
+
+        create_expect = {
+            "FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2",
+            "TimeSeriesId": "d30519af-5035-4093-a425-dafd857ad0ef",
+            "TimeOfFirstSample": 0,
+            "TimeOfLastSample": -2
+        }
+
+        assert create_out == create_expect

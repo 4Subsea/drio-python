@@ -113,14 +113,6 @@ RESPONSE_CASES_GENERAL = {
             TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "create.json"
         ).read_bytes(),
     },
-    # description: allocate a new blob
-    ("POST", "https://reservoir-api.4subsea.net/api/files/upload"): {
-        "status_code": 200,
-        "reason": "OK",
-        "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "files_upload.json"
-        ).read_bytes(),
-    },
 }
 
 
@@ -320,5 +312,34 @@ RESPONSE_GROUP2 = {
     },
 }
 
+RESPONSE_GROUP3 = {
+    # =========================================================================
+    # This 'group' of response cases represents creating a new timeseries in the
+    # DataReservoir.io (with data).
+    # =========================================================================
+    #
+    # description: allocate a new blob
+    ("POST", "https://reservoir-api.4subsea.net/api/files/upload"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "files_upload.json"
+        ).read_bytes(),
+    },
+    # description: put data to blob
+    ("PUT", "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D"): {
+        "status_code": 201,
+        "reason": "Created",
+    },
+    # description: create a new timeseries with data
+    ("POST", "https://reservoir-api.4subsea.net/api/timeseries/create"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "create.json"
+        ).read_bytes(),
+    },
+}
 
-RESPONSE_CASES = {**RESPONSE_CASES_GENERAL, **RESPONSE_GROUP1, **RESPONSE_GROUP2}
+
+RESPONSE_CASES = {**RESPONSE_CASES_GENERAL, **RESPONSE_GROUP1, **RESPONSE_GROUP2, **RESPONSE_GROUP3}
