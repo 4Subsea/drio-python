@@ -40,7 +40,7 @@ def response_factory(method, url, **kwargs):
     try:
         spec = RESPONSE_CASES[(method.upper(), url)].copy()
     except KeyError:
-        raise ValueError(f"Unrecognized URL: {url}")
+        raise ValueError(f"Unrecognized METHOD + URL: {method.upper()} {url}")
     else:
         spec.update({"url": url, "raw": BytesIO(spec.pop("_content", None))})
 
