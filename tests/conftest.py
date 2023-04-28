@@ -25,17 +25,9 @@ def response_case_handler():
 
     class ResponseCaseHandler:
 
-        other = {
-            ("GET", "my/http/endpoint/1234"): {
-                "status_code": 200,
-                "reason": "OK",
-            },
-        }
-
         _CASES = {
             "default": RESPONSE_CASES_DEFAULT.copy(),
             "general": RESPONSE_CASES_GENERAL.copy(),
-            "other": other.copy(),
         }
 
         def __init__(self):
