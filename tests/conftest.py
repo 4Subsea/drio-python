@@ -19,12 +19,47 @@ def disable_logging(monkeypatch):
     monkeypatch.setattr("datareservoirio.client.AzureLogHandler", logging.NullHandler())
 
 
+@pytest.fixture
+def response_cases():
+    response_cases = RESPONSE_CASES.copy()
+    return response_cases
+
+
 @pytest.fixture(autouse=True)
-def mock_requests(monkeypatch):
+def mock_requests(monkeypatch, response_cases):
     """Patch requests.sessions.Session.request for all tests."""
-    mock = Mock(wraps=response_factory)
+    mock = Mock(wraps=ResponseFactory(response_cases))
     monkeypatch.setattr("requests.sessions.Session.request", mock)
     return mock
+
+
+class ResponseFactory:
+    def __init__(self, response_cases):
+        self._response_cases = response_cases
+
+    def __call__(self, method, url, *args, **kwargs):
+        """
+        Generate response based on request call and lookup in ``RESPONSE_CASES``.
+        Attributes assigned to ``requests.Response`` object.
+
+        Notes
+        -----
+        The first argument, ``_`` will be an instance of ``requests.sessions.Session``
+        since ``self`` passed to the ``request`` method. See ``mock_requests``.
+        """
+        try:
+            spec = self._response_cases[(method.upper(), url)].copy()
+        except KeyError:
+            raise ValueError(f"Unrecognized URL: {url}")
+        else:
+            spec.update({"url": url, "raw": BytesIO(spec.pop("_content", None))})
+
+        response = requests.Response()
+
+        for attr, value in spec.items():
+            setattr(response, attr, value)
+
+        return response
 
 
 def response_factory(method, url, *args, **kwargs):
