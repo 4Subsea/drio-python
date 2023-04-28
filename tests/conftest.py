@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 import requests
-from response_cases import RESPONSE_CASES, RESPONSE_CASES_DEFAULT
+from response_cases import RESPONSE_CASES, RESPONSE_CASES_DEFAULT, RESPONSE_CASES_GENERAL
 
 from datareservoirio._utils import DataHandler
 
@@ -20,15 +20,46 @@ def disable_logging(monkeypatch):
 
 
 @pytest.fixture
-def response_cases():
-    response_cases = RESPONSE_CASES_DEFAULT.copy()
-    return response_cases
+def response_case_handler():
+    # response_cases = RESPONSE_CASES_DEFAULT.copy()
+
+    class ResponseCaseHandler:
+
+        other = {
+            ("GET", "my/http/endpoint/1234"): {
+                "status_code": 200,
+                "reason": "OK",
+            },
+        }
+
+        _CASES = {
+            "default": RESPONSE_CASES_DEFAULT.copy(),
+            "general": RESPONSE_CASES_GENERAL.copy(),
+            "other": other.copy(),
+        }
+
+        def __init__(self):
+            self._response_cases = {}
+            self.add_label("default")
+
+        def add(self, dict_):
+            self._response_cases.update(dict_)
+
+        def add_label(self, label):
+            self._response_cases.update(self._CASES[label])
+
+        def values(self):
+            return self._response_cases
+
+    handler = ResponseCaseHandler()
+
+    return handler
 
 
 @pytest.fixture(autouse=True)
-def mock_requests(monkeypatch, response_cases):
+def mock_requests(monkeypatch, response_case_handler):
     """Patch requests.sessions.Session.request for all tests."""
-    mock = Mock(wraps=ResponseFactory(response_cases))
+    mock = Mock(wraps=ResponseFactory(response_case_handler.values()))
     monkeypatch.setattr("requests.sessions.Session.request", mock)
     return mock
 
