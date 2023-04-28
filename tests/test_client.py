@@ -214,15 +214,22 @@ class Test_Client:
 
         assert create_out == create_expect
 
-        # Check HTTP calls
-        def url_from_call(call_):
-            try:
-                url = call_.kwargs["url"]
-            except KeyError:
-                url = call_.args[1]
-            return url
+        # Check first HTTP call to /api/files/upload
+        url = mock_requests.call_args_list[0].args[1]
+        url_expect = "https://reservoir-api.4subsea.net/api/files/upload"
+        assert url == url_expect
 
-        assert url_from_call(mock_requests.call_args_list[0]) == "https://reservoir-api.4subsea.net/api/files/upload"
-        assert url_from_call(mock_requests.call_args_list[1]) == "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D"
-        assert url_from_call(mock_requests.call_args_list[2]) == "https://reservoir-api.4subsea.net/api/files/commit"
-        assert url_from_call(mock_requests.call_args_list[3]) == "https://reservoir-api.4subsea.net/api/timeseries/create"
+        # Check second HTTP call to /api/files/{id}
+        url = mock_requests.call_args_list[1].kwargs["url"]
+        url_expect = "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D"
+        assert url == url_expect
+
+        # Check third HTTP call to /api/files/commit
+        url = mock_requests.call_args_list[2].kwargs["url"]
+        url_expect = "https://reservoir-api.4subsea.net/api/files/commit"
+        assert url == url_expect
+
+        # Check fourth HTTP call to /api/timeseries/create
+        url = mock_requests.call_args_list[3].args[1]
+        url_expect = "https://reservoir-api.4subsea.net/api/timeseries/create"
+        assert url == url_expect
