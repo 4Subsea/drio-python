@@ -339,6 +339,14 @@ RESPONSE_GROUP3 = {
             TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "create.json"
         ).read_bytes(),
     },
+    # description: create a new timeseries with data
+    ("GET", "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "status.json"
+        ).read_bytes(),
+    },
 }
 
 

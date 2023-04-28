@@ -203,7 +203,7 @@ class Test_Client:
         assert create_out == create_expect
 
     def test_create_with_data(self, client, data_float, mock_requests, bytesio_with_memory):
-        create_out = client.create(series=data_float.as_series(), wait_on_verification=False)
+        create_out = client.create(series=data_float.as_series(), wait_on_verification=True)
 
         create_expect = {
             "FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2",
@@ -234,10 +234,15 @@ class Test_Client:
         call_json_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
         assert call_json == call_json_expect
 
-        # Check fourth HTTP call to /api/timeseries/create
+        # Check fourth HTTP call to /api/files/{id}/status
         call_url = mock_requests.call_args_list[3].args[1]
+        call_url_expect = "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status"
+        assert call_url == call_url_expect
+
+        # Check fifth HTTP call to /api/timeseries/create
+        call_url = mock_requests.call_args_list[4].args[1]
         call_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/create"
         assert call_url == call_url_expect
-        call_data = mock_requests.call_args_list[3].kwargs["data"]
+        call_data = mock_requests.call_args_list[4].kwargs["data"]
         call_data_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
         assert call_data == call_data_expect
