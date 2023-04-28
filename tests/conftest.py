@@ -41,9 +41,8 @@ def response_case_handler():
             cases = self._CASES[label]
             self._response_cases.update(cases)
 
-        @property
-        def values(self):
-            return self._response_cases
+        def __getitem__(self, key):
+            return self._response_cases[key]
 
     handler = ResponseCaseHandler()
 
@@ -53,7 +52,7 @@ def response_case_handler():
 @pytest.fixture(autouse=True)
 def mock_requests(monkeypatch, response_case_handler):
     """Patch requests.sessions.Session.request for all tests."""
-    mock = Mock(wraps=ResponseFactory(response_case_handler.values))
+    mock = Mock(wraps=ResponseFactory(response_case_handler))
     monkeypatch.setattr("requests.sessions.Session.request", mock)
     return mock
 
