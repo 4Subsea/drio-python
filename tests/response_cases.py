@@ -105,6 +105,14 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
     },
+    # description: create a new timeseries
+    ("PUT", "https://reservoir-api.4subsea.net/api/timeseries/9f74b0b1-54c2-4148-8854-5f78b81bb592"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "create.json"
+        ).read_bytes(),
+    },
 }
 
 

@@ -190,3 +190,13 @@ class Test_Client:
         # Check that the correct URL is poked
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f"
         mock_requests.call_args.kwargs["url"] = request_url_expect
+
+    def test_create(self, client, monkeypatch):
+        def uuid4_mock():
+            return "9f74b0b1-54c2-4148-8854-5f78b81bb592"
+        monkeypatch.setattr(drio.rest_api.timeseries, "uuid4", uuid4_mock)
+
+        create_out = client.create()
+
+        create_expect = {"TimeSeriesId": "9f74b0b1-54c2-4148-8854-5f78b81bb592"}
+        assert create_out == create_expect
