@@ -215,29 +215,29 @@ class Test_Client:
         assert create_out == create_expect
 
         # Check first HTTP call to /api/files/upload
-        url = mock_requests.call_args_list[0].args[1]
-        url_expect = "https://reservoir-api.4subsea.net/api/files/upload"
-        assert url == url_expect
+        call_url = mock_requests.call_args_list[0].args[1]
+        call_url_expect = "https://reservoir-api.4subsea.net/api/files/upload"
+        assert call_url == call_url_expect
 
         # Check second HTTP call to blob
-        url = mock_requests.call_args_list[1].kwargs["url"]
-        url_expect = "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D"
-        assert url == url_expect
-        data = mock_requests.call_args_list[1].kwargs["data"]
-        assert data.memory == data_float.as_binary_csv()
+        call_url = mock_requests.call_args_list[1].kwargs["url"]
+        call_url_expect = "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D"
+        assert call_url == call_url_expect
+        call_data = mock_requests.call_args_list[1].kwargs["data"]
+        assert call_data.memory == data_float.as_binary_csv()
 
         # Check third HTTP call to /api/files/commit
-        url = mock_requests.call_args_list[2].kwargs["url"]
-        url_expect = "https://reservoir-api.4subsea.net/api/files/commit"
-        assert url == url_expect
-        json_ = mock_requests.call_args_list[2].kwargs["json"]
-        json_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
-        assert json_ == json_expect
+        call_url = mock_requests.call_args_list[2].kwargs["url"]
+        call_url_expect = "https://reservoir-api.4subsea.net/api/files/commit"
+        assert call_url == call_url_expect
+        call_json = mock_requests.call_args_list[2].kwargs["json"]
+        call_json_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
+        assert call_json == call_json_expect
 
         # Check fourth HTTP call to /api/timeseries/create
-        url = mock_requests.call_args_list[3].args[1]
-        url_expect = "https://reservoir-api.4subsea.net/api/timeseries/create"
-        assert url == url_expect
-        data = mock_requests.call_args_list[3].kwargs["data"]
-        data_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
-        assert data == data_expect
+        call_url = mock_requests.call_args_list[3].args[1]
+        call_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/create"
+        assert call_url == call_url_expect
+        call_data = mock_requests.call_args_list[3].kwargs["data"]
+        call_data_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
+        assert call_data == call_data_expect
