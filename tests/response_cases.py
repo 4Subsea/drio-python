@@ -288,3 +288,11 @@ RESPONSE_GROUP2 = {
 
 
 RESPONSE_CASES = {**RESPONSE_CASES_GENERAL, **RESPONSE_GROUP1, **RESPONSE_GROUP2}
+
+
+RESPONSE_CASES_DEFAULT = {
+    ("GET", "my/http/endpoint"): {
+        "status_code": 200,
+        "reason": "OK",
+    },
+}

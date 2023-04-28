@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 import requests
-from response_cases import RESPONSE_CASES
+from response_cases import RESPONSE_CASES, RESPONSE_CASES_DEFAULT
 
 from datareservoirio._utils import DataHandler
 
@@ -21,7 +21,7 @@ def disable_logging(monkeypatch):
 
 @pytest.fixture
 def response_cases():
-    response_cases = RESPONSE_CASES.copy()
+    response_cases = RESPONSE_CASES_DEFAULT.copy()
     return response_cases
 
 
