@@ -20,9 +20,7 @@ def disable_logging(monkeypatch):
 
 
 @pytest.fixture
-def response_case_handler():
-    # response_cases = RESPONSE_CASES_DEFAULT.copy()
-
+def response_cases():
     class ResponseCaseHandler:
 
         _CASES = {
@@ -31,15 +29,10 @@ def response_case_handler():
         }
 
         def __init__(self):
-            self._response_cases = {}
-            self.toggle_on("default")
+            self._response_cases = self._CASES["default"]
 
-        def update(self, dict_):
-            self._response_cases.update(dict_)
-
-        def toggle_on(self, label):
-            cases = self._CASES[label]
-            self._response_cases.update(cases)
+        def set(self, label):
+            self._response_cases = self._CASES[label]
 
         def __getitem__(self, key):
             return self._response_cases[key]
@@ -50,9 +43,9 @@ def response_case_handler():
 
 
 @pytest.fixture(autouse=True)
-def mock_requests(monkeypatch, response_case_handler):
+def mock_requests(monkeypatch, response_cases):
     """Patch requests.sessions.Session.request for all tests."""
-    mock = Mock(wraps=ResponseFactory(response_case_handler))
+    mock = Mock(wraps=ResponseFactory(response_cases))
     monkeypatch.setattr("requests.sessions.Session.request", mock)
     return mock
 
