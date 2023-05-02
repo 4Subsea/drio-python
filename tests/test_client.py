@@ -314,3 +314,7 @@ class Test_Client:
         df_out = client._verify_and_prepare_series(data.as_series())
         df_expect = data.as_dataframe().rename(columns={"index": 0, "values": 1})
         pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test__verify_and_prepare_series_raises_not_series(self, client, data_float):
+        with pytest.raises(ValueError):
+            client._verify_and_prepare_series(data_float.as_dataframe())
