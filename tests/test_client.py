@@ -213,8 +213,8 @@ class Test_Client:
         create_expect = {
             "FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2",
             "TimeSeriesId": "d30519af-5035-4093-a425-dafd857ad0ef",
-            "TimeOfFirstSample": 0,
-            "TimeOfLastSample": -2
+            "TimeOfFirstSample": 1640995215379000000,
+            "TimeOfLastSample": 1640995271472000000,
         }
 
         assert create_out == create_expect
