@@ -18,7 +18,9 @@ class Test_Client:
 
     TODO:
         * ``Client.create()`` where ``status=="Failed"``
-        * ``Client.create`` where files/commit triggers ``raise_for_status()``
+        * ``Client.create()`` where files/commit triggers ``raise_for_status()``
+        * ``Client.append()`` where ``status=="Failed"``
+        * ``Client.append()`` where files/commit triggers ``raise_for_status()``
     """
 
     @pytest.fixture
