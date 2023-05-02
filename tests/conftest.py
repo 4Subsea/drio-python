@@ -33,10 +33,6 @@ def response_cases():
         def __init__(self):
             self.set("general")
 
-        def _check_label(self, label):
-            if label not in self._CASES:
-                raise ValueError("Unknown response label")
-
         def set(self, label):
             if label not in self._CASES:
                 raise ValueError("Unknown response label")
