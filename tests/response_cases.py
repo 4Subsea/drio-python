@@ -314,7 +314,7 @@ RESPONSE_GROUP2 = {
 
 RESPONSE_GROUP3 = {
     # =========================================================================
-    # This 'group' of response cases represents creating a new timeseries in the
+    # This 'group' of response cases represents creating/appending a new timeseries in the
     # DataReservoir.io (with data).
     # =========================================================================
     #
@@ -345,6 +345,14 @@ RESPONSE_GROUP3 = {
         "reason": "OK",
         "_content": (
             TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "status.json"
+        ).read_bytes(),
+    },
+    # description: create a new timeseries with data
+    ("POST", "https://reservoir-api.4subsea.net/api/timeseries/add"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "add.json"
         ).read_bytes(),
     },
 }
