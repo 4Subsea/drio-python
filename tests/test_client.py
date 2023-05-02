@@ -21,7 +21,8 @@ class Test_Client:
         * ``Client.create()`` where files/commit triggers ``raise_for_status()``
         * ``Client.append()`` where ``status=="Failed"``
         * ``Client.append()`` where files/commit triggers ``raise_for_status()``
-        * ``Client._get_file_status()`` returns "Failed".
+        * ``Client._get_file_status()`` returns "Failed"/"Unititialized".
+        * ``Client._wait_until_file_ready()`` returns "Failed".
     """
 
     @pytest.fixture
@@ -336,3 +337,7 @@ class Test_Client:
         status_out = client._get_file_status("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
         status_expect = "Ready"
         assert status_out == status_expect
+
+    def test__wait_until_file_ready(self, client):
+        out = client._wait_until_file_ready("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
+        assert out == "Ready"
