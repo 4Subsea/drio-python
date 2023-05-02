@@ -128,7 +128,8 @@ class Test_Storage:
         assert isinstance(storage._storage_cache, drio.storage.StorageCache)
         assert storage._session is auth_session
 
-    def test_get(self, storage_no_cache):
+    def test_get(self, storage_no_cache, response_cases):
+        response_cases.set("group1")
         blob_sequence = (
             {
                 "Path": "1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv",
@@ -160,7 +161,8 @@ class Test_Storage:
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_overlapping(self, storage_no_cache):
+    def test_get_overlapping(self, storage_no_cache, response_cases):
+        response_cases.set("group2")
         blob_sequence = (
             {
                 "Path": "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv",
@@ -210,7 +212,9 @@ class Test_Storage:
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_with_cache(self, storage_with_cache, tmp_path):
+    def test_get_with_cache(self, storage_with_cache, tmp_path, response_cases):
+        response_cases.set("group1")
+
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
@@ -265,7 +269,9 @@ class Test_Storage:
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_overlapping_with_cache(self, storage_with_cache, tmp_path):
+    def test_get_overlapping_with_cache(self, storage_with_cache, tmp_path, response_cases):
+        response_cases.set("group2")
+
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
