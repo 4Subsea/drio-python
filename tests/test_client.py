@@ -328,7 +328,7 @@ class Test_Client:
     def test__verify_and_prepare_series_raises_not_unique(self, client, data_float):
         series = data_float.as_series()
         index = list(series.index)
-        index[1] = index[0]   # not unique index
+        index[1] = index[0]  # not unique index
         series.index = index
         with pytest.raises(ValueError):
             client._verify_and_prepare_series(data_float.as_dataframe())
