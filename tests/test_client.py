@@ -299,3 +299,8 @@ class Test_Client:
         call_data = mock_requests.call_args_list[4].kwargs["data"]
         call_data_expect = {"TimeSeriesId": "d30519af-5035-4093-a425-dafd857ad0ef", "FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
         assert call_data == call_data_expect
+
+    def test__verify_and_prepare_series(self, client, data_float):
+        df_out = client._verify_and_prepare_series(data_float.as_series())
+        df_expect = data_float.as_dataframe().rename(columns={"index": 0, "values": 1})
+        pd.testing.assert_frame_equal(df_out, df_expect)
