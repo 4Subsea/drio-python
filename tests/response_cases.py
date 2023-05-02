@@ -93,7 +93,10 @@ RESPONSE_CASES_GENERAL = {
         ).read_bytes(),
     },
     # description: get info about a timeseries
-    ("GET", "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275"): {
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275",
+    ): {
         "status_code": 200,
         "reason": "OK",
         "_content": (
@@ -101,12 +104,18 @@ RESPONSE_CASES_GENERAL = {
         ).read_bytes(),
     },
     # description: delete a timeseries
-    ("DELETE", "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f"): {
+    (
+        "DELETE",
+        "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f",
+    ): {
         "status_code": 200,
         "reason": "OK",
     },
     # description: create a new timeseries
-    ("PUT", "https://reservoir-api.4subsea.net/api/timeseries/9f74b0b1-54c2-4148-8854-5f78b81bb592"): {
+    (
+        "PUT",
+        "https://reservoir-api.4subsea.net/api/timeseries/9f74b0b1-54c2-4148-8854-5f78b81bb592",
+    ): {
         "status_code": 200,
         "reason": "OK",
         "_content": (
@@ -327,7 +336,10 @@ RESPONSE_GROUP3 = {
         ).read_bytes(),
     },
     # description: put data to blob
-    ("PUT", "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D"): {
+    (
+        "PUT",
+        "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D",
+    ): {
         "status_code": 201,
         "reason": "Created",
     },
@@ -340,7 +352,10 @@ RESPONSE_GROUP3 = {
         ).read_bytes(),
     },
     # description: create a new timeseries with data
-    ("GET", "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status"): {
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status",
+    ): {
         "status_code": 200,
         "reason": "OK",
         "_content": (
@@ -358,4 +373,9 @@ RESPONSE_GROUP3 = {
 }
 
 
-RESPONSE_CASES = {**RESPONSE_CASES_GENERAL, **RESPONSE_GROUP1, **RESPONSE_GROUP2, **RESPONSE_GROUP3}
+RESPONSE_CASES = {
+    **RESPONSE_CASES_GENERAL,
+    **RESPONSE_GROUP1,
+    **RESPONSE_GROUP2,
+    **RESPONSE_GROUP3,
+}

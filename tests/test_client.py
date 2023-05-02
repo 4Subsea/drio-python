@@ -1,10 +1,10 @@
+import json
 import os
 import time
 from pathlib import Path
 
 import pandas as pd
 import pytest
-import json
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
@@ -200,6 +200,7 @@ class Test_Client:
     def test_create(self, client, monkeypatch):
         def uuid4_mock():
             return "9f74b0b1-54c2-4148-8854-5f78b81bb592"
+
         monkeypatch.setattr(drio.rest_api.timeseries, "uuid4", uuid4_mock)
 
         create_out = client.create()
@@ -207,8 +208,12 @@ class Test_Client:
         create_expect = {"TimeSeriesId": "9f74b0b1-54c2-4148-8854-5f78b81bb592"}
         assert create_out == create_expect
 
-    def test_create_with_data(self, client, data_float, mock_requests, bytesio_with_memory):
-        create_out = client.create(series=data_float.as_series(), wait_on_verification=True)
+    def test_create_with_data(
+        self, client, data_float, mock_requests, bytesio_with_memory
+    ):
+        create_out = client.create(
+            series=data_float.as_series(), wait_on_verification=True
+        )
 
         create_expect = {
             "FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2",
@@ -262,7 +267,7 @@ class Test_Client:
             "FileId": "ae7ef55f-6861-44b4-be06-a1f789221c93",
             "TimeSeriesId": "d30519af-5035-4093-a425-dafd857ad0ef",
             "TimeOfFirstSample": 1640995215379000000,
-            "TimeOfLastSample": 1640995271472000000
+            "TimeOfLastSample": 1640995271472000000,
         }
 
         assert append_out == append_expect
@@ -297,7 +302,10 @@ class Test_Client:
         call_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/add"
         assert call_url == call_url_expect
         call_data = mock_requests.call_args_list[4].kwargs["data"]
-        call_data_expect = {"TimeSeriesId": "d30519af-5035-4093-a425-dafd857ad0ef", "FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
+        call_data_expect = {
+            "TimeSeriesId": "d30519af-5035-4093-a425-dafd857ad0ef",
+            "FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2",
+        }
         assert call_data == call_data_expect
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
