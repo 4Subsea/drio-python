@@ -21,6 +21,7 @@ class Test_Client:
         * ``Client.create()`` where files/commit triggers ``raise_for_status()``
         * ``Client.append()`` where ``status=="Failed"``
         * ``Client.append()`` where files/commit triggers ``raise_for_status()``
+        * ``Client._get_file_status()`` returns "Failed".
     """
 
     @pytest.fixture
@@ -330,3 +331,8 @@ class Test_Client:
         series.index = index
         with pytest.raises(ValueError):
             client._verify_and_prepare_series(data_float.as_dataframe())
+
+    def test__get_file_status(self, client):
+        status_out = client._get_file_status("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
+        status_expect = "Ready"
+        assert status_out == status_expect
