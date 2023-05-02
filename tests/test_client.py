@@ -5,7 +5,6 @@ from pathlib import Path
 import pandas as pd
 import pytest
 import json
-from unittest.mock import call, ANY
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
