@@ -16,6 +16,9 @@ TEST_PATH = Path(__file__).parent
 class Test_Client:
     """
     Tests the ``datareservoirio.Client`` class.
+
+    TODO:
+        * ``Client.create()`` where ``status=="Failed"``
     """
 
     @pytest.fixture
