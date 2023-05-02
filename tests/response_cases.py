@@ -370,6 +370,11 @@ RESPONSE_GROUP3 = {
             TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "add.json"
         ).read_bytes(),
     },
+    # description: commit file for processing
+    ("POST", "https://reservoir-api.4subsea.net/api/files/commit"): {
+        "status_code": 204,
+        "reason": "No Content",
+    },
 }
 
 
