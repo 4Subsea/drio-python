@@ -37,7 +37,7 @@ GENERAL = {
 
 # Azure Blob Storage HTTP responses
 AZURE_STORAGE_BLOB = {
-    # description: blob day file (numeric) from remote storage
+    # description: get day file (numeric) from remote storage
     ("GET", "http://blob/dayfile/numeric"): {
         "_content": (
             TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "dayfile_numeric.csv"
@@ -45,7 +45,7 @@ AZURE_STORAGE_BLOB = {
         "status_code": 200,
         "reason": "OK",
     },
-    # description: blob day file (string) from remote storage
+    # description: get day file (string) from remote storage
     ("GET", "http://blob/dayfile/string"): {
         "_content": (
             TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "dayfile_string.csv"
@@ -53,7 +53,7 @@ AZURE_STORAGE_BLOB = {
         "status_code": 200,
         "reason": "OK",
     },
-    # description: blob day file (malformatted string) from remote storage
+    # description: get day file (malformatted string) from remote storage
     ("GET", "http://blob/dayfile/string/malformatted"): {
         "_content": (
             TEST_PATH
@@ -64,7 +64,7 @@ AZURE_STORAGE_BLOB = {
         "status_code": 200,
         "reason": "OK",
     },
-    # description: blob do not exist in remote storage
+    # description: get blob that does not exist
     ("GET", "http://example/no/exist"): {
         "status_code": 404,
         "reason": "Not Found",
