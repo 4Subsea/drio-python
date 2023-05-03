@@ -386,5 +386,5 @@ GROUP3 = {
 }
 
 
-# General DataReservoir.io and Azure Storage Blob HTTP responses
+# General, DataReservoir.io and Azure Storage Blob HTTP responses
 GROUP4 = {**GENERAL, **DATARESERVOIRIO, **AZURE_STORAGE_BLOB}
