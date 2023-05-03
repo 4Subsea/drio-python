@@ -114,7 +114,8 @@ class Test_Client:
                 end=end,
             )
 
-    def test_get_empty(self, client):
+    def test_get_empty(self, client, response_cases):
+        response_cases.set("drio")
         series_out = client.get(
             "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
             start=None,
@@ -187,7 +188,9 @@ class Test_Client:
 
         pd.testing.assert_series_equal(series_out, series_expect)
 
-    def test_ping(self, client):
+    def test_ping(self, client, response_cases):
+        response_cases.set("drio")
+
         ping_out = client.ping()
 
         ping_json = TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "ping.json"
@@ -196,7 +199,9 @@ class Test_Client:
 
         assert ping_out == ping_expect
 
-    def test_info(self, client):
+    def test_info(self, client, response_cases):
+        response_cases.set("drio")
+
         info_out = client.info("2fee7f8a-664a-41c9-9b71-25090517c275")
 
         info_json = TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "info.json"
@@ -205,14 +210,18 @@ class Test_Client:
 
         assert info_out == info_expect
 
-    def test_delete(self, client, mock_requests):
+    def test_delete(self, client, mock_requests, response_cases):
+        response_cases.set("drio")
+
         client.delete("7bd106dd-d87f-4504-a888-6aeaff1ec31f")
 
         # Check that the correct URL is poked
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f"
         mock_requests.call_args.kwargs["url"] = request_url_expect
 
-    def test_create(self, client, monkeypatch):
+    def test_create(self, client, monkeypatch, response_cases):
+        response_cases.set("drio")
+
         def uuid4_mock():
             return "9f74b0b1-54c2-4148-8854-5f78b81bb592"
 

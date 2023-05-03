@@ -20,7 +20,21 @@ from pathlib import Path
 TEST_PATH = Path(__file__).parent
 
 
-RESPONSES_GENERAL = {
+GENERAL = {
+    # description: PUT raises status
+    ("PUT", "http://example/put/raises"): {
+        "status_code": 501,
+        "reason": "Not Implemented",
+    },
+    # description: POST raises status
+    ("POST", "http://example/post/raises"): {
+        "status_code": 501,
+        "reason": "Not Implemented",
+    },
+}
+
+
+AZURE_STORAGE_BLOB = {
     # description: blob day file (numeric) from remote storage
     ("GET", "http://blob/dayfile/numeric"): {
         "_content": (
@@ -58,6 +72,10 @@ RESPONSES_GENERAL = {
         "status_code": 201,
         "reason": "Created",
     },
+}
+
+
+DATARESERVOIRIO_TIMESERIES_API = {
     # description: TimeSeries API response (empty data)
     (
         "GET",
@@ -68,29 +86,6 @@ RESPONSES_GENERAL = {
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",
-    },
-    # description: commit file for processing
-    ("POST", "https://reservoir-api.4subsea.net/api/files/commit"): {
-        "status_code": 204,
-        "reason": "No Content",
-    },
-    # description: PUT raises status
-    ("PUT", "http://example/put/raises"): {
-        "status_code": 501,
-        "reason": "Not Implemented",
-    },
-    # description: POST raises status
-    ("POST", "http://example/post/raises"): {
-        "status_code": 501,
-        "reason": "Not Implemented",
-    },
-    # description: ping the DataReservoir.io
-    ("GET", "https://reservoir-api.4subsea.net/api/ping"): {
-        "status_code": 200,
-        "reason": "OK",
-        "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "ping.json"
-        ).read_bytes(),
     },
     # description: get info about a timeseries
     (
@@ -125,7 +120,30 @@ RESPONSES_GENERAL = {
 }
 
 
-RESPONSES_GROUP1 = {
+DATARESERVOIRIO_FILES_API = {
+    # description: commit file for processing
+    ("POST", "https://reservoir-api.4subsea.net/api/files/commit"): {
+        "status_code": 204,
+        "reason": "No Content",
+    },
+}
+
+
+DATARESERVOIRIO = {
+    # description: ping the DataReservoir.io
+    ("GET", "https://reservoir-api.4subsea.net/api/ping"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "ping.json"
+        ).read_bytes(),
+    },
+    **DATARESERVOIRIO_TIMESERIES_API,
+    **DATARESERVOIRIO_FILES_API
+}
+
+
+GROUP1 = {
     # =========================================================================
     # This 'group' of response cases represents the DataReservoir.io backend response
     # and Azure Blob Storage responses when requesting data for a timeries with:
@@ -218,7 +236,7 @@ RESPONSES_GROUP1 = {
 }
 
 
-RESPONSES_GROUP2 = {
+GROUP2 = {
     # =========================================================================
     # This 'group' of response cases represents the DataReservoir.io backend responses
     # and Azure Blob Storage responses when requesting data for a timeseries with:
@@ -321,7 +339,7 @@ RESPONSES_GROUP2 = {
     },
 }
 
-RESPONSES_GROUP3 = {
+GROUP3 = {
     # =========================================================================
     # This 'group' of response cases represents creating/appending a new timeseries in the
     # DataReservoir.io (with data).
@@ -376,3 +394,6 @@ RESPONSES_GROUP3 = {
         "reason": "No Content",
     },
 }
+
+
+GROUP4 = {**GENERAL, **DATARESERVOIRIO, **AZURE_STORAGE_BLOB}

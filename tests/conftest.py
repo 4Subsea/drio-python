@@ -6,12 +6,7 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 import requests
-from response_cases import (
-    RESPONSES_GENERAL,
-    RESPONSES_GROUP1,
-    RESPONSES_GROUP2,
-    RESPONSES_GROUP3,
-)
+import response_cases as rc
 
 from datareservoirio._utils import DataHandler
 
@@ -28,10 +23,15 @@ def disable_logging(monkeypatch):
 def response_cases():
     class ResponseCaseHandler:
         _CASES = {
-            "general": RESPONSES_GENERAL.copy(),
-            "group1": RESPONSES_GROUP1.copy(),
-            "group2": RESPONSES_GROUP2.copy(),
-            "group3": RESPONSES_GROUP3.copy(),
+            "general": rc.GENERAL.copy(),
+            "azure-storage-blob": rc.AZURE_STORAGE_BLOB.copy(),
+            "drio-timeseries-api": rc.DATARESERVOIRIO_TIMESERIES_API.copy(),
+            "drio-files-api": rc.DATARESERVOIRIO_FILES_API.copy(),
+            "drio": rc.DATARESERVOIRIO.copy(),
+            "group1": rc.GROUP1.copy(),
+            "group2": rc.GROUP2.copy(),
+            "group3": rc.GROUP3.copy(),
+            "group4": rc.GROUP4.copy(),
         }
 
         def __init__(self):

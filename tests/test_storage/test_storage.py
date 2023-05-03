@@ -41,16 +41,19 @@ class Test__blob_to_df:
             ),
         ],
     )
-    def test__blob_to_df(self, blob_url, path_csv):
+    def test__blob_to_df(self, blob_url, path_csv, response_cases):
         """Tests ``_blob_to_df`` function."""
+        response_cases.set("azure-storage-blob")
+
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
         df_expect = DataHandler.from_csv(path_csv).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_raise_for_status(self):
+    def test_raise_for_status(self, response_cases):
         """Tests if ``raise_for_status`` is called"""
+        response_cases.set("azure-storage-blob")
         with pytest.raises(requests.HTTPError):
             blob_url = "http://example/no/exist"
             _ = drio.storage.storage._blob_to_df(blob_url)
@@ -60,6 +63,10 @@ class Test__df_to_blob:
     """
     Tests the :func:`_df_to_blob` function.
     """
+
+    @pytest.fixture(autouse=True)
+    def set_response_cases(self, response_cases):
+        response_cases.set("azure-storage-blob")
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__df_to_blob(self, data, request):
@@ -402,7 +409,8 @@ class Test_Storage:
             ),
         ],
     )
-    def test__blob_to_df(self, storage_no_cache, chunk, file_path):
+    def test__blob_to_df(self, storage_no_cache, chunk, file_path, response_cases):
+        response_cases.set("azure-storage-blob")
         df_out = storage_no_cache._blob_to_df(chunk)
         df_expect = DataHandler.from_csv(file_path).as_dataframe()
         pd.testing.assert_frame_equal(df_out, df_expect)
@@ -446,8 +454,10 @@ class Test_Storage:
         ],
     )
     def test__blob_to_df_with_cache(
-        self, tmp_path, storage_with_cache, chunk, file_path
+        self, tmp_path, storage_with_cache, chunk, file_path, response_cases
     ):
+        response_cases.set("azure-storage-blob")
+
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
@@ -464,8 +474,10 @@ class Test_Storage:
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test_put(
-        self, request, mock_requests, bytesio_with_memory, storage_no_cache, data
+        self, request, mock_requests, bytesio_with_memory, storage_no_cache, data, response_cases
     ):
+        response_cases.set("group4")
+
         data = request.getfixturevalue(data)
 
         df = data.as_dataframe()
@@ -515,7 +527,9 @@ class Test_Storage:
                 ),
             )
 
-    def test_put_raise_for_status2(self, storage_no_cache, data_float):
+    def test_put_raise_for_status2(self, storage_no_cache, data_float, response_cases):
+        response_cases.set("group4")
+
         df = data_float.as_dataframe()
 
         with pytest.raises(HTTPError):
