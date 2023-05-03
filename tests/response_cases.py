@@ -20,11 +20,11 @@ from pathlib import Path
 TEST_PATH = Path(__file__).parent
 
 
-RESPONSE_CASES_GENERAL = {
+RESPONSES_GENERAL = {
     # description: blob day file (numeric) from remote storage
     ("GET", "http://blob/dayfile/numeric"): {
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "dayfile_numeric.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "dayfile_numeric.csv"
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",
@@ -32,7 +32,7 @@ RESPONSE_CASES_GENERAL = {
     # description: blob day file (string) from remote storage
     ("GET", "http://blob/dayfile/string"): {
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "dayfile_string.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "dayfile_string.csv"
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",
@@ -42,7 +42,7 @@ RESPONSE_CASES_GENERAL = {
         "_content": (
             TEST_PATH
             / "testdata"
-            / "RESPONSE_CASES_GENERAL"
+            / "RESPONSES_GENERAL"
             / "dayfile_string_malformatted.csv"
         ).read_bytes(),
         "status_code": 200,
@@ -64,7 +64,7 @@ RESPONSE_CASES_GENERAL = {
         "https://reservoir-api.4subsea.net/api/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/data/days?start=-9214560000000000000&end=9214646399999999999",
     ): {
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "data_days_empty.json"
+            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "data_days_empty.json"
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",
@@ -89,7 +89,7 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "ping.json"
+            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "ping.json"
         ).read_bytes(),
     },
     # description: get info about a timeseries
@@ -100,7 +100,7 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "info.json"
+            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "info.json"
         ).read_bytes(),
     },
     # description: delete a timeseries
@@ -119,13 +119,13 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "create.json"
+            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "create.json"
         ).read_bytes(),
     },
 }
 
 
-RESPONSE_GROUP1 = {
+RESPONSES_GROUP1 = {
     # =========================================================================
     # This 'group' of response cases represents the DataReservoir.io backend response
     # and Azure Blob Storage responses when requesting data for a timeries with:
@@ -152,7 +152,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "data_days.json"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "data_days.json"
         ).read_bytes(),
     },
     # B (Azure Blob Storage response)
@@ -164,7 +164,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19356.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "19356.csv"
         ).read_bytes(),
     },
     # C (Azure Blob Storage response)
@@ -176,7 +176,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19357.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "19357.csv"
         ).read_bytes(),
     },
     # D (Azure Blob Storage response)
@@ -188,7 +188,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19358.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "19358.csv"
         ).read_bytes(),
     },
     # E (Azure Blob Storage response)
@@ -200,7 +200,7 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "19359.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "19359.csv"
         ).read_bytes(),
     },
     # F (TimeSeries API response)
@@ -212,13 +212,13 @@ RESPONSE_GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "data_days.json"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "data_days.json"
         ).read_bytes(),
     },
 }
 
 
-RESPONSE_GROUP2 = {
+RESPONSES_GROUP2 = {
     # =========================================================================
     # This 'group' of response cases represents the DataReservoir.io backend responses
     # and Azure Blob Storage responses when requesting data for a timeseries with:
@@ -244,7 +244,7 @@ RESPONSE_GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "data_days.json"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "data_days.json"
         ).read_bytes(),
     },
     # B (Azure Blob Storage response)
@@ -256,7 +256,7 @@ RESPONSE_GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19356.csv"
         ).read_bytes(),
     },
     # C (Azure Blob Storage response)
@@ -268,7 +268,7 @@ RESPONSE_GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19357.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19357.csv"
         ).read_bytes(),
     },
     # D (Azure Blob Storage response)
@@ -280,7 +280,7 @@ RESPONSE_GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19356_1.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19356_1.csv"
         ).read_bytes(),
     },
     # E (Azure Blob Storage response)
@@ -292,7 +292,7 @@ RESPONSE_GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19357_1.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19357_1.csv"
         ).read_bytes(),
     },
     # F (Azure Blob Storage response)
@@ -304,7 +304,7 @@ RESPONSE_GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19357_2.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19357_2.csv"
         ).read_bytes(),
     },
     # G (Azure Blob Storage response)
@@ -316,12 +316,12 @@ RESPONSE_GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "19358.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19358.csv"
         ).read_bytes(),
     },
 }
 
-RESPONSE_GROUP3 = {
+RESPONSES_GROUP3 = {
     # =========================================================================
     # This 'group' of response cases represents creating/appending a new timeseries in the
     # DataReservoir.io (with data).
@@ -332,7 +332,7 @@ RESPONSE_GROUP3 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "files_upload.json"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP3" / "files_upload.json"
         ).read_bytes(),
     },
     # description: put data to blob
@@ -348,7 +348,7 @@ RESPONSE_GROUP3 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "create.json"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP3" / "create.json"
         ).read_bytes(),
     },
     # description: create a new timeseries with data
@@ -359,7 +359,7 @@ RESPONSE_GROUP3 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "status.json"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP3" / "status.json"
         ).read_bytes(),
     },
     # description: create a new timeseries with data
@@ -367,7 +367,7 @@ RESPONSE_GROUP3 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "add.json"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP3" / "add.json"
         ).read_bytes(),
     },
     # description: commit file for processing
@@ -375,12 +375,4 @@ RESPONSE_GROUP3 = {
         "status_code": 204,
         "reason": "No Content",
     },
-}
-
-
-RESPONSE_CASES = {
-    **RESPONSE_CASES_GENERAL,
-    **RESPONSE_GROUP1,
-    **RESPONSE_GROUP2,
-    **RESPONSE_GROUP3,
 }

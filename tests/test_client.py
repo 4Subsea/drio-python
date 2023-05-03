@@ -28,7 +28,7 @@ class Test_Client:
     @pytest.fixture
     def group1_data(self):
         data = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "dataframe.csv"
         )
         return data
 
@@ -36,7 +36,7 @@ class Test_Client:
     def group2_data(self):
         """Overlapping data"""
         data = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv"
+            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "dataframe.csv"
         )
         return data
 
@@ -185,7 +185,7 @@ class Test_Client:
     def test_ping(self, client):
         ping_out = client.ping()
 
-        ping_json = TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "ping.json"
+        ping_json = TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "ping.json"
         with open(ping_json, mode="r") as f:
             ping_expect = json.load(f)
 
@@ -194,7 +194,7 @@ class Test_Client:
     def test_info(self, client):
         info_out = client.info("2fee7f8a-664a-41c9-9b71-25090517c275")
 
-        info_json = TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "info.json"
+        info_json = TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "info.json"
         with open(info_json, mode="r") as f:
             info_expect = json.load(f)
 

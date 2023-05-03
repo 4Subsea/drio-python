@@ -6,7 +6,12 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 import requests
-from response_cases import RESPONSE_CASES_GENERAL, RESPONSE_GROUP1, RESPONSE_GROUP2, RESPONSE_GROUP3
+from response_cases import (
+    RESPONSES_GENERAL,
+    RESPONSES_GROUP1,
+    RESPONSES_GROUP2,
+    RESPONSES_GROUP3
+)
 
 from datareservoirio._utils import DataHandler
 
@@ -24,10 +29,10 @@ def response_cases():
     class ResponseCaseHandler:
 
         _CASES = {
-            "general": RESPONSE_CASES_GENERAL.copy(),
-            "group1": RESPONSE_GROUP1.copy(),
-            "group2": RESPONSE_GROUP2.copy(),
-            "group3": RESPONSE_GROUP3.copy(),
+            "general": RESPONSES_GENERAL.copy(),
+            "group1": RESPONSES_GROUP1.copy(),
+            "group2": RESPONSES_GROUP2.copy(),
+            "group3": RESPONSES_GROUP3.copy(),
         }
 
         def __init__(self):

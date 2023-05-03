@@ -29,19 +29,19 @@ class Test__blob_to_df:
                 "http://blob/dayfile/numeric",
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL/dayfile_numeric.csv",
+                / "RESPONSES_GENERAL/dayfile_numeric.csv",
             ),
             (
                 "http://blob/dayfile/string",
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL/dayfile_string.csv",
+                / "RESPONSES_GENERAL/dayfile_string.csv",
             ),
             (
                 "http://blob/dayfile/string/malformatted",
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL/dayfile_string_malformatted.csv",
+                / "RESPONSES_GENERAL/dayfile_string_malformatted.csv",
             ),
         ],
     )
@@ -156,7 +156,7 @@ class Test_Storage:
         df_out = storage_no_cache.get(blob_sequence)
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
+            TEST_PATH.parent / "testdata" / "RESPONSES_GROUP1" / "dataframe.csv",
         ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
@@ -199,7 +199,7 @@ class Test_Storage:
         df_out = storage_no_cache.get(blob_sequence)
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv",
+            TEST_PATH.parent / "testdata" / "RESPONSES_GROUP2" / "dataframe.csv",
         ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
@@ -246,7 +246,7 @@ class Test_Storage:
         )
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
+            TEST_PATH.parent / "testdata" / "RESPONSES_GROUP1" / "dataframe.csv",
         ).as_dataframe()
 
         # Get from remote storage (and cache the data)
@@ -313,7 +313,7 @@ class Test_Storage:
         )
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv",
+            TEST_PATH.parent / "testdata" / "RESPONSES_GROUP2" / "dataframe.csv",
         ).as_dataframe()
 
         # Get from remote storage (and cache the data)
@@ -377,7 +377,7 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "RESPONSES_GENERAL"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -388,7 +388,7 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "RESPONSES_GENERAL"
                 / "dayfile_string.csv",
             ),
             (
@@ -399,7 +399,7 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "RESPONSES_GENERAL"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
@@ -420,7 +420,7 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "RESPONSES_GENERAL"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -431,7 +431,7 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "RESPONSES_GENERAL"
                 / "dayfile_string.csv",
             ),
             (
@@ -442,7 +442,7 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "RESPONSES_GENERAL"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
@@ -540,7 +540,7 @@ class Test_StorageCache:
 
     @pytest.fixture
     def fill_cache(self, STOREFORMATVERSION):
-        src = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
+        src = TEST_PATH.parent / "testdata" / "RESPONSES_GROUP2" / "cache" / "v3"
 
         def fill_cache(root):
             root.mkdir()
@@ -594,7 +594,7 @@ class Test_StorageCache:
 
     @pytest.fixture
     def chunk_data(self):
-        data_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        data_path = TEST_PATH.parent / "testdata" / "RESPONSES_GROUP2" / "19356.csv"
         return DataHandler.from_csv(data_path)
 
     def test__init__(self):
