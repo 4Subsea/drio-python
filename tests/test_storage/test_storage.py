@@ -22,6 +22,10 @@ class Test__blob_to_df:
     Tests the :func:`_blob_to_df` function.
     """
 
+    @pytest.fixture(autouse=True)
+    def set_response_cases(self, response_cases):
+        response_cases.set("azure-storage-blob")
+
     @pytest.mark.parametrize(
         "blob_url, path_csv",
         [
@@ -51,9 +55,8 @@ class Test__blob_to_df:
             ),
         ],
     )
-    def test__blob_to_df(self, blob_url, path_csv, response_cases):
+    def test__blob_to_df(self, blob_url, path_csv):
         """Tests ``_blob_to_df`` function."""
-        response_cases.set("azure-storage-blob")
 
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
@@ -61,9 +64,8 @@ class Test__blob_to_df:
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_raise_for_status(self, response_cases):
+    def test_raise_for_status(self):
         """Tests if ``raise_for_status`` is called"""
-        response_cases.set("azure-storage-blob")
         with pytest.raises(requests.HTTPError):
             blob_url = "http://example/no/exist"
             _ = drio.storage.storage._blob_to_df(blob_url)
