@@ -36,14 +36,14 @@ GENERAL = {
 
 
 # Azure Blob Storage HTTP responses
-AZURE_STORAGE_BLOB = {
+AZURE_BLOB_STORAGE = {
     # description: get day file (numeric) from remote storage
     ("GET", "http://blob/dayfile/numeric"): {
         "_content": (
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "azure_storage_blob"
+            / "azure_blob_storage"
             / "dayfile_numeric.csv"
         ).read_bytes(),
         "status_code": 200,
@@ -55,7 +55,7 @@ AZURE_STORAGE_BLOB = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "azure_storage_blob"
+            / "azure_blob_storage"
             / "dayfile_string.csv"
         ).read_bytes(),
         "status_code": 200,
@@ -67,7 +67,7 @@ AZURE_STORAGE_BLOB = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "azure_storage_blob"
+            / "azure_blob_storage"
             / "dayfile_string_malformatted.csv"
         ).read_bytes(),
         "status_code": 200,
@@ -412,4 +412,4 @@ GROUP3 = {
 
 
 # General, DataReservoir.io and Azure Storage Blob HTTP responses
-GROUP4 = {**GENERAL, **DATARESERVOIRIO_API, **AZURE_STORAGE_BLOB}
+GROUP4 = {**GENERAL, **DATARESERVOIRIO_API, **AZURE_BLOB_STORAGE}

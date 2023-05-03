@@ -24,7 +24,7 @@ class Test__blob_to_df:
 
     @pytest.fixture(autouse=True)
     def set_response_cases(self, response_cases):
-        response_cases.set("azure-storage-blob")
+        response_cases.set("azure-blob-storage")
 
     @pytest.mark.parametrize(
         "blob_url, path_csv",
@@ -34,7 +34,7 @@ class Test__blob_to_df:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -42,7 +42,7 @@ class Test__blob_to_df:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_string.csv",
             ),
             (
@@ -50,7 +50,7 @@ class Test__blob_to_df:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
@@ -78,7 +78,7 @@ class Test__df_to_blob:
 
     @pytest.fixture(autouse=True)
     def set_response_cases(self, response_cases):
-        response_cases.set("azure-storage-blob")
+        response_cases.set("azure-blob-storage")
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__df_to_blob(self, data, request):
@@ -411,7 +411,7 @@ class Test_Storage:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -423,7 +423,7 @@ class Test_Storage:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_string.csv",
             ),
             (
@@ -435,13 +435,13 @@ class Test_Storage:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
     )
     def test__blob_to_df(self, storage_no_cache, chunk, file_path, response_cases):
-        response_cases.set("azure-storage-blob")
+        response_cases.set("azure-blob-storage")
         df_out = storage_no_cache._blob_to_df(chunk)
         df_expect = DataHandler.from_csv(file_path).as_dataframe()
         pd.testing.assert_frame_equal(df_out, df_expect)
@@ -458,7 +458,7 @@ class Test_Storage:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -470,7 +470,7 @@ class Test_Storage:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_string.csv",
             ),
             (
@@ -482,7 +482,7 @@ class Test_Storage:
                 TEST_PATH.parent
                 / "testdata"
                 / "response_cases"
-                / "azure_storage_blob"
+                / "azure_blob_storage"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
@@ -490,7 +490,7 @@ class Test_Storage:
     def test__blob_to_df_with_cache(
         self, tmp_path, storage_with_cache, chunk, file_path, response_cases
     ):
-        response_cases.set("azure-storage-blob")
+        response_cases.set("azure-blob-storage")
 
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION

@@ -24,7 +24,7 @@ def response_cases():
     class ResponseCaseHandler:
         _CASES = {
             "general": rc.GENERAL.copy(),
-            "azure-storage-blob": rc.AZURE_STORAGE_BLOB.copy(),
+            "azure-blob-storage": rc.AZURE_BLOB_STORAGE.copy(),
             "datareservoirio-api": rc.DATARESERVOIRIO_API.copy(),
             "group1": rc.GROUP1.copy(),
             "group2": rc.GROUP2.copy(),
