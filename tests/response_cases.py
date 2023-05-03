@@ -20,6 +20,7 @@ from pathlib import Path
 TEST_PATH = Path(__file__).parent
 
 
+# General HTTP responses
 GENERAL = {
     # description: PUT raises status
     ("PUT", "http://example/put/raises"): {
@@ -34,6 +35,7 @@ GENERAL = {
 }
 
 
+# Azure Blob Storage HTTP responses
 AZURE_STORAGE_BLOB = {
     # description: blob day file (numeric) from remote storage
     ("GET", "http://blob/dayfile/numeric"): {
@@ -75,18 +77,8 @@ AZURE_STORAGE_BLOB = {
 }
 
 
+# DataReservoir.io TimeSeries API HTTP responses
 DATARESERVOIRIO_TIMESERIES_API = {
-    # description: TimeSeries API response (empty data)
-    (
-        "GET",
-        "https://reservoir-api.4subsea.net/api/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/data/days?start=-9214560000000000000&end=9214646399999999999",
-    ): {
-        "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "data_days_empty.json"
-        ).read_bytes(),
-        "status_code": 200,
-        "reason": "OK",
-    },
     # description: get info about a timeseries
     (
         "GET",
@@ -117,9 +109,21 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "create.json"
         ).read_bytes(),
     },
+    # description: TimeSeries API response (empty data)
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/data/days?start=-9214560000000000000&end=9214646399999999999",
+    ): {
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "data_days_empty.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
 }
 
 
+# DataRerevoir.io Files API HTTP responses
 DATARESERVOIRIO_FILES_API = {
     # description: commit file for processing
     ("POST", "https://reservoir-api.4subsea.net/api/files/commit"): {
@@ -129,6 +133,7 @@ DATARESERVOIRIO_FILES_API = {
 }
 
 
+# DataReservoir.io REST API (TimeSeries + Files) HTTP responses
 DATARESERVOIRIO = {
     # description: ping the DataReservoir.io
     ("GET", "https://reservoir-api.4subsea.net/api/ping"): {
