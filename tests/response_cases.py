@@ -357,7 +357,7 @@ GROUP3 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP3" / "files_upload.json"
+            TEST_PATH / "testdata" / "response_cases" / "group3" / "files_upload.json"
         ).read_bytes(),
     },
     # description: put data to blob
@@ -373,7 +373,7 @@ GROUP3 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP3" / "create.json"
+            TEST_PATH / "testdata" / "response_cases" / "group3" / "create.json"
         ).read_bytes(),
     },
     # description: create a new timeseries with data
@@ -384,7 +384,7 @@ GROUP3 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP3" / "status.json"
+            TEST_PATH / "testdata" / "response_cases" / "group3" / "status.json"
         ).read_bytes(),
     },
     # description: create a new timeseries with data
@@ -392,7 +392,7 @@ GROUP3 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP3" / "add.json"
+            TEST_PATH / "testdata" / "response_cases" / "group3" / "add.json"
         ).read_bytes(),
     },
     # description: commit file for processing
