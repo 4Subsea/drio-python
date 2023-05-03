@@ -36,7 +36,7 @@ class Test_Client:
     def group2_data(self):
         """Overlapping data"""
         data = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "dataframe.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "dataframe.csv"
         )
         return data
 

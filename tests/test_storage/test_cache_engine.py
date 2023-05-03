@@ -62,14 +62,18 @@ class Test_CacheIO:
 class Test__CacheIndex:
     @pytest.fixture
     def cache_index(self):
-        CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSES_GROUP2" / "cache"
+        CACHE_ROOT = (
+            TEST_PATH.parent / "testdata" / "response_cases" / "group2" / "cache"
+        )
         CACHE_PATH = CACHE_ROOT / "v3"
         max_size_mb = 1025
         max_size_b = max_size_mb * 1024 * 1024
         return _CacheIndex(CACHE_PATH, max_size_b)
 
     def test__init__(self):
-        CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSES_GROUP2" / "cache"
+        CACHE_ROOT = (
+            TEST_PATH.parent / "testdata" / "response_cases" / "group2" / "cache"
+        )
         CACHE_PATH = CACHE_ROOT / "v3"
 
         cache_index = _CacheIndex(CACHE_PATH, 1024)
@@ -162,7 +166,7 @@ class Test__CacheIndex:
     )
     def test_exists2(self, path, md5, tmp_path):
         SRC_CACHE_PATH = (
-            TEST_PATH.parent / "testdata" / "RESPONSES_GROUP2" / "cache" / "v3"
+            TEST_PATH.parent / "testdata" / "response_cases" / "group2" / "cache" / "v3"
         )
 
         CACHE_PATH = tmp_path
@@ -276,7 +280,9 @@ class Test__CacheIndex:
         md5 = "Zko4NU1ESnFzVFc2ekRKYmQrRmE0QT09"
         filepath_out = cache_index._get_filepath(id_, md5)
 
-        CACHE_ROOT = TEST_PATH.parent / "testdata" / "RESPONSES_GROUP2" / "cache"
+        CACHE_ROOT = (
+            TEST_PATH.parent / "testdata" / "response_cases" / "group2" / "cache"
+        )
         CACHE_PATH = CACHE_ROOT / "v3"
         filepath_expect = os.path.normpath(CACHE_PATH / f"{id_}_{md5}")
 

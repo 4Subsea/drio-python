@@ -275,7 +275,7 @@ GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "data_days.json"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "data_days.json"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -286,7 +286,7 @@ GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19356.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "19356.csv"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -297,7 +297,7 @@ GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19357.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "19357.csv"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -308,7 +308,7 @@ GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19356_1.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "19356_1.csv"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -319,7 +319,7 @@ GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19357_1.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "19357_1.csv"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -330,7 +330,7 @@ GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19357_2.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "19357_2.csv"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -341,7 +341,7 @@ GROUP2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP2" / "19358.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "19358.csv"
         ).read_bytes(),
     },
 }
