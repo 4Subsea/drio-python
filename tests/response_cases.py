@@ -84,6 +84,44 @@ RESPONSE_CASES_GENERAL = {
         "status_code": 501,
         "reason": "Not Implemented",
     },
+    # description: ping the DataReservoir.io
+    ("GET", "https://reservoir-api.4subsea.net/api/ping"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "ping.json"
+        ).read_bytes(),
+    },
+    # description: get info about a timeseries
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "info.json"
+        ).read_bytes(),
+    },
+    # description: delete a timeseries
+    (
+        "DELETE",
+        "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+    },
+    # description: create a new timeseries
+    (
+        "PUT",
+        "https://reservoir-api.4subsea.net/api/timeseries/9f74b0b1-54c2-4148-8854-5f78b81bb592",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "create.json"
+        ).read_bytes(),
+    },
 }
 
 
@@ -91,24 +129,17 @@ RESPONSE_GROUP1 = {
     # =========================================================================
     # This 'group' of response cases represents the DataReservoir.io backend response
     # and Azure Blob Storage responses when requesting data for a timeries with:
+    #
     #   * ID = "2fee7f8a-664a-41c9-9b71-25090517c275"
     #   * start = 1672358400000000000
     #   * end = 1672703939999999999
     #
-    # The responses are:
-    #   * A: TimeSeries API response, containing a list of 'chunks'.
-    #   * B: Azure Blob Storage response for the first chunk of data.
-    #   * C: Azure Blob Storage response for the second chunk of data.
-    #   * Etc.
+    # I.e.,
+    #   /api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
     #
-    # These response cases will mock the backend for the following `get` call with
-    # the `datareservoirio` client:
-    #
-    #   client.get(
-    #       "2fee7f8a-664a-41c9-9b71-25090517c275",
-    #       start=1672358400000000000,
-    #       end=1672703940000000000
-    #   )
+    # Comments:
+    #   * Numeric data
+    #   * No overlap (i.e., only one 'File')
     #
     # =========================================================================
     #
@@ -191,9 +222,13 @@ RESPONSE_GROUP2 = {
     # =========================================================================
     # This 'group' of response cases represents the DataReservoir.io backend responses
     # and Azure Blob Storage responses when requesting data for a timeseries with:
+    #
     #   * ID = "693cb0b2-3599-46d3-b263-ea913a648535"
     #   * start = 1672358400000000000 (i.e., 2022-12-30T00:00)
     #   * end = 1672617600000000000 (i.e., 2023-01-02T00:00)
+    #
+    # I.e.,
+    #   /api/timeseries/693cb0b2-3599-46d3-b263-ea913a648535/data/days?start=1672358400000000000&end=1672617600000000000
     #
     # Comments:
     #   * Overlapping data (i.e., several 'Files')
@@ -216,7 +251,7 @@ RESPONSE_GROUP2 = {
     # -------------------------------
     (
         "GET",
-        "https: //permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
+        "https://permanentprodu000p106.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:17:44.5067517Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=csFUPlbzexTJkgrLszdJrKTum5jUi%2BWv2PnIN9yM92Y%3D",
     ): {
         "status_code": 200,
         "reason": "OK",
@@ -228,7 +263,7 @@ RESPONSE_GROUP2 = {
     # -------------------------------
     (
         "GET",
-        "https: //permanentprodu001p067.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:17:44.6722101Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A51%3A15Z&ske=2023-04-14T15%3A51%3A15Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=TMfeXQYlcAe%2BdZGSGy5Z1WTytf41uIUQlQKBlDOQ3b4%3D",
+        "https://permanentprodu001p067.blob.core.windows.net/data/03fc12505d3d41fea77df405b2563e49/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:17:44.6722101Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A51%3A15Z&ske=2023-04-14T15%3A51%3A15Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=TMfeXQYlcAe%2BdZGSGy5Z1WTytf41uIUQlQKBlDOQ3b4%3D",
     ): {
         "status_code": 200,
         "reason": "OK",
@@ -240,7 +275,7 @@ RESPONSE_GROUP2 = {
     # -------------------------------
     (
         "GET",
-        "https: //permanentprodu002p193.blob.core.windows.net/data/629504a5fe3449049370049874b69fe0/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:18:26.1211914Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A55%3A52Z&ske=2023-04-14T15%3A55%3A51Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=dwqY3aiVKRb6MEwQYw%2B34y4LJcp0VHLat1BBNl9sUX8%3D",
+        "https://permanentprodu002p193.blob.core.windows.net/data/629504a5fe3449049370049874b69fe0/2022/12/30/day/csv/19356.csv?versionid=2023-04-14T13:18:26.1211914Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A55%3A52Z&ske=2023-04-14T15%3A55%3A51Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=dwqY3aiVKRb6MEwQYw%2B34y4LJcp0VHLat1BBNl9sUX8%3D",
     ): {
         "status_code": 200,
         "reason": "OK",
@@ -252,7 +287,7 @@ RESPONSE_GROUP2 = {
     # -------------------------------
     (
         "GET",
-        "https: //permanentprodu001p232.blob.core.windows.net/data/629504a5fe3449049370049874b69fe0/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:18:26.2782276Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A53%3A09Z&ske=2023-04-14T15%3A53%3A09Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=DmRXb%2F7p%2B%2BYp%2FcPvJV5jTUzLJGgsjfEyA6PL8Kv4LTo%3D",
+        "https://permanentprodu001p232.blob.core.windows.net/data/629504a5fe3449049370049874b69fe0/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:18:26.2782276Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A53%3A09Z&ske=2023-04-14T15%3A53%3A09Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=DmRXb%2F7p%2B%2BYp%2FcPvJV5jTUzLJGgsjfEyA6PL8Kv4LTo%3D",
     ): {
         "status_code": 200,
         "reason": "OK",
@@ -264,7 +299,7 @@ RESPONSE_GROUP2 = {
     # -------------------------------
     (
         "GET",
-        "https: //permanentprodu002p003.blob.core.windows.net/data/1d9d844990bc45d6b24432b33a324156/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:19:41.2836525Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A57%3A15Z&ske=2023-04-14T15%3A57%3A15Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=7tMAHyWBldWmECe3fyb%2B9D8RcN9xKNk%2FIJva%2B5vkpW0%3D",
+        "https://permanentprodu002p003.blob.core.windows.net/data/1d9d844990bc45d6b24432b33a324156/2022/12/31/day/csv/19357.csv?versionid=2023-04-14T13:19:41.2836525Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T15%3A57%3A15Z&ske=2023-04-14T15%3A57%3A15Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=7tMAHyWBldWmECe3fyb%2B9D8RcN9xKNk%2FIJva%2B5vkpW0%3D",
     ): {
         "status_code": 200,
         "reason": "OK",
@@ -276,7 +311,7 @@ RESPONSE_GROUP2 = {
     # -------------------------------
     (
         "GET",
-        "https: //permanentprodu002p058.blob.core.windows.net/data/1d9d844990bc45d6b24432b33a324156/2023/01/01/day/csv/19358.csv?versionid=2023-04-14T13:19:41.5175166Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=YRmhRwUe0Fw40bj2Jh2XMFFtsAKNE6E5FVqK4rbIGhg%3D",
+        "https://permanentprodu002p058.blob.core.windows.net/data/1d9d844990bc45d6b24432b33a324156/2023/01/01/day/csv/19358.csv?versionid=2023-04-14T13:19:41.5175166Z&skoid=4b73ab81-cb6b-4de8-934e-cf62e1cc3aa2&sktid=cdf4cf3d-de23-49cf-a9b0-abd2b675f253&skt=2023-04-13T16%3A00%3A41Z&ske=2023-04-14T16%3A00%3A41Z&sks=b&skv=2021-10-04&sv=2021-10-04&spr=https&se=2023-04-14T15%3A27%3A42Z&sr=b&sp=r&sig=YRmhRwUe0Fw40bj2Jh2XMFFtsAKNE6E5FVqK4rbIGhg%3D",
     ): {
         "status_code": 200,
         "reason": "OK",
@@ -286,5 +321,61 @@ RESPONSE_GROUP2 = {
     },
 }
 
+RESPONSE_GROUP3 = {
+    # =========================================================================
+    # This 'group' of response cases represents creating/appending a new timeseries in the
+    # DataReservoir.io (with data).
+    # =========================================================================
+    #
+    # description: allocate a new blob
+    ("POST", "https://reservoir-api.4subsea.net/api/files/upload"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "files_upload.json"
+        ).read_bytes(),
+    },
+    # description: put data to blob
+    (
+        "PUT",
+        "https://reservoirprod.blob.core.windows.net/files/e4fb7a7e07964f6a8c79f39a3af66dd2?sv=2021-10-04&spr=https&se=2023-04-28T10%3A30%3A10Z&sr=b&sp=rw&sig=Clj4cdfu%2FWivUqhnsxShkmG8STLmnzcCLzDEniSQZZg%3D",
+    ): {
+        "status_code": 201,
+        "reason": "Created",
+    },
+    # description: create a new timeseries with data
+    ("POST", "https://reservoir-api.4subsea.net/api/timeseries/create"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "create.json"
+        ).read_bytes(),
+    },
+    # description: create a new timeseries with data
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "status.json"
+        ).read_bytes(),
+    },
+    # description: create a new timeseries with data
+    ("POST", "https://reservoir-api.4subsea.net/api/timeseries/add"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "RESPONSE_GROUP3" / "add.json"
+        ).read_bytes(),
+    },
+}
 
-RESPONSE_CASES = {**RESPONSE_CASES_GENERAL, **RESPONSE_GROUP1, **RESPONSE_GROUP2}
+
+RESPONSE_CASES = {
+    **RESPONSE_CASES_GENERAL,
+    **RESPONSE_GROUP1,
+    **RESPONSE_GROUP2,
+    **RESPONSE_GROUP3,
+}

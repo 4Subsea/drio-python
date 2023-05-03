@@ -1,0 +1,35 @@
+{
+    "Time": "2023-04-27T11:50:09.3849453+00:00",
+    "Status": "pong",
+    "BackendStatus": {
+        "Status": "pong-from-backend",
+        "OperationId": "956ae5486179f34abadb3188d87c11c8",
+        "NodeName": "_front003_4",
+        "NodeId": "b9f95b31b17f9893ff7c9650fcfae710",
+        "NodeInstanceId": "133268133774998761",
+        "NodeType": "front003"
+    },
+    "AuthScheme": "Bearer",
+    "Claims": [
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress:on@4subsea.com",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname:Ola",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname:Nordmann",
+        "name:Ola Nordmann",
+        "http://schemas.microsoft.com/identity/claims/identityprovider:4subsea-prod-ip",
+        "organizationId:2c4ee562-6261-4018-a1b1-8837ab526944",
+        "nameidentifier:4f65c57c-0687-4c3f-9e78-9d45d552f6b5",
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier:d2de7042-8074-4031-b9a4-00dd324d0553",
+        "externalId:4subsea-prod-ip|d2de7042-8074-4031-b9a4-00dd324d0553",
+        "nonce:638149222540438885.N2JlNDA5OGYtMjk0Ny00OTYxLWEzMjMtNjEzOWYxM2Y4NDg3ZDdjZGUzMzMtZjY5OS00YzM2LTllMGEtNGY5NTI5YTZjOGYw",
+        "http://schemas.microsoft.com/identity/claims/scope:write read",
+        "azp:6b879622-4c52-43a3-ba23-2e9595dd996b",
+        "ver:1.0",
+        "iat:1682596006",
+        "aud:ff4737b5-3602-46a0-9805-bd18314700c1",
+        "exp:1682599606",
+        "iss:https://4subseaid.b2clogin.com/c8ea118f-bd50-422e-8503-1d8055a3dcf0/v2.0/",
+        "nbf:1682596006",
+        "http://schema.4subsea.net/userId:b52056b9-174e-46d9-a446-d2e33a389a41",
+        "http://schema.4subsea.net/organizationId:2c4ee562-6261-4018-a1b1-8837ab526944"
+    ]
+}

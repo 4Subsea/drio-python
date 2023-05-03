@@ -27,7 +27,7 @@ def mock_requests(monkeypatch):
     return mock
 
 
-def response_factory(method, url, *args, **kwargs):
+def response_factory(method, url, **kwargs):
     """
     Generate response based on request call and lookup in ``RESPONSE_CASES``.
     Attributes assigned to ``requests.Response`` object.
@@ -40,7 +40,7 @@ def response_factory(method, url, *args, **kwargs):
     try:
         spec = RESPONSE_CASES[(method.upper(), url)].copy()
     except KeyError:
-        raise ValueError(f"Unrecognized URL: {url}")
+        raise ValueError(f"Unrecognized METHOD + URL: {method.upper()} {url}")
     else:
         spec.update({"url": url, "raw": BytesIO(spec.pop("_content", None))})
 
@@ -48,6 +48,21 @@ def response_factory(method, url, *args, **kwargs):
 
     for attr, value in spec.items():
         setattr(response, attr, value)
+
+    # Create the Request.
+    req = requests.Request(
+        method=method.upper(),
+        url=url,
+        headers=kwargs.get("headers"),
+        files=kwargs.get("files"),
+        data=kwargs.get("data") or {},
+        json=kwargs.get("json"),
+        params=kwargs.get("params") or {},
+        auth=kwargs.get("auth"),
+        cookies=kwargs.get("cookies"),
+        hooks=kwargs.get("hooks"),
+    )
+    response.request = req.prepare()
 
     return response
 
