@@ -105,46 +105,6 @@ class ResponseFactory:
         return response
 
 
-def response_factory(method, url, **kwargs):
-    """
-    Generate response based on request call and lookup in ``RESPONSE_CASES``.
-    Attributes assigned to ``requests.Response`` object.
-
-    Notes
-    -----
-    The first argument, ``_`` will be an instance of ``requests.sessions.Session``
-    since ``self`` passed to the ``request`` method. See ``mock_requests``.
-    """
-    try:
-        spec = RESPONSE_CASES[(method.upper(), url)].copy()
-    except KeyError:
-        raise ValueError(f"Unrecognized METHOD + URL: {method.upper()} {url}")
-    else:
-        spec.update({"url": url, "raw": BytesIO(spec.pop("_content", None))})
-
-    response = requests.Response()
-
-    for attr, value in spec.items():
-        setattr(response, attr, value)
-
-    # Create the Request.
-    req = requests.Request(
-        method=method.upper(),
-        url=url,
-        headers=kwargs.get("headers"),
-        files=kwargs.get("files"),
-        data=kwargs.get("data") or {},
-        json=kwargs.get("json"),
-        params=kwargs.get("params") or {},
-        auth=kwargs.get("auth"),
-        cookies=kwargs.get("cookies"),
-        hooks=kwargs.get("hooks"),
-    )
-    response.request = req.prepare()
-
-    return response
-
-
 @pytest.fixture()
 def bytesio_with_memory(monkeypatch):
     class BytesIOMemory(BytesIO):
