@@ -27,15 +27,11 @@ class Test__blob_to_df:
         [
             (
                 "http://blob/dayfile/numeric",
-                TEST_PATH.parent
-                / "testdata"
-                / "RESPONSES_GENERAL/dayfile_numeric.csv",
+                TEST_PATH.parent / "testdata" / "RESPONSES_GENERAL/dayfile_numeric.csv",
             ),
             (
                 "http://blob/dayfile/string",
-                TEST_PATH.parent
-                / "testdata"
-                / "RESPONSES_GENERAL/dayfile_string.csv",
+                TEST_PATH.parent / "testdata" / "RESPONSES_GENERAL/dayfile_string.csv",
             ),
             (
                 "http://blob/dayfile/string/malformatted",
@@ -269,7 +265,9 @@ class Test_Storage:
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_overlapping_with_cache(self, storage_with_cache, tmp_path, response_cases):
+    def test_get_overlapping_with_cache(
+        self, storage_with_cache, tmp_path, response_cases
+    ):
         response_cases.set("group2")
 
         STOREFORMATVERSION = "v3"

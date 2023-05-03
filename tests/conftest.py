@@ -10,7 +10,7 @@ from response_cases import (
     RESPONSES_GENERAL,
     RESPONSES_GROUP1,
     RESPONSES_GROUP2,
-    RESPONSES_GROUP3
+    RESPONSES_GROUP3,
 )
 
 from datareservoirio._utils import DataHandler
@@ -27,7 +27,6 @@ def disable_logging(monkeypatch):
 @pytest.fixture
 def response_cases():
     class ResponseCaseHandler:
-
         _CASES = {
             "general": RESPONSES_GENERAL.copy(),
             "group1": RESPONSES_GROUP1.copy(),
@@ -67,6 +66,7 @@ class ResponseFactory:
     response_cases : dict-like
         Dictionary with (METHOD, URL) as key.
     """
+
     def __init__(self, response_cases):
         self._response_cases = response_cases
 

@@ -142,7 +142,12 @@ class Test_Client:
         pd.testing.assert_series_equal(series_out, series_expect)
 
     def test_get_with_cache(
-        self, client_with_cache, cache_root, STOREFORMATVERSION, group2_data, response_cases
+        self,
+        client_with_cache,
+        cache_root,
+        STOREFORMATVERSION,
+        group2_data,
+        response_cases,
     ):
         response_cases.set("group2")
 
@@ -269,7 +274,9 @@ class Test_Client:
         call_data_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
         assert call_data == call_data_expect
 
-    def test_append(self, client, data_float, mock_requests, bytesio_with_memory, response_cases):
+    def test_append(
+        self, client, data_float, mock_requests, bytesio_with_memory, response_cases
+    ):
         response_cases.set("group3")
 
         series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
