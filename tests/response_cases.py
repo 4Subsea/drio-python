@@ -40,7 +40,11 @@ AZURE_STORAGE_BLOB = {
     # description: get day file (numeric) from remote storage
     ("GET", "http://blob/dayfile/numeric"): {
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "dayfile_numeric.csv"
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "azure_storage_blob"
+            / "dayfile_numeric.csv"
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",
@@ -48,7 +52,11 @@ AZURE_STORAGE_BLOB = {
     # description: get day file (string) from remote storage
     ("GET", "http://blob/dayfile/string"): {
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "dayfile_string.csv"
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "azure_storage_blob"
+            / "dayfile_string.csv"
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",
@@ -58,7 +66,8 @@ AZURE_STORAGE_BLOB = {
         "_content": (
             TEST_PATH
             / "testdata"
-            / "RESPONSES_GENERAL"
+            / "response_cases"
+            / "azure_storage_blob"
             / "dayfile_string_malformatted.csv"
         ).read_bytes(),
         "status_code": 200,
@@ -144,7 +153,7 @@ DATARESERVOIRIO_API = {
         ).read_bytes(),
     },
     **DATARESERVOIRIO_TIMESERIES_API,
-    **DATARESERVOIRIO_FILES_API
+    **DATARESERVOIRIO_FILES_API,
 }
 
 

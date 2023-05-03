@@ -27,17 +27,27 @@ class Test__blob_to_df:
         [
             (
                 "http://blob/dayfile/numeric",
-                TEST_PATH.parent / "testdata" / "RESPONSES_GENERAL/dayfile_numeric.csv",
+                TEST_PATH.parent
+                / "testdata"
+                / "response_cases"
+                / "azure_storage_blob"
+                / "dayfile_numeric.csv",
             ),
             (
                 "http://blob/dayfile/string",
-                TEST_PATH.parent / "testdata" / "RESPONSES_GENERAL/dayfile_string.csv",
+                TEST_PATH.parent
+                / "testdata"
+                / "response_cases"
+                / "azure_storage_blob"
+                / "dayfile_string.csv",
             ),
             (
                 "http://blob/dayfile/string/malformatted",
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSES_GENERAL/dayfile_string_malformatted.csv",
+                / "response_cases"
+                / "azure_storage_blob"
+                / "dayfile_string_malformatted.csv",
             ),
         ],
     )
@@ -382,7 +392,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSES_GENERAL"
+                / "response_cases"
+                / "azure_storage_blob"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -393,7 +404,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSES_GENERAL"
+                / "response_cases"
+                / "azure_storage_blob"
                 / "dayfile_string.csv",
             ),
             (
@@ -404,7 +416,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSES_GENERAL"
+                / "response_cases"
+                / "azure_storage_blob"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
@@ -426,7 +439,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSES_GENERAL"
+                / "response_cases"
+                / "azure_storage_blob"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -437,7 +451,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSES_GENERAL"
+                / "response_cases"
+                / "azure_storage_blob"
                 / "dayfile_string.csv",
             ),
             (
@@ -448,7 +463,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSES_GENERAL"
+                / "response_cases"
+                / "azure_storage_blob"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
@@ -474,7 +490,13 @@ class Test_Storage:
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test_put(
-        self, request, mock_requests, bytesio_with_memory, storage_no_cache, data, response_cases
+        self,
+        request,
+        mock_requests,
+        bytesio_with_memory,
+        storage_no_cache,
+        data,
+        response_cases,
     ):
         response_cases.set("group4")
 
