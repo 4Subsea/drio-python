@@ -134,7 +134,7 @@ DATARESERVOIRIO_FILES_API = {
 
 
 # DataReservoir.io REST API (TimeSeries + Files) HTTP responses
-DATARESERVOIRIO = {
+DATARESERVOIRIO_API = {
     # description: ping the DataReservoir.io
     ("GET", "https://reservoir-api.4subsea.net/api/ping"): {
         "status_code": 200,
@@ -387,4 +387,4 @@ GROUP3 = {
 
 
 # General, DataReservoir.io and Azure Storage Blob HTTP responses
-GROUP4 = {**GENERAL, **DATARESERVOIRIO, **AZURE_STORAGE_BLOB}
+GROUP4 = {**GENERAL, **DATARESERVOIRIO_API, **AZURE_STORAGE_BLOB}
