@@ -96,7 +96,11 @@ DATARESERVOIRIO_TIMESERIES_API = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "response_cases" / "datareservoirio" / "info.json"
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "info.json"
         ).read_bytes(),
     },
     # description: delete a timeseries
@@ -118,7 +122,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio"
+            / "datareservoirio_api"
             / "create.json"
         ).read_bytes(),
     },
@@ -131,7 +135,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio"
+            / "datareservoirio_api"
             / "data_days_empty.json"
         ).read_bytes(),
         "status_code": 200,
@@ -157,7 +161,11 @@ DATARESERVOIRIO_API = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "response_cases" / "datareservoirio" / "ping.json"
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "ping.json"
         ).read_bytes(),
     },
     **DATARESERVOIRIO_TIMESERIES_API,
