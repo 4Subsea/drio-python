@@ -193,7 +193,7 @@ class Test_Client:
 
         ping_out = client.ping()
 
-        ping_json = TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "ping.json"
+        ping_json = TEST_PATH / "testdata" / "response_cases" / "datareservoirio" / "ping.json"
         with open(ping_json, mode="r") as f:
             ping_expect = json.load(f)
 
@@ -204,7 +204,7 @@ class Test_Client:
 
         info_out = client.info("2fee7f8a-664a-41c9-9b71-25090517c275")
 
-        info_json = TEST_PATH / "testdata" / "RESPONSES_GENERAL" / "info.json"
+        info_json = TEST_PATH / "testdata" / "response_cases" / "datareservoirio" / "info.json"
         with open(info_json, mode="r") as f:
             info_expect = json.load(f)
 
