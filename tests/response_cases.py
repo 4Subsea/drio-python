@@ -190,7 +190,7 @@ GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "data_days.json"
+            TEST_PATH / "testdata" / "response_cases" / "group1" / "data_days.json"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -201,7 +201,7 @@ GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "19356.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group1" / "19356.csv"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -212,7 +212,7 @@ GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "19357.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group1" / "19357.csv"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -223,7 +223,7 @@ GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "19358.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group1" / "19358.csv"
         ).read_bytes(),
     },
     # description: Azure Blob Storage response
@@ -234,7 +234,7 @@ GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "19359.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group1" / "19359.csv"
         ).read_bytes(),
     },
     # description: TimeSeries API response
@@ -245,7 +245,7 @@ GROUP1 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "data_days.json"
+            TEST_PATH / "testdata" / "response_cases" / "group1" / "data_days.json"
         ).read_bytes(),
     },
 }

@@ -169,7 +169,11 @@ class Test_Storage:
         df_out = storage_no_cache.get(blob_sequence)
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSES_GROUP1" / "dataframe.csv",
+            TEST_PATH.parent
+            / "testdata"
+            / "response_cases"
+            / "group1"
+            / "dataframe.csv",
         ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
@@ -259,7 +263,11 @@ class Test_Storage:
         )
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSES_GROUP1" / "dataframe.csv",
+            TEST_PATH.parent
+            / "testdata"
+            / "response_cases"
+            / "group1"
+            / "dataframe.csv",
         ).as_dataframe()
 
         # Get from remote storage (and cache the data)

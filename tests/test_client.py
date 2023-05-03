@@ -28,7 +28,7 @@ class Test_Client:
     @pytest.fixture
     def group1_data(self):
         data = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSES_GROUP1" / "dataframe.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group1" / "dataframe.csv"
         )
         return data
 
