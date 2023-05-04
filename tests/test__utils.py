@@ -46,7 +46,7 @@ class Test_DataHandler:
         return pd.Series(data=values_list, index=index_list, name="values")
 
     @pytest.fixture
-    def data_handler(self, series_float):
+    def data_handler_float(self, series_float):
         return DataHandler(series_float)
 
     @pytest.mark.parametrize(
@@ -72,18 +72,18 @@ class Test_DataHandler:
         with pytest.raises(ValueError):
             DataHandler(series_float)
 
-    def test_as_series(self, series_float, data_handler):
-        series_out = data_handler.as_series()
+    def test_as_series(self, series_float, data_handler_float):
+        series_out = data_handler_float.as_series()
         assert series_out is not series_float
         pd.testing.assert_series_equal(series_out, series_float)
 
-    def test_as_dataframe(self, series_float, data_handler):
-        df_out = data_handler.as_dataframe()
+    def test_as_dataframe(self, series_float, data_handler_float):
+        df_out = data_handler_float.as_dataframe()
         df_expect = series_float.reset_index()
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_as_binary_csv(self, data_handler):
-        csv_out = data_handler.as_binary_csv()
+    def test_as_binary_csv(self, data_handler_float):
+        csv_out = data_handler_float.as_binary_csv()
         csv_expect = b"1640995215379000000,-0.2\n1640995219176000000,-0.1\n1640995227270000000,0.2\n1640995267223000000,0.1\n1640995271472000000,1.2\n"
         assert csv_out == csv_expect
 
