@@ -1,8 +1,11 @@
 import pytest
+from pathlib import Path
 
 import pandas as pd
 from datareservoirio._utils import DataHandler
 
+
+TEST_PATH = Path(__file__).parent
 
 class Test_DataHandler:
 
@@ -50,3 +53,8 @@ class Test_DataHandler:
         df_out = data_handler.as_dataframe()
         df_expect = series.reset_index()
         pd.testing.assert_frame_equal(df_out, df_expect)
+
+    def test_from_csv(self, series):
+        csv_path = TEST_PATH / "testdata" / "data_float.csv"
+        data_handler = DataHandler.from_csv(csv_path)
+        pd.testing.assert_series_equal(data_handler.as_series(), series)
