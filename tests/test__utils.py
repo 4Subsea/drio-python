@@ -18,6 +18,10 @@ class Test_DataHandler:
         values_list = (-0.2, -0.1, 0.2, 0.1, 1.2)
         return pd.Series(data=values_list, index=index_list, name="values")
 
+    @pytest.fixture
+    def data_handler(self, series):
+        return DataHandler(series)
+
     def test__init__(self, series):
         data_handler = DataHandler(series)
         pd.testing.assert_series_equal(data_handler._series, series)
@@ -36,3 +40,13 @@ class Test_DataHandler:
         series.index.name = "invalid-name"
         with pytest.raises(ValueError):
             DataHandler(series)
+
+    def test_as_series(self, series, data_handler):
+        series_out = data_handler.as_series()
+        assert series_out is not series
+        pd.testing.assert_series_equal(series_out, series)
+
+    def test_as_dataframe(self, series, data_handler):
+        df_out = data_handler.as_dataframe()
+        df_expect = series.reset_index()
+        pd.testing.assert_frame_equal(df_out, df_expect)
