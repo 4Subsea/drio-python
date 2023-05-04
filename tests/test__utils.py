@@ -102,7 +102,7 @@ class Test_DataHandler:
         pd.testing.assert_series_equal(data_handler.as_series(), series)
 
 
-class Test_check_malformatted:
+class Test__check_malformatted:
     @pytest.mark.parametrize(
         "filename, expect",
         [
@@ -111,7 +111,7 @@ class Test_check_malformatted:
             ("data_string_malformatted.csv", True),
         ],
     )
-    def test_malformatted(self, filename, expect):
+    def test__check_malformatted_file(self, filename, expect):
         filepath = TEST_PATH / "testdata" / filename
         out = _check_malformatted(filepath)
         assert out == expect
