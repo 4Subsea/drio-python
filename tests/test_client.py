@@ -409,6 +409,12 @@ class Test_Client:
         status_expect = "Ready"
         assert status_out == status_expect
 
+    def test__get_file_status_failed(self, client, response_cases):
+        response_cases.set("group3-failed")
+        status_out = client._get_file_status("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
+        status_expect = "Failed"
+        assert status_out == status_expect
+
     def test__wait_until_file_ready(self, client, response_cases):
         response_cases.set("group3")
         out = client._wait_until_file_ready("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
