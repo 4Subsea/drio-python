@@ -82,6 +82,11 @@ class Test_DataHandler:
         df_expect = series_float.reset_index()
         pd.testing.assert_frame_equal(df_out, df_expect)
 
+    def test_as_binary_csv(self, data_handler):
+        csv_out = data_handler.as_binary_csv()
+        csv_expect = b"1640995215379000000,-0.2\n1640995219176000000,-0.1\n1640995227270000000,0.2\n1640995267223000000,0.1\n1640995271472000000,1.2\n"
+        assert csv_out == csv_expect
+
     @pytest.mark.parametrize(
         "csv_path, series",
         [
