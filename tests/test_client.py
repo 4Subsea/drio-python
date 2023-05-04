@@ -16,14 +16,6 @@ TEST_PATH = Path(__file__).parent
 class Test_Client:
     """
     Tests the ``datareservoirio.Client`` class.
-
-    TODO:
-        * ``Client.create()`` where ``status=="Failed"``
-        * ``Client.create()`` where files/commit triggers ``raise_for_status()``
-        * ``Client.append()`` where ``status=="Failed"``
-        * ``Client.append()`` where files/commit triggers ``raise_for_status()``
-        * ``Client._get_file_status()`` returns "Failed"/"Unititialized".
-        * ``Client._wait_until_file_ready()`` returns "Failed".
     """
 
     @pytest.fixture
