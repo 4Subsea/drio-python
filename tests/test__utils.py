@@ -1,3 +1,4 @@
+import io
 from pathlib import Path
 
 import pandas as pd
@@ -115,3 +116,20 @@ class Test__check_malformatted:
         filepath = TEST_PATH / "testdata" / filename
         out = _check_malformatted(filepath)
         assert out == expect
+
+    @pytest.mark.parametrize(
+        "filename, expect",
+        [
+            ("data_float.csv", False),
+            ("data_string.csv", False),
+            ("data_string_malformatted.csv", True),
+        ],
+    )
+    def test__check_malformatted_stream(self, filename, expect):
+        filepath = TEST_PATH / "testdata" / filename
+        with io.BytesIO() as stream:
+            with open(filepath, mode="rb") as f:
+                stream.write(f.read())
+            stream.seek(0)
+            out = _check_malformatted(stream)
+            assert out == expect
