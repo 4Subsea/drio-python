@@ -28,7 +28,7 @@ class Test_Client:
     @pytest.fixture
     def group1_data(self):
         data = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group1" / "dataframe.csv"
         )
         return data
 
@@ -36,7 +36,7 @@ class Test_Client:
     def group2_data(self):
         """Overlapping data"""
         data = DataHandler.from_csv(
-            TEST_PATH / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv"
+            TEST_PATH / "testdata" / "response_cases" / "group2" / "dataframe.csv"
         )
         return data
 
@@ -69,7 +69,9 @@ class Test_Client:
             (None, None),
         ],
     )
-    def test_get(self, mock_requests, client, start, end, group1_data):
+    def test_get(self, mock_requests, client, start, end, group1_data, response_cases):
+        response_cases.set("group1")
+
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=start,
@@ -83,7 +85,9 @@ class Test_Client:
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
         mock_requests.call_args_list[0].kwargs["url"] = request_url_expect
 
-    def test_get_convert_date(self, client, group1_data):
+    def test_get_convert_date(self, client, group1_data, response_cases):
+        response_cases.set("group1")
+
         series_out = client.get(
             "2fee7f8a-664a-41c9-9b71-25090517c275",
             start=1672358400000000000,
@@ -110,7 +114,8 @@ class Test_Client:
                 end=end,
             )
 
-    def test_get_empty(self, client):
+    def test_get_empty(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
         series_out = client.get(
             "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
             start=None,
@@ -124,7 +129,9 @@ class Test_Client:
 
         pd.testing.assert_series_equal(series_out, series_expect)
 
-    def test_get_overlapping(self, client, group2_data):
+    def test_get_overlapping(self, client, group2_data, response_cases):
+        response_cases.set("group2")
+
         series_out = client.get(
             "693cb0b2-3599-46d3-b263-ea913a648535",
             start=1672358400000000000,
@@ -136,8 +143,15 @@ class Test_Client:
         pd.testing.assert_series_equal(series_out, series_expect)
 
     def test_get_with_cache(
-        self, client_with_cache, cache_root, STOREFORMATVERSION, group2_data
+        self,
+        client_with_cache,
+        cache_root,
+        STOREFORMATVERSION,
+        group2_data,
+        response_cases,
     ):
+        response_cases.set("group2")
+
         # Check that the cache folder is empty
         cache_path_expect = cache_root / STOREFORMATVERSION
         assert cache_path_expect.exists()
@@ -174,32 +188,52 @@ class Test_Client:
 
         pd.testing.assert_series_equal(series_out, series_expect)
 
-    def test_ping(self, client):
+    def test_ping(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
         ping_out = client.ping()
 
-        ping_json = TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "ping.json"
+        ping_json = (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "ping.json"
+        )
         with open(ping_json, mode="r") as f:
             ping_expect = json.load(f)
 
         assert ping_out == ping_expect
 
-    def test_info(self, client):
+    def test_info(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
         info_out = client.info("2fee7f8a-664a-41c9-9b71-25090517c275")
 
-        info_json = TEST_PATH / "testdata" / "RESPONSE_CASES_GENERAL" / "info.json"
+        info_json = (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "info.json"
+        )
         with open(info_json, mode="r") as f:
             info_expect = json.load(f)
 
         assert info_out == info_expect
 
-    def test_delete(self, client, mock_requests):
+    def test_delete(self, client, mock_requests, response_cases):
+        response_cases.set("datareservoirio-api")
+
         client.delete("7bd106dd-d87f-4504-a888-6aeaff1ec31f")
 
         # Check that the correct URL is poked
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f"
         mock_requests.call_args.kwargs["url"] = request_url_expect
 
-    def test_create(self, client, monkeypatch):
+    def test_create(self, client, monkeypatch, response_cases):
+        response_cases.set("datareservoirio-api")
+
         def uuid4_mock():
             return "9f74b0b1-54c2-4148-8854-5f78b81bb592"
 
@@ -211,8 +245,10 @@ class Test_Client:
         assert create_out == create_expect
 
     def test_create_with_data(
-        self, client, data_float, mock_requests, bytesio_with_memory
+        self, client, data_float, mock_requests, bytesio_with_memory, response_cases
     ):
+        response_cases.set("group3")
+
         create_out = client.create(
             series=data_float.as_series(), wait_on_verification=True
         )
@@ -259,7 +295,11 @@ class Test_Client:
         call_data_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
         assert call_data == call_data_expect
 
-    def test_append(self, client, data_float, mock_requests, bytesio_with_memory):
+    def test_append(
+        self, client, data_float, mock_requests, bytesio_with_memory, response_cases
+    ):
+        response_cases.set("group3")
+
         series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
         append_out = client.append(
             data_float.as_series(), series_id, wait_on_verification=True
@@ -333,11 +373,13 @@ class Test_Client:
         with pytest.raises(ValueError):
             client._verify_and_prepare_series(data_float.as_dataframe())
 
-    def test__get_file_status(self, client):
+    def test__get_file_status(self, client, response_cases):
+        response_cases.set("group3")
         status_out = client._get_file_status("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
         status_expect = "Ready"
         assert status_out == status_expect
 
-    def test__wait_until_file_ready(self, client):
+    def test__wait_until_file_ready(self, client, response_cases):
+        response_cases.set("group3")
         out = client._wait_until_file_ready("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
         assert out == "Ready"

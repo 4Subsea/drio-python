@@ -6,7 +6,7 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 import requests
-from response_cases import RESPONSE_CASES
+import response_cases as rc
 
 from datareservoirio._utils import DataHandler
 
@@ -19,52 +19,93 @@ def disable_logging(monkeypatch):
     monkeypatch.setattr("datareservoirio.client.AzureLogHandler", logging.NullHandler())
 
 
+@pytest.fixture
+def response_cases():
+    class ResponseCaseHandler:
+        _CASES = {
+            "general": rc.GENERAL.copy(),
+            "azure-blob-storage": rc.AZURE_BLOB_STORAGE.copy(),
+            "datareservoirio-api": rc.DATARESERVOIRIO_API.copy(),
+            "group1": rc.GROUP1.copy(),
+            "group2": rc.GROUP2.copy(),
+            "group3": rc.GROUP3.copy(),
+            "group4": rc.GROUP4.copy(),
+        }
+
+        def __init__(self):
+            self.set("general")
+
+        def set(self, label):
+            if label not in self._CASES:
+                raise ValueError("Unknown response label")
+            self._label = label
+
+        def __getitem__(self, key):
+            return self._CASES[self._label][key]
+
+    handler = ResponseCaseHandler()
+    return handler
+
+
 @pytest.fixture(autouse=True)
-def mock_requests(monkeypatch):
+def mock_requests(monkeypatch, response_cases):
     """Patch requests.sessions.Session.request for all tests."""
-    mock = Mock(wraps=response_factory)
+    mock = Mock(wraps=ResponseFactory(response_cases))
     monkeypatch.setattr("requests.sessions.Session.request", mock)
     return mock
 
 
-def response_factory(method, url, **kwargs):
+class ResponseFactory:
     """
-    Generate response based on request call and lookup in ``RESPONSE_CASES``.
-    Attributes assigned to ``requests.Response`` object.
+    Response factory.
 
-    Notes
-    -----
-    The first argument, ``_`` will be an instance of ``requests.sessions.Session``
-    since ``self`` passed to the ``request`` method. See ``mock_requests``.
+    Parameters
+    ----------
+    response_cases : dict-like
+        Dictionary with (METHOD, URL) as key.
     """
-    try:
-        spec = RESPONSE_CASES[(method.upper(), url)].copy()
-    except KeyError:
-        raise ValueError(f"Unrecognized METHOD + URL: {method.upper()} {url}")
-    else:
-        spec.update({"url": url, "raw": BytesIO(spec.pop("_content", None))})
 
-    response = requests.Response()
+    def __init__(self, response_cases):
+        self._response_cases = response_cases
 
-    for attr, value in spec.items():
-        setattr(response, attr, value)
+    def __call__(self, method, url, **kwargs):
+        """
+        Generate response based on request call and lookup in ``RESPONSE_CASES``.
+        Attributes assigned to ``requests.Response`` object.
 
-    # Create the Request.
-    req = requests.Request(
-        method=method.upper(),
-        url=url,
-        headers=kwargs.get("headers"),
-        files=kwargs.get("files"),
-        data=kwargs.get("data") or {},
-        json=kwargs.get("json"),
-        params=kwargs.get("params") or {},
-        auth=kwargs.get("auth"),
-        cookies=kwargs.get("cookies"),
-        hooks=kwargs.get("hooks"),
-    )
-    response.request = req.prepare()
+        Notes
+        -----
+        The first argument, ``_`` will be an instance of ``requests.sessions.Session``
+        since ``self`` passed to the ``request`` method. See ``mock_requests``.
+        """
+        try:
+            spec = self._response_cases[(method.upper(), url)].copy()
+        except KeyError:
+            raise ValueError(f"Unrecognized METHOD + URL: {method.upper()} {url}")
+        else:
+            spec.update({"url": url, "raw": BytesIO(spec.pop("_content", None))})
 
-    return response
+        response = requests.Response()
+
+        for attr, value in spec.items():
+            setattr(response, attr, value)
+
+        # Create the Request.
+        req = requests.Request(
+            method=method.upper(),
+            url=url,
+            headers=kwargs.get("headers"),
+            files=kwargs.get("files"),
+            data=kwargs.get("data") or {},
+            json=kwargs.get("json"),
+            params=kwargs.get("params") or {},
+            auth=kwargs.get("auth"),
+            cookies=kwargs.get("cookies"),
+            hooks=kwargs.get("hooks"),
+        )
+        response.request = req.prepare()
+
+        return response
 
 
 @pytest.fixture()

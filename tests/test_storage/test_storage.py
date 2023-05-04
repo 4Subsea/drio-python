@@ -22,6 +22,10 @@ class Test__blob_to_df:
     Tests the :func:`_blob_to_df` function.
     """
 
+    @pytest.fixture(autouse=True)
+    def set_response_cases(self, response_cases):
+        response_cases.set("azure-blob-storage")
+
     @pytest.mark.parametrize(
         "blob_url, path_csv",
         [
@@ -29,24 +33,31 @@ class Test__blob_to_df:
                 "http://blob/dayfile/numeric",
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL/dayfile_numeric.csv",
+                / "response_cases"
+                / "azure_blob_storage"
+                / "dayfile_numeric.csv",
             ),
             (
                 "http://blob/dayfile/string",
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL/dayfile_string.csv",
+                / "response_cases"
+                / "azure_blob_storage"
+                / "dayfile_string.csv",
             ),
             (
                 "http://blob/dayfile/string/malformatted",
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL/dayfile_string_malformatted.csv",
+                / "response_cases"
+                / "azure_blob_storage"
+                / "dayfile_string_malformatted.csv",
             ),
         ],
     )
     def test__blob_to_df(self, blob_url, path_csv):
         """Tests ``_blob_to_df`` function."""
+
         df_out = drio.storage.storage._blob_to_df(blob_url)
 
         df_expect = DataHandler.from_csv(path_csv).as_dataframe()
@@ -64,6 +75,10 @@ class Test__df_to_blob:
     """
     Tests the :func:`_df_to_blob` function.
     """
+
+    @pytest.fixture(autouse=True)
+    def set_response_cases(self, response_cases):
+        response_cases.set("azure-blob-storage")
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__df_to_blob(self, data, request):
@@ -128,7 +143,8 @@ class Test_Storage:
         assert isinstance(storage._storage_cache, drio.storage.StorageCache)
         assert storage._session is auth_session
 
-    def test_get(self, storage_no_cache):
+    def test_get(self, storage_no_cache, response_cases):
+        response_cases.set("group1")
         blob_sequence = (
             {
                 "Path": "1b0d906b34ce40d69520e46f49a54545/2022/12/30/day/csv/19356.csv",
@@ -155,12 +171,17 @@ class Test_Storage:
         df_out = storage_no_cache.get(blob_sequence)
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
+            TEST_PATH.parent
+            / "testdata"
+            / "response_cases"
+            / "group1"
+            / "dataframe.csv",
         ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_overlapping(self, storage_no_cache):
+    def test_get_overlapping(self, storage_no_cache, response_cases):
+        response_cases.set("group2")
         blob_sequence = (
             {
                 "Path": "03fc12505d3d41fea77df405b2563e49/2022/12/30/day/csv/19356.csv",
@@ -197,7 +218,11 @@ class Test_Storage:
         df_out = storage_no_cache.get(blob_sequence)
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv",
+            TEST_PATH.parent
+            / "testdata"
+            / "response_cases"
+            / "group2"
+            / "dataframe.csv",
         ).as_dataframe()
 
         pd.testing.assert_frame_equal(df_out, df_expect)
@@ -210,7 +235,9 @@ class Test_Storage:
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_with_cache(self, storage_with_cache, tmp_path):
+    def test_get_with_cache(self, storage_with_cache, tmp_path, response_cases):
+        response_cases.set("group1")
+
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
@@ -242,7 +269,11 @@ class Test_Storage:
         )
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP1" / "dataframe.csv",
+            TEST_PATH.parent
+            / "testdata"
+            / "response_cases"
+            / "group1"
+            / "dataframe.csv",
         ).as_dataframe()
 
         # Get from remote storage (and cache the data)
@@ -265,7 +296,11 @@ class Test_Storage:
 
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_get_overlapping_with_cache(self, storage_with_cache, tmp_path):
+    def test_get_overlapping_with_cache(
+        self, storage_with_cache, tmp_path, response_cases
+    ):
+        response_cases.set("group2")
+
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
@@ -307,7 +342,11 @@ class Test_Storage:
         )
 
         df_expect = DataHandler.from_csv(
-            TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "dataframe.csv",
+            TEST_PATH.parent
+            / "testdata"
+            / "response_cases"
+            / "group2"
+            / "dataframe.csv",
         ).as_dataframe()
 
         # Get from remote storage (and cache the data)
@@ -371,7 +410,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "response_cases"
+                / "azure_blob_storage"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -382,7 +422,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "response_cases"
+                / "azure_blob_storage"
                 / "dayfile_string.csv",
             ),
             (
@@ -393,12 +434,14 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "response_cases"
+                / "azure_blob_storage"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
     )
-    def test__blob_to_df(self, storage_no_cache, chunk, file_path):
+    def test__blob_to_df(self, storage_no_cache, chunk, file_path, response_cases):
+        response_cases.set("azure-blob-storage")
         df_out = storage_no_cache._blob_to_df(chunk)
         df_expect = DataHandler.from_csv(file_path).as_dataframe()
         pd.testing.assert_frame_equal(df_out, df_expect)
@@ -414,7 +457,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "response_cases"
+                / "azure_blob_storage"
                 / "dayfile_numeric.csv",
             ),
             (
@@ -425,7 +469,8 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "response_cases"
+                / "azure_blob_storage"
                 / "dayfile_string.csv",
             ),
             (
@@ -436,14 +481,17 @@ class Test_Storage:
                 },
                 TEST_PATH.parent
                 / "testdata"
-                / "RESPONSE_CASES_GENERAL"
+                / "response_cases"
+                / "azure_blob_storage"
                 / "dayfile_string_malformatted.csv",
             ),
         ],
     )
     def test__blob_to_df_with_cache(
-        self, tmp_path, storage_with_cache, chunk, file_path
+        self, tmp_path, storage_with_cache, chunk, file_path, response_cases
     ):
+        response_cases.set("azure-blob-storage")
+
         STOREFORMATVERSION = "v3"
         CACHE_PATH = tmp_path / ".cache" / STOREFORMATVERSION
 
@@ -460,8 +508,16 @@ class Test_Storage:
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test_put(
-        self, request, mock_requests, bytesio_with_memory, storage_no_cache, data
+        self,
+        request,
+        mock_requests,
+        bytesio_with_memory,
+        storage_no_cache,
+        data,
+        response_cases,
     ):
+        response_cases.set("group4")
+
         data = request.getfixturevalue(data)
 
         df = data.as_dataframe()
@@ -511,7 +567,9 @@ class Test_Storage:
                 ),
             )
 
-    def test_put_raise_for_status2(self, storage_no_cache, data_float):
+    def test_put_raise_for_status2(self, storage_no_cache, data_float, response_cases):
+        response_cases.set("group4")
+
         df = data_float.as_dataframe()
 
         with pytest.raises(HTTPError):
@@ -534,7 +592,9 @@ class Test_StorageCache:
 
     @pytest.fixture
     def fill_cache(self, STOREFORMATVERSION):
-        src = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "cache" / "v3"
+        src = (
+            TEST_PATH.parent / "testdata" / "response_cases" / "group2" / "cache" / "v3"
+        )
 
         def fill_cache(root):
             root.mkdir()
@@ -588,7 +648,9 @@ class Test_StorageCache:
 
     @pytest.fixture
     def chunk_data(self):
-        data_path = TEST_PATH.parent / "testdata" / "RESPONSE_GROUP2" / "19356.csv"
+        data_path = (
+            TEST_PATH.parent / "testdata" / "response_cases" / "group2" / "19356.csv"
+        )
         return DataHandler.from_csv(data_path)
 
     def test__init__(self):
