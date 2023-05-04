@@ -295,6 +295,17 @@ class Test_Client:
         call_data_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
         assert call_data == call_data_expect
 
+    def test_create_failed(self, client, data_float, response_cases):
+        response_cases.set("group3-failed")
+
+        create_out = client.create(
+            series=data_float.as_series(), wait_on_verification=True
+        )
+
+        create_expect = "Failed"
+
+        assert create_out == create_expect
+
     def test_append(
         self, client, data_float, mock_requests, bytesio_with_memory, response_cases
     ):

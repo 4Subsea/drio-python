@@ -29,6 +29,7 @@ def response_cases():
             "group1": rc.GROUP1.copy(),
             "group2": rc.GROUP2.copy(),
             "group3": rc.GROUP3.copy(),
+            "group3-failed": rc.GROUP3_FAILED.copy(),
             "group4": rc.GROUP4.copy(),
         }
 

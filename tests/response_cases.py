@@ -384,7 +384,7 @@ GROUP3 = {
             TEST_PATH / "testdata" / "response_cases" / "group3" / "create.json"
         ).read_bytes(),
     },
-    # description: create a new timeseries with data
+    # description: get file status
     (
         "GET",
         "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status",
@@ -413,3 +413,25 @@ GROUP3 = {
 
 # General, DataReservoir.io and Azure Storage Blob HTTP responses
 GROUP4 = {**GENERAL, **DATARESERVOIRIO_API, **AZURE_BLOB_STORAGE}
+
+
+GROUP3_FAILED = GROUP3.copy()
+GROUP3_FAILED.update(
+    # description: get file status (Failed)
+    {
+        (
+            "GET",
+            "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status",
+        ): {
+            "status_code": 200,
+            "reason": "OK",
+            "_content": (
+                TEST_PATH
+                / "testdata"
+                / "response_cases"
+                / "datareservoirio_api"
+                / "status_failed.json"
+            ).read_bytes(),
+        }
+    }
+)
