@@ -34,10 +34,24 @@ class Test_DataHandler:
         return pd.Series(data=values_list, index=index_list, name="values")
 
     @pytest.fixture
+    def series_string_malformatted(self):
+        index_list = (
+            1640995215379000000,
+            1640995219176000000,
+            1640995227270000000,
+            1640995267223000000,
+            1640995271472000000,
+        )
+        values_list = ("fo,o", "bar", "b,a,z", "foo,bar", "ab,cd")
+        return pd.Series(data=values_list, index=index_list, name="values")
+
+    @pytest.fixture
     def data_handler(self, series_float):
         return DataHandler(series_float)
 
-    @pytest.mark.parametrize("series", ("series_float", "series_string"))
+    @pytest.mark.parametrize(
+        "series", ("series_float", "series_string", "series_string_malformatted")
+    )
     def test__init__(self, request, series):
         series = request.getfixturevalue(series)
         data_handler = DataHandler(series)
@@ -70,7 +84,11 @@ class Test_DataHandler:
 
     @pytest.mark.parametrize(
         "csv_path, series",
-        [("data_float.csv", "series_float"), ("data_string.csv", "series_string")],
+        [
+            ("data_float.csv", "series_float"),
+            ("data_string.csv", "series_string"),
+            ("data_string_malformatted.csv", "series_string_malformatted"),
+        ],
     )
     def test_from_csv(self, request, csv_path, series):
         series = request.getfixturevalue(series)
