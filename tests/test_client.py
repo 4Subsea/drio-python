@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from requests import HTTPError
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
 
@@ -305,6 +306,14 @@ class Test_Client:
         create_expect = "Failed"
 
         assert create_out == create_expect
+
+    def test_create_upload_raises(self, client, data_float, response_cases):
+        response_cases.set("group3-upload-raises")
+
+        with pytest.raises(HTTPError):
+            client.create(
+                series=data_float.as_series(), wait_on_verification=True
+            )
 
     def test_append(
         self, client, data_float, mock_requests, bytesio_with_memory, response_cases

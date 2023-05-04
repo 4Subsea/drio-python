@@ -435,3 +435,16 @@ GROUP3_FAILED.update(
         }
     }
 )
+
+
+GROUP3_UPLOAD_RAISES = GROUP3.copy()
+GROUP3_UPLOAD_RAISES.update(
+    # description: get file status (Failed)
+    {
+        # description: allocate a new blob
+        ("POST", "https://reservoir-api.4subsea.net/api/files/upload"): {
+            "status_code": 501,
+            "reason": "Not Implemented",
+        },
+    }
+)
