@@ -13,9 +13,10 @@ def _check_malformatted(filepath_or_buffer):
         with open(filepath_or_buffer, mode="rb") as f:
             csv_as_bytes = f.read()
 
+    csv_as_bytes = csv_as_bytes.rstrip()
     num_lines = csv_as_bytes.count(b"\n")
     num_commas = csv_as_bytes.count(b",")
-    return num_commas != num_lines
+    return num_commas != num_lines + 1
 
 
 class DataHandler:
