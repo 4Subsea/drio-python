@@ -311,9 +311,7 @@ class Test_Client:
         response_cases.set("group3-upload-raises")
 
         with pytest.raises(HTTPError):
-            client.create(
-                series=data_float.as_series(), wait_on_verification=True
-            )
+            client.create(series=data_float.as_series(), wait_on_verification=True)
 
     def test_append(
         self, client, data_float, mock_requests, bytesio_with_memory, response_cases
@@ -369,6 +367,18 @@ class Test_Client:
             "FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2",
         }
         assert call_data == call_data_expect
+
+    def test_append_failed(self, client, data_float, response_cases):
+        response_cases.set("group3-failed")
+
+        series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
+        append_out = client.append(
+            data_float.as_series(), series_id, wait_on_verification=True
+        )
+
+        append_expect = "Failed"
+
+        assert append_out == append_expect
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__verify_and_prepare_series(self, client, data, request):
