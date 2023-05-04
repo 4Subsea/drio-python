@@ -127,9 +127,6 @@ class Test__check_malformatted:
     )
     def test__check_malformatted_stream(self, filename, expect):
         filepath = TEST_PATH / "testdata" / filename
-        with io.BytesIO() as stream:
-            with open(filepath, mode="rb") as f:
-                stream.write(f.read())
-            stream.seek(0)
+        with io.BytesIO(filepath.read_bytes()) as stream:
             out = _check_malformatted(stream)
-            assert out == expect
+        assert out == expect
