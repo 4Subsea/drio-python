@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from datareservoirio._utils import DataHandler
+from datareservoirio._utils import DataHandler, _check_malformatted
 
 TEST_PATH = Path(__file__).parent
 
@@ -100,3 +100,18 @@ class Test_DataHandler:
         csv_path = TEST_PATH / "testdata" / csv_path
         data_handler = DataHandler.from_csv(csv_path)
         pd.testing.assert_series_equal(data_handler.as_series(), series)
+
+
+class Test_check_malformatted:
+    @pytest.mark.parametrize(
+        "filename, expect",
+        [
+            ("data_float.csv", False),
+            ("data_string.csv", False),
+            ("data_string_malformatted.csv", True),
+        ],
+    )
+    def test_malformatted(self, filename, expect):
+        filepath = TEST_PATH / "testdata" / filename
+        out = _check_malformatted(filepath)
+        assert out == expect
