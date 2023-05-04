@@ -1,16 +1,16 @@
-import pytest
 from pathlib import Path
 
 import pandas as pd
-from datareservoirio._utils import DataHandler
+import pytest
 
+from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
 
-class Test_DataHandler:
 
+class Test_DataHandler:
     @pytest.fixture
-    def series(self):
+    def series_float(self):
         index_list = (
             1640995215379000000,
             1640995219176000000,
@@ -22,39 +22,58 @@ class Test_DataHandler:
         return pd.Series(data=values_list, index=index_list, name="values")
 
     @pytest.fixture
-    def data_handler(self, series):
-        return DataHandler(series)
+    def series_string(self):
+        index_list = (
+            1640995215379000000,
+            1640995219176000000,
+            1640995227270000000,
+            1640995267223000000,
+            1640995271472000000,
+        )
+        values_list = ("foo", "bar", "baz", "foobar", "abcd")
+        return pd.Series(data=values_list, index=index_list, name="values")
 
-    def test__init__(self, series):
+    @pytest.fixture
+    def data_handler(self, series_float):
+        return DataHandler(series_float)
+
+    @pytest.mark.parametrize("series", ("series_float", "series_string"))
+    def test__init__(self, request, series):
+        series = request.getfixturevalue(series)
         data_handler = DataHandler(series)
         pd.testing.assert_series_equal(data_handler._series, series)
 
-    def test__init__raises_type(self, series):
-        df = series.reset_index()
+    def test__init__raises_type(self, series_float):
+        df = series_float.reset_index()
         with pytest.raises(ValueError):
             DataHandler(df)
 
-    def test__init__raises_name(self, series):
-        series.name = "invalid-name"
+    def test__init__raises_name(self, series_float):
+        series_float.name = "invalid-name"
         with pytest.raises(ValueError):
-            DataHandler(series)
+            DataHandler(series_float)
 
-    def test__init__raises_index_name(self, series):
-        series.index.name = "invalid-name"
+    def test__init__raises_index_name(self, series_float):
+        series_float.index.name = "invalid-name"
         with pytest.raises(ValueError):
-            DataHandler(series)
+            DataHandler(series_float)
 
-    def test_as_series(self, series, data_handler):
+    def test_as_series(self, series_float, data_handler):
         series_out = data_handler.as_series()
-        assert series_out is not series
-        pd.testing.assert_series_equal(series_out, series)
+        assert series_out is not series_float
+        pd.testing.assert_series_equal(series_out, series_float)
 
-    def test_as_dataframe(self, series, data_handler):
+    def test_as_dataframe(self, series_float, data_handler):
         df_out = data_handler.as_dataframe()
-        df_expect = series.reset_index()
+        df_expect = series_float.reset_index()
         pd.testing.assert_frame_equal(df_out, df_expect)
 
-    def test_from_csv(self, series):
-        csv_path = TEST_PATH / "testdata" / "data_float.csv"
+    @pytest.mark.parametrize(
+        "csv_path, series",
+        [("data_float.csv", "series_float"), ("data_string.csv", "series_string")],
+    )
+    def test_from_csv(self, request, csv_path, series):
+        series = request.getfixturevalue(series)
+        csv_path = TEST_PATH / "testdata" / csv_path
         data_handler = DataHandler.from_csv(csv_path)
         pd.testing.assert_series_equal(data_handler.as_series(), series)
