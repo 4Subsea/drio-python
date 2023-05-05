@@ -656,3 +656,43 @@ class Test_Client:
                 overwrite=True,
                 namevalues=namevalues,
             )
+
+    def test_remove_metadata(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        metadata_id = "19b7230b-f88a-4217-b1c9-08daff938054"
+        response = client.remove_metadata(series_id, metadata_id)
+        response_expect = {
+            "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
+            "TimeOfFirstSample": 0,
+            "TimeOfLastSample": 0,
+            "LastModifiedByEmail": "string",
+            "Created": "2023-05-03T10:25:44.567Z",
+            "LastModified": "2023-05-03T10:25:44.567Z",
+            "CreatedByEmail": "string",
+            "Metadata": [
+                {
+                    "Id": "string",
+                    "Namespace": "string",
+                    "Key": "string",
+                    "Value": {},
+                    "TimeSeriesReferenceCount": 0,
+                    "TimeSeries": [{}],
+                    "LastModifiedByEmail": "string",
+                    "LastModified": "2023-05-03T10:25:44.567Z",
+                    "Created": "2023-05-03T10:25:44.567Z",
+                    "CreatedByEmail": "string",
+                }
+            ],
+            "Aliases": ["string"],
+        }
+
+        assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/857ca134-5bf7-4c14-b687-ede7d5cbf22f/metadata"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+        # Check that the correct json with metadata id is sent
+        json_expect = ["19b7230b-f88a-4217-b1c9-08daff938054"]
+        assert mock_requests.call_args.kwargs["json"] == json_expect
