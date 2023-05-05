@@ -490,6 +490,12 @@ class Test_Client:
         request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"
         assert mock_requests.call_args.args[1] == request_url_expect
 
+    def test_metadata_get_raises(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        with pytest.raises(ValueError):
+            client.metadata_get(metadata_id=None, namespace="foo.bar", key=None)
+
     def test_metadata_search(self, client, response_cases):
         response_cases.set("datareservoirio-api")
 
