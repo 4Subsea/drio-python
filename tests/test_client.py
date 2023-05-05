@@ -493,12 +493,28 @@ class Test_Client:
 
         assert response == response_expect
 
-    def test_metadata_browse_ns(self, client, response_cases):
+    def test_metadata_browse_namespace(self, client, response_cases):
         response_cases.set("datareservoirio-api")
         response = client.metadata_browse(namespace="foo.bar")
         response_expect = ["abcd", "baz"]
         assert response == response_expect
 
-    # def test_metadata_browse(self, client, response_cases):
-    #     response_cases.set("datareservoirio-api")
-    #     response = client.metadata_browse()
+    def test_metadata_browse(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        response = client.metadata_browse()
+
+        response_expect = sorted([
+            "TheRig2",
+            "TheRig3",
+            "This is a new test",
+            "This is a test",
+            "This is a third test",
+            "Tor_TEST",
+            "TorEinarTest",
+            "tress",
+            "vessel.electrical",
+            "vessel.electrical.rune"
+        ])
+
+        assert response == response_expect
