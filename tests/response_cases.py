@@ -536,10 +536,6 @@ GROUP3 = {
 }
 
 
-# General, DataReservoir.io and Azure Storage Blob HTTP responses
-GROUP4 = {**GENERAL, **DATARESERVOIRIO_API, **AZURE_BLOB_STORAGE}
-
-
 GROUP3_FAILED = GROUP3.copy()
 GROUP3_FAILED.update(
     # description: get file status (Failed)
@@ -573,3 +569,7 @@ GROUP3_UPLOAD_RAISES.update(
         },
     }
 )
+
+
+# General, DataReservoir.io and Azure Storage Blob HTTP responses
+GROUP4 = {**GENERAL, **DATARESERVOIRIO_API, **AZURE_BLOB_STORAGE}
