@@ -424,7 +424,7 @@ class Test_Client:
         out = client._wait_until_file_ready("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
         assert out == "Failed"
 
-    def test_metadata_set(self, client, response_cases):
+    def test_metadata_set(self, client, response_cases, mock_requests):
         response_cases.set("datareservoirio-api")
 
         response = client.metadata_set(
@@ -433,6 +433,14 @@ class Test_Client:
 
         id_expect = "dd5945ad-67f5-499c-fea4-08db4d49f13b"
         assert response["Id"] == id_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+        # Check that the correct json with metadata id is sent
+        json_expect = {"Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"}}
+        assert mock_requests.call_args.kwargs["json"] == json_expect
 
     def test_metadata_get(self, client, response_cases):
         response_cases.set("datareservoirio-api")
