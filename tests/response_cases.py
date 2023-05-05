@@ -180,7 +180,7 @@ DATARESERVOIRIO_METADATA_API = {
             / "testdata"
             / "response_cases"
             / "datareservoirio_api"
-            / "metadata_get.json"
+            / "metadata_get_ns_key.json"
         ).read_bytes(),
     },
     # description: get keys for namespace
@@ -207,7 +207,7 @@ DATARESERVOIRIO_METADATA_API = {
             / "testdata"
             / "response_cases"
             / "datareservoirio_api"
-            / "metadata_get.json"
+            / "metadata_get_ns_key.json"
         ).read_bytes(),
     },
     # description: search for metadata by namespace/key
