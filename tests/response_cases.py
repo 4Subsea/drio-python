@@ -99,7 +99,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "info.json"
         ).read_bytes(),
     },
@@ -122,7 +122,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "create.json"
         ).read_bytes(),
     },
@@ -135,7 +135,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "data_days_empty.json"
         ).read_bytes(),
         "status_code": 200,
@@ -152,7 +152,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "timeseries_metadata_put.json"
         ).read_bytes(),
     },
@@ -167,7 +167,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "timeseries_metadata_delete.json"
         ).read_bytes(),
     },
@@ -554,7 +554,7 @@ GROUP3_FAILED.update(
                 TEST_PATH
                 / "testdata"
                 / "response_cases"
-                / "datareservoirio_api"
+                / "datareservoirio_timeseries_api"
                 / "status_failed.json"
             ).read_bytes(),
         }

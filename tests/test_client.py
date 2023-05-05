@@ -207,7 +207,7 @@ class Test_Client:
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "info.json"
         )
         with open(info_json, mode="r") as f:
