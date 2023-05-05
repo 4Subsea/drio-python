@@ -531,7 +531,7 @@ class Test_Client:
         request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"
         mock_requests.call_args.kwargs["url"] = request_url_expect
 
-    def test_set_metadata(self, client, response_cases):
+    def test_set_metadata(self, client, response_cases, mock_requests):
         response_cases.set("datareservoirio-api")
 
         series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
@@ -570,6 +570,14 @@ class Test_Client:
         }
 
         assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/857ca134-5bf7-4c14-b687-ede7d5cbf22f/metadata"
+        mock_requests.call_args.kwargs["url"] = request_url_expect
+
+        # Check that the correct json with metadata id is sent
+        json_expect = ["19b7230b-f88a-4217-b1c9-08daff938054"]
+        mock_requests.call_args.kwargs["json"] = json_expect
 
     def test_set_metadata_ns_key(self, client, response_cases):
         response_cases.set("datareservoirio-api")
