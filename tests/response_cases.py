@@ -197,7 +197,7 @@ DATARESERVOIRIO_METADATA_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_metadata_api"
             / "metadata_put.json"
         ).read_bytes(),
     },
@@ -209,7 +209,7 @@ DATARESERVOIRIO_METADATA_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_metadata_api"
             / "metadata_get_ns_key.json"
         ).read_bytes(),
     },
@@ -221,7 +221,7 @@ DATARESERVOIRIO_METADATA_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_metadata_api"
             / "metadata_get.json"
         ).read_bytes(),
     },
@@ -233,7 +233,7 @@ DATARESERVOIRIO_METADATA_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_metadata_api"
             / "metadata_get_ns.json"
         ).read_bytes(),
     },
@@ -248,7 +248,7 @@ DATARESERVOIRIO_METADATA_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_metadata_api"
             / "metadata_get_ns_key.json"
         ).read_bytes(),
     },
@@ -263,7 +263,7 @@ DATARESERVOIRIO_METADATA_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_metadata_api"
             / "metadata_search.json"
         ).read_bytes(),
     },
