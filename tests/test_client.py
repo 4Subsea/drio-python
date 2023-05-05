@@ -442,7 +442,7 @@ class Test_Client:
         json_expect = {"Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"}}
         assert mock_requests.call_args.kwargs["json"] == json_expect
 
-    def test_metadata_get(self, client, response_cases):
+    def test_metadata_get(self, client, response_cases, mock_requests):
         response_cases.set("datareservoirio-api")
 
         response = client.metadata_get(namespace="foo.bar", key="baz")
@@ -460,6 +460,10 @@ class Test_Client:
         }
 
         assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz"
+        assert mock_requests.call_args.args[1] == request_url_expect
 
     def test_metadata_get_by_id(self, client, response_cases):
         response_cases.set("datareservoirio-api")
