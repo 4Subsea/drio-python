@@ -237,6 +237,14 @@ DATARESERVOIRIO_METADATA_API = {
             / "metadata_search.json"
         ).read_bytes(),
     },
+    # description: delete metadata by id
+    (
+        "DELETE",
+        "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+    },
 }
 
 

@@ -518,3 +518,11 @@ class Test_Client:
         ])
 
         assert response == response_expect
+
+    def test_metadata_delete(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+        client.metadata_delete("19b7230b-f88a-4217-b1c9-08daff938054")
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"
+        mock_requests.call_args.kwargs["url"] = request_url_expect
