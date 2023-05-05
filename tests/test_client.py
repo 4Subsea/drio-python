@@ -427,7 +427,9 @@ class Test_Client:
     def test_metadata_set(self, client, response_cases):
         response_cases.set("datareservoirio-api")
 
-        response = client.metadata_set("foo.bar", "baz")
+        response = client.metadata_set(
+            "foo.bar", "baz", vendor="Sensor Corp", type_="Ampermeter"
+        )
 
         id_expect = "dd5945ad-67f5-499c-fea4-08db4d49f13b"
         assert response["Id"] == id_expect
@@ -504,18 +506,20 @@ class Test_Client:
 
         response = client.metadata_browse()
 
-        response_expect = sorted([
-            "TheRig2",
-            "TheRig3",
-            "This is a new test",
-            "This is a test",
-            "This is a third test",
-            "Tor_TEST",
-            "TorEinarTest",
-            "tress",
-            "vessel.electrical",
-            "vessel.electrical.rune"
-        ])
+        response_expect = sorted(
+            [
+                "TheRig2",
+                "TheRig3",
+                "This is a new test",
+                "This is a test",
+                "This is a third test",
+                "Tor_TEST",
+                "TorEinarTest",
+                "tress",
+                "vessel.electrical",
+                "vessel.electrical.rune",
+            ]
+        )
 
         assert response == response_expect
 
