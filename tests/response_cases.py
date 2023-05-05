@@ -99,7 +99,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "info.json"
         ).read_bytes(),
     },
@@ -122,7 +122,7 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "create.json"
         ).read_bytes(),
     },
@@ -135,11 +135,41 @@ DATARESERVOIRIO_TIMESERIES_API = {
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "data_days_empty.json"
         ).read_bytes(),
         "status_code": 200,
         "reason": "OK",
+    },
+    # description: put metadata for timeseries id
+    (
+        "PUT",
+        "https://reservoir-api.4subsea.net/api/timeseries/857ca134-5bf7-4c14-b687-ede7d5cbf22f/metadata",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "timeseries_metadata_put.json"
+        ).read_bytes(),
+    },
+    # description: delete metadata for timeseries id
+    (
+        "DELETE",
+        "https://reservoir-api.4subsea.net/api/timeseries/857ca134-5bf7-4c14-b687-ede7d5cbf22f/metadata",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "timeseries_metadata_delete.json"
+        ).read_bytes(),
     },
 }
 
@@ -150,6 +180,100 @@ DATARESERVOIRIO_FILES_API = {
     ("POST", "https://reservoir-api.4subsea.net/api/files/commit"): {
         "status_code": 204,
         "reason": "No Content",
+    },
+}
+
+
+# DataRerevoir.io Metadata API HTTP responses
+DATARESERVOIRIO_METADATA_API = {
+    # description: set metadata for namespace + key
+    (
+        "PUT",
+        "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_metadata_api"
+            / "metadata_put.json"
+        ).read_bytes(),
+    },
+    # description: get metadata for namespace + key
+    ("GET", "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_metadata_api"
+            / "metadata_get_ns_key.json"
+        ).read_bytes(),
+    },
+    # description: get metadata namespaces
+    ("GET", "https://reservoir-api.4subsea.net/api/metadata/"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_metadata_api"
+            / "metadata_get.json"
+        ).read_bytes(),
+    },
+    # description: get metadata keys for namespace
+    ("GET", "https://reservoir-api.4subsea.net/api/metadata/foo.bar"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_metadata_api"
+            / "metadata_get_ns.json"
+        ).read_bytes(),
+    },
+    # description: get metadata for id
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_metadata_api"
+            / "metadata_get_ns_key.json"
+        ).read_bytes(),
+    },
+    # description: search for metadata by namespace/key
+    (
+        "POST",
+        "https://reservoir-api.4subsea.net/api/metadata/search",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_metadata_api"
+            / "metadata_search.json"
+        ).read_bytes(),
+    },
+    # description: delete metadata by id
+    (
+        "DELETE",
+        "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
     },
 }
 
@@ -170,6 +294,7 @@ DATARESERVOIRIO_API = {
     },
     **DATARESERVOIRIO_TIMESERIES_API,
     **DATARESERVOIRIO_FILES_API,
+    **DATARESERVOIRIO_METADATA_API,
 }
 
 
@@ -384,7 +509,7 @@ GROUP3 = {
             TEST_PATH / "testdata" / "response_cases" / "group3" / "create.json"
         ).read_bytes(),
     },
-    # description: create a new timeseries with data
+    # description: get file status
     (
         "GET",
         "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status",
@@ -409,6 +534,41 @@ GROUP3 = {
         "reason": "No Content",
     },
 }
+
+
+GROUP3_FAILED = GROUP3.copy()
+GROUP3_FAILED.update(
+    # description: get file status (Failed)
+    {
+        (
+            "GET",
+            "https://reservoir-api.4subsea.net/api/files/e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2/status",
+        ): {
+            "status_code": 200,
+            "reason": "OK",
+            "_content": (
+                TEST_PATH
+                / "testdata"
+                / "response_cases"
+                / "datareservoirio_timeseries_api"
+                / "status_failed.json"
+            ).read_bytes(),
+        }
+    }
+)
+
+
+GROUP3_UPLOAD_RAISES = GROUP3.copy()
+GROUP3_UPLOAD_RAISES.update(
+    # description: get file status (Failed)
+    {
+        # description: allocate a new blob
+        ("POST", "https://reservoir-api.4subsea.net/api/files/upload"): {
+            "status_code": 501,
+            "reason": "Not Implemented",
+        },
+    }
+)
 
 
 # General, DataReservoir.io and Azure Storage Blob HTTP responses

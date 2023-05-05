@@ -1,0 +1,28 @@
+{
+    "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
+    "TimeOfFirstSample": 0,
+    "TimeOfLastSample": 0,
+    "LastModifiedByEmail": "string",
+    "Created": "2023-05-03T10:25:44.572Z",
+    "LastModified": "2023-05-03T10:25:44.572Z",
+    "CreatedByEmail": "string",
+    "Metadata": [
+        {
+            "Id": "string",
+            "Namespace": "string",
+            "Key": "string",
+            "Value": {},
+            "TimeSeriesReferenceCount": 0,
+            "TimeSeries": [
+                {}
+            ],
+            "LastModifiedByEmail": "string",
+            "LastModified": "2023-05-03T10:25:44.572Z",
+            "Created": "2023-05-03T10:25:44.572Z",
+            "CreatedByEmail": "string"
+        }
+    ],
+    "Aliases": [
+        "string"
+    ]
+}

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from requests import HTTPError
 
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
@@ -15,14 +16,6 @@ TEST_PATH = Path(__file__).parent
 class Test_Client:
     """
     Tests the ``datareservoirio.Client`` class.
-
-    TODO:
-        * ``Client.create()`` where ``status=="Failed"``
-        * ``Client.create()`` where files/commit triggers ``raise_for_status()``
-        * ``Client.append()`` where ``status=="Failed"``
-        * ``Client.append()`` where files/commit triggers ``raise_for_status()``
-        * ``Client._get_file_status()`` returns "Failed"/"Unititialized".
-        * ``Client._wait_until_file_ready()`` returns "Failed".
     """
 
     @pytest.fixture
@@ -214,7 +207,7 @@ class Test_Client:
             TEST_PATH
             / "testdata"
             / "response_cases"
-            / "datareservoirio_api"
+            / "datareservoirio_timeseries_api"
             / "info.json"
         )
         with open(info_json, mode="r") as f:
@@ -295,6 +288,23 @@ class Test_Client:
         call_data_expect = {"FileId": "e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2"}
         assert call_data == call_data_expect
 
+    def test_create_failed(self, client, data_float, response_cases):
+        response_cases.set("group3-failed")
+
+        create_out = client.create(
+            series=data_float.as_series(), wait_on_verification=True
+        )
+
+        create_expect = "Failed"
+
+        assert create_out == create_expect
+
+    def test_create_upload_raises(self, client, data_float, response_cases):
+        response_cases.set("group3-upload-raises")
+
+        with pytest.raises(HTTPError):
+            client.create(series=data_float.as_series(), wait_on_verification=True)
+
     def test_append(
         self, client, data_float, mock_requests, bytesio_with_memory, response_cases
     ):
@@ -350,6 +360,25 @@ class Test_Client:
         }
         assert call_data == call_data_expect
 
+    def test_append_failed(self, client, data_float, response_cases):
+        response_cases.set("group3-failed")
+
+        series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
+        append_out = client.append(
+            data_float.as_series(), series_id, wait_on_verification=True
+        )
+
+        append_expect = "Failed"
+
+        assert append_out == append_expect
+
+    def test_append_upload_raises(self, client, data_float, response_cases):
+        response_cases.set("group3-upload-raises")
+
+        series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
+        with pytest.raises(HTTPError):
+            client.append(data_float.as_series(), series_id, wait_on_verification=True)
+
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__verify_and_prepare_series(self, client, data, request):
         data = request.getfixturevalue(data)
@@ -379,7 +408,332 @@ class Test_Client:
         status_expect = "Ready"
         assert status_out == status_expect
 
+    def test__get_file_status_failed(self, client, response_cases):
+        response_cases.set("group3-failed")
+        status_out = client._get_file_status("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
+        status_expect = "Failed"
+        assert status_out == status_expect
+
     def test__wait_until_file_ready(self, client, response_cases):
         response_cases.set("group3")
         out = client._wait_until_file_ready("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
         assert out == "Ready"
+
+    def test__wait_until_file_ready_failed(self, client, response_cases):
+        response_cases.set("group3-failed")
+        out = client._wait_until_file_ready("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
+        assert out == "Failed"
+
+    def test_metadata_set(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+
+        response = client.metadata_set(
+            "foo.bar", "baz", vendor="Sensor Corp", type_="Ampermeter"
+        )
+
+        id_expect = "dd5945ad-67f5-499c-fea4-08db4d49f13b"
+        assert response["Id"] == id_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = (
+            "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true"
+        )
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+        # Check that the correct json is sent
+        json_expect = {"Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"}}
+        assert mock_requests.call_args.kwargs["json"] == json_expect
+
+    def test_metadata_get(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+
+        response = client.metadata_get(namespace="foo.bar", key="baz")
+
+        response_expect = {
+            "Id": "19b7230b-f88a-4217-b1c9-08daff938054",
+            "Namespace": "foo.bar",
+            "Key": "baz",
+            "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"},
+            "TimeSeriesReferenceCount": 0,
+            "LastModifiedByEmail": None,
+            "LastModified": "2023-05-05T09:01:32.6706215+00:00",
+            "Created": "2023-01-26T11:50:20.4812338+00:00",
+            "CreatedByEmail": None,
+        }
+
+        assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = (
+            "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz"
+        )
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+    def test_metadata_get_by_id(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+
+        response = client.metadata_get(
+            metadata_id="19b7230b-f88a-4217-b1c9-08daff938054"
+        )
+
+        response_expect = {
+            "Id": "19b7230b-f88a-4217-b1c9-08daff938054",
+            "Namespace": "foo.bar",
+            "Key": "baz",
+            "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"},
+            "TimeSeriesReferenceCount": 0,
+            "LastModifiedByEmail": None,
+            "LastModified": "2023-05-05T09:01:32.6706215+00:00",
+            "Created": "2023-01-26T11:50:20.4812338+00:00",
+            "CreatedByEmail": None,
+        }
+
+        assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+    def test_metadata_get_raises(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        with pytest.raises(ValueError):
+            client.metadata_get(metadata_id=None, namespace="foo.bar", key=None)
+
+    def test_metadata_search(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+
+        response = client.metadata_search("foo.bar", "baz")
+
+        response_expect = [
+            {
+                "Id": "19b7230b-f88a-4217-b1c9-08daff938054",
+                "Namespace": "foo.bar",
+                "Key": "baz",
+                "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"},
+                "TimeSeriesReferenceCount": 0,
+                "LastModifiedByEmail": None,
+                "LastModified": "2023-05-05T09:01:32.6706215+00:00",
+                "Created": "2023-01-26T11:50:20.4812338+00:00",
+                "CreatedByEmail": None,
+            }
+        ]
+
+        assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/search"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+        # Check that the correct json is sent
+        json_expect = {"Namespace": "foo.bar", "Key": "baz", "Value": {}}
+        assert mock_requests.call_args.kwargs["json"] == json_expect
+
+    def test_metadata_browse_namespace(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+        response = client.metadata_browse(namespace="foo.bar")
+        response_expect = ["abcd", "baz"]
+        assert response == response_expect
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/foo.bar"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+    def test_metadata_browse(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+
+        response = client.metadata_browse()
+
+        response_expect = sorted(
+            [
+                "TheRig2",
+                "TheRig3",
+                "This is a new test",
+                "This is a test",
+                "This is a third test",
+                "Tor_TEST",
+                "TorEinarTest",
+                "tress",
+                "vessel.electrical",
+                "vessel.electrical.rune",
+            ]
+        )
+
+        assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+    def test_metadata_delete(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+        client.metadata_delete("19b7230b-f88a-4217-b1c9-08daff938054")
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+    def test_set_metadata(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        metadata_id = "19b7230b-f88a-4217-b1c9-08daff938054"
+        namevalues = {"vendor": "Sensor Corp", "type_": "Ampermeter"}
+        response = client.set_metadata(
+            series_id=series_id,
+            metadata_id=metadata_id,
+            overwrite=True,
+            namevalues=namevalues,
+        )
+
+        response_expect = {
+            "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
+            "TimeOfFirstSample": 0,
+            "TimeOfLastSample": 0,
+            "LastModifiedByEmail": "string",
+            "Created": "2023-05-03T10:25:44.572Z",
+            "LastModified": "2023-05-03T10:25:44.572Z",
+            "CreatedByEmail": "string",
+            "Metadata": [
+                {
+                    "Id": "string",
+                    "Namespace": "string",
+                    "Key": "string",
+                    "Value": {},
+                    "TimeSeriesReferenceCount": 0,
+                    "TimeSeries": [{}],
+                    "LastModifiedByEmail": "string",
+                    "LastModified": "2023-05-03T10:25:44.572Z",
+                    "Created": "2023-05-03T10:25:44.572Z",
+                    "CreatedByEmail": "string",
+                }
+            ],
+            "Aliases": ["string"],
+        }
+
+        assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/857ca134-5bf7-4c14-b687-ede7d5cbf22f/metadata"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+        # Check that the correct json with metadata id is sent
+        json_expect = ["19b7230b-f88a-4217-b1c9-08daff938054"]
+        assert mock_requests.call_args.kwargs["json"] == json_expect
+
+    def test_set_metadata_ns_key(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        namevalues = {"vendor": "Sensor Corp", "type_": "Ampermeter"}
+        response = client.set_metadata(
+            series_id=series_id,
+            namespace="foo.bar",
+            key="baz",
+            overwrite=True,
+            namevalues=namevalues,
+        )
+
+        response_expect = {
+            "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
+            "TimeOfFirstSample": 0,
+            "TimeOfLastSample": 0,
+            "LastModifiedByEmail": "string",
+            "Created": "2023-05-03T10:25:44.572Z",
+            "LastModified": "2023-05-03T10:25:44.572Z",
+            "CreatedByEmail": "string",
+            "Metadata": [
+                {
+                    "Id": "string",
+                    "Namespace": "string",
+                    "Key": "string",
+                    "Value": {},
+                    "TimeSeriesReferenceCount": 0,
+                    "TimeSeries": [{}],
+                    "LastModifiedByEmail": "string",
+                    "LastModified": "2023-05-03T10:25:44.572Z",
+                    "Created": "2023-05-03T10:25:44.572Z",
+                    "CreatedByEmail": "string",
+                }
+            ],
+            "Aliases": ["string"],
+        }
+
+        assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/857ca134-5bf7-4c14-b687-ede7d5cbf22f/metadata"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+        # Check that the correct json with metadata id is sent
+        json_expect = ["dd5945ad-67f5-499c-fea4-08db4d49f13b"]
+        assert mock_requests.call_args.kwargs["json"] == json_expect
+
+    def test_set_metadata_raises_no_id_and_namespace(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        namevalues = {"vendor": "Sensor Corp", "type_": "Ampermeter"}
+        with pytest.raises(ValueError):
+            client.set_metadata(
+                series_id,
+                metadata_id=None,
+                namespace=None,
+                key="baz",
+                overwrite=True,
+                namevalues=namevalues,
+            )
+
+    def test_set_metadata_raises_namespace_and_no_key(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        namevalues = {"vendor": "Sensor Corp", "type_": "Ampermeter"}
+        with pytest.raises(ValueError):
+            client.set_metadata(
+                series_id,
+                metadata_id=None,
+                namespace="foo.bar",
+                key=None,
+                overwrite=True,
+                namevalues=namevalues,
+            )
+
+    def test_remove_metadata(self, client, response_cases, mock_requests):
+        response_cases.set("datareservoirio-api")
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        metadata_id = "19b7230b-f88a-4217-b1c9-08daff938054"
+        response = client.remove_metadata(series_id, metadata_id)
+        response_expect = {
+            "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
+            "TimeOfFirstSample": 0,
+            "TimeOfLastSample": 0,
+            "LastModifiedByEmail": "string",
+            "Created": "2023-05-03T10:25:44.567Z",
+            "LastModified": "2023-05-03T10:25:44.567Z",
+            "CreatedByEmail": "string",
+            "Metadata": [
+                {
+                    "Id": "string",
+                    "Namespace": "string",
+                    "Key": "string",
+                    "Value": {},
+                    "TimeSeriesReferenceCount": 0,
+                    "TimeSeries": [{}],
+                    "LastModifiedByEmail": "string",
+                    "LastModified": "2023-05-03T10:25:44.567Z",
+                    "Created": "2023-05-03T10:25:44.567Z",
+                    "CreatedByEmail": "string",
+                }
+            ],
+            "Aliases": ["string"],
+        }
+
+        assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/857ca134-5bf7-4c14-b687-ede7d5cbf22f/metadata"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+        # Check that the correct json with metadata id is sent
+        json_expect = ["19b7230b-f88a-4217-b1c9-08daff938054"]
+        assert mock_requests.call_args.kwargs["json"] == json_expect
