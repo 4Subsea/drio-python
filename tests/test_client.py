@@ -435,7 +435,9 @@ class Test_Client:
         assert response["Id"] == id_expect
 
         # Check that the correct URL is poked
-        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true"
+        request_url_expect = (
+            "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true"
+        )
         assert mock_requests.call_args.args[1] == request_url_expect
 
         # Check that the correct json with metadata id is sent
@@ -462,7 +464,9 @@ class Test_Client:
         assert response == response_expect
 
         # Check that the correct URL is poked
-        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz"
+        request_url_expect = (
+            "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz"
+        )
         assert mock_requests.call_args.args[1] == request_url_expect
 
     def test_metadata_get_by_id(self, client, response_cases, mock_requests):
