@@ -198,6 +198,21 @@ DATARESERVOIRIO_METADATA_API = {
             / "metadata_get.json"
         ).read_bytes(),
     },
+    # description: search for metadata by namespace/key
+    (
+        "POST",
+        "https://reservoir-api.4subsea.net/api/metadata/search",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "metadata_search.json"
+        ).read_bytes(),
+    },
 }
 
 
