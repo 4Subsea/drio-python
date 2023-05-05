@@ -156,7 +156,7 @@ DATARESERVOIRIO_FILES_API = {
 
 # DataRerevoir.io Metadata API HTTP responses
 DATARESERVOIRIO_METADATA_API = {
-    # description: commit file for processing
+    # description: set metadata for namespace + key
     ("PUT", "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true"): {
         "status_code": 200,
         "reason": "OK",
@@ -165,7 +165,19 @@ DATARESERVOIRIO_METADATA_API = {
             / "testdata"
             / "response_cases"
             / "datareservoirio_api"
-            / "metadata.json"
+            / "metadata_put.json"
+        ).read_bytes(),
+    },
+    # description: get metadata for namespace + key
+    ("GET", "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "metadata_get.json"
         ).read_bytes(),
     },
 }
