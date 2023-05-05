@@ -440,7 +440,7 @@ class Test_Client:
         )
         assert mock_requests.call_args.args[1] == request_url_expect
 
-        # Check that the correct json with metadata id is sent
+        # Check that the correct json is sent
         json_expect = {"Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"}}
         assert mock_requests.call_args.kwargs["json"] == json_expect
 
@@ -525,7 +525,7 @@ class Test_Client:
         request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/search"
         assert mock_requests.call_args.args[1] == request_url_expect
 
-        # Check that the correct json with metadata id is sent
+        # Check that the correct json is sent
         json_expect = {"Namespace": "foo.bar", "Key": "baz", "Value": {}}
         assert mock_requests.call_args.kwargs["json"] == json_expect
 
