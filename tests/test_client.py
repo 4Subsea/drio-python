@@ -496,7 +496,7 @@ class Test_Client:
         with pytest.raises(ValueError):
             client.metadata_get(metadata_id=None, namespace="foo.bar", key=None)
 
-    def test_metadata_search(self, client, response_cases):
+    def test_metadata_search(self, client, response_cases, mock_requests):
         response_cases.set("datareservoirio-api")
 
         response = client.metadata_search("foo.bar", "baz")
@@ -516,6 +516,14 @@ class Test_Client:
         ]
 
         assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/search"
+        assert mock_requests.call_args.args[1] == request_url_expect
+
+        # Check that the correct json with metadata id is sent
+        json_expect = {"Namespace": "foo.bar", "Key": "baz", "Value": {}}
+        assert mock_requests.call_args.kwargs["json"] == json_expect
 
     def test_metadata_browse_namespace(self, client, response_cases):
         response_cases.set("datareservoirio-api")
