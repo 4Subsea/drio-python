@@ -626,3 +626,33 @@ class Test_Client:
         # Check that the correct json with metadata id is sent
         json_expect = ["dd5945ad-67f5-499c-fea4-08db4d49f13b"]
         assert mock_requests.call_args.kwargs["json"] == json_expect
+
+    def test_set_metadata_raises_no_id_and_namespace(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        namevalues = {"vendor": "Sensor Corp", "type_": "Ampermeter"}
+        with pytest.raises(ValueError):
+            client.set_metadata(
+                series_id,
+                metadata_id=None,
+                namespace=None,
+                key="baz",
+                overwrite=True,
+                namevalues=namevalues,
+            )
+
+    def test_set_metadata_raises_namespace_and_no_key(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        namevalues = {"vendor": "Sensor Corp", "type_": "Ampermeter"}
+        with pytest.raises(ValueError):
+            client.set_metadata(
+                series_id,
+                metadata_id=None,
+                namespace="foo.bar",
+                key=None,
+                overwrite=True,
+                namevalues=namevalues,
+            )
