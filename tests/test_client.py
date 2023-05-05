@@ -423,3 +423,11 @@ class Test_Client:
         response_cases.set("group3-failed")
         out = client._wait_until_file_ready("e4fb7a7e-0796-4f6a-8c79-f39a3af66dd2")
         assert out == "Failed"
+
+    def test_metadata_set(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        response = client.metadata_set("foo.bar", "baz")
+
+        id_expect = "dd5945ad-67f5-499c-fea4-08db4d49f13b"
+        assert response["Id"] == id_expect

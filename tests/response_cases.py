@@ -154,6 +154,23 @@ DATARESERVOIRIO_FILES_API = {
 }
 
 
+# DataRerevoir.io Metadata API HTTP responses
+DATARESERVOIRIO_METADATA_API = {
+    # description: commit file for processing
+    ("PUT", "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "metadata.json"
+        ).read_bytes(),
+    },
+}
+
+
 # DataReservoir.io REST API (TimeSeries + Files) HTTP responses
 DATARESERVOIRIO_API = {
     # description: ping the DataReservoir.io
@@ -170,6 +187,7 @@ DATARESERVOIRIO_API = {
     },
     **DATARESERVOIRIO_TIMESERIES_API,
     **DATARESERVOIRIO_FILES_API,
+    **DATARESERVOIRIO_METADATA_API,
 }
 
 
