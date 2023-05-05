@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-
 from requests import HTTPError
+
 import datareservoirio as drio
 from datareservoirio._utils import DataHandler
 
@@ -454,7 +454,9 @@ class Test_Client:
     def test_metadata_get_by_id(self, client, response_cases):
         response_cases.set("datareservoirio-api")
 
-        response = client.metadata_get(metadata_id="19b7230b-f88a-4217-b1c9-08daff938054")
+        response = client.metadata_get(
+            metadata_id="19b7230b-f88a-4217-b1c9-08daff938054"
+        )
 
         response_expect = {
             "Id": "19b7230b-f88a-4217-b1c9-08daff938054",

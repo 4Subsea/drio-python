@@ -157,7 +157,10 @@ DATARESERVOIRIO_FILES_API = {
 # DataRerevoir.io Metadata API HTTP responses
 DATARESERVOIRIO_METADATA_API = {
     # description: set metadata for namespace + key
-    ("PUT", "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true"): {
+    (
+        "PUT",
+        "https://reservoir-api.4subsea.net/api/metadata/foo.bar/baz?overwrite=true",
+    ): {
         "status_code": 200,
         "reason": "OK",
         "_content": (
@@ -181,7 +184,10 @@ DATARESERVOIRIO_METADATA_API = {
         ).read_bytes(),
     },
     # description: get metadata for id
-    ("GET", "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"): {
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054",
+    ): {
         "status_code": 200,
         "reason": "OK",
         "_content": (
