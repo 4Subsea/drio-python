@@ -180,6 +180,18 @@ DATARESERVOIRIO_METADATA_API = {
             / "metadata_get.json"
         ).read_bytes(),
     },
+    # description: get metadata for id
+    ("GET", "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "metadata_get.json"
+        ).read_bytes(),
+    },
 }
 
 

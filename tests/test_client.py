@@ -450,3 +450,22 @@ class Test_Client:
         }
 
         assert response == response_expect
+
+    def test_metadata_get_by_id(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        response = client.metadata_get(metadata_id="19b7230b-f88a-4217-b1c9-08daff938054")
+
+        response_expect = {
+            "Id": "19b7230b-f88a-4217-b1c9-08daff938054",
+            "Namespace": "foo.bar",
+            "Key": "baz",
+            "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"},
+            "TimeSeriesReferenceCount": 0,
+            "LastModifiedByEmail": None,
+            "LastModified": "2023-05-05T09:01:32.6706215+00:00",
+            "Created": "2023-01-26T11:50:20.4812338+00:00",
+            "CreatedByEmail": None,
+        }
+
+        assert response == response_expect
