@@ -534,7 +534,7 @@ class Test_Client:
         request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/foo.bar"
         assert mock_requests.call_args.args[1] == request_url_expect
 
-    def test_metadata_browse(self, client, response_cases):
+    def test_metadata_browse(self, client, response_cases, mock_requests):
         response_cases.set("datareservoirio-api")
 
         response = client.metadata_browse()
@@ -555,6 +555,10 @@ class Test_Client:
         )
 
         assert response == response_expect
+
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/"
+        assert mock_requests.call_args.args[1] == request_url_expect
 
     def test_metadata_delete(self, client, response_cases, mock_requests):
         response_cases.set("datareservoirio-api")
