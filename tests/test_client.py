@@ -372,6 +372,13 @@ class Test_Client:
 
         assert append_out == append_expect
 
+    def test_append_upload_raises(self, client, data_float, response_cases):
+        response_cases.set("group3-upload-raises")
+
+        series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
+        with pytest.raises(HTTPError):
+            client.append(data_float.as_series(), series_id, wait_on_verification=True)
+
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__verify_and_prepare_series(self, client, data, request):
         data = request.getfixturevalue(data)
