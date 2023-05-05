@@ -525,11 +525,14 @@ class Test_Client:
         json_expect = {"Namespace": "foo.bar", "Key": "baz", "Value": {}}
         assert mock_requests.call_args.kwargs["json"] == json_expect
 
-    def test_metadata_browse_namespace(self, client, response_cases):
+    def test_metadata_browse_namespace(self, client, response_cases, mock_requests):
         response_cases.set("datareservoirio-api")
         response = client.metadata_browse(namespace="foo.bar")
         response_expect = ["abcd", "baz"]
         assert response == response_expect
+        # Check that the correct URL is poked
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/foo.bar"
+        assert mock_requests.call_args.args[1] == request_url_expect
 
     def test_metadata_browse(self, client, response_cases):
         response_cases.set("datareservoirio-api")
