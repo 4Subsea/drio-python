@@ -183,7 +183,7 @@ DATARESERVOIRIO_METADATA_API = {
             / "metadata_get_ns_key.json"
         ).read_bytes(),
     },
-    # description: get metadata
+    # description: get metadata namespaces
     ("GET", "https://reservoir-api.4subsea.net/api/metadata/"): {
         "status_code": 200,
         "reason": "OK",
@@ -195,7 +195,7 @@ DATARESERVOIRIO_METADATA_API = {
             / "metadata_get.json"
         ).read_bytes(),
     },
-    # description: get keys for namespace
+    # description: get metadata keys for namespace
     ("GET", "https://reservoir-api.4subsea.net/api/metadata/foo.bar"): {
         "status_code": 200,
         "reason": "OK",
