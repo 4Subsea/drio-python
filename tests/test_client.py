@@ -530,3 +530,43 @@ class Test_Client:
         # Check that the correct URL is poked
         request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"
         mock_requests.call_args.kwargs["url"] = request_url_expect
+
+    def test_set_metadata(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        series_id = "857ca134-5bf7-4c14-b687-ede7d5cbf22f"
+        metadata_id = "19b7230b-f88a-4217-b1c9-08daff938054"
+        namevalues = {"vendor": "Sensor Corp", "type_": "Ampermeter"}
+        response = client.set_metadata(
+            series_id=series_id,
+            metadata_id=metadata_id,
+            overwrite=True,
+            namevalues=namevalues,
+        )
+
+        response_expect = {
+            "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
+            "TimeOfFirstSample": 0,
+            "TimeOfLastSample": 0,
+            "LastModifiedByEmail": "string",
+            "Created": "2023-05-03T10:25:44.572Z",
+            "LastModified": "2023-05-03T10:25:44.572Z",
+            "CreatedByEmail": "string",
+            "Metadata": [
+                {
+                    "Id": "string",
+                    "Namespace": "string",
+                    "Key": "string",
+                    "Value": {},
+                    "TimeSeriesReferenceCount": 0,
+                    "TimeSeries": [{}],
+                    "LastModifiedByEmail": "string",
+                    "LastModified": "2023-05-03T10:25:44.572Z",
+                    "Created": "2023-05-03T10:25:44.572Z",
+                    "CreatedByEmail": "string",
+                }
+            ],
+            "Aliases": ["string"],
+        }
+
+        assert response == response_expect

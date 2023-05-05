@@ -141,6 +141,21 @@ DATARESERVOIRIO_TIMESERIES_API = {
         "status_code": 200,
         "reason": "OK",
     },
+    # description: put metadata for timeseries id
+    (
+        "PUT",
+        "https://reservoir-api.4subsea.net/api/timeseries/857ca134-5bf7-4c14-b687-ede7d5cbf22f/metadata",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_api"
+            / "timeseries_metadata_put.json"
+        ).read_bytes(),
+    },
 }
 
 
