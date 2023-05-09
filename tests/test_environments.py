@@ -74,3 +74,7 @@ class Test_Environment:
             environment._application_insight_connectionstring
             == _constants.APPLICATIONINSIGHTS_DEV_CONNECTIONSTRING
         )
+
+    def test__set_environment(self, environment):
+        environment._set_environment("QA")
+        assert environment.current_environment == "QA"
