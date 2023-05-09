@@ -29,3 +29,9 @@ class Test_Environment:
         get_out = environment.get()
         get_expect = "PROD"
         assert get_out == get_expect
+
+    def test_set_qa(self, environment):
+        environment.set_qa()
+        assert environment.current_environment == "QA"
+        assert environment.api_base_url == "https://reservoir-api-qa.4subsea.net/api/"
+        assert environment._application_insight_connectionstring == "InstrumentationKey=aec779fc-7a4c-4580-b205-cd9f8ecdcf48;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/"
