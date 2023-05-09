@@ -78,3 +78,7 @@ class Test_Environment:
     def test__set_environment(self, environment):
         environment._set_environment("QA")
         assert environment.current_environment == "QA"
+
+    def test__set_base_url(self, environment):
+        environment._set_base_url("https://foo/bar/baz")
+        assert environment._api_base_url == "https://foo/bar/baz"
