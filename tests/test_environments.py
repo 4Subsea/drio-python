@@ -65,3 +65,12 @@ class Test_Environment:
             environment._application_insight_connectionstring
             == _constants.APPLICATIONINSIGHTS_TEST_CONNECTIONSTRING
         )
+
+    def test_set_dev(self, environment):
+        environment.set_dev()
+        assert environment.current_environment == "DEV"
+        assert environment.api_base_url == _constants.API_BASE_URL_DEV
+        assert (
+            environment._application_insight_connectionstring
+            == _constants.APPLICATIONINSIGHTS_DEV_CONNECTIONSTRING
+        )
