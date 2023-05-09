@@ -11,7 +11,6 @@ TEST_PATH = Path(__file__).parent
 
 
 class Test_TokenCache:
-
     @pytest.fixture
     def token(self):
         token = {
@@ -29,11 +28,11 @@ class Test_TokenCache:
                 "https://4subseaid.onmicrosoft.com/reservoir-prod/write",
                 "https://4subseaid.onmicrosoft.com/reservoir-prod/read",
                 "openid",
-                "offline_access"
+                "offline_access",
             ],
             "refresh_token": "eyJraWQiOiIzdkl5Mm5YNndKUjR0UUEyX05xZi1xb2dWbXB0dkhJR016VU56M0J0SHRvIiwidmVyIjoiMS4wIiwiemlwIjoiRGVmbGF0ZSIsInNlciI6IjEuMCJ9.REDCk1-ZaxjZePMO9sp6X-6m0l0QaCyJCACh6tlNpiFHGFfheE3EXFXZ0d5N5oOaM6c9v5znrpCcMdr1Ztt1E2_ZW8L522FnKw1Z8Kh476u2q7XXs0Skd9_D3k0sbtM2375Rgtkbc3DjSF7j_jKgmGvupr97a_uW6t32Ezxagz_FQGpBybj7CrYIjzMco8MRRj2UbyPZB1tpZycYpqswbzHNMaEcbxWQ8lHLVSWLv_0VvQPtR0YU9qvf3tWjpQyUVWNfl-UYrSwFvbqm9wWDYhoKzQkYxX_YwK-r0A3UL_3HBfUxvTCy1fnPFCaIHAXDi5V5keLVfG0y1LuduiPKjA.AsLfz6271zVBbKxe.HKyWxqM2yDMPqSlKfw3hiJnJOjTiSqFy1Cmyrii1jY0GaBnZNklMxG3BwoDEXzEeSttpWk93h43dO-h3Bw7JJZ6DmaO_2nQa72BtOuQoCQtv-tEw7iZEbg5z1qgTyBg7xyxuaWHmei3BWTLtv1AYQ6Kdnt-kJQOBVVOX-lNvAmJvn7thhdw2aJ04HVv5BHpuIMbtirZoACjhMERUpmiG1Q2i3I56bnlMg3lIBRVnNMQPOPF84zwq3JlEAuT0R5hPNURe_v6IwymddbHY1IkyX3U6DOGw8we64dZA4Hl2EnMeCog_gLGpz8yay0ZCSVQV6OL1hfFRqKPRludAwekljU3DR86mewoEJTLtYOh74wLwvQGbD2K1LLGM_FBLrVyqYOUMrEz1jfWthpoeRveI528p2goC3hMcrMRHl_e-gwvV2wkIF0Lph8ti9O359EfLc0HkMMwwmcJwVWn4TKf6Ul2TpXpP4rlmtkRAqDBrl1ezR85GegQ10ugE-QlmLJ3vTNwzmA3ePCDWDfwjgw4wuS6S-pJ0DKGiaQ5N8cN85YUhINwmbT8sLyd_D8P9U9ik6PsS6d2hHamrlP91sIkq1kn_ofPgqBnffNqhVUn_WXA9T2eqeYvpwKGZLFyJjokk41860zonqEpCAkwu-_U-61WJ5A5MYVSM3DnF1RGTJrkkz4TENrsjYUVYYKtkEtk7boL1EnCm3W5mnV7bTNj4qKgHeEM3CNOzc1phZjgIriYRBfxPdnLhxKQVLnutgO0qn2vUZkzf1aYdC9al8v4CLnhQ4kCXwnfnn28Tc2RkBPiLXcDeApoS_wwoF7K9CaCVX4S6WVT-PzbgAdGeX4muI_ZvmCzP_t3cnsPCibOwD7O4z0W81NVUy8egLtb-CeKPWey54G7eZyoFCZFkddT8W-61fkIZE9UTWaE1ix80u6irHH8ZzomWv6XDvdL_VdSL2RqY3DqyjkFmmqXiVBQvIuGVv_xjecwy5lCqW6VLSxvCzN3VH2RPhUybFsHuCFDCjzqm4J5YS1tVgwHX2gnCf-cgVdtK4TaNX_pNFQRHOjkN4GUOenR2jVbRS2KXbWgWcfsHv6nk.QnVmWp3X0H2q6pAriIIzHg",
             "refresh_token_expires_in": 1209600,
-            "expires_at": 1682676602.6278732
+            "expires_at": 1682676602.6278732,
         }
         return token
 
