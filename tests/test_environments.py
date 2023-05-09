@@ -24,3 +24,8 @@ class Test_Environment:
         current_env_out = environment.current_environment
         current_env_expect = "PROD"
         assert current_env_out == current_env_expect
+
+    def test_get(self, environment):
+        get_out = environment.get()
+        get_expect = "PROD"
+        assert get_out == get_expect
