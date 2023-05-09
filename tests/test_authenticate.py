@@ -24,10 +24,11 @@ class Test_TokenCache:
 
         assert os.path.exists(token_cache._token_root)
 
-    def test__token_root(self, token_cache):
+    def test__token_root(self, token_cache, tmp_path):
         root_out = token_cache._token_root
         assert os.path.exists(root_out)
         assert os.path.split(root_out)[-1] == "datareservoirio"
+        assert root_out == str(tmp_path / "datareservoirio")
 
     def test_token_path(self, token_cache):
         path_out = token_cache.token_path
