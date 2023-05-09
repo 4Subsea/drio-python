@@ -20,3 +20,4 @@ class Test_TokenCache:
     def test__token_root(self, token_cache):
         root_out = token_cache._token_root
         assert os.path.exists(root_out)
+        assert os.path.split(root_out)[-1] == "datareservoirio"
