@@ -24,9 +24,10 @@ class Test_TokenCache:
             shutil.copyfile(file_i, token_root / file_i.name)
 
     @pytest.fixture(autouse=True)
-    def mock_user_data_dir(self, monkeypatch, tmp_path):
+    def mock_user_data_dir(self, monkeypatch, token_root):
         def mock_user_data_dir(appname, *args, **kwargs):
-            return str(tmp_path / appname)
+            assert appname == "datareservoirio"
+            return str(token_root)
 
         monkeypatch.setattr(
             "datareservoirio.authenticate.user_data_dir", mock_user_data_dir
