@@ -5,7 +5,6 @@ from datareservoirio.environments import Environment
 
 
 class Test_Environment:
-
     @pytest.fixture
     def environment(self):
         environment = Environment()
@@ -35,10 +34,16 @@ class Test_Environment:
         environment.set_qa()
         assert environment.current_environment == "QA"
         assert environment.api_base_url == _constants.API_BASE_URL_QA
-        assert environment._application_insight_connectionstring == _constants.APPLICATIONINSIGHTS_QA_CONNECTIONSTRING
+        assert (
+            environment._application_insight_connectionstring
+            == _constants.APPLICATIONINSIGHTS_QA_CONNECTIONSTRING
+        )
 
     def test_set_test(self, environment):
         environment.set_test()
         assert environment.current_environment == "TEST"
         assert environment.api_base_url == _constants.API_BASE_URL_TEST
-        assert environment._application_insight_connectionstring == _constants.APPLICATIONINSIGHTS_TEST_CONNECTIONSTRING
+        assert (
+            environment._application_insight_connectionstring
+            == _constants.APPLICATIONINSIGHTS_TEST_CONNECTIONSTRING
+        )
