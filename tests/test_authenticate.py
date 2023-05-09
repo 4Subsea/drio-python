@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 from pathlib import Path
@@ -72,9 +73,13 @@ class Test_TokenCache:
 
     def test_token_exists(self, token_cache2):
         token_out = token_cache2.token
-        assert token_out is not None
+        with open(TEST_PATH / "testdata" / "tokens" / "token.PROD", "r") as f:
+            token_expect = json.load(f)
+        assert token_out == token_expect
 
     def test_token_exists_session_key(self, copytokens):
         token_cache = TokenCache(session_key="foobar")
         token_out = token_cache.token
-        assert token_out is not None
+        with open(TEST_PATH / "testdata" / "tokens" / "token.PROD.foobar", "r") as f:
+            token_expect = json.load(f)
+        assert token_out == token_expect
