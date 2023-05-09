@@ -176,3 +176,7 @@ class Test_TokenCache:
 
         assert os.path.exists(token_root / "token.PROD")
         assert token_cache.token == token
+
+    def test_append(self, token_cache):
+        token_cache.append("foo", "bar")
+        assert token_cache.token["foo"] == "bar"
