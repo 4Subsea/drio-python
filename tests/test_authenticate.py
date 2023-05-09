@@ -1,16 +1,15 @@
-import pytest
 import os
 import shutil
 from pathlib import Path
 
-from datareservoirio.authenticate import TokenCache
+import pytest
 
+from datareservoirio.authenticate import TokenCache
 
 TEST_PATH = Path(__file__).parent
 
 
 class Test_TokenCache:
-
     @pytest.fixture
     def token_root(self, tmp_path):
         return tmp_path / "datareservoirio"
@@ -28,7 +27,9 @@ class Test_TokenCache:
         def mock_user_data_dir(appname, *args, **kwargs):
             return str(tmp_path / appname)
 
-        monkeypatch.setattr("datareservoirio.authenticate.user_data_dir", mock_user_data_dir)
+        monkeypatch.setattr(
+            "datareservoirio.authenticate.user_data_dir", mock_user_data_dir
+        )
 
     @pytest.fixture
     def token_cache(self):
