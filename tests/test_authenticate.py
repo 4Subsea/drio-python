@@ -77,8 +77,9 @@ class Test_TokenCache:
 
     def test__token_root(self, token_cache, tmp_path):
         root_out = token_cache._token_root
+        root_expect = str(tmp_path / "datareservoirio")
         assert os.path.exists(root_out)
-        assert root_out == str(tmp_path / "datareservoirio")
+        assert root_out == root_expect
 
     def test_token_path(self, token_cache, token_root):
         path_out = token_cache.token_path
