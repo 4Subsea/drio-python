@@ -30,6 +30,15 @@ class Test_Environment:
         get_expect = "PROD"
         assert get_out == get_expect
 
+    def test_set_default(self, environment):
+        environment.set_default()
+        assert environment.current_environment == "PROD"
+        assert environment.api_base_url == _constants.API_BASE_URL_PROD
+        assert (
+            environment._application_insight_connectionstring
+            == _constants.APPLICATIONINSIGHTS_PROD_CONNECTIONSTRING
+        )
+
     def test_set_production(self, environment):
         environment.set_production()
         assert environment.current_environment == "PROD"
