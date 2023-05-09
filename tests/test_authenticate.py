@@ -6,6 +6,13 @@ from datareservoirio.authenticate import TokenCache
 
 class Test_TokenCache:
 
+    @pytest.fixture(autouse=True)
+    def mock_user_data_dir(self, monkeypatch, tmp_path):
+        def mock_user_data_dir(appname, *args, **kwargs):
+            return str(tmp_path / appname)
+
+        monkeypatch.setattr("datareservoirio.authenticate.user_data_dir", mock_user_data_dir)
+
     @pytest.fixture
     def token_cache(self):
         token_cache = TokenCache()
