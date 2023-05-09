@@ -35,3 +35,9 @@ class Test_Environment:
         assert environment.current_environment == "QA"
         assert environment.api_base_url == "https://reservoir-api-qa.4subsea.net/api/"
         assert environment._application_insight_connectionstring == "InstrumentationKey=aec779fc-7a4c-4580-b205-cd9f8ecdcf48;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/"
+
+    def test_set_test(self, environment):
+        environment.set_test()
+        assert environment.current_environment == "TEST"
+        assert environment.api_base_url == "https://reservoir-api-test.4subsea.net/api/"
+        assert environment._application_insight_connectionstring == "InstrumentationKey=725af0e5-7530-4f2c-b055-36258831785e;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/;LiveEndpoint=https://westeurope.livediagnostics.monitor.azure.com/"
