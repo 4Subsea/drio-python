@@ -21,3 +21,14 @@ class Test_TokenCache:
         root_out = token_cache._token_root
         assert os.path.exists(root_out)
         assert os.path.split(root_out)[-1] == "datareservoirio"
+
+    def test_token_path(self, token_cache):
+        path_out = token_cache.token_path
+        path_expect = os.path.join(token_cache._token_root, "token.PROD")
+        assert path_out == path_expect
+
+    def test_token_path_with_session_key(self):
+        token_cache = TokenCache(session_key="foobar")
+        path_out = token_cache.token_path
+        path_expect = os.path.join(token_cache._token_root, "token.PROD.foobar")
+        assert path_out == path_expect
