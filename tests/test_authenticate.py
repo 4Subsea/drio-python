@@ -169,6 +169,13 @@ class Test_UserAuthenticator:
         )
         return mock_fetch_token
 
+    @pytest.fixture
+    def user_authenticator(
+        self,
+    ):
+        auth = UserAuthenticator(auth_force=False, session_key=None)
+        return auth
+
     def test__init__(self, mock_fetch_token, mock_input, endpoint_code, token):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
@@ -187,3 +194,21 @@ class Test_UserAuthenticator:
         )
 
         mock_input.assert_called_once()
+
+    def test__prepare_fetch_token_args(
+        self, user_authenticator, mock_input, endpoint_code
+    ):
+        args_out, kwargs_out = user_authenticator._prepare_fetch_token_args()
+
+        args_expect = (endpoint_code["endpoint"],)
+        kwargs_expect = {
+            "code": endpoint_code["code"],
+            "client_secret": drio._constants.CLIENT_SECRET_PROD_USER,
+        }
+        assert args_out == args_expect
+        assert kwargs_out == kwargs_expect
+        assert (
+            user_authenticator.token_updater.token["token_url"]
+            == endpoint_code["endpoint"]
+        )
+        mock_input.assert_called()
