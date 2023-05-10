@@ -2,9 +2,10 @@ import json
 import os
 import shutil
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
-from unittest.mock import Mock
+from requests_oauthlib import OAuth2Session
 
 import datareservoirio as drio
 from datareservoirio.authenticate import TokenCache, UserAuthenticator
@@ -171,6 +172,7 @@ class Test_UserAuthenticator:
     def test__init__(self, mock_fetch_token, mock_input, endpoint_code, token):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
+        assert isinstance(auth, OAuth2Session)
         assert auth.client_id == drio._constants.CLIENT_ID_PROD_USER
         assert auth.access_token == token["access_token"]
         assert (
