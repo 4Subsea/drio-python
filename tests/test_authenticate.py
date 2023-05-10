@@ -150,21 +150,31 @@ class Test_UserAuthenticator:
             "endpoint": "https://4subseaid.b2clogin.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_prod",
             "code": "eyJraWQiOiIzdkl5Mm5YNndKUjR0UUEyX05xZi1xb2dWbXB0dkhJR016VU56M0J0SHRvIiwidmVyIjoiMS4wIiwiemlwIjoiRGVmbGF0ZSIsInNlciI6IjEuMCJ9.Pa0qRh7A4Ajb-YmKs144LI02tLCZSf256Wse5ZQg1yWp52GlWrUa7rLf17Xeby9CxSqbey3CX-erJDTAoewdSOFE8svsiPMTBOuom697i4OFKpmkRpp_4j650LHwuGi7DvGEsbIZ6h5XF6ggz870QEuY5BFt5eXZ0AEm_v15vxiEBbqkQnLmc6F1jh8Ln7omCicj2uWkhay015zLTVwBp6LsRakWwqFw0TtIkr2Ip49SyxzaFfoZxa5s9QcoDa0Ytmkw6OR7ndgJHCS0nbx3_z3QY248XlX9jMQl38q4VNR0wZgDAXK2LCP6YD4TXSCao1SUICLfKdLvVYsODia_1w.8ywp9Q0fcdRh_OxM.qlWd2uQZaOl2Mnjcj9sEbZLqoTknvC6acbTIYEGv-O8n9QSr5m7amQUxVaUg5CYkQ0_lupU0rJqgeP-grUa_a9zia5PC6r4MnT1z7zK-raXFMnhBDRY33FZdWR6FdhiO173nnwvjpxchrxrZG-XnX2VMmCkVgOcebmUvIcYA79tIVqupUin_R_ly0cLze6UhOcU-cPfZ_wKMy5RJHO0f9CtuQC-Mq6Q5O7QElmo7vK8UYCouwyD0_ku-2qZawFQLGpCwMo9dVy5rlmu5CIkP8H_0BEcY6zLWpUGbcBEwajxV6p6XsdiRYsqUJC3Nf20o1LdMBtsxjq-Zx52SKszFDFLx4RbJv_9BaDYOnZpNs2iogvhgSk8d3gzappNBW8-5V65J17ADvz7h3jpQtYlPrLKUHw_6jk0j0XvUTPmpHBADPD7i4twn2D6g-HZ9E9GF0AbEQR1EagGHkFPtA8DNYypxJbQYwB4dliIQ6-lbKcjpVGw_WHyhK8Wagl22kre9Z_SHuuOzloILp4guaK4ifqgjVBLVMBo7hqMwN_6fB7H0wiQ5TfTcola92DYpJw4h_K039GuvpDJR6mV6-__Iq3_dbcYWzBLGfOiyl-fMT0BlmxKtOMbQ0yq0srKhjuQqp2F8spF7hW2vjqrGoIMfAMphu40QD3pNOBOHGmd-Ly4Wxh23DnNv97S6eoFhxmPqdj_GM7Pe0lXTYE_4lqjuA_PLdlnDEIeKJiD7H2IIcC4V0EdhbkbRhSoXGXkBfB0Pg2ECY4JFndzTfksvklv9lWBwaFdEPD05swSYwKENDxppsaOwzf0jiejqig-71z33ypMF2ltjRzRZ23N5rcvGgQ6fQaoF96BVPEzoWC92M78-6QAlVIBvc0OHem9GW51HQWrmVuus5h1gXbuS8UW2xZ4ui3KqfsBuBkOza1pS2eWiXiNWSETjNQUWL3ThSO6DutfKR1TkUY37TYPsHB-fUb_FNDm1My7TrPq1i4ZTHMZjk7WEh3JLa2WWJf_OQM_nGNXZ-DIh4C2DHieEiwapyxW6esVB6QZ3yWcRbBVBkHJBM4vVpokyUxM.ygUmVmPx63NwF5f_tAukTQ",
         }
-        return json.dumps(package)
+        return package
 
     @pytest.fixture(autouse=True)
     def mock_fetch_token(self, monkeypatch, token):
-
+        mock_fetch_token = Mock(wraps=lambda *args, **kwargs: token)
         monkeypatch.setattr(
             "datareservoirio.authenticate.OAuth2Session.fetch_token",
-            lambda *args, **kwargs: token,
+            mock_fetch_token,
         )
+        return mock_fetch_token
 
     @pytest.fixture(autouse=True)
     def mock_input(self, monkeypatch, endpoint_code):
+        endpoint_code = json.dumps(endpoint_code)
         monkeypatch.setattr("builtins.input", lambda *args, **kwargs: endpoint_code)
 
-    def test__init__(self):
+    def test__init__(self, mock_fetch_token, endpoint_code):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
-        assert auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
+        assert (
+            auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
+        )
+
+        endpoint = endpoint_code["endpoint"]
+        code = endpoint_code["code"]
+        mock_fetch_token.assert_called_once_with(
+            endpoint, code=code, client_secret=drio._constants.CLIENT_SECRET_PROD_USER
+        )
