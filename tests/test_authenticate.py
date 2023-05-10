@@ -195,9 +195,17 @@ class Test_UserAuthenticator:
 
         mock_input.assert_called_once()
 
-    def test__prepare_fetch_token_args(
-        self, user_authenticator, endpoint_code
-    ):
+    def test__init__session_key(self, monkeypatch, tmp_path):
+        token_root = tmp_path / "datareservoirio"
+        monkeypatch.setattr(
+            "datareservoirio.authenticate.user_data_dir",
+            lambda *args, **kwargs: token_root,
+        )
+
+        UserAuthenticator(auth_force=False, session_key="foobar")
+        assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
+
+    def test__prepare_fetch_token_args(self, user_authenticator, endpoint_code):
         args_out, kwargs_out = user_authenticator._prepare_fetch_token_args()
 
         args_expect = (endpoint_code["endpoint"],)
