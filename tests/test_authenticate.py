@@ -4,7 +4,9 @@ import shutil
 from pathlib import Path
 
 import pytest
+from unittest.mock import Mock
 
+import datareservoirio as drio
 from datareservoirio.authenticate import TokenCache, UserAuthenticator
 
 TEST_PATH = Path(__file__).parent
@@ -152,6 +154,7 @@ class Test_UserAuthenticator:
 
     @pytest.fixture(autouse=True)
     def mock_fetch_token(self, monkeypatch, token):
+
         monkeypatch.setattr(
             "datareservoirio.authenticate.OAuth2Session.fetch_token",
             lambda *args, **kwargs: token,
@@ -163,3 +166,5 @@ class Test_UserAuthenticator:
 
     def test__init__(self):
         auth = UserAuthenticator(auth_force=False, session_key=None)
+
+        assert auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
