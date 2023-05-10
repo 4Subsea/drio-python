@@ -153,6 +153,13 @@ class Test_UserAuthenticator:
         return package
 
     @pytest.fixture(autouse=True)
+    def mock_input(self, monkeypatch, endpoint_code):
+        endpoint_code = json.dumps(endpoint_code)
+        mock_input = Mock(wraps=lambda *args, **kwargs: endpoint_code)
+        monkeypatch.setattr("builtins.input", mock_input)
+        return mock_input
+
+    @pytest.fixture(autouse=True)
     def mock_fetch_token(self, monkeypatch, token):
         mock_fetch_token = Mock(wraps=lambda *args, **kwargs: token)
         monkeypatch.setattr(
@@ -161,12 +168,7 @@ class Test_UserAuthenticator:
         )
         return mock_fetch_token
 
-    @pytest.fixture(autouse=True)
-    def mock_input(self, monkeypatch, endpoint_code):
-        endpoint_code = json.dumps(endpoint_code)
-        monkeypatch.setattr("builtins.input", lambda *args, **kwargs: endpoint_code)
-
-    def test__init__(self, mock_fetch_token, endpoint_code, token):
+    def test__init__(self, mock_fetch_token, mock_input, endpoint_code, token):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
         assert auth.client_id == drio._constants.CLIENT_ID_PROD_USER
@@ -180,3 +182,5 @@ class Test_UserAuthenticator:
         mock_fetch_token.assert_called_once_with(
             endpoint, code=code, client_secret=drio._constants.CLIENT_SECRET_PROD_USER
         )
+
+        mock_input.assert_called_once()
