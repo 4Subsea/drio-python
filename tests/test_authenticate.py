@@ -166,9 +166,11 @@ class Test_UserAuthenticator:
         endpoint_code = json.dumps(endpoint_code)
         monkeypatch.setattr("builtins.input", lambda *args, **kwargs: endpoint_code)
 
-    def test__init__(self, mock_fetch_token, endpoint_code):
+    def test__init__(self, mock_fetch_token, endpoint_code, token):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
+        assert auth.client_id == drio._constants.CLIENT_ID_PROD_USER
+        assert auth.access_token == token["access_token"]
         assert (
             auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
         )
