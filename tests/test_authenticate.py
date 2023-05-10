@@ -8,7 +8,7 @@ import pytest
 from requests_oauthlib import OAuth2Session
 
 import datareservoirio as drio
-from datareservoirio.authenticate import TokenCache, UserAuthenticator
+from datareservoirio.authenticate import BaseAuthSession, TokenCache, UserAuthenticator
 
 TEST_PATH = Path(__file__).parent
 
@@ -173,6 +173,7 @@ class Test_UserAuthenticator:
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
         assert isinstance(auth, OAuth2Session)
+        assert isinstance(auth, BaseAuthSession)
         assert auth.client_id == drio._constants.CLIENT_ID_PROD_USER
         assert auth.access_token == token["access_token"]
         assert (
