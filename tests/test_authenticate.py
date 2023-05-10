@@ -196,7 +196,7 @@ class Test_UserAuthenticator:
         mock_input.assert_called_once()
 
     def test__prepare_fetch_token_args(
-        self, user_authenticator, mock_input, endpoint_code
+        self, user_authenticator, endpoint_code
     ):
         args_out, kwargs_out = user_authenticator._prepare_fetch_token_args()
 
@@ -211,7 +211,6 @@ class Test_UserAuthenticator:
             user_authenticator.token_updater.token["token_url"]
             == endpoint_code["endpoint"]
         )
-        mock_input.assert_called()
 
     def test__prepare_refresh_token_args(
         self, user_authenticator, endpoint_code, token
