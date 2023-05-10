@@ -212,3 +212,16 @@ class Test_UserAuthenticator:
             == endpoint_code["endpoint"]
         )
         mock_input.assert_called()
+
+    def test__prepare_refresh_token_args(
+        self, user_authenticator, endpoint_code, token
+    ):
+        args_out, kwargs_out = user_authenticator._prepare_refresh_token_args()
+
+        args_expect = (endpoint_code["endpoint"],)
+        kwargs_expect = {
+            "refresh_token": token["refresh_token"],
+            "client_secret": drio._constants.CLIENT_SECRET_PROD_USER,
+        }
+        assert args_out == args_expect
+        assert kwargs_out == kwargs_expect
