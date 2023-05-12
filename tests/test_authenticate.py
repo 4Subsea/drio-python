@@ -200,6 +200,9 @@ class Test_UserAuthenticator:
         UserAuthenticator(auth_force=False, session_key="foobar")
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
 
+    def test__init__auth_force(self):
+        UserAuthenticator(auth_force=True)
+
     # def test__init__session_key(self, monkeypatch, tmp_path):
     #     UserAuthenticator(auth_force=False, session_key="foobar")
     #     assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
