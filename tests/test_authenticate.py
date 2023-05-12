@@ -203,6 +203,22 @@ class Test_UserAuthenticator:
     def test__init__auth_force(self):
         UserAuthenticator(auth_force=True)
 
+    def test__prepare_fetch_token_args(self, user_authenticator, endpoint_code, mock_input):
+        args_out, kwargs_out = user_authenticator._prepare_fetch_token_args()
+
+        args_expect = (endpoint_code["endpoint"],)
+        kwargs_expect = {
+            "code": endpoint_code["code"],
+            "client_secret": drio._constants.CLIENT_SECRET_PROD_USER,
+        }
+        assert args_out == args_expect
+        assert kwargs_out == kwargs_expect
+        assert (
+            user_authenticator.token_updater.token["token_url"]
+            == endpoint_code["endpoint"]
+        )
+        mock_input.assert_called()
+
     # def test__init__session_key(self, monkeypatch, tmp_path):
     #     UserAuthenticator(auth_force=False, session_key="foobar")
     #     assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
