@@ -193,7 +193,7 @@ class Test_UserAuthenticator:
         auth = UserAuthenticator(auth_force=False, session_key=None)
         return auth
 
-    def test__init__(self, mock_input, token_prod, tmp_path):
+    def test__init__(self, mock_input, token_prod, tmp_path, mock_requests):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
         assert isinstance(auth, OAuth2Session)
@@ -205,30 +205,27 @@ class Test_UserAuthenticator:
         )
         mock_input.assert_called_once()
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
-
-    def test__init__token_available(
-        self, mock_input, token_prod, tmp_path, add_tokens_to_token_root
-    ):
-        auth = UserAuthenticator(auth_force=False, session_key=None)
-
-        assert isinstance(auth, OAuth2Session)
-        assert isinstance(auth, BaseAuthSession)
-        assert auth.client_id == drio._constants.CLIENT_ID_PROD_USER
-        assert auth.access_token == token_prod["access_token"]
         assert (
-            auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
+            mock_requests.call_args.kwargs["data"]["grant_type"] == "authorization_code"
         )
-        mock_input.assert_not_called()  # check that ``fetch_token()`` is not called
-        assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
+
+    def test__init__token_available(self, add_tokens_to_token_root, mock_requests):
+        UserAuthenticator(auth_force=False, session_key=None)
+        assert mock_requests.call_args.kwargs["data"]["grant_type"] == "refresh_token"
 
     def test__init__session_key(self, tmp_path):
         assert not os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
         UserAuthenticator(auth_force=False, session_key="foobar")
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
 
-    def test__init__auth_force(self, mock_input, add_tokens_to_token_root):
+    def test__init__auth_force(
+        self, add_tokens_to_token_root, mock_requests, mock_input
+    ):
         UserAuthenticator(auth_force=True)
-        mock_input.assert_called()  # check that ``fetch_token()`` is called
+        mock_input.assert_called_once()
+        assert (
+            mock_requests.call_args.kwargs["data"]["grant_type"] == "authorization_code"
+        )
 
     def test__prepare_fetch_token_args(
         self, user_authenticator, endpoint_code, mock_input
