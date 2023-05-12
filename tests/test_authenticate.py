@@ -260,3 +260,10 @@ class Test_UserAuthenticator:
         }
         assert args_out == args_expect
         assert kwargs_out == kwargs_expect
+
+    def test_fetch_token(self, user_authenticator, token_prod):
+        token_out = user_authenticator.fetch_token()
+        token_expect = token_prod
+        token_out.pop("expires_at")
+        token_expect.pop("expires_at")
+        assert token_out == token_prod
