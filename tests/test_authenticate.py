@@ -197,6 +197,27 @@ class Test_UserAuthenticator:
         mock_input.assert_called_once()
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
 
+    def test__init__token_available(self, mock_input, token_prod, tmp_path):
+
+        # copy tokens to the token root
+        token_root = tmp_path / "datareservoirio"
+        token_root.mkdir(exist_ok=True)
+        src = TEST_PATH / "testdata" / "tokens"
+        for file_i in src.iterdir():
+            shutil.copyfile(file_i, token_root / file_i.name)
+
+        auth = UserAuthenticator(auth_force=False, session_key=None)
+
+        assert isinstance(auth, OAuth2Session)
+        assert isinstance(auth, BaseAuthSession)
+        assert auth.client_id == drio._constants.CLIENT_ID_PROD_USER
+        assert auth.access_token == token_prod["access_token"]
+        assert (
+            auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
+        )
+        mock_input.assert_not_called()
+        assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
+
     def test__init__session_key(self, tmp_path):
         UserAuthenticator(auth_force=False, session_key="foobar")
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
