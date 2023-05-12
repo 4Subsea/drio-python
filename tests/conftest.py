@@ -32,6 +32,7 @@ def response_cases():
             "group3-failed": rc.GROUP3_FAILED.copy(),
             "group3-upload-raises": rc.GROUP3_UPLOAD_RAISES.copy(),
             "group4": rc.GROUP4.copy(),
+            "group5": rc.GROUP5.copy(),
         }
 
         def __init__(self):

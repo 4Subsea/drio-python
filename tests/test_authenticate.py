@@ -145,6 +145,17 @@ class Test_TokenCache:
 
 
 class Test_UserAuthenticator:
+
+    @pytest.fixture(autouse=True)
+    def set_response_cases(self, response_cases):
+        response_cases.set("group5")
+
+    @pytest.fixture
+    def token_prod(self):
+        with open(TEST_PATH / "testdata" / "response_cases" / "group5" / "token.PROD.json", mode="r") as f:
+            token = json.load(f)
+        return token
+
     @pytest.fixture
     def endpoint_code(self):
         package = {
@@ -191,22 +202,22 @@ class Test_UserAuthenticator:
         auth = UserAuthenticator(auth_force=False, session_key=None)
         return auth
 
-    def test__init__(self, mock_fetch_token, mock_input, endpoint_code, token):
+    def test__init__(self, mock_input, token_prod):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
         assert isinstance(auth, OAuth2Session)
         assert isinstance(auth, BaseAuthSession)
         assert auth.client_id == drio._constants.CLIENT_ID_PROD_USER
-        # assert auth.access_token == token["access_token"]
+        assert auth.access_token == token_prod["access_token"]
         assert (
             auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
         )
 
-        endpoint = endpoint_code["endpoint"]
-        code = endpoint_code["code"]
-        mock_fetch_token.assert_called_once_with(
-            endpoint, code=code, client_secret=drio._constants.CLIENT_SECRET_PROD_USER
-        )
+        # endpoint = endpoint_code["endpoint"]
+        # code = endpoint_code["code"]
+        # mock_fetch_token.assert_called_once_with(
+        #     endpoint, code=code, client_secret=drio._constants.CLIENT_SECRET_PROD_USER
+        # )
 
         mock_input.assert_called_once()
 
