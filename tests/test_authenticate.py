@@ -14,7 +14,6 @@ TEST_PATH = Path(__file__).parent
 
 
 class Test_TokenCache:
-
     @pytest.fixture
     def token(self):
         token = {
@@ -145,14 +144,16 @@ class Test_TokenCache:
 
 
 class Test_UserAuthenticator:
-
     @pytest.fixture(autouse=True)
     def set_response_cases(self, response_cases):
         response_cases.set("group5")
 
     @pytest.fixture
     def token_prod(self):
-        with open(TEST_PATH / "testdata" / "response_cases" / "group5" / "token.PROD.json", mode="r") as f:
+        with open(
+            TEST_PATH / "testdata" / "response_cases" / "group5" / "token.PROD.json",
+            mode="r",
+        ) as f:
             token = json.load(f)
         return token
 
@@ -203,7 +204,9 @@ class Test_UserAuthenticator:
     def test__init__auth_force(self):
         UserAuthenticator(auth_force=True)
 
-    def test__prepare_fetch_token_args(self, user_authenticator, endpoint_code, mock_input):
+    def test__prepare_fetch_token_args(
+        self, user_authenticator, endpoint_code, mock_input
+    ):
         args_out, kwargs_out = user_authenticator._prepare_fetch_token_args()
 
         args_expect = (endpoint_code["endpoint"],)
@@ -231,7 +234,6 @@ class Test_UserAuthenticator:
         }
         assert args_out == args_expect
         assert kwargs_out == kwargs_expect
-
 
     # def test__init__session_key(self, monkeypatch, tmp_path):
     #     UserAuthenticator(auth_force=False, session_key="foobar")

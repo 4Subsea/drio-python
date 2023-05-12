@@ -577,7 +577,10 @@ GROUP4 = {**GENERAL, **DATARESERVOIRIO_API, **AZURE_BLOB_STORAGE}
 
 GROUP5 = {
     # description: get token
-    ("POST", "https://4subseaid.b2clogin.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_prod"): {
+    (
+        "POST",
+        "https://4subseaid.b2clogin.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_prod",
+    ): {
         "status_code": 200,
         "reason": "OK",
         "_content": (
