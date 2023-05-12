@@ -171,25 +171,6 @@ class Test_UserAuthenticator:
         monkeypatch.setattr("builtins.input", mock_input)
         return mock_input
 
-    # @pytest.fixture(autouse=True)
-    # def mock_fetch_token(self, monkeypatch, token):
-    #     mock_fetch_token = Mock(wraps=lambda *args, **kwargs: token)
-    #     monkeypatch.setattr(
-    #         "datareservoirio.authenticate.OAuth2Session.fetch_token",
-    #         mock_fetch_token,
-    #     )
-    #     return mock_fetch_token
-
-    # @pytest.fixture(autouse=True)
-    # def mock_refresh_token(self, monkeypatch, token):
-
-    #     mock_refresh_token = Mock(wraps=lambda *args, **kwargs: token)
-    #     monkeypatch.setattr(
-    #         "datareservoirio.authenticate.OAuth2Session.refresh_token",
-    #         mock_refresh_token,
-    #     )
-    #     return mock_refresh_token
-
     @pytest.fixture(autouse=True)
     def mock_user_data_dir(self, monkeypatch, tmp_path):
         monkeypatch.setattr(
@@ -212,13 +193,6 @@ class Test_UserAuthenticator:
         assert (
             auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
         )
-
-        # endpoint = endpoint_code["endpoint"]
-        # code = endpoint_code["code"]
-        # mock_fetch_token.assert_called_once_with(
-        #     endpoint, code=code, client_secret=drio._constants.CLIENT_SECRET_PROD_USER
-        # )
-
         mock_input.assert_called_once()
 
     # def test__init__session_key(self, monkeypatch, tmp_path):
