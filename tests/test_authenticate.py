@@ -261,16 +261,18 @@ class Test_UserAuthenticator:
         assert args_out == args_expect
         assert kwargs_out == kwargs_expect
 
-    def test_fetch_token(self, user_authenticator, token_prod, mock_requests):
+    def test_fetch_token(
+        self, user_authenticator, token_prod, mock_requests, endpoint_code
+    ):
         token_out = user_authenticator.fetch_token()
         token_expect = token_prod
         token_out.pop("expires_at")
         token_expect.pop("expires_at")
         assert token_out == token_prod
-
         assert (
             mock_requests.call_args.kwargs["data"]["grant_type"] == "authorization_code"
         )
+        assert mock_requests.call_args.kwargs["data"]["code"] == endpoint_code["code"]
 
     def test_refresh_token(self, user_authenticator, token_prod, mock_requests):
         token_out = user_authenticator.refresh_token()
