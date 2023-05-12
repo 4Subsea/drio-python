@@ -218,16 +218,16 @@ class Test_UserAuthenticator:
         assert (
             auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
         )
-        mock_input.assert_not_called()
+        mock_input.assert_not_called()  # check that ``fetch_token()`` is not called
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
 
     def test__init__session_key(self, tmp_path):
+        assert not os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
         UserAuthenticator(auth_force=False, session_key="foobar")
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
 
     def test__init__auth_force(self, mock_input, add_tokens_to_token_root):
         UserAuthenticator(auth_force=True)
-
         mock_input.assert_called()  # check that ``fetch_token()`` is called
 
     def test__prepare_fetch_token_args(
