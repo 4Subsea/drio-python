@@ -170,6 +170,15 @@ class Test_UserAuthenticator:
         return mock_fetch_token
 
     @pytest.fixture
+    def mock_refresh_token(self, monkeypatch, token):
+        mock_fetch_token = Mock(wraps=lambda *args, **kwargs: token)
+        monkeypatch.setattr(
+            "datareservoirio.authenticate.OAuth2Session.refresh_token",
+            mock_fetch_token,
+        )
+        return mock_fetch_token
+
+    @pytest.fixture
     def user_authenticator(
         self,
     ):
@@ -204,6 +213,34 @@ class Test_UserAuthenticator:
 
         UserAuthenticator(auth_force=False, session_key="foobar")
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
+
+    def test__init__auth_force(self, monkeypatch, tmp_path, mock_refresh_token):
+        token_root = tmp_path / "datareservoirio"
+        monkeypatch.setattr(
+            "datareservoirio.authenticate.user_data_dir",
+            lambda *args, **kwargs: token_root,
+        )
+
+        token_root.mkdir(exist_ok=True)
+        src = TEST_PATH / "testdata" / "tokens"
+        for file_i in src.iterdir():
+            shutil.copyfile(file_i, token_root / file_i.name)
+        assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
+
+        UserAuthenticator(auth_force=False, session_key="foobar")
+        assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
+
+        # with open(TEST_PATH / "testdata" / "tokens" / "token.PROD", mode="r") as f:
+        #     token_expect = json.load(f)
+
+        # token_url = token_expect["token_url"]
+        # refresh_token = token_expect["refresh_token"]
+
+        token_url = "https://4subseaid.b2clogin.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_prod"
+        refresh_token = "eyJraWQiOiIzdkl5Mm5YNndKUjR0UUEyX05xZi1xb2dWbXB0dkhJR016VU56M0J0SHRvIiwidmVyIjoiMS4wIiwiemlwIjoiRGVmbGF0ZSIsInNlciI6IjEuMCJ9.QJhsCQLr66tuO7jXgFd_oHWFyGQqSp81EDkOxkghdcfb1VI8H8jmY6j8vkjSGHIx4pbJ3mxQgpDgI9Jy7LuXsqgmphdFUuUf6S1SyLovxvcTc47KADftkKGYTjKIs-O3g31zEvDn3MluIJENqGXyTyawteb_Lt8YQv3LE8kwHE9H4VszarcMNCbIW6QLtANraZyl2cRmdxOg2qawX97dsuBG3vVUgEXmh1hMQmVBJjH-Wx_0E8ueolxIOG4Is9ZqdAq57-ipXitbuRWYhBVxCGrlmjxLYAxAWvlA7DGTCyY_mmJOvQuRhSrAybny-lexVO6grEIce5-iuBQJ9im5fw.AsesX6FMO7ZAKY3o.9EnEMlBPxv96iz6-TICoJir1HbBY4nYHyp0nfzfsuuZCJpgA2khHPD5pNjitZ4p1BVvRKS8J8jVteXWJc5yhmDgnWjD4iQasLvpU6SIEb2a9jukYp2teh-maMwpG4d4gNwp0rZbcrzLDTH82yENIQZRYTJZYd3kDgcyMyXhH4L22keHasq796EHs6dAD8XVZtULfy47UwDdJ4L5kcK1uuKjAkUpDh1gkXwIggeo9GAVI3dYit_O5d4jovhWpp7rbu6V2iqw0A50OyEiU1o7uZPNl6V0P3Zir3yEBe9v_lEeYFQvyrEGp5x0OFhk_ifkiO7DyM0QiWCx2x_aK9yoUpN-8kyGTJ_7ZNKxqMJcV1s3S0BoBc1dSgWj15fB7cKSmB3wik38UJsmwrz8A-MAx0EIZleME3x7zne81Jk-ckO8BZnQ0sFszT9xN7iq3awWJVtMRoMC2JTYxaaRLt7Y8ZpVN4nfGUlIrzY8uihDpIIm1av33jvCvabWNYAZ6ojaaNp2V5VCPFDvJvWjB-XuNwTZXRaGqPA8-46xVnM0uYLLLM083-AWt3zDMZvUdXD1qle3E_o2FhrWX0QIqX7V02lrMUHvyRIPkMSkb1APZRjhQ2WQY514K6qKjnpoGVW1DhhR6ij99foUqbq8d1kFto9jm8-KZUklwj96sm4g9pw11MlVGXiNtpeOy-Y8jpCjc5f9sl7K0fmOFRMvztymkw_lmVd5MJ8t28sCHGKhBh2CwucJx7NY9qsP2Fatv3imPmcquW-H2Jv7GJfOcYGJjEKFrxII86LF93xXecBMSYtHx0CYrO2vtEckocd_GTxbDkOtZxTCimXprnKuMiQADCOjI6V-KfZCwTWVSMKvkTfScO_NZi1jgrqf9hutnd5Cxl1bD2Eg3jXApZa9YS3eLxMAavnPlVCCYnJAfTKTnx4omaTllMxDDgClxSaMBKjLZDzbj8xUftb9yXXfn0O5cEkE3BHC70U7eDkPhalAkLpcF0LMpCElGjq6paPeHTXXkH2jpNTzgiFu8UtwIiVJb6P0KUwn6leu7qARvOjDyRbvoRcdFHUdq-0a58_SpCuPAw8U.qUgvoULPonbSwzANOflqmg"
+        mock_refresh_token.assert_called_once_with(
+            token_url, refresh_token=refresh_token, client_secret=drio._constants.CLIENT_SECRET_PROD_USER
+        )
 
     def test__prepare_fetch_token_args(self, user_authenticator, endpoint_code):
         args_out, kwargs_out = user_authenticator._prepare_fetch_token_args()
