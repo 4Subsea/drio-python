@@ -180,6 +180,15 @@ class Test_UserAuthenticator:
         )
 
     @pytest.fixture
+    def add_tokens_to_token_root(self, tmp_path):
+        # copy tokens to the token root
+        token_root = tmp_path / "datareservoirio"
+        token_root.mkdir(exist_ok=True)
+        src = TEST_PATH / "testdata" / "tokens"
+        for file_i in src.iterdir():
+            shutil.copyfile(file_i, token_root / file_i.name)
+
+    @pytest.fixture
     def user_authenticator(self):
         auth = UserAuthenticator(auth_force=False, session_key=None)
         return auth
@@ -197,15 +206,9 @@ class Test_UserAuthenticator:
         mock_input.assert_called_once()
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
 
-    def test__init__token_available(self, mock_input, token_prod, tmp_path):
-
-        # copy tokens to the token root
-        token_root = tmp_path / "datareservoirio"
-        token_root.mkdir(exist_ok=True)
-        src = TEST_PATH / "testdata" / "tokens"
-        for file_i in src.iterdir():
-            shutil.copyfile(file_i, token_root / file_i.name)
-
+    def test__init__token_available(
+        self, mock_input, token_prod, tmp_path, add_tokens_to_token_root
+    ):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
         assert isinstance(auth, OAuth2Session)
@@ -222,17 +225,10 @@ class Test_UserAuthenticator:
         UserAuthenticator(auth_force=False, session_key="foobar")
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
 
-    def test__init__auth_force(self, tmp_path, mock_input):
-        # copy tokens to the token root
-        token_root = tmp_path / "datareservoirio"
-        token_root.mkdir(exist_ok=True)
-        src = TEST_PATH / "testdata" / "tokens"
-        for file_i in src.iterdir():
-            shutil.copyfile(file_i, token_root / file_i.name)
-
+    def test__init__auth_force(self, mock_input, add_tokens_to_token_root):
         UserAuthenticator(auth_force=True)
 
-        mock_input.assert_called()   # check that ``fetch_token()`` is called
+        mock_input.assert_called()  # check that ``fetch_token()`` is called
 
     def test__prepare_fetch_token_args(
         self, user_authenticator, endpoint_code, mock_input
