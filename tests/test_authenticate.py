@@ -267,3 +267,10 @@ class Test_UserAuthenticator:
         token_out.pop("expires_at")
         token_expect.pop("expires_at")
         assert token_out == token_prod
+
+    def test_refresh_token(self, user_authenticator, token_prod):
+        token_out = user_authenticator.refresh_token()
+        token_expect = token_prod
+        token_out.pop("expires_at")
+        token_expect.pop("expires_at")
+        assert token_out == token_prod
