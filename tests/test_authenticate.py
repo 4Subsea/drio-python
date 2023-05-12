@@ -222,8 +222,17 @@ class Test_UserAuthenticator:
         UserAuthenticator(auth_force=False, session_key="foobar")
         assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD.foobar")
 
-    def test__init__auth_force(self):
+    def test__init__auth_force(self, tmp_path, mock_input):
+        # copy tokens to the token root
+        token_root = tmp_path / "datareservoirio"
+        token_root.mkdir(exist_ok=True)
+        src = TEST_PATH / "testdata" / "tokens"
+        for file_i in src.iterdir():
+            shutil.copyfile(file_i, token_root / file_i.name)
+
         UserAuthenticator(auth_force=True)
+
+        mock_input.assert_called()   # check that ``fetch_token()`` is called
 
     def test__prepare_fetch_token_args(
         self, user_authenticator, endpoint_code, mock_input
