@@ -261,16 +261,29 @@ class Test_UserAuthenticator:
         assert args_out == args_expect
         assert kwargs_out == kwargs_expect
 
-    def test_fetch_token(self, user_authenticator, token_prod):
+    def test_fetch_token(self, user_authenticator, token_prod, mock_requests):
         token_out = user_authenticator.fetch_token()
         token_expect = token_prod
         token_out.pop("expires_at")
         token_expect.pop("expires_at")
         assert token_out == token_prod
 
-    def test_refresh_token(self, user_authenticator, token_prod):
+        assert (
+            mock_requests.call_args.kwargs["data"]["grant_type"] == "authorization_code"
+        )
+
+    def test_refresh_token(self, user_authenticator, token_prod, mock_requests):
         token_out = user_authenticator.refresh_token()
         token_expect = token_prod
         token_out.pop("expires_at")
         token_expect.pop("expires_at")
         assert token_out == token_prod
+        assert mock_requests.call_args.kwargs["data"]["grant_type"] == "refresh_token"
+        assert (
+            mock_requests.call_args.kwargs["data"]["client_secret"]
+            == drio._constants.CLIENT_SECRET_PROD_USER
+        )
+        assert (
+            mock_requests.call_args.kwargs["data"]["refresh_token"]
+            == token_prod["refresh_token"]
+        )
