@@ -183,7 +183,7 @@ class Test_UserAuthenticator:
         auth = UserAuthenticator(auth_force=False, session_key=None)
         return auth
 
-    def test__init__(self, mock_input, token_prod):
+    def test__init__(self, mock_input, token_prod, tmp_path):
         auth = UserAuthenticator(auth_force=False, session_key=None)
 
         assert isinstance(auth, OAuth2Session)
@@ -194,6 +194,7 @@ class Test_UserAuthenticator:
             auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
         )
         mock_input.assert_called_once()
+        assert os.path.exists(tmp_path / "datareservoirio" / "token.PROD")
 
     # def test__init__session_key(self, monkeypatch, tmp_path):
     #     UserAuthenticator(auth_force=False, session_key="foobar")
