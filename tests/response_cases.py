@@ -22,6 +22,11 @@ TEST_PATH = Path(__file__).parent
 
 # General HTTP responses
 GENERAL = {
+    # description: GET OK
+    ("GET", "https://foo/bar/baz"): {
+        "status_code": 200,
+        "reason": "OK",
+    },
     # description: PUT raises status
     ("PUT", "http://example/put/raises"): {
         "status_code": 501,
@@ -355,6 +360,40 @@ DATARESERVOIRIO_API = {
     **DATARESERVOIRIO_TIMESERIES_API,
     **DATARESERVOIRIO_FILES_API,
     **DATARESERVOIRIO_METADATA_API,
+}
+
+
+DATARESERVOIRIO_OAUTH2 = {
+    # description: get token
+    (
+        "POST",
+        "https://4subseaid.b2clogin.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_prod",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_oauth2"
+            / "token.PROD.json"
+        ).read_bytes(),
+    },
+    # description: get token (using client credentials)
+    (
+        "POST",
+        "https://login.microsoftonline.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_oauth2"
+            / "client_credentials_token.json"
+        ).read_bytes(),
+    },
 }
 
 
