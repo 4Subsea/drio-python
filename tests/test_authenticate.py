@@ -8,7 +8,7 @@ import pytest
 from requests_oauthlib import OAuth2Session
 
 import datareservoirio as drio
-from datareservoirio.authenticate import BaseAuthSession, TokenCache, UserAuthenticator
+from datareservoirio.authenticate import BaseAuthSession, TokenCache, UserAuthenticator, ClientAuthenticator
 
 TEST_PATH = Path(__file__).parent
 
@@ -290,3 +290,12 @@ class Test_UserAuthenticator:
             mock_requests.call_args.kwargs["data"]["refresh_token"]
             == token_prod["refresh_token"]
         )
+
+
+class Test_ClientAuthenticator:
+    @pytest.fixture(autouse=True)
+    def set_response_cases(self, response_cases):
+        response_cases.set("datareservoirio-oauth2")
+
+    def test__init__(self, mock_requests):
+        auth = ClientAuthenticator("foo", "bar")

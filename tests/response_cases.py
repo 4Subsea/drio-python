@@ -314,6 +314,21 @@ DATARESERVOIRIO_OAUTH2 = {
             / "token.PROD.json"
         ).read_bytes(),
     },
+    # description: get token (using client credentials)
+    (
+        "POST",
+        "https://login.microsoftonline.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_oauth2"
+            / "client_credentials_token.json"
+        ).read_bytes(),
+    },
 }
 
 
