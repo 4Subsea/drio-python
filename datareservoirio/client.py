@@ -534,9 +534,13 @@ class Client:
         """
 
         if not namespace:
-            return self._metadata_api.namespaces()
+            uri_postfix = "metadata/"
         else:
-            return self._metadata_api.keys(namespace)
+            uri_postfix = f"metadata/{namespace}"
+
+        response = self._auth_session.get(environment.api_base_url + uri_postfix)
+        response.raise_for_status()
+        return sorted(response.json())
 
     def metadata_search(self, namespace, key):
         """
@@ -554,8 +558,12 @@ class Client:
             Metadata entries that matches the search.
 
         """
-        response = self._metadata_api.search(namespace, key)
-        return response
+        response = self._auth_session.post(
+            environment.api_base_url + "metadata/search",
+            json={"Namespace": namespace, "Key": key, "Value": {}}
+            )
+        response.raise_for_status()
+        return response.json()
 
     def metadata_delete(self, metadata_id):
         """
