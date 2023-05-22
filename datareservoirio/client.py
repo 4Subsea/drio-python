@@ -5,6 +5,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from operator import itemgetter
+from uuid import uuid4
 
 import pandas as pd
 import requests
@@ -101,8 +102,11 @@ class Client:
             newly created series.
         """
         if series is None:
-            response = self._timeseries_api.create()
-            return response
+            response = self._auth_session.put(
+                environment.api_base_url + f"timeseries/{str(uuid4())}"
+                )
+            response.raise_for_status()
+            return response.json()
 
         df = self._verify_and_prepare_series(series)
 
@@ -124,8 +128,12 @@ class Client:
             if status == "Failed":
                 return status
 
-        response = self._timeseries_api.create_with_data(file_id)
-        return response
+        response = self._auth_session.post(
+                environment.api_base_url + "timeseries/create",
+                data={"FileId": file_id}
+                )
+        response.raise_for_status()
+        return response.json()
 
     def append(self, series, series_id, wait_on_verification=True):
         """
