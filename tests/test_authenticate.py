@@ -146,12 +146,12 @@ class Test_TokenCache:
 class Test_UserAuthenticator:
     @pytest.fixture(autouse=True)
     def set_response_cases(self, response_cases):
-        response_cases.set("group5")
+        response_cases.set("datareservoirio-oauth2")
 
     @pytest.fixture
     def token_prod(self):
         with open(
-            TEST_PATH / "testdata" / "response_cases" / "group5" / "token.PROD.json",
+            TEST_PATH / "testdata" / "response_cases" / "datareservoirio_oauth2" / "token.PROD.json",
             mode="r",
         ) as f:
             token = json.load(f)

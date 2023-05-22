@@ -298,6 +298,21 @@ DATARESERVOIRIO_API = {
 }
 
 
+DATARESERVOIRIO_OAUTH2 = {
+    # description: get token
+    (
+        "POST",
+        "https://4subseaid.b2clogin.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_prod",
+    ): {
+        "status_code": 200,
+        "reason": "OK",
+        "_content": (
+            TEST_PATH / "testdata" / "response_cases" / "datareservoirio_oauth2" / "token.PROD.json"
+        ).read_bytes(),
+    },
+}
+
+
 # =========================================================================
 # This 'group' of response cases represents the DataReservoir.io backend response
 # and Azure Blob Storage responses when requesting data for a timeries with:
@@ -573,18 +588,3 @@ GROUP3_UPLOAD_RAISES.update(
 
 # General, DataReservoir.io and Azure Storage Blob HTTP responses
 GROUP4 = {**GENERAL, **DATARESERVOIRIO_API, **AZURE_BLOB_STORAGE}
-
-
-GROUP5 = {
-    # description: get token
-    (
-        "POST",
-        "https://4subseaid.b2clogin.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token?p=B2C_1A_SignUpOrSignInWith4ss_prod",
-    ): {
-        "status_code": 200,
-        "reason": "OK",
-        "_content": (
-            TEST_PATH / "testdata" / "response_cases" / "group5" / "token.PROD.json"
-        ).read_bytes(),
-    },
-}
