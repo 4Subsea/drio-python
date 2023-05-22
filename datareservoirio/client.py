@@ -68,9 +68,7 @@ class Client:
         Test that you have a working connection to DataReservoir.io.
 
         """
-        response = self._auth_session.get(
-            environment.api_base_url + "ping"
-        )
+        response = self._auth_session.get(environment.api_base_url + "ping")
         response.raise_for_status()
         return response.json()
 
@@ -104,7 +102,7 @@ class Client:
         if series is None:
             response = self._auth_session.put(
                 environment.api_base_url + f"timeseries/{str(uuid4())}"
-                )
+            )
             response.raise_for_status()
             return response.json()
 
@@ -129,9 +127,8 @@ class Client:
                 return status
 
         response = self._auth_session.post(
-                environment.api_base_url + "timeseries/create",
-                data={"FileId": file_id}
-                )
+            environment.api_base_url + "timeseries/create", data={"FileId": file_id}
+        )
         response.raise_for_status()
         return response.json()
 
@@ -185,7 +182,7 @@ class Client:
         response = self._auth_session.post(
             environment.api_base_url + "timeseries/add",
             data={"TimeSeriesId": series_id, "FileId": file_id},
-            )
+        )
         response.raise_for_status()
         return response.json()
 
@@ -199,8 +196,7 @@ class Client:
             Available information about the series. None if series not found.
         """
         response = self._auth_session.get(
-            environment.api_base_url
-            + f"timeseries/{series_id}"
+            environment.api_base_url + f"timeseries/{series_id}"
         )
         response.raise_for_status()
         return response.json()
@@ -244,11 +240,11 @@ class Client:
                 warnings.warn(
                     "Warning: You have provided argument(s) following a None argument, they are ignored by the search!"
                 )
-            args = args[:args.index(None)]
+            args = args[: args.index(None)]
 
         response = self._auth_session.get(
             environment.api_base_url + f"timeseries/search/{'/'.join(args)}"
-            )
+        )
         response.raise_for_status()
         return response.json()
 
@@ -262,7 +258,9 @@ class Client:
             The id of the series to delete.
 
         """
-        return self._auth_session.delete(environment.api_base_url + f"timeseries/{series_id}")
+        return self._auth_session.delete(
+            environment.api_base_url + f"timeseries/{series_id}"
+        )
 
     def _timer(func):
         """Decorator used to log latency of the ``get`` method"""
@@ -416,10 +414,10 @@ class Client:
                 raise ValueError("key is mandatory when namespace is passed")
             try:
                 response_create = self._auth_session.put(
-                    environment.api_base_url +
-                    f"metadata/{namespace}/{key}?overwrite={'true' if overwrite else 'false'}",
-                    json={"Value": namevalues}
-                    )
+                    environment.api_base_url
+                    + f"metadata/{namespace}/{key}?overwrite={'true' if overwrite else 'false'}",
+                    json={"Value": namevalues},
+                )
                 response_create.raise_for_status()
                 metadata_id = response_create.json()["Id"]
             except requests.exceptions.HTTPError as err:
@@ -433,7 +431,7 @@ class Client:
 
         response = self._auth_session.put(
             environment.api_base_url + f"timeseries/{series_id}/metadata",
-            json=[metadata_id]
+            json=[metadata_id],
         )
         response.raise_for_status()
         return response.json()
@@ -457,8 +455,9 @@ class Client:
 
         """
         response = self._auth_session.delete(
-            environment.api_base_url + f"timeseries/{series_id}/metadata", json=[metadata_id]
-            )
+            environment.api_base_url + f"timeseries/{series_id}/metadata",
+            json=[metadata_id],
+        )
         response.raise_for_status()
         return response.json()
 
@@ -485,7 +484,7 @@ class Client:
         """
         response = self._auth_session.put(
             environment.api_base_url + f"metadata/{namespace}/{key}?overwrite=true",
-            json={"Value": namevalues}
+            json={"Value": namevalues},
         )
         response.raise_for_status()
         return response.json()
@@ -566,8 +565,8 @@ class Client:
         """
         response = self._auth_session.post(
             environment.api_base_url + "metadata/search",
-            json={"Namespace": namespace, "Key": key, "Value": {}}
-            )
+            json={"Namespace": namespace, "Key": key, "Value": {}},
+        )
         response.raise_for_status()
         return response.json()
 
@@ -582,7 +581,7 @@ class Client:
         """
         response = self._auth_session.delete(
             environment.api_base_url + f"metadata/{metadata_id}"
-            )
+        )
         response.raise_for_status()
         return
 
@@ -618,7 +617,9 @@ class Client:
             time.sleep(5)
 
     def _get_file_status(self, file_id):
-        response = self._auth_session.get(environment.api_base_url + f"files/{file_id}/status")
+        response = self._auth_session.get(
+            environment.api_base_url + f"files/{file_id}/status"
+        )
         response.raise_for_status()
         return response.json()["State"]
 
