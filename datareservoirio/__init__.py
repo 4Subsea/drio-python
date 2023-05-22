@@ -1,7 +1,5 @@
 import logging
 
-import pkg_resources
-
 from . import globalsettings  # wierd bug. must be called last?
 from .authenticate import UserAuthenticator as Authenticator
 from .client import Client
