@@ -459,8 +459,12 @@ class Client:
             The response from DataReservoir.io containing the unique id of the
             new or updated metadata.
         """
-        response = self._metadata_api.put(namespace, key, True, **namevalues)
-        return response
+        response = self._auth_session.put(
+            environment.api_base_url + f"metadata/{namespace}/{key}?overwrite=true",
+            json={"Value": namevalues}
+        )
+        response.raise_for_status()
+        return response.json()
 
     def metadata_get(self, metadata_id=None, namespace=None, key=None):
         """
