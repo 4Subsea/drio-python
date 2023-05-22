@@ -10,9 +10,9 @@ from requests_oauthlib import OAuth2Session
 import datareservoirio as drio
 from datareservoirio.authenticate import (
     BaseAuthSession,
+    ClientAuthenticator,
     TokenCache,
     UserAuthenticator,
-    ClientAuthenticator,
 )
 
 TEST_PATH = Path(__file__).parent
@@ -357,9 +357,7 @@ class Test_ClientAuthenticator:
         args_out = client_authenticator._prepare_refresh_token_args()
         assert args_out is None
 
-    def test_fetch_token(
-        self, client_authenticator, token, mock_requests
-    ):
+    def test_fetch_token(self, client_authenticator, token, mock_requests):
         token_out = client_authenticator.fetch_token()
         token_expect = token
         token_out.pop("expires_at")
@@ -369,9 +367,7 @@ class Test_ClientAuthenticator:
             mock_requests.call_args.kwargs["data"]["grant_type"] == "client_credentials"
         )
 
-    def test_refresh_token(
-        self, client_authenticator, token, mock_requests
-    ):
+    def test_refresh_token(self, client_authenticator, token, mock_requests):
         token_out = client_authenticator.refresh_token()
         token_expect = token
         token_out.pop("expires_at")
