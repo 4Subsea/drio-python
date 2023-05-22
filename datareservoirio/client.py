@@ -414,10 +414,13 @@ class Client:
             if not key:
                 raise ValueError("key is mandatory when namespace is passed")
             try:
-                response_create = self._metadata_api.put(
-                    namespace, key, overwrite, **namevalues
-                )
-                metadata_id = response_create["Id"]
+                response_create = self._auth_session.put(
+                    environment.api_base_url +
+                    f"metadata/{namespace}/{key}?overwrite={'true' if overwrite else 'false'}",
+                    json={"Value": namevalues}
+                    )
+                response_create.raise_for_status()
+                metadata_id = response_create.json()["Id"]
             except requests.exceptions.HTTPError as err:
                 if err.response.status_code == 409:
                     raise ValueError(
