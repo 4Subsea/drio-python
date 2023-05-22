@@ -12,7 +12,7 @@ import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 from .globalsettings import environment
-from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
+from .rest_api import TimeSeriesAPI
 from .storage import Storage
 
 log = logging.getLogger(__name__)
@@ -50,8 +50,6 @@ class Client:
     def __init__(self, auth, cache=True, cache_opt=None):
         self._auth_session = auth
         self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
-        self._files_api = FilesAPI(self._auth_session)
-        self._metadata_api = MetadataAPI(self._auth_session)
 
         # TODO: Remove after 2023-08-15
         if cache:
