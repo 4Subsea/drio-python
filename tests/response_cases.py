@@ -171,6 +171,66 @@ DATARESERVOIRIO_TIMESERIES_API = {
             / "timeseries_metadata_delete.json"
         ).read_bytes(),
     },
+    # description: search for timeseries with given namespace
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/search/foo.bar",
+    ): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "search_foo.bar.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
+    # description: search for timeseries with given namespace
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/search/foo.bar/baz",
+    ): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "search_foo.bar_baz.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
+    # description: search for timeseries with given namespace
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/search/foo.bar/baz/a",
+    ): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "search_foo.bar_baz_a.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
+    # description: search for timeseries with given namespace
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/timeseries/search/foo.bar/baz/a/1",
+    ): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "search_foo.bar_baz_a_1.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
 }
 
 
