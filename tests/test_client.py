@@ -223,11 +223,11 @@ class Test_Client:
         search_expect = {
             "ae3fe5c0-5521-4738-9664-87ef6c112cd8": [
                 "{'Namespace':'foo.bar','Key':'baz','Value':{'a':1,'b':'something','d':1234}}",
-                "{'Namespace':'foo.bar','Key':'other','Value':{'a':1,'b':'something','d':1234}}"
+                "{'Namespace':'foo.bar','Key':'other','Value':{'a':1,'b':'something','d':1234}}",
             ],
             "34a89adf-90af-40bb-8a99-b9ea710f01fd": [
                 "{'Namespace':'foo.bar','Key':'baz','Value':{'a':1,'b':'something','d':1234}}"
-            ]
+            ],
         }
 
         assert search_out == search_expect
@@ -243,7 +243,7 @@ class Test_Client:
             ],
             "34a89adf-90af-40bb-8a99-b9ea710f01fd": [
                 "{'Namespace':'foo.bar','Key':'baz','Value':{'a':1,'b':'something','d':1234}}"
-            ]
+            ],
         }
 
         assert search_out == search_expect
@@ -259,7 +259,7 @@ class Test_Client:
             ],
             "34a89adf-90af-40bb-8a99-b9ea710f01fd": [
                 "{'Namespace':'foo.bar','Key':'baz','Value':{'a':1,'b':'something','d':1234}}"
-            ]
+            ],
         }
 
         assert search_out == search_expect
@@ -271,7 +271,7 @@ class Test_Client:
 
         search_expect = [
             "ae3fe5c0-5521-4738-9664-87ef6c112cd8",
-            "34a89adf-90af-40bb-8a99-b9ea710f01fd"
+            "34a89adf-90af-40bb-8a99-b9ea710f01fd",
         ]
 
         assert search_out == search_expect
