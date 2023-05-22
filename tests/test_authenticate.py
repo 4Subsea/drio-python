@@ -339,3 +339,7 @@ class Test_ClientAuthenticator:
 
         assert args_out == args_expect
         assert kwargs_out == kwargs_expect
+
+    def test__prepare_refresh_token_args(self, client_authenticator):
+        args_out = client_authenticator._prepare_refresh_token_args()
+        assert args_out is None
