@@ -601,8 +601,9 @@ class Client:
             time.sleep(5)
 
     def _get_file_status(self, file_id):
-        response = self._files_api.status(file_id)
-        return response["State"]
+        response = self._auth_session.get(environment.api_base_url + f"files/{file_id}/status")
+        response.raise_for_status()
+        return response.json()["State"]
 
 
 def _blob_sequence_days(response_json):
