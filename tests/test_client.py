@@ -264,6 +264,18 @@ class Test_Client:
 
         assert search_out == search_expect
 
+    def test_search_key_name_value(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        search_out = client.search("foo.bar", key="baz", name="a", value="1")
+
+        search_expect = [
+            "ae3fe5c0-5521-4738-9664-87ef6c112cd8",
+            "34a89adf-90af-40bb-8a99-b9ea710f01fd"
+        ]
+
+        assert search_out == search_expect
+
     def test_delete(self, client, mock_requests, response_cases):
         response_cases.set("datareservoirio-api")
 
