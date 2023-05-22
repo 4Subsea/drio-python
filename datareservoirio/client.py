@@ -245,7 +245,7 @@ class Client:
             The id of the series to delete.
 
         """
-        return self._timeseries_api.delete(series_id)
+        return self._auth_session.delete(environment.api_base_url + f"timeseries/{series_id}")
 
     def _timer(func):
         """Decorator used to log latency of the ``get`` method"""
