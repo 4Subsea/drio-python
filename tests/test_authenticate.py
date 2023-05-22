@@ -368,3 +368,15 @@ class Test_ClientAuthenticator:
         assert (
             mock_requests.call_args.kwargs["data"]["grant_type"] == "client_credentials"
         )
+
+    def test_refresh_token(
+        self, client_authenticator, token, mock_requests
+    ):
+        token_out = client_authenticator.refresh_token()
+        token_expect = token
+        token_out.pop("expires_at")
+        token_expect.pop("expires_at")
+        assert token_out == token_expect
+        assert (
+            mock_requests.call_args.kwargs["data"]["grant_type"] == "client_credentials"
+        )
