@@ -566,7 +566,10 @@ class Client:
         metadata_id : str
             id of metadata
         """
-        self._metadata_api.delete(metadata_id)
+        response = self._auth_session.delete(
+            environment.api_base_url + f"metadata/{metadata_id}"
+            )
+        response.raise_for_status()
         return
 
     def _verify_and_prepare_series(self, series):
