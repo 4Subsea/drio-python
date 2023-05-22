@@ -307,6 +307,19 @@ class Test_ClientAuthenticator:
         auth = ClientAuthenticator("foo", "bar")
         return auth
 
+    @pytest.fixture
+    def token(self):
+        with open(
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_oauth2"
+            / "client_credentials_token.json",
+            mode="r",
+        ) as f:
+            token = json.load(f)
+        return token
+
     def test__init__(self, mock_requests):
         auth = ClientAuthenticator("foo", "bar")
 
@@ -343,3 +356,15 @@ class Test_ClientAuthenticator:
     def test__prepare_refresh_token_args(self, client_authenticator):
         args_out = client_authenticator._prepare_refresh_token_args()
         assert args_out is None
+
+    def test_fetch_token(
+        self, client_authenticator, token, mock_requests
+    ):
+        token_out = client_authenticator.fetch_token()
+        token_expect = token
+        token_out.pop("expires_at")
+        token_expect.pop("expires_at")
+        assert token_out == token_expect
+        assert (
+            mock_requests.call_args.kwargs["data"]["grant_type"] == "client_credentials"
+        )
