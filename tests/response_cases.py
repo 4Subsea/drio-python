@@ -307,7 +307,11 @@ DATARESERVOIRIO_OAUTH2 = {
         "status_code": 200,
         "reason": "OK",
         "_content": (
-            TEST_PATH / "testdata" / "response_cases" / "datareservoirio_oauth2" / "token.PROD.json"
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_oauth2"
+            / "token.PROD.json"
         ).read_bytes(),
     },
 }

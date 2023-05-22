@@ -151,7 +151,11 @@ class Test_UserAuthenticator:
     @pytest.fixture
     def token_prod(self):
         with open(
-            TEST_PATH / "testdata" / "response_cases" / "datareservoirio_oauth2" / "token.PROD.json",
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_oauth2"
+            / "token.PROD.json",
             mode="r",
         ) as f:
             token = json.load(f)
