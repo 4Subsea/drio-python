@@ -239,15 +239,20 @@ class Client:
             returned -> ``{TimeSeriesId: metadata}``.
 
         """
-        args_ = [namespace, key, name, value]
-        none_count = args_.count(None)
+        args = [namespace, key, name, value]
+        if None in args:
+            none_count = args.count(None)
+            if args[-none_count:].count(None) < none_count:
+                warnings.warn(
+                    "Warning: You have provided argument(s) following a None argument, they are ignored by the search!"
+                )
+            args = args[:args.index(None)]
 
-        if args_[-none_count:].count(None) < none_count:
-            warnings.warn(
-                "Warning: You have provided argument(s) following a None argument, they are ignored by the search!"
+        response = self._auth_session.get(
+            environment.api_base_url + f"timeseries/search/{'/'.join(args)}"
             )
-
-        return self._timeseries_api.search(namespace, key, name, value)
+        response.raise_for_status()
+        return response.json()
 
     def delete(self, series_id):
         """
