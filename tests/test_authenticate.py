@@ -326,3 +326,16 @@ class Test_ClientAuthenticator:
         assert (
             mock_requests.call_args.kwargs["data"]["grant_type"] == "client_credentials"
         )
+
+    def test__prepare_fetch_token_args(self, client_authenticator):
+        args_out, kwargs_out = client_authenticator._prepare_fetch_token_args()
+
+        args_expect = (drio._constants.TOKEN_URL_PROD_CLIENT,)
+        kwargs_expect = {
+            "client_secret": "bar",
+            "scope": drio._constants.SCOPE_PROD_CLIENT,
+            "include_client_id": True,
+        }
+
+        assert args_out == args_expect
+        assert kwargs_out == kwargs_expect
