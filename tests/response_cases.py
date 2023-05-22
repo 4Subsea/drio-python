@@ -22,6 +22,11 @@ TEST_PATH = Path(__file__).parent
 
 # General HTTP responses
 GENERAL = {
+    # description: GET OK
+    ("GET", "https://foo/bar/baz"): {
+        "status_code": 200,
+        "reason": "OK",
+    },
     # description: PUT raises status
     ("PUT", "http://example/put/raises"): {
         "status_code": 501,
