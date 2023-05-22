@@ -183,7 +183,12 @@ class Client:
                 return status
 
         response = self._timeseries_api.add(series_id, file_id)
-        return response
+        response = self._auth_session.post(
+            environment.api_base_url + "timeseries/add",
+            body={"TimeSeriesId": series_id, "FileId": file_id},
+            )
+        response.raise_for_status()
+        return response.json()
 
     def info(self, series_id):
         """
