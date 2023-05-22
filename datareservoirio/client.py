@@ -411,8 +411,12 @@ class Client:
                 else:
                     raise
 
-        response = self._timeseries_api.attach_metadata(series_id, [metadata_id])
-        return response
+        response = self._auth_session.put(
+            environment.api_base_url + f"timeseries/{series_id}/metadata",
+            json=[metadata_id]
+        )
+        response.raise_for_status()
+        return response.json()
 
     def remove_metadata(self, series_id, metadata_id):
         """
