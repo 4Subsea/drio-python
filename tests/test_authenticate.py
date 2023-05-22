@@ -296,6 +296,10 @@ class Test_UserAuthenticator:
             == token_prod["refresh_token"]
         )
 
+    def test_get(self, user_authenticator, response_cases):
+        response_cases.set("general")
+        user_authenticator.get("https://foo/bar/baz")
+
 
 class Test_ClientAuthenticator:
     @pytest.fixture(autouse=True)
@@ -376,3 +380,7 @@ class Test_ClientAuthenticator:
         assert (
             mock_requests.call_args.kwargs["data"]["grant_type"] == "client_credentials"
         )
+
+    def test_get(self, client_authenticator, response_cases):
+        response_cases.set("general")
+        client_authenticator.get("https://foo/bar/baz")
