@@ -186,7 +186,12 @@ class Client:
         dict
             Available information about the series. None if series not found.
         """
-        return self._timeseries_api.info(series_id)
+        response = self._auth_session.get(
+            environment.api_base_url
+            + f"timeseries/{series_id}"
+        )
+        response.raise_for_status()
+        return response.json()
 
     def search(self, namespace, key=None, name=None, value=None):
         """
