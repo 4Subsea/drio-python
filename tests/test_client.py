@@ -215,6 +215,11 @@ class Test_Client:
 
         assert info_out == info_expect
 
+    def test_search(self, client, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        search_out = client.search("foo.bar")
+
     def test_delete(self, client, mock_requests, response_cases):
         response_cases.set("datareservoirio-api")
 
