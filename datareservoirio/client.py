@@ -72,7 +72,11 @@ class Client:
         Test that you have a working connection to DataReservoir.io.
 
         """
-        return self._files_api.ping()
+        response = self._auth_session.get(
+            environment.api_base_url + "ping"
+        )
+        response.raise_for_status()
+        return response.json()
 
     def create(self, series=None, wait_on_verification=True):
         """
@@ -182,10 +186,9 @@ class Client:
             if status == "Failed":
                 return status
 
-        response = self._timeseries_api.add(series_id, file_id)
         response = self._auth_session.post(
             environment.api_base_url + "timeseries/add",
-            body={"TimeSeriesId": series_id, "FileId": file_id},
+            data={"TimeSeriesId": series_id, "FileId": file_id},
             )
         response.raise_for_status()
         return response.json()
