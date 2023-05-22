@@ -302,6 +302,11 @@ class Test_ClientAuthenticator:
     def set_response_cases(self, response_cases):
         response_cases.set("datareservoirio-oauth2")
 
+    @pytest.fixture
+    def client_authenticator(self):
+        auth = ClientAuthenticator("foo", "bar")
+        return auth
+
     def test__init__(self, mock_requests):
         auth = ClientAuthenticator("foo", "bar")
 
