@@ -304,3 +304,20 @@ class Test_ClientAuthenticator:
 
     def test__init__(self, mock_requests):
         auth = ClientAuthenticator("foo", "bar")
+
+        assert isinstance(auth, OAuth2Session)
+        assert isinstance(auth, BaseAuthSession)
+        assert auth.client_id == "foo"
+        assert (
+            auth.access_token
+            == "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiJmZjQ3MzdiNS0zNjAyLTQ2YTAtOTgwNS1iZDE4MzE0NzAwYzEiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vYzhlYTExOGYtYmQ1MC00MjJlLTg1MDMtMWQ4MDU1YTNkY2YwL3YyLjAiLCJpYXQiOjE2ODQ3NDY3OTUsIm5iZiI6MTY4NDc0Njc5NSwiZXhwIjoxNjg0NzUwNjk1LCJhaW8iOiJBU1FBMi84VEFBQUFSRHhMWHBZMEJFWkE3L2dhdW5xVnhQM0t3WEd5UnVqLzh2cm51bG04VUtjPSIsImF6cCI6IjBlZTVkMWI0LTIyNzEtNDU5NS04YzIzLWYyMzYxZDcxM2E0NyIsImF6cGFjciI6IjEiLCJvaWQiOiJmMzRjM2IwOC02ODMxLTQ4MzgtOTE5YS1lM2RkNmU4NGE4NTciLCJyaCI6IjAuQVNRQWp4SHF5RkM5TGtLRkF4MkFWYVBjOExVM1JfOENOcUJHbUFXOUdERkhBTUVrQUFBLiIsInJvbGVzIjpbIkFQSSJdLCJzdWIiOiJmMzRjM2IwOC02ODMxLTQ4MzgtOTE5YS1lM2RkNmU4NGE4NTciLCJ0aWQiOiJjOGVhMTE4Zi1iZDUwLTQyMmUtODUwMy0xZDgwNTVhM2RjZjAiLCJ1dGkiOiIyMURXT1p3bkZrZTRaVlJiNV9BbEFBIiwidmVyIjoiMi4wIn0.TP3SMojIrcwxfpXn2bAM9b3McdW-kJi9bhM9n46bEtiIVF4jb-EvUbJwiB80FdWCTdnr6DqY1xb1Njha8gVN5de0n_oY9AfqGRnGWuyBa1hMNBTdN59fGHb30aMYX4M4TqlfwirffKqCIyclLgm8JRzrHGbsYqXVF7v99ttRQY5hxhp8NH4G52NMXtd4VGMNjlyo8a6miWL_SZH0PD13DChESy4D1ROeD7pMtLv__R0tEJxZuxAg1LtskEg48bZc22WPnqo8OEnIGckPy7wwyUlfZBt_mSfqFv-DgZAUKCPzvUdUoW0Yk5KrWe6YvNdopUET9azIdZEgcMjy7Oe0og"
+        )
+        assert (
+            auth.headers["user-agent"] == f"python-datareservoirio/{drio.__version__}"
+        )
+
+        assert mock_requests.call_args.kwargs["data"]["client_id"] == "foo"
+        assert mock_requests.call_args.kwargs["data"]["client_secret"] == "bar"
+        assert (
+            mock_requests.call_args.kwargs["data"]["grant_type"] == "client_credentials"
+        )
