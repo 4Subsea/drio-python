@@ -509,15 +509,17 @@ class Client:
             Metadata entry.
         """
         if metadata_id:
-            response = self._metadata_api.get_by_id(metadata_id)
+            uri_postfix = f"metadata/{metadata_id}"
         elif namespace and key:
-            response = self._metadata_api.get(namespace, key)
+            uri_postfix = f"metadata/{namespace}/{key}"
         else:
             raise ValueError(
                 "Missing required input: either (metadata_id) or (namespace, key)"
             )
 
-        return response
+        response = self._auth_session.get(environment.api_base_url + uri_postfix)
+        response.raise_for_status()
+        return response.json()
 
     def metadata_browse(self, namespace=None):
         """
