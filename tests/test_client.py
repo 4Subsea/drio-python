@@ -291,7 +291,7 @@ class Test_Client:
         def uuid4_mock():
             return "9f74b0b1-54c2-4148-8854-5f78b81bb592"
 
-        monkeypatch.setattr("datareservoirio.rest_api.timeseries.uuid4", uuid4_mock)
+        monkeypatch.setattr("datareservoirio.client.uuid4", uuid4_mock)
 
         create_out = client.create()
 

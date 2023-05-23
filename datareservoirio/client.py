@@ -5,13 +5,13 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from operator import itemgetter
+from uuid import uuid4
 
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 from .globalsettings import environment
-from .rest_api import FilesAPI, MetadataAPI, TimeSeriesAPI
 from .storage import Storage
 
 log = logging.getLogger(__name__)
@@ -48,9 +48,6 @@ class Client:
 
     def __init__(self, auth, cache=True, cache_opt=None):
         self._auth_session = auth
-        self._timeseries_api = TimeSeriesAPI(self._auth_session, cache=cache)
-        self._files_api = FilesAPI(self._auth_session)
-        self._metadata_api = MetadataAPI(self._auth_session)
 
         # TODO: Remove after 2023-08-15
         if cache:
@@ -71,7 +68,9 @@ class Client:
         Test that you have a working connection to DataReservoir.io.
 
         """
-        return self._files_api.ping()
+        response = self._auth_session.get(environment.api_base_url + "ping")
+        response.raise_for_status()
+        return response.json()
 
     def create(self, series=None, wait_on_verification=True):
         """
@@ -101,8 +100,11 @@ class Client:
             newly created series.
         """
         if series is None:
-            response = self._timeseries_api.create()
-            return response
+            response = self._auth_session.put(
+                environment.api_base_url + f"timeseries/{str(uuid4())}"
+            )
+            response.raise_for_status()
+            return response.json()
 
         df = self._verify_and_prepare_series(series)
 
@@ -124,8 +126,11 @@ class Client:
             if status == "Failed":
                 return status
 
-        response = self._timeseries_api.create_with_data(file_id)
-        return response
+        response = self._auth_session.post(
+            environment.api_base_url + "timeseries/create", data={"FileId": file_id}
+        )
+        response.raise_for_status()
+        return response.json()
 
     def append(self, series, series_id, wait_on_verification=True):
         """
@@ -174,8 +179,12 @@ class Client:
             if status == "Failed":
                 return status
 
-        response = self._timeseries_api.add(series_id, file_id)
-        return response
+        response = self._auth_session.post(
+            environment.api_base_url + "timeseries/add",
+            data={"TimeSeriesId": series_id, "FileId": file_id},
+        )
+        response.raise_for_status()
+        return response.json()
 
     def info(self, series_id):
         """
@@ -186,7 +195,11 @@ class Client:
         dict
             Available information about the series. None if series not found.
         """
-        return self._timeseries_api.info(series_id)
+        response = self._auth_session.get(
+            environment.api_base_url + f"timeseries/{series_id}"
+        )
+        response.raise_for_status()
+        return response.json()
 
     def search(self, namespace, key=None, name=None, value=None):
         """
@@ -220,15 +233,20 @@ class Client:
             returned -> ``{TimeSeriesId: metadata}``.
 
         """
-        args_ = [namespace, key, name, value]
-        none_count = args_.count(None)
+        args = [namespace, key, name, value]
+        if None in args:
+            none_count = args.count(None)
+            if args[-none_count:].count(None) < none_count:
+                warnings.warn(
+                    "Warning: You have provided argument(s) following a None argument, they are ignored by the search!"
+                )
+            args = args[: args.index(None)]
 
-        if args_[-none_count:].count(None) < none_count:
-            warnings.warn(
-                "Warning: You have provided argument(s) following a None argument, they are ignored by the search!"
-            )
-
-        return self._timeseries_api.search(namespace, key, name, value)
+        response = self._auth_session.get(
+            environment.api_base_url + f"timeseries/search/{'/'.join(args)}"
+        )
+        response.raise_for_status()
+        return response.json()
 
     def delete(self, series_id):
         """
@@ -240,7 +258,9 @@ class Client:
             The id of the series to delete.
 
         """
-        return self._timeseries_api.delete(series_id)
+        return self._auth_session.delete(
+            environment.api_base_url + f"timeseries/{series_id}"
+        )
 
     def _timer(func):
         """Decorator used to log latency of the ``get`` method"""
@@ -393,10 +413,13 @@ class Client:
             if not key:
                 raise ValueError("key is mandatory when namespace is passed")
             try:
-                response_create = self._metadata_api.put(
-                    namespace, key, overwrite, **namevalues
+                response_create = self._auth_session.put(
+                    environment.api_base_url
+                    + f"metadata/{namespace}/{key}?overwrite={'true' if overwrite else 'false'}",
+                    json={"Value": namevalues},
                 )
-                metadata_id = response_create["Id"]
+                response_create.raise_for_status()
+                metadata_id = response_create.json()["Id"]
             except requests.exceptions.HTTPError as err:
                 if err.response.status_code == 409:
                     raise ValueError(
@@ -406,8 +429,12 @@ class Client:
                 else:
                     raise
 
-        response = self._timeseries_api.attach_metadata(series_id, [metadata_id])
-        return response
+        response = self._auth_session.put(
+            environment.api_base_url + f"timeseries/{series_id}/metadata",
+            json=[metadata_id],
+        )
+        response.raise_for_status()
+        return response.json()
 
     def remove_metadata(self, series_id, metadata_id):
         """
@@ -425,9 +452,14 @@ class Client:
         ------
         dict
             response.json()
+
         """
-        response = self._timeseries_api.detach_metadata(series_id, [metadata_id])
-        return response
+        response = self._auth_session.delete(
+            environment.api_base_url + f"timeseries/{series_id}/metadata",
+            json=[metadata_id],
+        )
+        response.raise_for_status()
+        return response.json()
 
     def metadata_set(self, namespace, key, **namevalues):
         """
@@ -450,8 +482,12 @@ class Client:
             The response from DataReservoir.io containing the unique id of the
             new or updated metadata.
         """
-        response = self._metadata_api.put(namespace, key, True, **namevalues)
-        return response
+        response = self._auth_session.put(
+            environment.api_base_url + f"metadata/{namespace}/{key}?overwrite=true",
+            json={"Value": namevalues},
+        )
+        response.raise_for_status()
+        return response.json()
 
     def metadata_get(self, metadata_id=None, namespace=None, key=None):
         """
@@ -473,15 +509,17 @@ class Client:
             Metadata entry.
         """
         if metadata_id:
-            response = self._metadata_api.get_by_id(metadata_id)
+            uri_postfix = f"metadata/{metadata_id}"
         elif namespace and key:
-            response = self._metadata_api.get(namespace, key)
+            uri_postfix = f"metadata/{namespace}/{key}"
         else:
             raise ValueError(
                 "Missing required input: either (metadata_id) or (namespace, key)"
             )
 
-        return response
+        response = self._auth_session.get(environment.api_base_url + uri_postfix)
+        response.raise_for_status()
+        return response.json()
 
     def metadata_browse(self, namespace=None):
         """
@@ -501,9 +539,13 @@ class Client:
         """
 
         if not namespace:
-            return self._metadata_api.namespaces()
+            uri_postfix = "metadata/"
         else:
-            return self._metadata_api.keys(namespace)
+            uri_postfix = f"metadata/{namespace}"
+
+        response = self._auth_session.get(environment.api_base_url + uri_postfix)
+        response.raise_for_status()
+        return sorted(response.json())
 
     def metadata_search(self, namespace, key):
         """
@@ -521,8 +563,12 @@ class Client:
             Metadata entries that matches the search.
 
         """
-        response = self._metadata_api.search(namespace, key)
-        return response
+        response = self._auth_session.post(
+            environment.api_base_url + "metadata/search",
+            json={"Namespace": namespace, "Key": key, "Value": {}},
+        )
+        response.raise_for_status()
+        return response.json()
 
     def metadata_delete(self, metadata_id):
         """
@@ -533,7 +579,10 @@ class Client:
         metadata_id : str
             id of metadata
         """
-        self._metadata_api.delete(metadata_id)
+        response = self._auth_session.delete(
+            environment.api_base_url + f"metadata/{metadata_id}"
+        )
+        response.raise_for_status()
         return
 
     def _verify_and_prepare_series(self, series):
@@ -568,8 +617,11 @@ class Client:
             time.sleep(5)
 
     def _get_file_status(self, file_id):
-        response = self._files_api.status(file_id)
-        return response["State"]
+        response = self._auth_session.get(
+            environment.api_base_url + f"files/{file_id}/status"
+        )
+        response.raise_for_status()
+        return response.json()["State"]
 
 
 def _blob_sequence_days(response_json):
