@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from abc import ABCMeta, abstractmethod
-from urllib3 import Retry
 
 from oauthlib.oauth2 import (
     BackendApplicationClient,
@@ -12,7 +11,7 @@ from oauthlib.oauth2 import (
 )
 from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
-
+from urllib3 import Retry
 
 import datareservoirio as drio
 

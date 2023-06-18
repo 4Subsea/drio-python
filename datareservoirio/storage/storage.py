@@ -348,6 +348,9 @@ def _df_to_blob(df, blob_url):
         fp.seek(0)
 
         requests.put(
-            blob_url, headers={"x-ms-blob-type": "BlockBlob"}, data=fp, timeout=10
+            blob_url,
+            headers={"x-ms-blob-type": "BlockBlob"},
+            data=fp,
+            timeout=(10, None),
         ).raise_for_status()
     return
