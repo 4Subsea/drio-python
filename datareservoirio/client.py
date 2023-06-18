@@ -26,6 +26,8 @@ metric.addHandler(
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
 _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
+_TIMEOUT_DEAULT = 120
+
 
 class Client:
     """
@@ -68,7 +70,9 @@ class Client:
         Test that you have a working connection to DataReservoir.io.
 
         """
-        response = self._auth_session.get(environment.api_base_url + "ping")
+        response = self._auth_session.get(
+            environment.api_base_url + "ping", timeout=_TIMEOUT_DEAULT
+        )
         response.raise_for_status()
         return response.json()
 
@@ -101,7 +105,8 @@ class Client:
         """
         if series is None:
             response = self._auth_session.put(
-                environment.api_base_url + f"timeseries/{str(uuid4())}"
+                environment.api_base_url + f"timeseries/{str(uuid4())}",
+                timeout=_TIMEOUT_DEAULT,
             )
             response.raise_for_status()
             return response.json()
@@ -109,7 +114,7 @@ class Client:
         df = self._verify_and_prepare_series(series)
 
         response_file = self._auth_session.post(
-            environment.api_base_url + "files/upload"
+            environment.api_base_url + "files/upload", timeout=_TIMEOUT_DEAULT
         )
         response_file.raise_for_status()
         file_id, target_url = itemgetter("FileId", "Endpoint")(response_file.json())
@@ -117,7 +122,7 @@ class Client:
         commit_request = (
             "POST",
             environment.api_base_url + "files/commit",
-            {"json": {"FileId": file_id}},
+            {"json": {"FileId": file_id}, "timeout": _TIMEOUT_DEAULT},
         )
         self._storage.put(df, target_url, commit_request)
 
@@ -127,7 +132,9 @@ class Client:
                 return status
 
         response = self._auth_session.post(
-            environment.api_base_url + "timeseries/create", data={"FileId": file_id}
+            environment.api_base_url + "timeseries/create",
+            data={"FileId": file_id},
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()
@@ -161,7 +168,7 @@ class Client:
         df = self._verify_and_prepare_series(series)
 
         response_file = self._auth_session.post(
-            environment.api_base_url + "files/upload"
+            environment.api_base_url + "files/upload", timeout=_TIMEOUT_DEAULT
         )
         response_file.raise_for_status()
         file_id, target_url = itemgetter("FileId", "Endpoint")(response_file.json())
@@ -169,7 +176,7 @@ class Client:
         commit_request = (
             "POST",
             environment.api_base_url + "files/commit",
-            {"json": {"FileId": file_id}},
+            {"json": {"FileId": file_id}, "timeout": _TIMEOUT_DEAULT},
         )
 
         self._storage.put(df, target_url, commit_request)
@@ -182,6 +189,7 @@ class Client:
         response = self._auth_session.post(
             environment.api_base_url + "timeseries/add",
             data={"TimeSeriesId": series_id, "FileId": file_id},
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()
@@ -196,7 +204,8 @@ class Client:
             Available information about the series. None if series not found.
         """
         response = self._auth_session.get(
-            environment.api_base_url + f"timeseries/{series_id}"
+            environment.api_base_url + f"timeseries/{series_id}",
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()
@@ -243,7 +252,8 @@ class Client:
             args = args[: args.index(None)]
 
         response = self._auth_session.get(
-            environment.api_base_url + f"timeseries/search/{'/'.join(args)}"
+            environment.api_base_url + f"timeseries/search/{'/'.join(args)}",
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()
@@ -259,7 +269,8 @@ class Client:
 
         """
         return self._auth_session.delete(
-            environment.api_base_url + f"timeseries/{series_id}"
+            environment.api_base_url + f"timeseries/{series_id}",
+            timeout=_TIMEOUT_DEAULT,
         )
 
     def _timer(func):
@@ -343,7 +354,8 @@ class Client:
 
         response = self._auth_session.get(
             environment.api_base_url
-            + f"timeseries/{series_id}/data/days?start={start}&end={end}"
+            + f"timeseries/{series_id}/data/days?start={start}&end={end}",
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         response_json = response.json()
@@ -417,6 +429,7 @@ class Client:
                     environment.api_base_url
                     + f"metadata/{namespace}/{key}?overwrite={'true' if overwrite else 'false'}",
                     json={"Value": namevalues},
+                    timeout=_TIMEOUT_DEAULT,
                 )
                 response_create.raise_for_status()
                 metadata_id = response_create.json()["Id"]
@@ -432,6 +445,7 @@ class Client:
         response = self._auth_session.put(
             environment.api_base_url + f"timeseries/{series_id}/metadata",
             json=[metadata_id],
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()
@@ -457,6 +471,7 @@ class Client:
         response = self._auth_session.delete(
             environment.api_base_url + f"timeseries/{series_id}/metadata",
             json=[metadata_id],
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()
@@ -485,6 +500,7 @@ class Client:
         response = self._auth_session.put(
             environment.api_base_url + f"metadata/{namespace}/{key}?overwrite=true",
             json={"Value": namevalues},
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()
@@ -517,7 +533,9 @@ class Client:
                 "Missing required input: either (metadata_id) or (namespace, key)"
             )
 
-        response = self._auth_session.get(environment.api_base_url + uri_postfix)
+        response = self._auth_session.get(
+            environment.api_base_url + uri_postfix, timeout=_TIMEOUT_DEAULT
+        )
         response.raise_for_status()
         return response.json()
 
@@ -543,7 +561,9 @@ class Client:
         else:
             uri_postfix = f"metadata/{namespace}"
 
-        response = self._auth_session.get(environment.api_base_url + uri_postfix)
+        response = self._auth_session.get(
+            environment.api_base_url + uri_postfix, timeout=_TIMEOUT_DEAULT
+        )
         response.raise_for_status()
         return sorted(response.json())
 
@@ -566,6 +586,7 @@ class Client:
         response = self._auth_session.post(
             environment.api_base_url + "metadata/search",
             json={"Namespace": namespace, "Key": key, "Value": {}},
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()
@@ -580,7 +601,8 @@ class Client:
             id of metadata
         """
         response = self._auth_session.delete(
-            environment.api_base_url + f"metadata/{metadata_id}"
+            environment.api_base_url + f"metadata/{metadata_id}",
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return
@@ -618,7 +640,8 @@ class Client:
 
     def _get_file_status(self, file_id):
         response = self._auth_session.get(
-            environment.api_base_url + f"files/{file_id}/status"
+            environment.api_base_url + f"files/{file_id}/status",
+            timeout=_TIMEOUT_DEAULT,
         )
         response.raise_for_status()
         return response.json()["State"]
