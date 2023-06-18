@@ -106,6 +106,7 @@ class Test__df_to_blob:
             url=blob_url,
             headers={"x-ms-blob-type": "BlockBlob"},
             data=ANY,
+            timeout=10,
         )
 
         assert mock_requests.call_args.kwargs["data"].memory == data.as_binary_csv()
@@ -538,6 +539,7 @@ class Test_Storage:
                 url="http://example/blob/url",
                 headers={"x-ms-blob-type": "BlockBlob"},
                 data=ANY,
+                timeout=10,
             ),
             call(
                 method="POST",
