@@ -9,7 +9,9 @@ from oauthlib.oauth2 import (
     MissingTokenError,
     WebApplicationClient,
 )
+from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
+from urllib3 import Retry
 
 import datareservoirio as drio
 
@@ -88,6 +90,19 @@ class BaseAuthSession(OAuth2Session, metaclass=ABCMeta):
             client=client,
             **kwargs,
         )
+
+        # Attention: Be careful when extending the list of retry_status!
+        retry_status = frozenset([413, 429, 502, 503, 504])
+        allowed_methods = frozenset(["GET", "POST", "PUT", "PATCH", "DELETE"])
+
+        persist = Retry(
+            total=3,
+            backoff_factor=0.5,
+            allowed_methods=allowed_methods,
+            status_forcelist=retry_status,
+            raise_on_status=False,
+        )
+        self.mount(environment.api_base_url, HTTPAdapter(max_retries=persist))
 
         if auth_force or not self.token:
             token = self.fetch_token()
