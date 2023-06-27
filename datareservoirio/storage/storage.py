@@ -294,7 +294,9 @@ def _blob_to_df(blob_url):
         (``Int64``) and column ``values`` are ``str`` or ``float64``.
     """
 
-    response = requests.get(blob_url, stream=True, timeout=10)
+    with requests.Session() as session:
+        session.mount("https://", requests.adapters.HTTPAdapter(max_retries=3))
+        response = session.request(method="get", url=blob_url, stream=True, timeout=10)
     response.raise_for_status()
 
     with io.BytesIO() as stream:
@@ -347,10 +349,13 @@ def _df_to_blob(df, blob_url):
             df.to_csv(fp, line_terminator="\n", **kwargs)
         fp.seek(0)
 
-        requests.put(
-            blob_url,
-            headers={"x-ms-blob-type": "BlockBlob"},
-            data=fp,
-            timeout=(10, None),
-        ).raise_for_status()
+        with requests.Session() as session:
+            session.mount("https://", requests.adapters.HTTPAdapter(max_retries=3))
+            session.request(
+                method="put",
+                url=blob_url,
+                headers={"x-ms-blob-type": "BlockBlob"},
+                data=fp,
+                timeout=(10, None),
+            ).raise_for_status()
     return
