@@ -295,8 +295,9 @@ def _blob_to_df(blob_url):
     """
 
     with requests.Session() as session:
-        session.mount("https://", requests.adapters.HTTPAdapter(max_retries=3))
-        response = session.request(method="get", url=blob_url, stream=True, timeout=10)
+        retries = requests.adapters.Retry(total=5, backoff_factor=0.4, backoff_max=10)
+        session.mount("https://", requests.adapters.HTTPAdapter(max_retries=retries))
+        response = session.request(method="get", url=blob_url, stream=True, timeout=30)
     response.raise_for_status()
 
     with io.BytesIO() as stream:
@@ -350,12 +351,17 @@ def _df_to_blob(df, blob_url):
         fp.seek(0)
 
         with requests.Session() as session:
-            session.mount("https://", requests.adapters.HTTPAdapter(max_retries=3))
+            retries = requests.adapters.Retry(
+                total=5, backoff_factor=0.4, backoff_max=10
+            )
+            session.mount(
+                "https://", requests.adapters.HTTPAdapter(max_retries=retries)
+            )
             session.request(
                 method="put",
                 url=blob_url,
                 headers={"x-ms-blob-type": "BlockBlob"},
                 data=fp,
-                timeout=(10, None),
+                timeout=(30, None),
             ).raise_for_status()
     return
