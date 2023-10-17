@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from operator import itemgetter
 from uuid import uuid4
+from functools import wraps
 
 import pandas as pd
 import requests
@@ -47,7 +48,6 @@ class Client:
         specific defaults.
 
     """
-
     def __init__(self, auth, cache=True, cache_opt=None):
         self._auth_session = auth
 
