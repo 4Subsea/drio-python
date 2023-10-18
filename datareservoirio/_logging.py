@@ -13,7 +13,6 @@ exceptions_logger.setLevel(logging.INFO)
 
 if os.getenv("APPLICATION_INSIGHTS_LOGGER") is not None:
     if os.environ["APPLICATION_INSIGHTS_LOGGER"] == "true":
-        print("Heidi")
         exceptions_logger.addHandler(
             AzureLogHandler(
                 connection_string=environment._application_insight_connectionstring
