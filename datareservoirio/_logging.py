@@ -1,5 +1,6 @@
 import logging
 from functools import wraps
+import os
 
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 
@@ -7,11 +8,17 @@ import datareservoirio as drio
 
 from .globalsettings import environment
 
+
+
 exceptions_logger = logging.getLogger(__name__ + "_exception_logger")
 exceptions_logger.setLevel(logging.INFO)
-exceptions_logger.addHandler(
-    AzureLogHandler(connection_string=environment._application_insight_connectionstring)
-)
+
+if os.getenv("APPLICATION_INSIGHTS_LOGGER") is not None:
+    if os.environ["APPLICATION_INSIGHTS_LOGGER"] == 'true':
+        print("Heidi")
+        exceptions_logger.addHandler(
+            AzureLogHandler(connection_string=environment._application_insight_connectionstring)
+        )
 
 
 def log_exception(func):
