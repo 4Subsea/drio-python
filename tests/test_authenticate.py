@@ -8,8 +8,12 @@ import pytest
 from requests_oauthlib import OAuth2Session
 
 import datareservoirio as drio
-from datareservoirio.authenticate import (BaseAuthSession, ClientAuthenticator,
-                                          TokenCache, UserAuthenticator)
+from datareservoirio.authenticate import (
+    BaseAuthSession,
+    ClientAuthenticator,
+    TokenCache,
+    UserAuthenticator,
+)
 
 TEST_PATH = Path(__file__).parent
 
