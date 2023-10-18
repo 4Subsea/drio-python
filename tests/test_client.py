@@ -2,6 +2,8 @@ import json
 import os
 import time
 from pathlib import Path
+import types
+from datareservoirio._logging import exceptions_logger
 
 import pandas as pd
 import pytest
@@ -12,6 +14,11 @@ from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
 
+def change_logging(self, msg, *args, exc_info=True, **kwargs):
+    if kwargs["extra"]:
+        self.was_called = True
+    else:
+        raise ValueError("Missing extra parameters")
 
 class Test_Client:
     """
@@ -798,3 +805,10 @@ class Test_Client:
         # Check that the correct json with metadata id is sent
         json_expect = ["19b7230b-f88a-4217-b1c9-08daff938054"]
         assert mock_requests.call_args.kwargs["json"] == json_expect
+
+    def test_client_get_is_logged(self, client):
+        client.was_called = False
+        exceptions_logger.exception = types.MethodType(change_logging, client)
+        with pytest.raises(ValueError):
+            client.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0", raise_empty=True)
+        assert client.was_called == True
