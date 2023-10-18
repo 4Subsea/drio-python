@@ -78,6 +78,7 @@ class Client:
         response.raise_for_status()
         return response.json()
 
+    @log_exception
     def create(self, series=None, wait_on_verification=True):
         """
         Create a new series in DataReservoir.io from a pandas.Series. If no
@@ -141,6 +142,7 @@ class Client:
         response.raise_for_status()
         return response.json()
 
+    @log_exception
     def append(self, series, series_id, wait_on_verification=True):
         """
         Append data to an already existing series.
@@ -260,6 +262,7 @@ class Client:
         response.raise_for_status()
         return response.json()
 
+    @log_exception
     def delete(self, series_id):
         """
         Delete a series from DataReservoir.io.
