@@ -1,6 +1,6 @@
 import pytest
 
-from _logging import log_exception
+from datareservoirio._logging import log_exception
 
 
 class my_failing_func:
@@ -8,12 +8,12 @@ class my_failing_func:
         pass
 
     @log_exception
-    def divide_zero(num):
+    def divide_zero(self, num):
         return num / 0
 
 
 def test__divide_zero_is_logged():
     my_class = my_failing_func()
 
-    with pytest.raises():
+    with pytest.raises(Exception):
         my_class.divide_zero(8)

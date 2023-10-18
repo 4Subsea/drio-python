@@ -2,6 +2,7 @@ import logging
 from functools import wraps
 from .globalsettings import environment
 from opencensus.ext.azure.log_exporter import AzureLogHandler
+import datareservoirio as drio
 
 exceptions_logger = logging.getLogger(__name__ + "_exception_logger")
 exceptions_logger.setLevel(logging.INFO)
@@ -13,6 +14,11 @@ def log_exception(func):
         try:
             return func(self, *args, **kwargs)
         except Exception as e:
-            exceptions_logger.error(e)
+            properties = {
+                "custom_dimensions": {
+                    "drio_package": f"python-datareservoirio/{drio.__version__}"
+                }
+            }
+            exceptions_logger.exception(e, extra=properties)
             raise e
     return wrapper
