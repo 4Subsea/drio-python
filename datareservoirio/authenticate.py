@@ -3,12 +3,8 @@ import logging
 import os
 from abc import ABCMeta, abstractmethod
 
-from oauthlib.oauth2 import (
-    BackendApplicationClient,
-    InvalidGrantError,
-    MissingTokenError,
-    WebApplicationClient,
-)
+from oauthlib.oauth2 import (BackendApplicationClient, InvalidGrantError,
+                             MissingTokenError, WebApplicationClient)
 from requests.adapters import HTTPAdapter
 from requests_oauthlib import OAuth2Session
 from urllib3 import Retry

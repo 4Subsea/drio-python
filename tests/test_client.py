@@ -1,24 +1,26 @@
 import json
 import os
 import time
-from pathlib import Path
 import types
-from datareservoirio._logging import exceptions_logger
+from pathlib import Path
 
 import pandas as pd
 import pytest
 from requests import HTTPError
 
 import datareservoirio as drio
+from datareservoirio._logging import exceptions_logger
 from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
+
 
 def change_logging(self, msg, *args, exc_info=True, **kwargs):
     if kwargs["extra"]:
         self.was_called = True
     else:
         raise ValueError("Missing extra parameters")
+
 
 class Test_Client:
     """

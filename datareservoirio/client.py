@@ -6,16 +6,14 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from operator import itemgetter
 from uuid import uuid4
-from functools import wraps
 
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 
+from ._logging import log_exception
 from .globalsettings import environment
 from .storage import Storage
-
-from ._logging import log_exception
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +48,7 @@ class Client:
         specific defaults.
 
     """
+
     def __init__(self, auth, cache=True, cache_opt=None):
         self._auth_session = auth
 
