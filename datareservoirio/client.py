@@ -15,6 +15,8 @@ from opencensus.ext.azure.log_exporter import AzureLogHandler
 from .globalsettings import environment
 from .storage import Storage
 
+from ._logging import log_exception
+
 log = logging.getLogger(__name__)
 
 metric = logging.getLogger(__name__ + "_metric_appinsight")
@@ -308,6 +310,7 @@ class Client:
         return wrapper
 
     @_timer
+    @log_exception
     def get(
         self,
         series_id,
