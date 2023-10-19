@@ -75,5 +75,5 @@ TOKEN_URL_PROD_CLIENT = (
 )
 SCOPE_PROD_CLIENT = ["https://4subseaid.onmicrosoft.com/reservoir-prod/.default"]
 
-#APP INSIGHTS
+# APP INSIGHTS
 ENV_VAR_ENABLE_APP_INSIGHTS = "DRIO_PYTHON_APPINSIGHTS"
