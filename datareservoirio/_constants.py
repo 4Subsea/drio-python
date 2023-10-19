@@ -74,3 +74,6 @@ TOKEN_URL_PROD_CLIENT = (
     "https://login.microsoftonline.com/4subseaid.onmicrosoft.com/oauth2/v2.0/token"
 )
 SCOPE_PROD_CLIENT = ["https://4subseaid.onmicrosoft.com/reservoir-prod/.default"]
+
+# APP INSIGHTS
+ENV_VAR_ENABLE_APP_INSIGHTS = "DRIO_PYTHON_APPINSIGHTS"
