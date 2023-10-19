@@ -145,3 +145,11 @@ The following log names can be used to fine-tune the desired log output:
 
 If you require even more detailed logging, consider using loggers from
 :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
+
+
+Instrumentation
+---------------
+
+For monitoring purposes, the external logger can be enabled to report errors and performance metrics to 4insight Team.  
+
+To enable logging, environmental variable ``DRIO_PYTHON_APPINSIGHTS`` needs to be set to ``true``.
