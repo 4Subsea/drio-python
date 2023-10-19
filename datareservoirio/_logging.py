@@ -1,12 +1,12 @@
 import logging
 import os
-from ._constants import ENV_VAR_ENABLE_APP_INSIGHTS
 from functools import wraps
 
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 
 import datareservoirio as drio
 
+from ._constants import ENV_VAR_ENABLE_APP_INSIGHTS
 from .globalsettings import environment
 
 exceptions_logger = logging.getLogger(__name__ + "_exception_logger")
