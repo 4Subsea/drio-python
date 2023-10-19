@@ -1,5 +1,6 @@
 import logging
 import os
+from _constants import ENV_VAR_ENABLE_APP_INSIGHTS
 from functools import wraps
 
 from opencensus.ext.azure.log_exporter import AzureLogHandler
@@ -11,8 +12,9 @@ from .globalsettings import environment
 exceptions_logger = logging.getLogger(__name__ + "_exception_logger")
 exceptions_logger.setLevel(logging.INFO)
 
-if os.getenv("APPLICATION_INSIGHTS_LOGGER") is not None:
-    if os.environ["APPLICATION_INSIGHTS_LOGGER"] == "true":
+if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
+    env_var_lowered = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
+    if env_var_lowered == "true" or env_var_lowered == "1":
         exceptions_logger.addHandler(
             AzureLogHandler(
                 connection_string=environment._application_insight_connectionstring

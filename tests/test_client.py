@@ -808,7 +808,7 @@ class Test_Client:
         json_expect = ["19b7230b-f88a-4217-b1c9-08daff938054"]
         assert mock_requests.call_args.kwargs["json"] == json_expect
 
-    def test_client_get_is_logged(self, client):
+    def test_client_get_throws_exception_is_logged(self, client):
         client.was_called = False
         exceptions_logger.exception = types.MethodType(change_logging, client)
         with pytest.raises(ValueError):
