@@ -10,6 +10,7 @@ from uuid import uuid4
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
+from tenacity import retry, stop_after_attempt
 
 from ._logging import log_exception
 from .globalsettings import environment
@@ -312,6 +313,7 @@ class Client:
         return wrapper
 
     @_timer
+    @retry(stop=stop_after_attempt(2))
     @log_exception
     def get(
         self,

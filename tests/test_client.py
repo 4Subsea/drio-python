@@ -7,6 +7,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 from requests import HTTPError
+from tenacity import RetryError
+
 
 import datareservoirio as drio
 from datareservoirio._logging import exceptions_logger
@@ -21,6 +23,12 @@ def change_logging(self, msg, *args, exc_info=True, **kwargs):
     else:
         raise ValueError("Missing extra parameters")
 
+def failed_connection_error(self, url, timeout):
+    if hasattr(self, "has_retried_count"):
+        self.has_retried_count = self.has_retried_count + 1
+    else:
+        self.has_retried_count = 0
+    raise ConnectionError()
 
 class Test_Client:
     """
@@ -60,7 +68,13 @@ class Test_Client:
             "max_size": 1024,
             "cache_root": tmp_path / ".cache",
         }
-        drio.Client(auth_session, cache=True, cache_opt=cache_opt)
+        drio.Client(auth_session, cache=True, cache_opt=cache_opt)               
+
+    @pytest.fixture
+    def client_with_connection_error(self, client):
+        exceptions_logger.exception = types.MethodType(change_logging, client)
+        client._auth_session.get = types.MethodType(failed_connection_error, client._auth_session)
+        return client
 
     @pytest.mark.parametrize(
         "start, end",
@@ -814,3 +828,14 @@ class Test_Client:
         with pytest.raises(ValueError):
             client.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0", raise_empty=True)
         assert client.was_called == True
+
+    def test_client_retries_on_connection_errors(self, client_with_connection_error):
+        with pytest.raises(RetryError) as ex:
+            client_with_connection_error.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0")
+
+        ex_str = str(ex)
+        retries = client_with_connection_error.get.retry.statistics["attempt_number"]
+
+        assert retries == 2
+
+        assert "ConnectionError" in ex_str
