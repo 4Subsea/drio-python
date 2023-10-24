@@ -11,8 +11,6 @@ from requests import HTTPError, Response
 from requests.exceptions import InvalidJSONError
 from tenacity import RetryError
 
-
-
 import datareservoirio as drio
 from datareservoirio._logging import exceptions_logger
 from datareservoirio._utils import DataHandler
@@ -26,24 +24,28 @@ def change_logging(self, msg, *args, exc_info=True, **kwargs):
     else:
         raise ValueError("Missing extra parameters")
 
+
 def drioResponseWithNoFiles():
     response = Response()
-    json_data = { "Files": [] }
-    response._content = json.dumps(json_data).encode('utf-8')
-    response.headers['Content-Type'] = 'application/json'
+    json_data = {"Files": []}
+    response._content = json.dumps(json_data).encode("utf-8")
+    response.headers["Content-Type"] = "application/json"
     response.status_code = 200
-    return response 
+    return response
+
+
 #
 def failed_connection_error(self, url, timeout):
     if hasattr(self, "call_count"):
         self.call_count = self.call_count + 1
     else:
         self.call_count = 1
-    
-    if(self.call_count >= 3):
-       return drioResponseWithNoFiles() 
+
+    if self.call_count >= 3:
+        return drioResponseWithNoFiles()
     else:
         raise ConnectionError()
+
 
 def fail_with_invalid_json_error(self, url, timeout):
     if hasattr(self, "call_count"):
@@ -51,10 +53,11 @@ def fail_with_invalid_json_error(self, url, timeout):
     else:
         self.call_count = 1
 
-    if(self.call_count >= 3):
-       return drioResponseWithNoFiles() 
+    if self.call_count >= 3:
+        return drioResponseWithNoFiles()
     else:
         raise InvalidJSONError()
+
 
 class Test_Client:
     """
@@ -94,23 +97,20 @@ class Test_Client:
             "max_size": 1024,
             "cache_root": tmp_path / ".cache",
         }
-        drio.Client(auth_session, cache=True, cache_opt=cache_opt)     
+        drio.Client(auth_session, cache=True, cache_opt=cache_opt)
 
     def client_error_handler(self, client, method):
         exceptions_logger.exception = types.MethodType(change_logging, client)
         client._auth_session.get = types.MethodType(method, client._auth_session)
         return client
 
-
     @pytest.fixture
     def client_with_connection_error(self, client):
         return self.client_error_handler(client, failed_connection_error)
 
-    
     @pytest.fixture
     def client_with_invalid_json_error(self, client):
         return self.client_error_handler(client, fail_with_invalid_json_error)
-
 
     @pytest.mark.parametrize(
         "start, end",
@@ -868,11 +868,15 @@ class Test_Client:
     def test_client_retries_on_connection_errors(self, client_with_connection_error):
         client_with_connection_error.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0")
 
-        attempts_from_tenacity = client_with_connection_error.get.retry.statistics["attempt_number"]
-        call_count_from_fake_auth_counter = client_with_connection_error._auth_session.call_count
+        attempts_from_tenacity = client_with_connection_error.get.retry.statistics[
+            "attempt_number"
+        ]
+        call_count_from_fake_auth_counter = (
+            client_with_connection_error._auth_session.call_count
+        )
 
         assert attempts_from_tenacity == 3
-        assert attempts_from_tenacity == call_count_from_fake_auth_counter 
+        assert attempts_from_tenacity == call_count_from_fake_auth_counter
         assert call_count_from_fake_auth_counter == 3
 
     def test_tries_error_does_not_throw_retry(self, client_with_invalid_json_error):
