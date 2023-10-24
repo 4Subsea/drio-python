@@ -11,6 +11,7 @@ from requests import HTTPError, Response
 from requests.exceptions import InvalidJSONError
 from tenacity import RetryError
 
+
 import datareservoirio as drio
 from datareservoirio._logging import exceptions_logger
 from datareservoirio._utils import DataHandler
@@ -25,16 +26,6 @@ def change_logging(self, msg, *args, exc_info=True, **kwargs):
         raise ValueError("Missing extra parameters")
 
 
-def drioResponseWithNoFiles():
-    response = Response()
-    json_data = {"Files": []}
-    response._content = json.dumps(json_data).encode("utf-8")
-    response.headers["Content-Type"] = "application/json"
-    response.status_code = 200
-    return response
-
-
-#
 def failed_connection_error(self, url, timeout):
     if hasattr(self, "call_count"):
         self.call_count = self.call_count + 1
@@ -42,7 +33,7 @@ def failed_connection_error(self, url, timeout):
         self.call_count = 1
 
     if self.call_count >= 3:
-        return drioResponseWithNoFiles()
+        return self.get(url, timeout)
     else:
         raise ConnectionError()
 
@@ -54,7 +45,7 @@ def fail_with_invalid_json_error(self, url, timeout):
         self.call_count = 1
 
     if self.call_count >= 3:
-        return drioResponseWithNoFiles()
+        return self.get(url, timeout)
     else:
         raise InvalidJSONError()
 
