@@ -317,7 +317,7 @@ class Client:
     @_timer
     @retry(stop=stop_after_attempt(4),  # Attempt!, not retry attempt. Attempt 2, is 1 retry
            retry=retry_if_exception_type((ConnectionError, ChunkedEncodingError, ReadTimeout)),
-           wait=wait_chain(*[wait_fixed(1) ,wait_fixed(5), wait_fixed(30)]))
+           wait=wait_chain(*[wait_fixed(0.1) ,wait_fixed(0.5), wait_fixed(30)]))
     @log_exception
     def get(
         self,

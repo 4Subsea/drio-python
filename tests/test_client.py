@@ -1,3 +1,4 @@
+from encodings.utf_8 import encode
 import json
 import os
 import time
@@ -6,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from requests import HTTPError
+from requests import HTTPError, Response
 from requests.exceptions import InvalidJSONError
 from tenacity import RetryError
 
@@ -25,6 +26,14 @@ def change_logging(self, msg, *args, exc_info=True, **kwargs):
     else:
         raise ValueError("Missing extra parameters")
 
+def drioResponseWithNoFiles():
+    response = Response()
+    json_data = { "Files": [] }
+    response._content = json.dumps(json_data).encode('utf-8')
+    response.headers['Content-Type'] = 'application/json'
+    response.status_code = 200
+    return response 
+#
 def failed_connection_error(self, url, timeout):
     if hasattr(self, "call_count"):
         self.call_count = self.call_count + 1
@@ -32,16 +41,20 @@ def failed_connection_error(self, url, timeout):
         self.call_count = 1
     
     if(self.call_count >= 3):
-        return self
-
-    raise ConnectionError()
+       return drioResponseWithNoFiles() 
+    else:
+        raise ConnectionError()
 
 def fail_with_invalid_json_error(self, url, timeout):
     if hasattr(self, "call_count"):
         self.call_count = self.call_count + 1
     else:
         self.call_count = 1
-    raise InvalidJSONError()
+
+    if(self.call_count >= 3):
+       return drioResponseWithNoFiles() 
+    else:
+        raise InvalidJSONError()
 
 class Test_Client:
     """
@@ -853,17 +866,14 @@ class Test_Client:
         assert client.was_called == True
 
     def test_client_retries_on_connection_errors(self, client_with_connection_error):
-        with pytest.raises(RetryError) as ex:
-            client_with_connection_error.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0")
+        client_with_connection_error.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0")
 
-        ex_str = str(ex)
         attempts_from_tenacity = client_with_connection_error.get.retry.statistics["attempt_number"]
-        call_count_from_ourselves = client_with_connection_error._auth_session.call_count
+        call_count_from_fake_auth_counter = client_with_connection_error._auth_session.call_count
 
         assert attempts_from_tenacity == 3
-        assert attempts_from_tenacity == call_count_from_ourselves 
-
-        assert "ConnectionError" in ex_str
+        assert attempts_from_tenacity == call_count_from_fake_auth_counter 
+        assert call_count_from_fake_auth_counter == 3
 
     def test_tries_error_does_not_throw_retry(self, client_with_invalid_json_error):
         with pytest.raises(InvalidJSONError) as ex:
@@ -871,7 +881,3 @@ class Test_Client:
 
         attempts = client_with_invalid_json_error.get.retry.statistics["attempt_number"]
         assert attempts == 1
-
-
-
-        
