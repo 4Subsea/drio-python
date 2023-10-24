@@ -7,7 +7,9 @@ from pathlib import Path
 import pandas as pd
 import pytest
 from requests import HTTPError
+from requests.exceptions import InvalidJSONError
 from tenacity import RetryError
+
 
 
 import datareservoirio as drio
@@ -24,11 +26,22 @@ def change_logging(self, msg, *args, exc_info=True, **kwargs):
         raise ValueError("Missing extra parameters")
 
 def failed_connection_error(self, url, timeout):
-    if hasattr(self, "has_retried_count"):
-        self.has_retried_count = self.has_retried_count + 1
+    if hasattr(self, "call_count"):
+        self.call_count = self.call_count + 1
     else:
-        self.has_retried_count = 0
+        self.call_count = 1
+    
+    if(self.call_count >= 3):
+        return self
+
     raise ConnectionError()
+
+def fail_with_invalid_json_error(self, url, timeout):
+    if hasattr(self, "call_count"):
+        self.call_count = self.call_count + 1
+    else:
+        self.call_count = 1
+    raise InvalidJSONError()
 
 class Test_Client:
     """
@@ -68,13 +81,23 @@ class Test_Client:
             "max_size": 1024,
             "cache_root": tmp_path / ".cache",
         }
-        drio.Client(auth_session, cache=True, cache_opt=cache_opt)               
+        drio.Client(auth_session, cache=True, cache_opt=cache_opt)     
+
+    def client_error_handler(self, client, method):
+        exceptions_logger.exception = types.MethodType(change_logging, client)
+        client._auth_session.get = types.MethodType(method, client._auth_session)
+        return client
+
 
     @pytest.fixture
     def client_with_connection_error(self, client):
-        exceptions_logger.exception = types.MethodType(change_logging, client)
-        client._auth_session.get = types.MethodType(failed_connection_error, client._auth_session)
-        return client
+        return self.client_error_handler(client, failed_connection_error)
+
+    
+    @pytest.fixture
+    def client_with_invalid_json_error(self, client):
+        return self.client_error_handler(client, fail_with_invalid_json_error)
+
 
     @pytest.mark.parametrize(
         "start, end",
@@ -834,8 +857,21 @@ class Test_Client:
             client_with_connection_error.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0")
 
         ex_str = str(ex)
-        retries = client_with_connection_error.get.retry.statistics["attempt_number"]
+        attempts_from_tenacity = client_with_connection_error.get.retry.statistics["attempt_number"]
+        call_count_from_ourselves = client_with_connection_error._auth_session.call_count
 
-        assert retries == 2
+        assert attempts_from_tenacity == 3
+        assert attempts_from_tenacity == call_count_from_ourselves 
 
         assert "ConnectionError" in ex_str
+
+    def test_tries_error_does_not_throw_retry(self, client_with_invalid_json_error):
+        with pytest.raises(InvalidJSONError) as ex:
+            client_with_invalid_json_error.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0")
+
+        attempts = client_with_invalid_json_error.get.retry.statistics["attempt_number"]
+        assert attempts == 1
+
+
+
+        
