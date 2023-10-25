@@ -6,16 +6,15 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from operator import itemgetter
 from uuid import uuid4
-from requests.exceptions import ChunkedEncodingError
-from requests import ReadTimeout
 
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
+from requests import ReadTimeout
+from requests.exceptions import ChunkedEncodingError
 from tenacity import (
     retry,
     retry_if_exception_type,
-    retry_if_not_exception_type,
     stop_after_attempt,
     wait_chain,
     wait_fixed,
@@ -328,7 +327,13 @@ class Client:
             4
         ),  # Attempt!, not retry attempt. Attempt 2, is 1 retry
         retry=retry_if_exception_type(
-            (ConnectionError, ChunkedEncodingError, ReadTimeout, ConnectionRefusedError, requests.ConnectionError)
+            (
+                ConnectionError,
+                ChunkedEncodingError,
+                ReadTimeout,
+                ConnectionRefusedError,
+                requests.ConnectionError,
+            )
         ),
         wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
     )

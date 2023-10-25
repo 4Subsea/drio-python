@@ -1,8 +1,8 @@
-from encodings.utf_8 import encode
 import json
 import os
 import time
 import types
+from encodings.utf_8 import encode
 from pathlib import Path
 
 import pandas as pd
