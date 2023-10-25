@@ -327,7 +327,7 @@ class Client:
             4
         ),  # Attempt!, not retry attempt. Attempt 2, is 1 retry
         retry=retry_if_exception_type(
-            (ConnectionError, ChunkedEncodingError, ReadTimeout)
+            (ConnectionError, ChunkedEncodingError, ReadTimeout, ConnectionRefusedError, requests.ConnectionError)
         ),
         wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
     )
