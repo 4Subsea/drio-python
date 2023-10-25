@@ -10,8 +10,6 @@ from uuid import uuid4
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
-from requests import ReadTimeout
-from requests.exceptions import ChunkedEncodingError
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -329,8 +327,8 @@ class Client:
         retry=retry_if_exception_type(
             (
                 ConnectionError,
-                ChunkedEncodingError,
-                ReadTimeout,
+                requests.exceptions.ChunkedEncodingError,
+                requests.ReadTimeout,
                 ConnectionRefusedError,
                 requests.ConnectionError,
             )

@@ -34,7 +34,6 @@ def drioResponseWithNoFiles():
     return response
 
 
-#
 def failed_connection_error(self, url, timeout):
     if hasattr(self, "call_count"):
         self.call_count = self.call_count + 1
