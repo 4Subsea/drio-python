@@ -1,10 +1,9 @@
+import os
 import types
 
 import pytest
 
 from datareservoirio._logging import exceptions_logger, log_exception
-
-import os
 
 
 class my_test_class:
