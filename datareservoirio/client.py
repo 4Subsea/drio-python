@@ -11,6 +11,7 @@ import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from tenacity import (
+    before_sleep_log,
     retry,
     retry_if_exception_type,
     stop_after_attempt,
@@ -331,10 +332,12 @@ class Client:
                 requests.ReadTimeout,
                 ConnectionRefusedError,
                 requests.ConnectionError,
+                ValueError
             )
         ),
         wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
     )
+    @log_exception
     def get(
         self,
         series_id,
