@@ -331,7 +331,6 @@ class Client:
                 requests.ReadTimeout,
                 ConnectionRefusedError,
                 requests.ConnectionError,
-                ValueError,
             )
         ),
         wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
