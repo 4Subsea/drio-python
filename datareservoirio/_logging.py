@@ -9,6 +9,8 @@ import datareservoirio as drio
 from ._constants import ENV_VAR_ENABLE_APP_INSIGHTS
 from .globalsettings import environment
 
+ENGINE_ROOM_APP_ID = os.environ["ENGINE_ROOM_APP_ID"]
+
 exceptions_logger = logging.getLogger(__name__ + "_exception_logger")
 exceptions_logger.setLevel(logging.INFO)
 
@@ -28,11 +30,19 @@ def log_exception(func):
         try:
             return func(self, *args, **kwargs)
         except Exception as e:
-            properties = {
-                "custom_dimensions": {
-                    "drio_package": f"python-datareservoirio/{drio.__version__}"
+            if ENGINE_ROOM_APP_ID:
+                properties = {
+                    "custom_dimensions": {
+                        "drio_package": f"python-datareservoirio/{drio.__version__}",
+                        "EngineRoom App ID": ENGINE_ROOM_APP_ID,
+                    }
                 }
-            }
+            else:
+                properties = {
+                    "custom_dimensions": {
+                        "drio_package": f"python-datareservoirio/{drio.__version__}"
+                    }
+                }
             exceptions_logger.exception(e, extra=properties)
             raise e
 
