@@ -4,6 +4,8 @@ import pytest
 
 from datareservoirio._logging import exceptions_logger, log_exception
 
+import os
+
 
 class my_test_class:
     def __init__(self):
@@ -29,9 +31,10 @@ def my_class():
 def change_logging(self, msg, *args, exc_info=True, **kwargs):
     if kwargs["extra"]:
         self.was_called = True
-        self.engine_room_app_id = kwargs["extra"]["custom_dimensions"][
-            "EngineRoom App ID"
-        ]
+        if os.getenv("ENGINE_ROOM_APP_ID") is not None:
+            self.engine_room_app_id = kwargs["extra"]["custom_dimensions"][
+                "EngineRoom App ID"
+            ]
     else:
         raise ValueError("Missing extra parameters")
 
