@@ -16,7 +16,7 @@ on:
       pipeline:
         description: Choose deploy pipeline.
         required: true
-        default: production
+        default: test
         type: choice
         options:
         - production
