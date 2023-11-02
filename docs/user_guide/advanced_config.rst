@@ -104,20 +104,10 @@ low-latency solid state drives.
 Logging
 -------
 
-To simplify debugging, enable logging for the logger named 'datareservoirio'. This is especially helpful if you experience undesired behavior in your application. 
+To simplify debugging, enable logging for the logger named :py:mod:`datareservoirio`. This is especially helpful if you experience undesired behavior in your application. 
 
-If you need a comprehensive logging solution that captures every interaction with the :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib` modules, as well as logging related to 'datareservoirio,' you can utilize the provided code.
-Additionally, if you require logging for only one of the specific packages, you may use the pre-existing loggers integrated within :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
-
-.. code-block:: python
-
-    import logging
-    
-    # Basic configuration of the root logger, including 'datareservoirio', 'requests', 'oauthlib' and 'requests-oauthlib'
-    logging.basicConfig(format='%(asctime)s %(name)-20s %(levelname)-5s %(message)s', level=logging.DEBUG)
-
-If your logging requirements are solely related to 'datareservoirio', you can use the following code. It is recommended to use this logging instead of the one mentioned above. This will provide you with an understanding of the progress made in some 
-of the processes in the package.
+If your logging requirements are solely related to :py:mod:`datareservoirio`, you can use the following code. This will provide you with an understanding of the progress made in some 
+of the processes in the package. It is recommended to use this logging.
 
 .. code-block:: python
 
@@ -135,6 +125,16 @@ The following log names can be used to fine-tune the desired log output:
 
 * datareservoirio: top level module including configuration, authentication and client.
 * datareservoirio.storage: storage module, including cache and data download.
+
+If you need a more comprehensive logging solution that captures every interaction with the :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib` modules, as well as logging related to :py:mod:`datareservoirio`, you can utilize the 
+provided code. Additionally, if you require logging for only one of the specific packages, you may use the pre-existing loggers integrated within :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
+
+.. code-block:: python
+
+    import logging
+    
+    # Basic configuration of the root logger, including 'datareservoirio', 'requests', 'oauthlib' and 'requests-oauthlib'
+    logging.basicConfig(format='%(asctime)s %(name)-20s %(levelname)-5s %(message)s', level=logging.DEBUG)
 
 Instrumentation
 ---------------
