@@ -104,26 +104,19 @@ low-latency solid state drives.
 Logging
 -------
 
-To simplify debugging, enable logging for the logger named 'datareservoirio'.
+To simplify debugging, enable logging for the logger named 'datareservoirio'. This is especially helpful if you experience undesired behavior in your application. 
+
+If you need a comprehensive logging solution that captures every interaction with the :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib` modules, as well as logging related to 'datareservoirio,' you can utilize the provided code.
+Additionally, if you require logging for only one of the specific packages, you may uset he pre-existing loggers integrated within :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
 
 .. code-block:: python
 
     import logging
     
-    # Basic configuration of the root logger, including 'datareservoirio'
-    logging.basicConfig(format='%(asctime)s %(name)-20s %(levelname)-5s %(message)s', level=logging.INFO)
+    # Basic configuration of the root logger, including 'datareservoirio', 'requests', 'oauthlib' and 'requests-oauthlib'
+    logging.basicConfig(format='%(asctime)s %(name)-20s %(levelname)-5s %(message)s', level=logging.DEBUG)
 
-.. code-block:: python
-
-    import logging
-    import datareservoirio
-    
-    # Configure desired log level specifically for 'datareservoirio'
-    logger = logging.getLogger('datareservoirio')
-    logger.setLevel(logging.DEBUG)
-    
-    # Short-hand for the above
-    datareservoirio.set_log_level(logging.DEBUG)
+If your logging requirements are solely related to 'datareservoirio', you can use the following code. It is recommended to use this logging instead of the one mentioned above. 
 
 .. code-block:: python
 
@@ -141,11 +134,6 @@ The following log names can be used to fine-tune the desired log output:
 
 * datareservoirio: top level module including configuration, authentication and client
 * datareservoirio.storage: storage module, including cache and data download
-* datareservoirio.rest_api: API module with logging of request parameters and responses
-
-If you require even more detailed logging, consider using loggers from
-:py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
-
 
 Instrumentation
 ---------------
