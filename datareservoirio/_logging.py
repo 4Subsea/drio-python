@@ -28,20 +28,15 @@ def log_exception(func):
         try:
             return func(self, *args, **kwargs)
         except Exception as e:
+            properties = {
+                "customDimensions": {
+                    "drioPackage": f"python-datareservoirio/{drio.__version__}"
+                }
+            }
             if os.getenv(ENV_VAR_ENGINE_ROOM_APP_ID) is not None:
-                engine_room_app_id = os.environ[ENV_VAR_ENGINE_ROOM_APP_ID]
-                properties = {
-                    "custom_dimensions": {
-                        "drio_package": f"python-datareservoirio/{drio.__version__}",
-                        "EngineRoom App ID": engine_room_app_id,
-                    }
-                }
-            else:
-                properties = {
-                    "custom_dimensions": {
-                        "drio_package": f"python-datareservoirio/{drio.__version__}"
-                    }
-                }
+                properties["customDimensions"]["engineRoomAppId"] = os.getenv(
+                    ENV_VAR_ENGINE_ROOM_APP_ID
+                )
             exceptions_logger.exception(e, extra=properties)
             raise e
 
