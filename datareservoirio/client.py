@@ -10,6 +10,13 @@ from uuid import uuid4
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_chain,
+    wait_fixed,
+)
 
 from ._logging import log_exception
 from .globalsettings import environment
@@ -311,8 +318,23 @@ class Client:
 
         return wrapper
 
-    @_timer
     @log_exception
+    @_timer
+    @retry(
+        stop=stop_after_attempt(
+            4
+        ),  # Attempt!, not retry attempt. Attempt 2, is 1 retry
+        retry=retry_if_exception_type(
+            (
+                ConnectionError,
+                requests.exceptions.ChunkedEncodingError,
+                requests.ReadTimeout,
+                ConnectionRefusedError,
+                requests.ConnectionError,
+            )
+        ),
+        wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
+    )
     def get(
         self,
         series_id,
