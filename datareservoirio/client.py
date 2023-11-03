@@ -330,7 +330,7 @@ class Client:
                 requests.exceptions.ChunkedEncodingError,
                 requests.ReadTimeout,
                 ConnectionRefusedError,
-                requests.ConnectionError
+                requests.ConnectionError,
             )
         ),
         wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),

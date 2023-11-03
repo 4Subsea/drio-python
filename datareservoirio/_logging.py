@@ -21,13 +21,14 @@ if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
         app_insight_handler.setLevel("WARNING")
         exceptions_logger.addHandler(app_insight_handler)
 
+
 def log_decorator(log_level):
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
-            try: 
+            try:
                 return func(self, *args, **kwargs)
-            except Exception as e: 
+            except Exception as e:
                 properties = {
                     "customDimensions": {
                         "drioPackage": f"python-datareservoirio/{drio.__version__}",
@@ -37,9 +38,11 @@ def log_decorator(log_level):
                     properties["customDimensions"]["engineRoomAppId"] = os.getenv(
                         ENV_VAR_ENGINE_ROOM_APP_ID
                     )
-                
+
                 log_function = getattr(exceptions_logger, log_level)
-                log_function(e, extra = properties)
+                log_function(e, extra=properties)
                 raise e
+
         return wrapper
+
     return decorator
