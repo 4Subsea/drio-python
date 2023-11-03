@@ -21,45 +21,25 @@ if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
         app_insight_handler.setLevel("WARNING")
         exceptions_logger.addHandler(app_insight_handler)
 
-
-def log_exception(func):
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        try:
-            return func(self, *args, **kwargs)
-        except Exception as e:
-            properties = {
-                "customDimensions": {
-                    "drioPackage": f"python-datareservoirio/{drio.__version__}"
+def log_decorator(log_level):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try: 
+                return func(self, *args, **kwargs)
+            except Exception as e: 
+                properties = {
+                    "customDimensions": {
+                        "drioPackage": f"python-datareservoirio/{drio.__version__}",
+                    }
                 }
-            }
-            if os.getenv(ENV_VAR_ENGINE_ROOM_APP_ID) is not None:
-                properties["customDimensions"]["engineRoomAppId"] = os.getenv(
-                    ENV_VAR_ENGINE_ROOM_APP_ID
-                )
-            exceptions_logger.exception(e, extra=properties)
-            raise e
-
-    return wrapper
-
-
-def log_retry(func):
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        try:
-            return func(self, *args, **kwargs)
-        except Exception as e:
-            properties = {
-                "customDimensions": {
-                    "drioPackage": f"python-datareservoirio/{drio.__version__}",
-                    "message": "exception is retried",
-                }
-            }
-            if os.getenv(ENV_VAR_ENGINE_ROOM_APP_ID) is not None:
-                properties["customDimensions"]["engineRoomAppId"] = os.getenv(
-                    ENV_VAR_ENGINE_ROOM_APP_ID
-                )
-            exceptions_logger.warning(e, extra=properties)
-            raise e
-
-    return wrapper
+                if os.getenv(ENV_VAR_ENGINE_ROOM_APP_ID) is not None:
+                    properties["customDimensions"]["engineRoomAppId"] = os.getenv(
+                        ENV_VAR_ENGINE_ROOM_APP_ID
+                    )
+                
+                log_function = getattr(exceptions_logger, log_level)
+                log_function(e, extra = properties)
+                raise e
+        return wrapper
+    return decorator

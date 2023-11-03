@@ -11,7 +11,6 @@ import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
 from tenacity import (
-    before_sleep_log,
     retry,
     retry_if_exception_type,
     stop_after_attempt,
@@ -19,7 +18,7 @@ from tenacity import (
     wait_fixed,
 )
 
-from ._logging import log_exception, log_retry
+from ._logging import log_decorator
 from .globalsettings import environment
 from .storage import Storage
 
@@ -85,7 +84,7 @@ class Client:
         response.raise_for_status()
         return response.json()
 
-    @log_exception
+    @log_decorator("exception")
     def create(self, series=None, wait_on_verification=True):
         """
         Create a new series in DataReservoir.io from a pandas.Series. If no
@@ -149,7 +148,7 @@ class Client:
         response.raise_for_status()
         return response.json()
 
-    @log_exception
+    @log_decorator("exception")
     def append(self, series, series_id, wait_on_verification=True):
         """
         Append data to an already existing series.
@@ -269,7 +268,7 @@ class Client:
         response.raise_for_status()
         return response.json()
 
-    @log_exception
+    @log_decorator("exception")
     def delete(self, series_id):
         """
         Delete a series from DataReservoir.io.
@@ -319,7 +318,7 @@ class Client:
 
         return wrapper
 
-    @log_exception
+    @log_decorator("exception")
     @_timer
     @retry(
         stop=stop_after_attempt(
@@ -331,13 +330,12 @@ class Client:
                 requests.exceptions.ChunkedEncodingError,
                 requests.ReadTimeout,
                 ConnectionRefusedError,
-                requests.ConnectionError,
+                requests.ConnectionError
             )
         ),
         wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
-        before_sleep=before_sleep_log(log, logging.INFO),
     )
-    @log_retry
+    @log_decorator("warning")
     def get(
         self,
         series_id,

@@ -3,19 +3,19 @@ import types
 
 import pytest
 
-from datareservoirio._logging import exceptions_logger, log_exception, log_retry
+from datareservoirio._logging import exceptions_logger, log_decorator
 
 
 class my_test_class:
     def __init__(self):
         pass
 
-    @log_exception
-    @log_retry
+    @log_decorator("exception")
+    @log_decorator("warning")
     def divide_zero(self, num):
         return num / 0
 
-    @log_exception
+    @log_decorator("exception")
     def divide_one(self, num):
         return num / 1
 
