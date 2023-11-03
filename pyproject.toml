@@ -29,7 +29,8 @@ dependencies = [
     "requests-oauthlib",
     "importlib_resources",
     "opencensus-ext-azure",
-    "tenacity"
+    "tenacity",
+    "urllib3 > 2"
 ]
 
 [project.urls]
