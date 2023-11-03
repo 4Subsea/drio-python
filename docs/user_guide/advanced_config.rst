@@ -104,7 +104,7 @@ low-latency solid state drives.
 Logging
 -------
 
-To simplify debugging, enable logging for the logger named :py:mod:`datareservoirio`. This is especially helpful if you experience undesired behavior in your application. 
+To simplify debugging, enable logging for the logger named 'datareservoirio'. This is especially helpful if you experience undesired behavior in your application. 
 
 If your logging requirements are solely related to :py:mod:`datareservoirio`, you can use the following code. This will provide you with an understanding of the progress made in some 
 of the processes in the package. It is recommended to use this logging.
@@ -127,7 +127,7 @@ The following log names can be used to fine-tune the desired log output:
 * datareservoirio.storage: storage module, including cache and data download.
 
 If you need a more comprehensive logging solution that captures every interaction with the :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib` modules, as well as logging related to :py:mod:`datareservoirio`, you can utilize the 
-provided code. Additionally, if you require logging for only one of the specific packages, you may use the pre-existing loggers integrated within :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
+provided code. If you require logging for only one of the specific packages, you may use the pre-existing loggers integrated within :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
 
 .. code-block:: python
 
