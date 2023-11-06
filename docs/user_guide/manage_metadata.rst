@@ -1,7 +1,8 @@
 Manage metadata
 ================
 Similar to series, you can add, update, and delete metadata. In addition, you
-can assign a metadata entry to one or more series.
+can assign a metadata entry to one or more series.For a more comprehensive 
+description of the metadata feature, see `docs.4insight.io`_
 
 Create metadata entries
 -----------------------
@@ -62,3 +63,4 @@ a new one:
 
 .. _DataReservoir.io: https://www.datareservoir.io/
 .. _Pandas: https://pandas.pydata.org/
+.. _docs.4insight.io: https://docs.4insight.io/tag/DataReservoir/article/7a07213f-e6dd-4b18-8e89-db3215b389e8/Metadata-on-timeseries
