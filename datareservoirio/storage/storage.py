@@ -298,32 +298,17 @@ def _blob_to_df(blob_url):
         retries = requests.adapters.Retry(total=5, backoff_factor=0.4, backoff_max=10)
         session.mount("https://", requests.adapters.HTTPAdapter(max_retries=retries))
         response = session.request(method="get", url=blob_url, stream=True, timeout=30)
-    response.raise_for_status()
-
-    with io.BytesIO() as stream:
-        for chunk in response.iter_content(chunk_size=512):
-            stream.write(chunk)
-
-        stream.seek(0)
-        if _check_malformatted(stream):
-            kwargs = {
-                "sep": "^([0-9]+),",
-                "usecols": (1, 2),
-                "engine": "python",
-            }
-        else:
-            kwargs = {"sep": ","}
+        response.raise_for_status()
 
         df = pd.read_csv(
-            stream,
+            response.content,
             header=None,
             names=("index", "values"),
             dtype={"index": "int64", "values": "str"},
             encoding="utf-8",
-            **kwargs,
         ).astype({"values": "float64"}, errors="ignore")
 
-    return df
+        return df
 
 
 def _df_to_blob(df, blob_url):
