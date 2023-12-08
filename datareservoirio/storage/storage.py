@@ -301,6 +301,7 @@ def _blob_to_df(blob_url):
         content = io.BytesIO(response.content)
     response.raise_for_status()
 
+    #To handle malformed csv, DRIO assumes that everything is a two column csv. Must handle when there is more than or different delimiters besides a single comma on each line.
     if _check_malformatted(content):
         kwargs = {
             "sep": "^([0-9]+),",
