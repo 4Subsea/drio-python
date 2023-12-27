@@ -10,7 +10,6 @@ from threading import RLock as Lock
 import pandas as pd
 import requests
 
-from .._utils import _check_malformatted
 from ..appdirs import user_cache_dir
 from .cache_engine import CacheIO, _CacheIndex
 
@@ -297,28 +296,22 @@ def _blob_to_df(blob_url):
     with requests.Session() as session:
         retries = requests.adapters.Retry(total=5, backoff_factor=0.4, backoff_max=10)
         session.mount("https://", requests.adapters.HTTPAdapter(max_retries=retries))
-        response = session.request(method="get", url=blob_url, timeout=30)
-        content = io.BytesIO(response.content)
-    response.raise_for_status()
+        response = session.request(method="get", url=blob_url, timeout=30, stream=True)
+        response.raise_for_status()
 
-    # To handle malformed csv, DRIO assumes that everything is a two column csv. Must handle when there is more than or different delimiters besides a single comma on each line.
-    if _check_malformatted(content):
-        kwargs = {
-            "sep": "^([0-9]+),",
-            "usecols": (1, 2),
-            "engine": "python",
-        }
-    else:
-        kwargs = {"sep": ","}
+        response.encoding = "utf-8"  # enforce encoding
 
-    df = pd.read_csv(
-        content,
-        header=None,
-        names=("index", "values"),
-        dtype={"index": "int64", "values": "str"},
-        encoding="utf-8",
-        **kwargs,
-    ).astype({"values": "float64"}, errors="ignore")
+        content = [
+            line.split(",", maxsplit=1)
+            for line in response.iter_lines(decode_unicode=True)
+            if line
+        ]
+
+    df = (
+        pd.DataFrame(content, columns=("index", "values"), copy=False)
+        .astype({"index": "int64"})
+        .astype({"values": "float64"}, errors="ignore")
+    )
 
     return df
 
