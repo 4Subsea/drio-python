@@ -28,9 +28,7 @@ class DataHandler:
         """Read data from CSV file"""
         with open(path, "r", encoding="utf-8") as fp:
             content = [
-                line.rstrip().split(",", maxsplit=1)
-                for line in fp.readlines()
-                if line
+                line.rstrip().split(",", maxsplit=1) for line in fp.readlines() if line
             ]
 
         df = (
