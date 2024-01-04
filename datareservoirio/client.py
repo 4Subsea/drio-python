@@ -5,6 +5,7 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
 from operator import itemgetter
+from urllib.parse import urlencode
 from uuid import uuid4
 
 import pandas as pd
@@ -408,6 +409,76 @@ class Client:
 
         if convert_date:
             series.index = pd.to_datetime(series.index, utc=True)
+
+        return series
+
+
+    def get_samples_aggregate(self, series_id, start=None, end=None, aggregation_period=None, aggregation_function=None, max_page_size=None):
+        """
+        Retrieve a series from DataReservoir.io using the samples/aggregate endpoint.
+
+        Parameters
+        ----------
+        series_id : str
+            Identifier of the series to download
+        start: optional
+            TODO
+        end: optional
+            TODO
+        aggregation_function : str
+            TODO
+        aggregation_period : str
+            TODO
+
+        Returns
+        -------
+        pandas.Series
+            Series data
+        """
+        params = {}
+        if not aggregation_period:
+            aggregation_period = "15m"
+        
+        if not aggregation_function:    
+            aggregation_function = "Avg"
+        
+        if max_page_size:
+            params["maxPageSize"] = max_page_size
+
+        if not start:
+            # TODO
+            start = "2024-01-03"
+
+        if not end:
+            # TODO
+            end = "2024-01-04"
+
+        params["aggregationPeriod"] = aggregation_period
+        params["aggregationFunction"] = aggregation_function
+        params["start"] = start
+        params["end"] = end
+
+        url = f"{environment.api_base_url}reservoir/timeseries/{series_id}/samples/aggregate?{urlencode(params)}"
+
+        print(url)
+
+        response = self._auth_session.get(
+            url,
+            timeout=_TIMEOUT_DEAULT,
+        )
+        response.raise_for_status()
+        response_json = response.json()
+        
+        content = [
+            (sample["Timestamp"], sample["Value"])
+            for sample in response["value"]
+        ]
+
+        df = pd.DataFrame(content, columns=("index", "values"), copy=False)
+            # .astype({"index": "int64"})
+            # .astype({"values": "float64"}, errors="ignore")
+
+        series = df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
 
         return series
 
