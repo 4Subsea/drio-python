@@ -133,8 +133,11 @@ class Test_Client:
         series_expect = group1_data.as_series()
         pd.testing.assert_series_equal(series_out, series_expect)
         # Check that the correct HTTP request is made
-        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
-        mock_requests.call_args_list[0].kwargs["url"] = request_url_expect
+        if (start and end):
+            request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
+        else:
+            request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=-9214560000000000000&end=9214646399999999999"
+        assert mock_requests.call_args_list[0].args[1] == request_url_expect
 
     def test_get_convert_date(self, client, group1_data, response_cases):
         response_cases.set("group1")
@@ -341,7 +344,7 @@ class Test_Client:
 
         # Check that the correct URL is poked
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f"
-        mock_requests.call_args.kwargs["url"] = request_url_expect
+        assert mock_requests.call_args.args[1] == request_url_expect
 
     def test_create(self, client, monkeypatch, response_cases):
         response_cases.set("datareservoirio-api")
