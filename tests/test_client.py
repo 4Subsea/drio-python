@@ -133,7 +133,7 @@ class Test_Client:
         series_expect = group1_data.as_series()
         pd.testing.assert_series_equal(series_out, series_expect)
         # Check that the correct HTTP request is made
-        if (start and end):
+        if start and end:
             request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
         else:
             request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=-9214560000000000000&end=9214646399999999999"

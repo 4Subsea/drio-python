@@ -12,8 +12,13 @@ from uuid import uuid4
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
-from tenacity import (retry, retry_if_exception_type, stop_after_attempt,
-                      wait_chain, wait_fixed)
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_chain,
+    wait_fixed,
+)
 
 from ._logging import log_decorator
 from .globalsettings import environment
