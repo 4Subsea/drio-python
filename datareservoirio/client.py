@@ -3,6 +3,7 @@ import time
 import warnings
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from functools import wraps
 from operator import itemgetter
 from urllib.parse import urlencode
@@ -286,7 +287,7 @@ class Client:
         )
 
     def _timer(func):
-        """Decorator used to log latency of the ``get`` method"""
+        """Decorator used to log latency of the ``get`` and ``get_samples_aggregate`` method"""
 
         @wraps(func)
         def wrapper(self, series_id, start=None, end=None, **kwargs):
@@ -412,8 +413,19 @@ class Client:
 
         return series
 
-
-    def get_samples_aggregate(self, series_id, start=None, end=None, aggregation_period=None, aggregation_function=None, max_page_size=None):
+    @log_decorator("exception")
+    @_timer
+    @log_decorator("warning")
+    def get_samples_aggregate(
+        self,
+        series_id,
+        start=None,
+        end=None,
+        aggregation_period=None,
+        aggregation_function=None,
+        max_page_size=None,
+        convert_date=True,
+    ):
         """
         Retrieve a series from DataReservoir.io using the samples/aggregate endpoint.
 
@@ -421,64 +433,112 @@ class Client:
         ----------
         series_id : str
             Identifier of the series to download
-        start: optional
-            TODO
-        end: optional
-            TODO
+        start: required
+            Start time (inclusive) of the aggregated series given as anything
+            pandas.to_datetime is able to parse. Date must be within the past 90 days.
+        end:
+            Stop time (exclusive) of the aggregated series given as anything
+            pandas.to_datetime is able to parse. Date must be within the past 90 days.
         aggregation_function : str
-            TODO
+            One of "Avg", "Min", "Max", "Stdev".
         aggregation_period : str
-            TODO
+            Used in combination with aggregation function to specify the period for aggregation.
+            Aggregation period is maximum 24 hours. Values can be in units of h, m, s, ms,
+            microsecond or tick. Use 100 ms instead of 0.1s for 10Hz.
+        max_page_size : optional
+            Maximum number of samples to return per page. The method automatically follows links
+            to next pages and returns the entire series.
 
         Returns
         -------
         pandas.Series
             Series data
         """
-        params = {}
-        if not aggregation_period:
-            aggregation_period = "15m"
-        
-        if not aggregation_function:    
-            aggregation_function = "Avg"
-        
-        if max_page_size:
-            params["maxPageSize"] = max_page_size
-
         if not start:
-            # TODO
-            start = "2024-01-03"
+            # Required parameter
+            raise ValueError("You must specify the start date in ISO 8601 format.")
 
         if not end:
-            # TODO
-            end = "2024-01-04"
+            # Required parameter
+            raise ValueError("You must specify the end date in ISO 8601 format.")
+
+        if not aggregation_period:
+            # Required parameter
+            raise ValueError("You must specify the aggregation period.")
+
+        if not aggregation_function:
+            # Required parameter
+            raise ValueError("You must specify the aggregation function.")
+
+        start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).isoformat()
+        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).isoformat()
+
+        params = {}
+
+        if max_page_size:
+            params["maxPageSize"] = max_page_size
 
         params["aggregationPeriod"] = aggregation_period
         params["aggregationFunction"] = aggregation_function
         params["start"] = start
         params["end"] = end
 
-        url = f"{environment.api_base_url}reservoir/timeseries/{series_id}/samples/aggregate?{urlencode(params)}"
+        next_page_link = f"{environment.api_base_url}reservoir/timeseries/{series_id}/samples/aggregate?{urlencode(params)}"
 
-        print(url)
-
-        response = self._auth_session.get(
-            url,
-            timeout=_TIMEOUT_DEAULT,
+        df = (
+            pd.DataFrame(columns=("index", "values"))
+            .astype({"index": "int64"})
+            .astype({"values": "float64"}, errors="ignore")
         )
-        response.raise_for_status()
-        response_json = response.json()
-        
-        content = [
-            (sample["Timestamp"], sample["Value"])
-            for sample in response["value"]
-        ]
 
-        df = pd.DataFrame(content, columns=("index", "values"), copy=False)
-            # .astype({"index": "int64"})
-            # .astype({"values": "float64"}, errors="ignore")
+        @retry(
+            stop=stop_after_attempt(
+                4
+            ),  # Attempt!, not retry attempt. Attempt 2, is 1 retry
+            retry=retry_if_exception_type(
+                (
+                    ConnectionError,
+                    requests.exceptions.ChunkedEncodingError,
+                    requests.ReadTimeout,
+                    ConnectionRefusedError,
+                    requests.ConnectionError,
+                )
+            ),
+            wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
+        )
+        def get_samples_aggregate_page(url):
+            return self._auth_session.get(
+                url,
+                timeout=_TIMEOUT_DEAULT,
+            )
 
-        series = df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
+        while next_page_link:
+            response = get_samples_aggregate_page(next_page_link)
+            response.raise_for_status()
+            response_json = response.json()
+            if "@odata.nextLink" in response_json:
+                next_page_link = response_json["@odata.nextLink"]
+            else:
+                next_page_link = None
+
+            content = [
+                (pd.to_datetime(sample["Timestamp"]), sample["Value"])
+                for sample in response_json["value"]
+            ]
+
+            new_df = (
+                pd.DataFrame(content, columns=("index", "values"), copy=False)
+                .astype({"index": "int64"})
+                .astype({"values": "float64"}, errors="ignore")
+            )
+
+            df = pd.concat([df, new_df])
+
+        series = df.set_index("index").squeeze("columns").copy(deep=True)
+
+        series.index.name = None  # unsure what's the reason for this
+        if convert_date:
+            series.index = pd.to_datetime(series.index, utc=True)
 
         return series
 
