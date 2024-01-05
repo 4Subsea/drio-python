@@ -448,7 +448,9 @@ class Client:
         max_page_size : optional
             Maximum number of samples to return per page. The method automatically follows links
             to next pages and returns the entire series.
-
+        convert_date : bool
+            If True (default), the index is converted to DatetimeIndex.
+            If False, index is returned as ascending integers.
         Returns
         -------
         pandas.Series
