@@ -528,10 +528,9 @@ class Client:
                 for sample in response_json["value"]
             ]
 
-            new_df = (
-                pd.DataFrame(content, columns=("index", "values"), copy=False)
-                .astype({"values": "float64"}, errors="ignore")
-            )
+            new_df = pd.DataFrame(
+                content, columns=("index", "values"), copy=False
+            ).astype({"values": "float64"}, errors="ignore")
 
             df = pd.concat([df, new_df])
 
