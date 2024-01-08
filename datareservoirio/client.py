@@ -530,7 +530,6 @@ class Client:
 
             new_df = (
                 pd.DataFrame(content, columns=("index", "values"), copy=False)
-                .astype({"index": "int64"})
                 .astype({"values": "float64"}, errors="ignore")
             )
 
