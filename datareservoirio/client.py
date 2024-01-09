@@ -446,7 +446,7 @@ class Client:
             microsecond or tick. Use 100 ms instead of 0.1s for 10Hz.
         max_page_size : optional
             Maximum number of samples to return per page. The method automatically follows links
-            to next pages and returns the entire series.
+            to next pages and returns the entire series. For advanced usage.
         Returns
         -------
         pandas.Series
