@@ -424,7 +424,6 @@ class Client:
         aggregation_period=None,
         aggregation_function=None,
         max_page_size=None,
-        convert_date=True,
     ):
         """
         Retrieve a series from DataReservoir.io using the samples/aggregate endpoint.
@@ -448,9 +447,6 @@ class Client:
         max_page_size : optional
             Maximum number of samples to return per page. The method automatically follows links
             to next pages and returns the entire series.
-        convert_date : bool
-            If True (default), the index is converted to DatetimeIndex.
-            If False, index is returned as ascending integers.
         Returns
         -------
         pandas.Series
@@ -524,7 +520,7 @@ class Client:
                 next_page_link = None
 
             content = [
-                (pd.to_datetime(sample["Timestamp"]), sample["Value"])
+                (pd.to_datetime(sample["Timestamp"], utc=True), sample["Value"])
                 for sample in response_json["value"]
             ]
 
@@ -537,8 +533,6 @@ class Client:
         series = df.set_index("index").squeeze("columns").copy(deep=True)
 
         series.index.name = None  # unsure what's the reason for this
-        if convert_date:
-            series.index = pd.to_datetime(series.index, utc=True)
 
         return series
 
