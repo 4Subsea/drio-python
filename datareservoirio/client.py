@@ -455,19 +455,19 @@ class Client:
         """
         if not start:
             # Required parameter
-            raise ValueError("You must specify the start date in ISO 8601 format.")
+            raise ValueError("You must specify the start date in ISO 8601 format, for example 2023-12-01")
 
         if not end:
             # Required parameter
-            raise ValueError("You must specify the end date in ISO 8601 format.")
+            raise ValueError("You must specify the end date in ISO 8601 format, for example 2023-12-31.")
 
         if not aggregation_period:
             # Required parameter
-            raise ValueError("TODO Aggregation period must be one of: ")
+            raise ValueError("Aggregation period must be specified using integers and one of these units: h, m, s, ms, microsecond or tick, or their Pandas equivalents")
 
         if not aggregation_function:
             # Required parameter
-            raise ValueError("TODO You must specify the aggregation function.")
+            raise ValueError("Aggregation function must be one of: Avg (mean), Min, Max, Stdev (std)")
 
         # Translating some pandas terms to API terms
         # Note the API is case insensitive so both min and Min will work
