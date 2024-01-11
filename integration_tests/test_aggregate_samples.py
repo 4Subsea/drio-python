@@ -40,7 +40,9 @@ def test_non_paged(cleanup_series):
     end = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
     start = end - timedelta(hours=1)
     freq = pd.to_timedelta(1, "s")
-    index = pd.date_range(start, end, freq=freq, tz="utc", inclusive="left")
+    index = pd.date_range(
+        start, end, freq=freq, tz="utc", inclusive="left", name="index"
+    )
     series = pd.Series(data=np.random.random(len(index)), index=index, name="values")
     response_create = client.create(series=series, wait_on_verification=True)
     series_id = response_create["TimeSeriesId"]
@@ -86,7 +88,9 @@ def test_paged(cleanup_series):
     start = end - timedelta(hours=1)
     freq = pd.to_timedelta(1, "s")
 
-    index = pd.date_range(start, end, freq=freq, tz="utc", inclusive="left")
+    index = pd.date_range(
+        start, end, freq=freq, tz="utc", inclusive="left", name="index"
+    )
     series = pd.Series(data=np.random.random(len(index)), index=index, name="values")
     response_create = client.create(series=series, wait_on_verification=True)
     series_id = response_create["TimeSeriesId"]
