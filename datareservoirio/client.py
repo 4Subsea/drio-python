@@ -462,12 +462,18 @@ class Client:
 
         if not aggregation_period:
             # Required parameter
-            raise ValueError("You must specify the aggregation period.")
+            raise ValueError("TODO Aggregation period must be one of: ")
 
         if not aggregation_function:
             # Required parameter
-            raise ValueError("You must specify the aggregation function.")
+            raise ValueError("TODO You must specify the aggregation function.")
 
+        # Translating some pandas terms to API terms
+        # Note the API is case insensitive so both min and Min will work
+        function_translation = {"std": "Stdev", "mean": "Avg"}
+        if aggregation_function in function_translation:
+            aggregation_function = function_translation[aggregation_function]
+        
         start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).isoformat()
         end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).isoformat()
 
