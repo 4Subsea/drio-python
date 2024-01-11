@@ -539,10 +539,7 @@ class Client:
             response = get_samples_aggregate_page(next_page_link)
             response.raise_for_status()
             response_json = response.json()
-            if "@odata.nextLink" in response_json:
-                next_page_link = response_json["@odata.nextLink"]
-            else:
-                next_page_link = None
+            next_page_link = response_json.get("@odata.nextLink", None)
 
             content = [
                 (pd.to_datetime(sample["Timestamp"], utc=True), sample["Value"])
