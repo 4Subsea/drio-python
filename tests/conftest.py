@@ -55,7 +55,7 @@ def mock_requests(request, monkeypatch, response_cases):
     """Patch requests.sessions.Session.request for all tests."""
     mock = Mock(
         wraps=ResponseFactory(
-            response_cases, request.node.iter_markers("response_irrelevant")
+            response_cases, request.node.get_closest_marker("response_irrelevant")
         )
     )
     monkeypatch.setattr("requests.sessions.Session.request", mock)
