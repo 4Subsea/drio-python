@@ -887,3 +887,66 @@ class Test_Client:
 
         attempts = client_with_invalid_json_error.get.retry.statistics["attempt_number"]
         assert attempts == 1
+
+    @pytest.mark.response_irrelevant
+    @pytest.mark.parametrize(
+        "aggregation_function, expected", [("mean", "Avg"), ("std", "Stdev")]
+    )
+    def test_aggregation_function_gets_translated(
+        self, client, mock_requests, aggregation_function, expected, response_cases
+    ):
+        response_cases.set("datareservoirio-api")
+
+        client.get_samples_aggregate(
+            "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
+            start="2023-12-01",
+            end="2023-12-02",
+            aggregation_period="15m",
+            aggregation_function=aggregation_function,
+        )
+
+        request_url = mock_requests.call_args.args[1]
+        assert f"aggregationFunction={expected}" in request_url
+
+    @pytest.mark.response_irrelevant
+    @pytest.mark.parametrize(
+        "aggregation_period, expected",
+        [
+            ("15minutes", "15m"),
+            ("15minute", "15m"),
+            ("15min", "15m"),
+            ("15hours", "15h"),
+            ("15hour", "15h"),
+            ("15hr", "15h"),
+            ("15seconds", "15s"),
+            ("15second", "15s"),
+            ("15sec", "15s"),
+            ("15milliseconds", "15ms"),
+            ("15millisecond", "15ms"),
+            ("15millis", "15ms"),
+            ("15milli", "15ms"),
+            ("15microseconds", "15microsecond"),
+            ("15micros", "15microsecond"),
+            ("15micro", "15microsecond"),
+        ],
+    )
+    def test_aggregation_period(
+        self,
+        monkeypatch,
+        client,
+        mock_requests,
+        aggregation_period,
+        expected,
+        response_cases,
+    ):
+        response_cases.set("datareservoirio-api")
+        client.get_samples_aggregate(
+            "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
+            start="2023-12-01",
+            end="2023-12-02",
+            aggregation_period=aggregation_period,
+            aggregation_function="mean",
+        )
+
+        request_url = mock_requests.call_args.args[1]
+        assert f"aggregationPeriod={expected}" in request_url

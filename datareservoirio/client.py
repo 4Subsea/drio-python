@@ -21,6 +21,7 @@ from tenacity import (
 )
 
 from ._logging import log_decorator
+from ._utils import function_translation, period_translation
 from .globalsettings import environment
 from .storage import Storage
 
@@ -470,10 +471,20 @@ class Client:
 
         # Translating some pandas terms to API terms
         # Note the API is case insensitive so both min and Min will work
-        function_translation = {"std": "Stdev", "mean": "Avg"}
         if aggregation_function in function_translation:
             aggregation_function = function_translation[aggregation_function]
-        
+
+        for period_unit in period_translation:
+            if (
+                aggregation_period.endswith(period_unit)
+                and aggregation_period[-len(period_unit) - 1].isnumeric()
+            ):
+                aggregation_period = (
+                    aggregation_period[: -len(period_unit)]
+                    + period_translation[period_unit]
+                )
+                break
+
         start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).isoformat()
         end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).isoformat()
 
@@ -537,8 +548,6 @@ class Client:
             df = pd.concat([df, new_df])
 
         series = df.set_index("index").squeeze("columns").copy(deep=True)
-
-        series.index.name = None  # unsure what's the reason for this
 
         return series
 

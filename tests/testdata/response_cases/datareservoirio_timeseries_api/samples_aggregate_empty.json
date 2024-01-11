@@ -1,0 +1,4 @@
+{
+    "@odata.context": "https://reservoir-api-test.4subsea.net/api/reservoir/timeseries/samples/aggregate/$metadata#Samples",
+    "value": []
+}
