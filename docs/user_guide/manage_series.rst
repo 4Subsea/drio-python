@@ -124,6 +124,26 @@ You can access any data you have ``TimeSeriesId`` (and authorization) for:
     :py:meth:`Client.get` returns :py:class:`pandas.Series`.
 
 
+Access existing data with aggregation
+-------------------------------------
+
+You can also access any data you have ``TimeSeriesId`` (and authorization) for with applied aggregation using:
+
+.. code-block:: python
+
+    # Get entire timeseries
+    timeseries = client.get_samples_aggregate(series_id, start='2018-01-01',
+                            end='2018-01-02', aggregation_period='15m',
+                            aggregation_function='Avg')
+
+.. note::
+
+    :py:meth:`Client.get_samples_aggregate` also returns :py:class:`pandas.Series`. The :py:mod:`start`, :py:mod:`end`, :py:mod:`aggregation_period` and :py:mod:`aggregation_function` parameters are required.   
+
+.. important::
+
+    Retrieving aggregated data is available only for the last 90 days.
+
 Delete data
 -----------
 
@@ -138,5 +158,7 @@ is removed from the `DataReservoir.io`_ inventory:
 
 .. _DataReservoir.io: https://www.datareservoir.io/
 .. _Pandas: https://pandas.pydata.org/
+
+
 
 
