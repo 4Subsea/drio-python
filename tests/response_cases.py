@@ -236,6 +236,22 @@ DATARESERVOIRIO_TIMESERIES_API = {
         "status_code": 200,
         "reason": "OK",
     },
+    # description: TimeSeries samples/aggregate response (empty data)
+    # Note this doesn't contain the entire URL as it's meant to be used with response_irrelevant marker
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/reservoir/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/samples/aggregate",
+    ): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "samples_aggregate_empty.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
 }
 
 

@@ -142,3 +142,10 @@ Instrumentation
 For monitoring purposes, the external logger can be enabled to report errors and performance metrics to 4insight Team.  
 
 To enable logging, environmental variable ``DRIO_PYTHON_APPINSIGHTS`` needs to be set to ``true``.
+
+Using the :py:mod:`max_page_size` parameter in :py:mod:`get_samples_aggregate` method
+-------------------------------------------------------------------------------------
+
+The :py:meth:`Client.get_samples_aggregate` method uses an endpoint that has support for paging of responses. This means that instead of making one big request, it might make a series of smaller requests traversing links to next pages returned in each partial response.
+
+Normally this is something you don't have to think about. In case you do want to change the maximum number of results returned in one page, you can use the parameter called ``max_page_size`` to alter this number. 

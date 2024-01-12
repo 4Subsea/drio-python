@@ -51,9 +51,13 @@ def response_cases():
 
 
 @pytest.fixture(autouse=True)
-def mock_requests(monkeypatch, response_cases):
+def mock_requests(request, monkeypatch, response_cases):
     """Patch requests.sessions.Session.request for all tests."""
-    mock = Mock(wraps=ResponseFactory(response_cases))
+    mock = Mock(
+        wraps=ResponseFactory(
+            response_cases, request.node.get_closest_marker("response_irrelevant")
+        )
+    )
     monkeypatch.setattr("requests.sessions.Session.request", mock)
     return mock
 
@@ -68,8 +72,9 @@ class ResponseFactory:
         Dictionary with (METHOD, URL) as key.
     """
 
-    def __init__(self, response_cases):
+    def __init__(self, response_cases, is_response_irrelevant):
         self._response_cases = response_cases
+        self._is_response_irrelevant = is_response_irrelevant
 
     def __call__(self, method, url, **kwargs):
         """
@@ -82,7 +87,11 @@ class ResponseFactory:
         since ``self`` passed to the ``request`` method. See ``mock_requests``.
         """
         try:
-            spec = self._response_cases[(method.upper(), url)].copy()
+            if self._is_response_irrelevant:
+                lookup_url = url.split("?")[0]
+            else:
+                lookup_url = url
+            spec = self._response_cases[(method.upper(), lookup_url)].copy()
         except KeyError:
             raise ValueError(f"Unrecognized METHOD + URL: {method.upper()} {url}")
         else:

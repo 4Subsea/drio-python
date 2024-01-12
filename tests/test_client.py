@@ -133,8 +133,11 @@ class Test_Client:
         series_expect = group1_data.as_series()
         pd.testing.assert_series_equal(series_out, series_expect)
         # Check that the correct HTTP request is made
-        request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
-        mock_requests.call_args_list[0].kwargs["url"] = request_url_expect
+        if start and end:
+            request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=1672358400000000000&end=1672703939999999999"
+        else:
+            request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/2fee7f8a-664a-41c9-9b71-25090517c275/data/days?start=-9214560000000000000&end=9214646399999999999"
+        assert mock_requests.call_args_list[0].args[1] == request_url_expect
 
     def test_get_convert_date(self, client, group1_data, response_cases):
         response_cases.set("group1")
@@ -341,7 +344,7 @@ class Test_Client:
 
         # Check that the correct URL is poked
         request_url_expect = "https://reservoir-api.4subsea.net/api/timeseries/7bd106dd-d87f-4504-a888-6aeaff1ec31f"
-        mock_requests.call_args.kwargs["url"] = request_url_expect
+        assert mock_requests.call_args.args[1] == request_url_expect
 
     def test_create(self, client, monkeypatch, response_cases):
         response_cases.set("datareservoirio-api")
@@ -884,3 +887,66 @@ class Test_Client:
 
         attempts = client_with_invalid_json_error.get.retry.statistics["attempt_number"]
         assert attempts == 1
+
+    @pytest.mark.response_irrelevant
+    @pytest.mark.parametrize(
+        "aggregation_function, expected", [("mean", "Avg"), ("std", "Stdev")]
+    )
+    def test_aggregation_function_gets_translated(
+        self, client, mock_requests, aggregation_function, expected, response_cases
+    ):
+        response_cases.set("datareservoirio-api")
+
+        client.get_samples_aggregate(
+            "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
+            start="2023-12-01",
+            end="2023-12-02",
+            aggregation_period="15m",
+            aggregation_function=aggregation_function,
+        )
+
+        request_url = mock_requests.call_args.args[1]
+        assert f"aggregationFunction={expected}" in request_url
+
+    @pytest.mark.response_irrelevant
+    @pytest.mark.parametrize(
+        "aggregation_period, expected",
+        [
+            ("15minutes", "15m"),
+            ("15minute", "15m"),
+            ("15min", "15m"),
+            ("15hours", "15h"),
+            ("15hour", "15h"),
+            ("15hr", "15h"),
+            ("15seconds", "15s"),
+            ("15second", "15s"),
+            ("15sec", "15s"),
+            ("15milliseconds", "15ms"),
+            ("15millisecond", "15ms"),
+            ("15millis", "15ms"),
+            ("15milli", "15ms"),
+            ("15microseconds", "15microsecond"),
+            ("15micros", "15microsecond"),
+            ("15micro", "15microsecond"),
+        ],
+    )
+    def test_aggregation_period(
+        self,
+        monkeypatch,
+        client,
+        mock_requests,
+        aggregation_period,
+        expected,
+        response_cases,
+    ):
+        response_cases.set("datareservoirio-api")
+        client.get_samples_aggregate(
+            "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
+            start="2023-12-01",
+            end="2023-12-02",
+            aggregation_period=aggregation_period,
+            aggregation_function="mean",
+        )
+
+        request_url = mock_requests.call_args.args[1]
+        assert f"aggregationPeriod={expected}" in request_url

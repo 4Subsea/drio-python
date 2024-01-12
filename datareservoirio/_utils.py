@@ -63,3 +63,33 @@ class DataHandler:
             df.to_csv(fp, lineterminator="\n", **kwargs)
             csv = fp.getvalue()
         return csv
+
+
+# Translation of user input parameters of the samples/aggregate method for more convenient use (matching pandas)
+
+function_translation = {"std": "Stdev", "mean": "Avg"}
+
+period_translation = {
+    "hours": "h",
+    "hour": "h",
+    "hr": "h",
+    "h": "h",
+    "minutes": "m",
+    "minute": "m",
+    "min": "m",
+    "m": "m",
+    "seconds": "s",
+    "second": "s",
+    "sec": "s",
+    "s": "s",
+    "milliseconds": "ms",
+    "millisecond": "ms",
+    "millis": "ms",
+    "milli": "ms",
+    "ms": "ms",
+    "microseconds": "microsecond",
+    "microsecond": "microsecond",
+    "micros": "microsecond",
+    "micro": "microsecond",
+    "tick": "tick",
+}
