@@ -15,8 +15,8 @@ from .cache_engine import CacheIO, _CacheIndex
 
 log = logging.getLogger(__name__)
 
-_AZURE_SESSION = requests.Session()
-_AZURE_SESSION.mount(
+_BLOBSTORAGE_SESSION = requests.Session()
+_BLOBSTORAGE_SESSION .mount(
     "https://",
     requests.adapters.HTTPAdapter(
         max_retries=requests.adapters.Retry(total=5, backoff_factor=0.4, backoff_max=10)
@@ -284,7 +284,7 @@ class StorageCache(CacheIO):
             )
 
 
-def _blob_to_df(blob_url, session=_AZURE_SESSION):
+def _blob_to_df(blob_url, session=_BLOBSTORAGE_SESSION):
     """
     Download blob from remote storage and present as a Pandas Series.
 
@@ -293,7 +293,7 @@ def _blob_to_df(blob_url, session=_AZURE_SESSION):
     blob_url : str
         Fully formated URL to the blob. Must contain all the required parameters
         in the URL.
-    session : requests.Session, default _AZURE_SESSION
+    session : requests.Session, default _BLOBSTORAGE_SESSION
         Session object to make HTTP calls.
 
     Return
@@ -322,7 +322,7 @@ def _blob_to_df(blob_url, session=_AZURE_SESSION):
     return df
 
 
-def _df_to_blob(df, blob_url, session=_AZURE_SESSION):
+def _df_to_blob(df, blob_url, session=_BLOBSTORAGE_SESSION):
     """
     Upload a Pandas Dataframe as blob to a remote storage.
 
@@ -334,7 +334,7 @@ def _df_to_blob(df, blob_url, session=_AZURE_SESSION):
     df : pandas.DataFrame
         Pandas DataFrame where column ``index`` is nano-seconds since epoch
         (``Int64``) and column ``values`` are ``str`` or ``float64``.
-    session : requests.Session, default _AZURE_SESSION
+    session : requests.Session, default _BLOBSTORAGE_SESSION
         Session object to make HTTP calls.
 
     """
