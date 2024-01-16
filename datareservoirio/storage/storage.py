@@ -16,7 +16,7 @@ from .cache_engine import CacheIO, _CacheIndex
 log = logging.getLogger(__name__)
 
 _BLOBSTORAGE_SESSION = requests.Session()
-_BLOBSTORAGE_SESSION .mount(
+_BLOBSTORAGE_SESSION.mount(
     "https://",
     requests.adapters.HTTPAdapter(
         max_retries=requests.adapters.Retry(total=5, backoff_factor=0.4, backoff_max=10)
