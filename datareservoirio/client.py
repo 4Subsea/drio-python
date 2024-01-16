@@ -440,7 +440,7 @@ class Client:
             Stop time (exclusive) of the aggregated series given as anything
             pandas.to_datetime is able to parse. Date must be within the past 90 days.
         aggregation_function : str
-            One of "Avg", "Min", "Max", "Stdev".
+            One of "mean", "min", "max", "std".
         aggregation_period : str
             Used in combination with aggregation function to specify the period for aggregation.
             Aggregation period is maximum 24 hours. Values can be in units of h, m, s, ms,
@@ -481,6 +481,9 @@ class Client:
         # Note the API is case insensitive so both min and Min will work
         if aggregation_function in function_translation:
             aggregation_function = function_translation[aggregation_function]
+
+        if not aggregation_period[0].isnumeric():
+            aggregation_period = "1" + aggregation_period
 
         for period_unit in period_translation:
             if (
