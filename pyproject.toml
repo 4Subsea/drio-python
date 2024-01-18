@@ -30,7 +30,8 @@ dependencies = [
     "importlib_resources",
     "opencensus-ext-azure",
     "tenacity",
-    "urllib3 > 2"
+    "urllib3 > 2",
+    "tqdm"
 ]
 
 [project.urls]
