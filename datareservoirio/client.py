@@ -40,6 +40,8 @@ _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
 _TIMEOUT_DEAULT = 120
 
+_DEFAULT_MAX_PAGE_SIZE = 30000
+
 
 class Client:
     """
@@ -425,7 +427,7 @@ class Client:
         end=None,
         aggregation_period=None,
         aggregation_function=None,
-        max_page_size=None,
+        max_page_size=_DEFAULT_MAX_PAGE_SIZE,
     ):
         """
         Retrieve a series from DataReservoir.io using the samples/aggregate endpoint.
@@ -505,9 +507,8 @@ class Client:
 
         params = {}
 
-        if max_page_size:
-            params["maxPageSize"] = max_page_size
 
+        params["maxPageSize"] = max_page_size
         params["aggregationPeriod"] = aggregation_period
         params["aggregationFunction"] = aggregation_function
         params["start"] = start.isoformat()
