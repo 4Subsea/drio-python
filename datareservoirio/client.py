@@ -507,7 +507,6 @@ class Client:
 
         params = {}
 
-
         params["maxPageSize"] = max_page_size
         params["aggregationPeriod"] = aggregation_period
         params["aggregationFunction"] = aggregation_function
