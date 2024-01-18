@@ -19,6 +19,7 @@ from tenacity import (
     wait_chain,
     wait_fixed,
 )
+from tqdm.auto import tqdm
 
 from ._logging import log_decorator
 from ._utils import function_translation, period_translation
@@ -496,8 +497,11 @@ class Client:
                 )
                 break
 
-        start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).isoformat()
-        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).isoformat()
+        start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True)
+        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True)
+
+        if start.value >= end.value:
+            raise ValueError("Start must be before end.")
 
         params = {}
 
@@ -506,8 +510,8 @@ class Client:
 
         params["aggregationPeriod"] = aggregation_period
         params["aggregationFunction"] = aggregation_function
-        params["start"] = start
-        params["end"] = end
+        params["start"] = start.isoformat()
+        params["end"] = end.isoformat()
 
         next_page_link = f"{environment.api_base_url}reservoir/timeseries/{series_id}/samples/aggregate?{urlencode(params)}"
 
@@ -538,6 +542,7 @@ class Client:
                 timeout=_TIMEOUT_DEAULT,
             )
 
+        progress_bar = tqdm(unit=" pages", desc="Downloading aggregate data")
         while next_page_link:
             response = get_samples_aggregate_page(next_page_link)
             response.raise_for_status()
@@ -545,9 +550,16 @@ class Client:
             next_page_link = response_json.get("@odata.nextLink", None)
 
             content = [
-                (pd.to_datetime(sample["Timestamp"], utc=True), sample["Value"])
+                (
+                    pd.to_datetime(sample["Timestamp"], unit="ns", utc=True),
+                    sample["Value"],
+                )
                 for sample in response_json["value"]
             ]
+
+            # update the progress bar
+            if content:
+                progress_bar.update(1)
 
             new_df = pd.DataFrame(
                 content, columns=("index", "values"), copy=False
@@ -555,6 +567,7 @@ class Client:
 
             df = pd.concat([df, new_df])
 
+        progress_bar.close()
         series = df.set_index("index").squeeze("columns").copy(deep=True)
 
         return series

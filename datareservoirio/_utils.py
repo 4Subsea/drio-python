@@ -67,7 +67,7 @@ class DataHandler:
 
 # Translation of user input parameters of the samples/aggregate method for more convenient use (matching pandas)
 
-function_translation = {"std": "Stdev", "mean": "Avg"}
+function_translation = {"std": "Stdev", "mean": "Avg", "min": "Min", "max": "Max"}
 
 period_translation = {
     "hours": "h",

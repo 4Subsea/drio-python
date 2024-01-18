@@ -890,7 +890,8 @@ class Test_Client:
 
     @pytest.mark.response_irrelevant
     @pytest.mark.parametrize(
-        "aggregation_function, expected", [("mean", "Avg"), ("std", "Stdev"), ("min", "Min"), ("max", "Max")]
+        "aggregation_function, expected",
+        [("mean", "Avg"), ("std", "Stdev"), ("min", "Min"), ("max", "Max")],
     )
     def test_aggregation_function_gets_translated(
         self, client, mock_requests, aggregation_function, expected, response_cases
