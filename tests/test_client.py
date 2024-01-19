@@ -890,7 +890,8 @@ class Test_Client:
 
     @pytest.mark.response_irrelevant
     @pytest.mark.parametrize(
-        "aggregation_function, expected", [("mean", "Avg"), ("std", "Stdev")]
+        "aggregation_function, expected",
+        [("mean", "Avg"), ("std", "Stdev"), ("min", "Min"), ("max", "Max")],
     )
     def test_aggregation_function_gets_translated(
         self, client, mock_requests, aggregation_function, expected, response_cases
@@ -912,6 +913,9 @@ class Test_Client:
     @pytest.mark.parametrize(
         "aggregation_period, expected",
         [
+            ("min", "1m"),
+            ("tick", "1tick"),
+            ("s", "1s"),
             ("15minutes", "15m"),
             ("15minute", "15m"),
             ("15min", "15m"),

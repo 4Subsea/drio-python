@@ -19,6 +19,7 @@ from tenacity import (
     wait_chain,
     wait_fixed,
 )
+from tqdm.auto import tqdm
 
 from ._logging import log_decorator
 from ._utils import function_translation, period_translation
@@ -38,6 +39,8 @@ _END_DEFAULT = 9214646400000000000  # 2262-01-01
 _START_DEFAULT = -9214560000000000000  # 1678-01-01
 
 _TIMEOUT_DEAULT = 120
+
+_DEFAULT_MAX_PAGE_SIZE = 30000
 
 
 class Client:
@@ -424,7 +427,7 @@ class Client:
         end=None,
         aggregation_period=None,
         aggregation_function=None,
-        max_page_size=None,
+        max_page_size=_DEFAULT_MAX_PAGE_SIZE,
     ):
         """
         Retrieve a series from DataReservoir.io using the samples/aggregate endpoint.
@@ -440,7 +443,7 @@ class Client:
             Stop time (exclusive) of the aggregated series given as anything
             pandas.to_datetime is able to parse. Date must be within the past 90 days.
         aggregation_function : str
-            One of "Avg", "Min", "Max", "Stdev".
+            One of "mean", "min", "max", "std".
         aggregation_period : str
             Used in combination with aggregation function to specify the period for aggregation.
             Aggregation period is maximum 24 hours. Values can be in units of h, m, s, ms,
@@ -482,6 +485,9 @@ class Client:
         if aggregation_function in function_translation:
             aggregation_function = function_translation[aggregation_function]
 
+        if not aggregation_period[0].isnumeric():
+            aggregation_period = "1" + aggregation_period
+
         for period_unit in period_translation:
             if (
                 aggregation_period.endswith(period_unit)
@@ -493,18 +499,19 @@ class Client:
                 )
                 break
 
-        start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True).isoformat()
-        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True).isoformat()
+        start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True)
+        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True)
+
+        if start.value >= end.value:
+            raise ValueError("Start must be before end.")
 
         params = {}
 
-        if max_page_size:
-            params["maxPageSize"] = max_page_size
-
+        params["maxPageSize"] = max_page_size
         params["aggregationPeriod"] = aggregation_period
         params["aggregationFunction"] = aggregation_function
-        params["start"] = start
-        params["end"] = end
+        params["start"] = start.isoformat()
+        params["end"] = end.isoformat()
 
         next_page_link = f"{environment.api_base_url}reservoir/timeseries/{series_id}/samples/aggregate?{urlencode(params)}"
 
@@ -535,6 +542,7 @@ class Client:
                 timeout=_TIMEOUT_DEAULT,
             )
 
+        progress_bar = tqdm(unit=" pages", desc="Downloading aggregate data")
         while next_page_link:
             response = get_samples_aggregate_page(next_page_link)
             response.raise_for_status()
@@ -542,9 +550,16 @@ class Client:
             next_page_link = response_json.get("@odata.nextLink", None)
 
             content = [
-                (pd.to_datetime(sample["Timestamp"], utc=True), sample["Value"])
+                (
+                    pd.to_datetime(sample["Timestamp"], unit="ns", utc=True),
+                    sample["Value"],
+                )
                 for sample in response_json["value"]
             ]
+
+            # update the progress bar
+            if content:
+                progress_bar.update(1)
 
             new_df = pd.DataFrame(
                 content, columns=("index", "values"), copy=False
@@ -552,6 +567,7 @@ class Client:
 
             df = pd.concat([df, new_df])
 
+        progress_bar.close()
         series = df.set_index("index").squeeze("columns").copy(deep=True)
 
         return series
