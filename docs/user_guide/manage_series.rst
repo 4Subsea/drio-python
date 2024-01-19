@@ -132,9 +132,9 @@ You can also access any data you have ``TimeSeriesId`` (and authorization) for w
 .. code-block:: python
 
     # Get entire timeseries
-    timeseries = client.get_samples_aggregate(series_id, start='2018-01-01',
-                            end='2018-01-02', aggregation_period='15m',
-                            aggregation_function='Avg')
+    timeseries = client.get_samples_aggregate(series_id, start='2024-01-01',
+                            end='2024-01-02', aggregation_period='15m',
+                            aggregation_function='mean')
 
 .. note::
 
