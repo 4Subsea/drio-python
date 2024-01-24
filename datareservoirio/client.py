@@ -8,8 +8,8 @@ from functools import wraps
 from operator import itemgetter
 from urllib.parse import urlencode
 from uuid import uuid4
-import numpy as np
 
+import numpy as np
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
