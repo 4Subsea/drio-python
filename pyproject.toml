@@ -31,7 +31,8 @@ dependencies = [
     "opencensus-ext-azure",
     "tenacity",
     "urllib3 > 2",
-    "tqdm"
+    "tqdm",
+    "numpy < 2"
 ]
 
 [project.urls]
