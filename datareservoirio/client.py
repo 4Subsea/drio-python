@@ -9,6 +9,7 @@ from operator import itemgetter
 from urllib.parse import urlencode
 from uuid import uuid4
 
+import numpy as np
 import pandas as pd
 import requests
 from opencensus.ext.azure.log_exporter import AzureLogHandler
@@ -802,7 +803,7 @@ class Client:
 
         if not (
             pd.api.types.is_datetime64_ns_dtype(series.index)
-            or pd.api.types.is_int64_dtype(series.index)
+            or series.index.dtype == np.int64
         ):
             raise ValueError("allowed dtypes are datetime64[ns] and int64")
 
@@ -810,7 +811,7 @@ class Client:
             raise ValueError("index values must be unique timestamps")
 
         df = series.to_frame(name=1).reset_index(names=0)
-        df[0] = df[0].view("int64")
+        df[0] = df[0].astype("int64")
 
         return df
 
