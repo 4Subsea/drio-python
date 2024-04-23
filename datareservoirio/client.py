@@ -543,7 +543,9 @@ class Client:
                 timeout=_TIMEOUT_DEAULT,
             )
 
-        progress_bar = tqdm(unit=" pages", desc="Downloading aggregate data")
+        if log.getEffectiveLevel() < logging.WARNING:
+            progress_bar = tqdm(unit=" pages", desc="Downloading aggregate data")
+
         while next_page_link:
             response = get_samples_aggregate_page(next_page_link)
             response.raise_for_status()
@@ -559,7 +561,7 @@ class Client:
             ]
 
             # update the progress bar
-            if content:
+            if content and log.getEffectiveLevel() < logging.WARNING:
                 progress_bar.update(1)
 
             new_df = pd.DataFrame(
@@ -567,8 +569,8 @@ class Client:
             ).astype({"values": "float64"}, errors="ignore")
 
             df = pd.concat([df, new_df])
-
-        progress_bar.close()
+        if log.getEffectiveLevel() < logging.WARNING:
+            progress_bar.close()
         series = df.set_index("index").squeeze("columns").copy(deep=True)
 
         return series
