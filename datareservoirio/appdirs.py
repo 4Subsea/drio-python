@@ -3,6 +3,7 @@ This code was taken from https://github.com/ActiveState/appdirs and
 https://github.com/pypa/pip/blob/master/src/pip/_internal/utils/appdirs.py and
 modified to suit our purposes.
 """
+
 from __future__ import absolute_import, division, print_function
 
 import os

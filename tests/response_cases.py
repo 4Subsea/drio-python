@@ -15,6 +15,7 @@ following attributes can be used as needed:
 Note that ``url`` is defined as part of the key in RESPONSE_CASES.
 See ``requests.Response`` source code for more details.
 """
+
 from pathlib import Path
 
 TEST_PATH = Path(__file__).parent
