@@ -571,7 +571,9 @@ class Client:
             df = pd.concat([df, new_df])
         if log.getEffectiveLevel() < logging.WARNING:
             progress_bar.close()
-        series = df.set_index("index").squeeze("columns").copy(deep=True)
+        series = (
+            df.infer_objects().set_index("index").squeeze("columns").copy(deep=True)
+        )
 
         return series
 
