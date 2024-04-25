@@ -107,7 +107,10 @@ Logging
 To simplify debugging, enable logging for the logger named 'datareservoirio'. This is especially helpful if you experience undesired behavior in your application. 
 
 If your logging requirements are solely related to :py:mod:`datareservoirio`, you can use the following code. This will provide you with an understanding of the progress made in some 
-of the processes in the package. It is recommended to use this logging.
+of the processes in the package. 
+In particular, when using :py:meth:`Client.get_samples_aggregate`, lowering the log level below WARNING triggers a progress bar during data collection. 
+The default log level for the logger named 'datareservoirio' is WARNING.
+It is recommended to use this logging.
 
 .. code-block:: python
 
