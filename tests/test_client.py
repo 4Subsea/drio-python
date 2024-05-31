@@ -427,6 +427,22 @@ class Test_Client:
         with pytest.raises(HTTPError):
             client.create(series=data_float.as_series(), wait_on_verification=True)
 
+    def test_create_raises_valueerror_unsorted_index(self, client):
+        data = pd.Series(
+            [1, 2, 3],
+            index=[
+                pd.to_datetime("2022-04-04"),
+                pd.to_datetime("2022-04-03"),
+                pd.to_datetime("2022-04-05"),
+            ],
+        )
+        with pytest.raises(ValueError) as e:
+            client.create(data)
+        assert (
+            str(e.value)
+            == "Index not sorted. Please sort series on index before creating a timeseries."
+        )
+
     def test_append(
         self, client, data_float, mock_requests, bytesio_with_memory, response_cases
     ):
@@ -500,6 +516,23 @@ class Test_Client:
         series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
         with pytest.raises(HTTPError):
             client.append(data_float.as_series(), series_id, wait_on_verification=True)
+
+    def test_apppend_raises_valueerror_unsorted_index(self, client):
+        series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
+        data = pd.Series(
+            [1, 2, 3],
+            index=[
+                pd.to_datetime("2022-04-04"),
+                pd.to_datetime("2022-04-03"),
+                pd.to_datetime("2022-04-05"),
+            ],
+        )
+        with pytest.raises(ValueError) as e:
+            client.append(data, series_id)
+        assert (
+            str(e.value)
+            == "Index not sorted. Please sort series on index before appending data."
+        )
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__verify_and_prepare_series(self, client, data, request):

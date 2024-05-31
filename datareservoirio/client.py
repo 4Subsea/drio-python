@@ -101,7 +101,7 @@ class Client:
         ----------
         series : pandas.Series, optional
             Series with index (as DatetimeIndex-like or integer array). Default
-            is None.
+            is None. Needs to be sorted on index.
         wait_on_verification : bool (optional)
             All series are subjected to a server-side data validation before
             they are made available for consumption; failing validation will
@@ -126,6 +126,9 @@ class Client:
             )
             response.raise_for_status()
             return response.json()
+
+        if not series.index.is_monotonic_increasing:
+            raise ValueError("Index not sorted. Please sort series on index before creating a timeseries.")
 
         df = self._verify_and_prepare_series(series)
 
@@ -163,7 +166,7 @@ class Client:
         Parameters
         ----------
         series : pandas.Series
-            Series with index (as DatetimeIndex-like or integer array).
+            Series with index (as DatetimeIndex-like or integer array). Needs to be sorted on index.
         series_id : string
             The identifier of the existing series.
         wait_on_verification : bool (optional)
@@ -182,6 +185,10 @@ class Client:
         dict
             The response from DataReservoir.io.
         """
+        if not series.index.is_monotonic_increasing:
+            raise ValueError(
+                "Index not sorted. Please sort series on index before appending data."
+            )
         df = self._verify_and_prepare_series(series)
 
         response_file = self._auth_session.post(
@@ -411,11 +418,25 @@ class Client:
         else:
             df = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
-        series = df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
+        try:
+            series = (
+                df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
+            )
+        except KeyError as e:
+            logging.warning("KeyError. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time.")
+            series = (
+                df.set_index("index")
+                .sort_index()
+                .squeeze("columns")
+                .loc[start:end]
+                .copy(deep=True)
+            )
         series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing
             raise ValueError("can't find data in the given interval")
+
+
 
         if convert_date:
             series.index = pd.to_datetime(series.index, utc=True)
