@@ -128,7 +128,9 @@ class Client:
             return response.json()
 
         if not series.index.is_monotonic_increasing:
-            raise ValueError("Index not sorted. Please sort series on index before creating a timeseries.")
+            raise ValueError(
+                "Index not sorted. Please sort series on index before creating a timeseries."
+            )
 
         df = self._verify_and_prepare_series(series)
 
@@ -423,7 +425,9 @@ class Client:
                 df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
             )
         except KeyError as e:
-            logging.warning("KeyError. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time.")
+            logging.warning(
+                "KeyError. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
+            )
             series = (
                 df.set_index("index")
                 .sort_index()
@@ -435,8 +439,6 @@ class Client:
 
         if series.empty and raise_empty:  # may become empty after slicing
             raise ValueError("can't find data in the given interval")
-
-
 
         if convert_date:
             series.index = pd.to_datetime(series.index, utc=True)

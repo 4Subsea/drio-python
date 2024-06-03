@@ -4,6 +4,7 @@ import time
 import types
 from encodings.utf_8 import encode
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -14,11 +15,6 @@ from tenacity import RetryError
 import datareservoirio as drio
 from datareservoirio._logging import exceptions_logger
 from datareservoirio._utils import DataHandler
-
-
-import pytest
-import pandas as pd
-from unittest.mock import MagicMock, patch
 
 TEST_PATH = Path(__file__).parent
 
@@ -62,11 +58,10 @@ def fail_with_invalid_json_error(self, url, timeout):
     else:
         raise InvalidJSONError()
 
+
 def _mock_blob_sequence_days(response_json):
-    return {
-        1: "file1",
-        2: "file2"
-    }
+    return {1: "file1", 2: "file2"}
+
 
 class Test_Client:
     """
@@ -168,7 +163,6 @@ class Test_Client:
         with pytest.raises(ValueError):
             client.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0", raise_empty=True)
 
-
     def test_get_keyerror(self, client):
         series_id = "test_series_id"
         start = "2023-01-01"
@@ -177,29 +171,44 @@ class Test_Client:
         response_mock = MagicMock()
         response_mock.status_code = 200
         response_mock.json.return_value = {
-            "Files": [{"Chunks": "file1"}, {"Chunks": "file2"}]  # mock files with correct structure
+            "Files": [
+                {"Chunks": "file1"},
+                {"Chunks": "file2"},
+            ]  # mock files with correct structure
         }
 
         client._auth_session.get = MagicMock(return_value=response_mock)
 
         def mock_storage_get(blob_sequence_i):
             if blob_sequence_i == "file1":
-                return pd.DataFrame({'index': [1672358410000000000, 1672358400000000000], 'values': [100, 200]})
+                return pd.DataFrame(
+                    {
+                        "index": [1672358410000000000, 1672358400000000000],
+                        "values": [100, 200],
+                    }
+                )
             elif blob_sequence_i == "file2":
-                return pd.DataFrame({'index': [1672358410000000000, 1672358420000000000], 'values': [200, 400]})
+                return pd.DataFrame(
+                    {
+                        "index": [1672358410000000000, 1672358420000000000],
+                        "values": [200, 400],
+                    }
+                )
             else:
                 raise ValueError("Unexpected blob_sequence_i value")
-            
+
         client._storage.get = MagicMock(side_effect=mock_storage_get)
 
-        with patch('datareservoirio.client._blob_sequence_days', side_effect=_mock_blob_sequence_days):
-            with patch('datareservoirio.logging.warning') as mock_logging_warning:
+        with patch(
+            "datareservoirio.client._blob_sequence_days",
+            side_effect=_mock_blob_sequence_days,
+        ):
+            with patch("datareservoirio.logging.warning") as mock_logging_warning:
                 result = client.get(series_id, start, end)
                 mock_logging_warning.assert_called_once_with(
                     "KeyError. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
                 )
                 assert isinstance(result, pd.Series)
-       
 
     def test_get_raises_end_not_after_start(self, client):
         start = 1672358400000000000
