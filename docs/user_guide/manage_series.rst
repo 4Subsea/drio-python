@@ -48,8 +48,8 @@ information is returned:
     converted to UTC and therefore, time zone information is lost when data is
     stored in `DataReservoir.io`_.
 
-You can also store a sequence of data. However, you are required to define an
-integer index. (This is useful when appending and updating the data later.)
+You can also store a sequence of data. However, you are required to define an increasing
+integer index. This is useful when appending and updating the data later.
 
 Store sequence:
 
@@ -75,6 +75,9 @@ data:
     series_id = response['TimeSeriesId']
     response = client.append(series, series_id)
 
+.. important::
+
+    The index of the series must be sorted. This is also efficient when accessing the data later.
 
 Data verification process
 -------------------------

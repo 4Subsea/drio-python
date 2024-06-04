@@ -38,8 +38,8 @@ explained below.
 Series
 ------
 A series is a one-dimensional sequence with numeric values (64-bit float) and
-unique indicies (64-bit integer). (Consequently, each numeric value is natively
-represented with 128-bits.) Each series is assigned a unique identifier
+unique indices (64-bit integer). Consequently, each numeric value is natively
+represented with 128-bits. Each series is assigned a unique identifier
 `TimeSeriesId` (guid) for convenient access. Furthermore, a series can be
 enriched with :ref:`metadata <metadata>`.
 
@@ -76,8 +76,8 @@ But, that responsibility is left to the user/app/service that uses
 
 Metadata entries are organized using ``namespace`` and ``key``. A ``namespace``
 can be thought of as a table and ``key`` is the row index. Then a row can have
-any number of arbitrary number of columns. (Note that rows in a table do not 
-have to share the columns!). This resembles "table storage" paradigm for those
+any number of arbitrary number of columns (Note that rows in a table do not 
+have to share the columns). This resembles "table storage" paradigm for those
 who are familiar with that.
 
 Thus, a ``namespace`` and ``key`` combination uniquely defines a metadata

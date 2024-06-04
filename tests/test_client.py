@@ -4,6 +4,7 @@ import time
 import types
 from encodings.utf_8 import encode
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -56,6 +57,10 @@ def fail_with_invalid_json_error(self, url, timeout):
         return drioResponseWithNoFiles()
     else:
         raise InvalidJSONError()
+
+
+def _mock_blob_sequence_days(response_json):
+    return {1: "file1", 2: "file2"}
 
 
 class Test_Client:
@@ -157,6 +162,53 @@ class Test_Client:
     def test_get_raise_empty(self, client):
         with pytest.raises(ValueError):
             client.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0", raise_empty=True)
+
+    def test_get_keyerror(self, client):
+        series_id = "test_series_id"
+        start = "2023-01-01"
+        end = "2023-01-02"
+
+        response_mock = MagicMock()
+        response_mock.status_code = 200
+        response_mock.json.return_value = {
+            "Files": [
+                {"Chunks": "file1"},
+                {"Chunks": "file2"},
+            ]  # mock files with correct structure
+        }
+
+        client._auth_session.get = MagicMock(return_value=response_mock)
+
+        def mock_storage_get(blob_sequence_i):
+            if blob_sequence_i == "file1":
+                return pd.DataFrame(
+                    {
+                        "index": [1672358410000000000, 1672358400000000000],
+                        "values": [100, 200],
+                    }
+                )
+            elif blob_sequence_i == "file2":
+                return pd.DataFrame(
+                    {
+                        "index": [1672358410000000000, 1672358420000000000],
+                        "values": [200, 400],
+                    }
+                )
+            else:
+                raise ValueError("Unexpected blob_sequence_i value")
+
+        client._storage.get = MagicMock(side_effect=mock_storage_get)
+
+        with patch(
+            "datareservoirio.client._blob_sequence_days",
+            side_effect=_mock_blob_sequence_days,
+        ):
+            with patch("datareservoirio.logging.warning") as mock_logging_warning:
+                result = client.get(series_id, start, end)
+                mock_logging_warning.assert_called_once_with(
+                    "The time series you requested is not properly ordered. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
+                )
+                assert isinstance(result, pd.Series)
 
     def test_get_raises_end_not_after_start(self, client):
         start = 1672358400000000000
@@ -427,6 +479,22 @@ class Test_Client:
         with pytest.raises(HTTPError):
             client.create(series=data_float.as_series(), wait_on_verification=True)
 
+    def test_create_raises_valueerror_unsorted_index(self, client):
+        data = pd.Series(
+            [1, 2, 3],
+            index=[
+                pd.to_datetime("2022-04-04"),
+                pd.to_datetime("2022-04-03"),
+                pd.to_datetime("2022-04-05"),
+            ],
+        )
+        with pytest.raises(ValueError) as e:
+            client.create(data)
+        assert (
+            str(e.value)
+            == "Index not sorted. Please sort series on index before creating a timeseries."
+        )
+
     def test_append(
         self, client, data_float, mock_requests, bytesio_with_memory, response_cases
     ):
@@ -500,6 +568,23 @@ class Test_Client:
         series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
         with pytest.raises(HTTPError):
             client.append(data_float.as_series(), series_id, wait_on_verification=True)
+
+    def test_append_raises_valueerror_unsorted_index(self, client):
+        series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
+        data = pd.Series(
+            [1, 2, 3],
+            index=[
+                pd.to_datetime("2022-04-04"),
+                pd.to_datetime("2022-04-03"),
+                pd.to_datetime("2022-04-05"),
+            ],
+        )
+        with pytest.raises(ValueError) as e:
+            client.append(data, series_id)
+        assert (
+            str(e.value)
+            == "Index not sorted. Please sort series on index before appending data."
+        )
 
     @pytest.mark.parametrize("data", ("data_float", "data_string"))
     def test__verify_and_prepare_series(self, client, data, request):
