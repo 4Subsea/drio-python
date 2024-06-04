@@ -426,7 +426,7 @@ class Client:
             )
         except KeyError as e:
             logging.warning(
-                "KeyError. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
+                "The time series you requested is not properly ordered. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
             )
             series = (
                 df.set_index("index")

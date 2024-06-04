@@ -206,7 +206,7 @@ class Test_Client:
             with patch("datareservoirio.logging.warning") as mock_logging_warning:
                 result = client.get(series_id, start, end)
                 mock_logging_warning.assert_called_once_with(
-                    "KeyError. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
+                    "The time series you requested is not properly ordered. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
                 )
                 assert isinstance(result, pd.Series)
 
@@ -569,7 +569,7 @@ class Test_Client:
         with pytest.raises(HTTPError):
             client.append(data_float.as_series(), series_id, wait_on_verification=True)
 
-    def test_apppend_raises_valueerror_unsorted_index(self, client):
+    def test_append_raises_valueerror_unsorted_index(self, client):
         series_id = "d30519af-5035-4093-a425-dafd857ad0ef"
         data = pd.Series(
             [1, 2, 3],

@@ -77,7 +77,7 @@ data:
 
 .. important::
 
-    The index of the series must be sorted. This is also also efficient when accessing the data later.
+    The index of the series must be sorted. This is also efficient when accessing the data later.
 
 Data verification process
 -------------------------

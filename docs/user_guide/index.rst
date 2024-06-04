@@ -38,8 +38,8 @@ explained below.
 Series
 ------
 A series is a one-dimensional sequence with numeric values (64-bit float) and
-unique indicies (64-bit integer) (Consequently, each numeric value is natively
-represented with 128-bits.) Each series is assigned a unique identifier
+unique indices (64-bit integer). Consequently, each numeric value is natively
+represented with 128-bits. Each series is assigned a unique identifier
 `TimeSeriesId` (guid) for convenient access. Furthermore, a series can be
 enriched with :ref:`metadata <metadata>`.
 
