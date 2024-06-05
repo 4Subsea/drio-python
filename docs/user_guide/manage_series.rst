@@ -149,7 +149,7 @@ You can also access any data you have ``TimeSeriesId`` (and authorization) for w
 
 .. warning::
 
-    The time resolution of aggregated data is in 100 nanoseconds, while the time resolution of non-aggregated data is in nanoseconds. This may lead to discrepancies in data when comparing the two, and some datapoints might get lost when using aggregation to access data, in cases when there are multiple datapoints within the same 100 nanosecond range.
+    The time resolution of aggregated data is in ticks (1tick = 100 nanoseconds), while the time resolution of non-aggregated data is in nanoseconds. This may lead to discrepancies in data when comparing the two, and some datapoints might get lost when using aggregation to access data, in cases when there are multiple datapoints within the same 100 nanosecond range.
     
 Delete data
 -----------
