@@ -147,6 +147,10 @@ You can also access any data you have ``TimeSeriesId`` (and authorization) for w
 
     Retrieving aggregated data is available only for the last 90 days.
 
+.. warning::
+
+    The time resolution of aggregated data is in milliseconds, while the time resolution of non-aggregated data is in nanoseconds. This may lead to discrepancies in data when comparing the two, and some datapoints might get lost when using aggregation to access data, in cases when there are multiple datapoints within the same nanosecond.
+    
 Delete data
 -----------
 
