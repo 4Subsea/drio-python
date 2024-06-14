@@ -686,7 +686,7 @@ class Test_Client:
             "Id": "8620c8cf-d9db-4ec6-9393-d45a7df6c115",
             "Namespace": "foo.bar",
             "Key": "baz",
-            "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter" },
+            "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"},
             "TimeSeries": [
                 {
                     "TimeSeriesId": "fc485e50-e641-4410-bf10-8ce4b5d24405",
@@ -695,13 +695,13 @@ class Test_Client:
                     "LastModifiedByEmail": "user@4subsea.com",
                     "Created": "2024-06-14T08:37:47.109Z",
                     "LastModified": "2024-06-14T08:37:47.109Z",
-                    "CreatedByEmail": "user@4subsea.com"
+                    "CreatedByEmail": "user@4subsea.com",
                 }
             ],
             "LastModifiedByEmail": "user@4subsea.com",
             "LastModified": "2023-05-05T09:01:32.6706215+00:00",
             "Created": "2023-01-26T11:50:20.4812338+00:00",
-            "CreatedByEmail": "user@4subsea.com"
+            "CreatedByEmail": "user@4subsea.com",
         }
 
         assert response == response_expect
@@ -813,16 +813,13 @@ class Test_Client:
                     "Id": "8dc03b22-5a7c-499b-8861-fed5902e9f91",
                     "Namespace": "ns",
                     "Key": "key",
-                    "Value": {
-                        "some_name": "tress",
-                        "some_value": "emerald"
-                    },
+                    "Value": {"some_name": "tress", "some_value": "emerald"},
                     "LastModifiedByEmail": "user@4subsea.com",
                     "LastModified": "2023-05-03T10:25:44.572Z",
                     "Created": "2023-05-03T10:25:44.572Z",
                     "CreatedByEmail": "user@4subsea.com",
                 }
-            ]
+            ],
         }
 
         assert response == response_expect
@@ -861,16 +858,13 @@ class Test_Client:
                     "Id": "8dc03b22-5a7c-499b-8861-fed5902e9f91",
                     "Namespace": "ns",
                     "Key": "key",
-                    "Value": {
-                        "some_name": "tress",
-                        "some_value": "emerald"
-                    },
+                    "Value": {"some_name": "tress", "some_value": "emerald"},
                     "LastModifiedByEmail": "user@4subsea.com",
                     "LastModified": "2023-05-03T10:25:44.572Z",
                     "Created": "2023-05-03T10:25:44.572Z",
                     "CreatedByEmail": "user@4subsea.com",
                 }
-            ]
+            ],
         }
 
         assert response == response_expect
@@ -931,16 +925,13 @@ class Test_Client:
                     "Id": "8dc03b22-5a7c-499b-8861-fed5902e9f91",
                     "Namespace": "ns",
                     "Key": "key",
-                    "Value": {
-                        "some_name": "tress",
-                        "some_value": "emerald"
-                    },
+                    "Value": {"some_name": "tress", "some_value": "emerald"},
                     "LastModifiedByEmail": "user@4subsea.com",
                     "LastModified": "2023-05-03T10:25:44.567Z",
                     "Created": "2023-05-03T10:25:44.567Z",
                     "CreatedByEmail": "user@4subsea.com",
                 }
-            ]
+            ],
         }
 
         assert response == response_expect
