@@ -322,7 +322,7 @@ DATARESERVOIRIO_METADATA_API = {
     # description: get metadata for id
     (
         "GET",
-        "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054",
+        "https://reservoir-api.4subsea.net/api/metadata/8620c8cf-d9db-4ec6-9393-d45a7df6c115",
     ): {
         "status_code": 200,
         "reason": "OK",
@@ -331,7 +331,7 @@ DATARESERVOIRIO_METADATA_API = {
             / "testdata"
             / "response_cases"
             / "datareservoirio_metadata_api"
-            / "metadata_get_ns_key.json"
+            / "metadata_get_id.json"
         ).read_bytes(),
     },
     # description: search for metadata by namespace/key

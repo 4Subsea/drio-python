@@ -15,12 +15,13 @@
                 "some_name": "tress",
                 "some_value": "emerald"
             },
-            "TimeSeriesReferenceCount": 1,
-            "LastModifiedByEmail": null,
+            "LastModifiedByEmail": "vrs@4subsea.com",
             "LastModified": "2023-01-26T11:34:07.8630181+00:00",
             "Created": "2018-05-30T06:52:47.6786499+00:00",
-            "CreatedByEmail": null
+            "CreatedByEmail": "vrs@4subsea.com"
         }
     ],
-    "Aliases": []
+    "Aliases": [
+        "alias"
+    ]
 }

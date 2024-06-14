@@ -661,11 +661,10 @@ class Test_Client:
             "Namespace": "foo.bar",
             "Key": "baz",
             "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"},
-            "TimeSeriesReferenceCount": 0,
-            "LastModifiedByEmail": None,
+            "LastModifiedByEmail": "user@4subsea.com",
             "LastModified": "2023-05-05T09:01:32.6706215+00:00",
             "Created": "2023-01-26T11:50:20.4812338+00:00",
-            "CreatedByEmail": None,
+            "CreatedByEmail": "user@4subsea.com",
         }
 
         assert response == response_expect
@@ -680,25 +679,35 @@ class Test_Client:
         response_cases.set("datareservoirio-api")
 
         response = client.metadata_get(
-            metadata_id="19b7230b-f88a-4217-b1c9-08daff938054"
+            metadata_id="8620c8cf-d9db-4ec6-9393-d45a7df6c115"
         )
 
         response_expect = {
-            "Id": "19b7230b-f88a-4217-b1c9-08daff938054",
+            "Id": "8620c8cf-d9db-4ec6-9393-d45a7df6c115",
             "Namespace": "foo.bar",
             "Key": "baz",
-            "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"},
-            "TimeSeriesReferenceCount": 0,
-            "LastModifiedByEmail": None,
+            "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter" },
+            "TimeSeries": [
+                {
+                    "TimeSeriesId": "fc485e50-e641-4410-bf10-8ce4b5d24405",
+                    "TimeOfFirstSample": 0,
+                    "TimeOfLastSample": -1,
+                    "LastModifiedByEmail": "user@4subsea.com",
+                    "Created": "2024-06-14T08:37:47.109Z",
+                    "LastModified": "2024-06-14T08:37:47.109Z",
+                    "CreatedByEmail": "user@4subsea.com"
+                }
+            ],
+            "LastModifiedByEmail": "user@4subsea.com",
             "LastModified": "2023-05-05T09:01:32.6706215+00:00",
             "Created": "2023-01-26T11:50:20.4812338+00:00",
-            "CreatedByEmail": None,
+            "CreatedByEmail": "user@4subsea.com"
         }
 
         assert response == response_expect
 
         # Check that the correct URL is poked
-        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/19b7230b-f88a-4217-b1c9-08daff938054"
+        request_url_expect = "https://reservoir-api.4subsea.net/api/metadata/8620c8cf-d9db-4ec6-9393-d45a7df6c115"
         assert mock_requests.call_args.args[1] == request_url_expect
 
     def test_metadata_get_raises(self, client, response_cases):
@@ -718,11 +727,10 @@ class Test_Client:
                 "Namespace": "foo.bar",
                 "Key": "baz",
                 "Value": {"vendor": "Sensor Corp", "type_": "Ampermeter"},
-                "TimeSeriesReferenceCount": 0,
-                "LastModifiedByEmail": None,
+                "LastModifiedByEmail": "user@4subsea.com",
                 "LastModified": "2023-05-05T09:01:32.6706215+00:00",
                 "Created": "2023-01-26T11:50:20.4812338+00:00",
-                "CreatedByEmail": None,
+                "CreatedByEmail": "user@4subsea.com",
             }
         ]
 
@@ -795,26 +803,26 @@ class Test_Client:
         response_expect = {
             "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
             "TimeOfFirstSample": 0,
-            "TimeOfLastSample": 0,
-            "LastModifiedByEmail": "string",
+            "TimeOfLastSample": -1,
+            "LastModifiedByEmail": "user@4subsea.com",
             "Created": "2023-05-03T10:25:44.572Z",
             "LastModified": "2023-05-03T10:25:44.572Z",
-            "CreatedByEmail": "string",
+            "CreatedByEmail": "user@4subsea.com",
             "Metadata": [
                 {
-                    "Id": "string",
-                    "Namespace": "string",
-                    "Key": "string",
-                    "Value": {},
-                    "TimeSeriesReferenceCount": 0,
-                    "TimeSeries": [{}],
-                    "LastModifiedByEmail": "string",
+                    "Id": "8dc03b22-5a7c-499b-8861-fed5902e9f91",
+                    "Namespace": "ns",
+                    "Key": "key",
+                    "Value": {
+                        "some_name": "tress",
+                        "some_value": "emerald"
+                    },
+                    "LastModifiedByEmail": "user@4subsea.com",
                     "LastModified": "2023-05-03T10:25:44.572Z",
                     "Created": "2023-05-03T10:25:44.572Z",
-                    "CreatedByEmail": "string",
+                    "CreatedByEmail": "user@4subsea.com",
                 }
-            ],
-            "Aliases": ["string"],
+            ]
         }
 
         assert response == response_expect
@@ -843,26 +851,26 @@ class Test_Client:
         response_expect = {
             "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
             "TimeOfFirstSample": 0,
-            "TimeOfLastSample": 0,
-            "LastModifiedByEmail": "string",
+            "TimeOfLastSample": -1,
+            "LastModifiedByEmail": "user@4subsea.com",
             "Created": "2023-05-03T10:25:44.572Z",
             "LastModified": "2023-05-03T10:25:44.572Z",
-            "CreatedByEmail": "string",
+            "CreatedByEmail": "user@4subsea.com",
             "Metadata": [
                 {
-                    "Id": "string",
-                    "Namespace": "string",
-                    "Key": "string",
-                    "Value": {},
-                    "TimeSeriesReferenceCount": 0,
-                    "TimeSeries": [{}],
-                    "LastModifiedByEmail": "string",
+                    "Id": "8dc03b22-5a7c-499b-8861-fed5902e9f91",
+                    "Namespace": "ns",
+                    "Key": "key",
+                    "Value": {
+                        "some_name": "tress",
+                        "some_value": "emerald"
+                    },
+                    "LastModifiedByEmail": "user@4subsea.com",
                     "LastModified": "2023-05-03T10:25:44.572Z",
                     "Created": "2023-05-03T10:25:44.572Z",
-                    "CreatedByEmail": "string",
+                    "CreatedByEmail": "user@4subsea.com",
                 }
-            ],
-            "Aliases": ["string"],
+            ]
         }
 
         assert response == response_expect
@@ -913,26 +921,26 @@ class Test_Client:
         response_expect = {
             "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
             "TimeOfFirstSample": 0,
-            "TimeOfLastSample": 0,
-            "LastModifiedByEmail": "string",
+            "TimeOfLastSample": -1,
+            "LastModifiedByEmail": "user@4subsea.com",
             "Created": "2023-05-03T10:25:44.567Z",
             "LastModified": "2023-05-03T10:25:44.567Z",
-            "CreatedByEmail": "string",
+            "CreatedByEmail": "user@4subsea.com",
             "Metadata": [
                 {
-                    "Id": "string",
-                    "Namespace": "string",
-                    "Key": "string",
-                    "Value": {},
-                    "TimeSeriesReferenceCount": 0,
-                    "TimeSeries": [{}],
-                    "LastModifiedByEmail": "string",
+                    "Id": "8dc03b22-5a7c-499b-8861-fed5902e9f91",
+                    "Namespace": "ns",
+                    "Key": "key",
+                    "Value": {
+                        "some_name": "tress",
+                        "some_value": "emerald"
+                    },
+                    "LastModifiedByEmail": "user@4subsea.com",
                     "LastModified": "2023-05-03T10:25:44.567Z",
                     "Created": "2023-05-03T10:25:44.567Z",
-                    "CreatedByEmail": "string",
+                    "CreatedByEmail": "user@4subsea.com",
                 }
-            ],
-            "Aliases": ["string"],
+            ]
         }
 
         assert response == response_expect
