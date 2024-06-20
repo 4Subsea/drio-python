@@ -1,28 +1,24 @@
 {
     "TimeSeriesId": "857ca134-5bf7-4c14-b687-ede7d5cbf22f",
     "TimeOfFirstSample": 0,
-    "TimeOfLastSample": 0,
-    "LastModifiedByEmail": "string",
+    "TimeOfLastSample": -1,
+    "LastModifiedByEmail": "user@4subsea.com",
     "Created": "2023-05-03T10:25:44.567Z",
     "LastModified": "2023-05-03T10:25:44.567Z",
-    "CreatedByEmail": "string",
+    "CreatedByEmail": "user@4subsea.com",
     "Metadata": [
         {
-            "Id": "string",
-            "Namespace": "string",
-            "Key": "string",
-            "Value": {},
-            "TimeSeriesReferenceCount": 0,
-            "TimeSeries": [
-                {}
-            ],
-            "LastModifiedByEmail": "string",
+            "Id": "8dc03b22-5a7c-499b-8861-fed5902e9f91",
+            "Namespace": "ns",
+            "Key": "key",
+            "Value": {
+                "some_name": "tress",
+                "some_value": "emerald"
+            },
+            "LastModifiedByEmail": "user@4subsea.com",
             "LastModified": "2023-05-03T10:25:44.567Z",
             "Created": "2023-05-03T10:25:44.567Z",
-            "CreatedByEmail": "string"
+            "CreatedByEmail": "user@4subsea.com"
         }
-    ],
-    "Aliases": [
-        "string"
     ]
 }
