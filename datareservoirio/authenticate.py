@@ -197,7 +197,7 @@ class UserAuthenticator(BaseAuthSession):
             "Please go here and authorize,",
             eval(f"_constants.AUTHORITY_URL_{self._env}_USER"),
         )
-        package = input("Paste code here and click enter: ")
+        package = input("Paste code here and press enter: ")
         parameters = json.loads(package)
         token_url = parameters["endpoint"]
         code = parameters["code"]
