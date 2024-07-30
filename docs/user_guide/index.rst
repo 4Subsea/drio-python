@@ -6,10 +6,10 @@ Python API:
 
 * Manage series (time series or sequences):
 
-    * Access existing series
-    * Create and upload new series
-    * Edit and append to existing series
-    * Delete series
+    * Access existing time series
+    * Create and upload new time series
+    * Edit and append to existing time series
+    * Delete time series
 
 * Manage metadata
 
@@ -45,7 +45,7 @@ enriched with :ref:`metadata <metadata>`.
 
 For time series the index is interpreted as
 nanoseconds since epoch (1970-01-01 00:00:00+00:00), i.e. support for
-nanosencond resolution.
+nanosencond resolution. 
 
 :py:class:`pandas.Series` objects maps perfectly to this paradigm.
 :py:mod:`datareservoirio` is designed around :py:class:`pandas.Series` as it
@@ -114,13 +114,10 @@ One simple yet effective way of creating a hierarcy and taxonomy is to use
 We found that this approach is rather easy to visualize and maps well to the
 physical world.
 
-What is it **NOT** for
+What is it NOT for
 ______________________
-Despite its flexibility, `DataReservoir.io`_ has its limitations when it comes
-to metadata; it is **NOT** a general purpose database that you can dump
-anything in to and it is not designed to keep track of complex hierarchical
-information. The query capabilities are also kept simple and efficient by
-design.
+Despite its flexibility, `DataReservoir.io`_ has limitations regarding metadata. It is **NOT** a general-purpose database for storing arbitrary data, 
+nor is it designed to manage complex hierarchical information. Additionally, its query capabilities are intentionally kept simple and efficient.
 
 For very advanced use cases, it may be advisable to employ a purpose built
 database solution (that compliments `DataReservoir.io`_ for your application).
@@ -133,9 +130,13 @@ database solution (that compliments `DataReservoir.io`_ for your application).
    :maxdepth: 2
    :hidden:
 
-   manage_series
+
+   access_data
+   update_edit_data
    manage_metadata
    browse_search
-   dos_donts
    advanced_config
    cookbook
+   manage_series
+   dos_donts
+

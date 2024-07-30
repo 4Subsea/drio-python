@@ -28,7 +28,7 @@ It is really easy to visualize data with `Matplotlib`_:
 
 Save data to file
 -----------------
-Sometimes you may want to dump data to file (Don't worry, we won't judge you):
+Sometimes you may want to dump data to file:
 
 .. code-block:: python
 
@@ -90,7 +90,7 @@ Work with large amount of data
 ------------------------------
 When working with large data sizes (long time spans and/or high sampling frequency),
 it is often useful to download data in chunks and resample so that you don't have
-all the data in memory at the same time. Let's see how you can download 6 months of
+all the data in memory at the same time. Here's how you can download 6 months of
 data and get the 1-hour standard deviation:
 
 .. code-block:: python

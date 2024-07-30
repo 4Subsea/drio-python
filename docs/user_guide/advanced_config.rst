@@ -129,8 +129,8 @@ The following log names can be used to fine-tune the desired log output:
 * datareservoirio: top level module including configuration, authentication and client.
 * datareservoirio.storage: storage module, including cache and data download.
 
-If you need a more comprehensive logging solution that captures every interaction with the :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib` modules, as well as logging related to :py:mod:`datareservoirio`, you can utilize the 
-provided code. If you require logging for only one of the specific packages, you may use the pre-existing loggers integrated within :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
+If you need a more comprehensive logging solution that captures every interaction with the :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib` modules, as well as logging related to :py:mod:`datareservoirio`, you can use the code below. 
+If you require logging for only one of the specific packages, you may use the pre-existing loggers integrated within :py:mod:`requests`, :py:mod:`oauthlib`, and :py:mod:`requests-oauthlib`.
 
 .. code-block:: python
 
