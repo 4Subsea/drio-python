@@ -117,7 +117,7 @@ is not supported.
 .. danger::
 
     Note that deleting data is permanent and all references to ``TimeSerieId``
-    is removed from the `DataReservoir.io`_ inventory:
+    is removed from the `DataReservoir.io`_ inventory.
 
 .. code-block:: python
 

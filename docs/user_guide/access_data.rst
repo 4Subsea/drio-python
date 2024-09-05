@@ -22,7 +22,7 @@ This approach is significantly more efficient than the :py:meth:`Client.get` met
 
 .. important::
 
-    Retrieving aggregated data is available only for the last 90 days. After 90 days we will archive your timeseries data. You can access it directly from the archive using :py:meth:`Client.get`, or request that we restore it by contacting support.
+    Retrieving aggregated data is only available for the last 90 days. After 90 days we will archive your timeseries data. You can access it directly from the archive using :py:meth:`Client.get`, or request that we restore it by contacting support.
 
 .. warning::
 
