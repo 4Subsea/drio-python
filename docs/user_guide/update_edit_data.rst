@@ -3,10 +3,10 @@
 Create, edit and delete time series
 ===================================
 
-Store time series
------------------
+Create time series
+------------------
 
-Below is an example of how to store a simple time series.
+Below is an example of how to create a simple time series.
 
 .. code-block:: python
 
@@ -100,16 +100,24 @@ the timeseres. This behavior can be changed using the wait_on_verification param
 The result is that the data is queued for processing and the method returns
 immediately. When the validation process eventually completes, the data will
 be made available on the series.
-Setting ``wait_on_verification=False`` is significantly faster, but is
-only recommended when the data is "validated" in advance. If the data
-should not pass the server-side validation the data will be ignored.
+
+.. important::
+
+    Setting ``wait_on_verification=False`` is significantly faster, but is
+    only recommended when the data is "validated" in advance. If the data
+    should not pass the server-side validation the data will be ignored.
 
 
 Delete data
 -----------
 
-Note that deleting data is permanent and all references to ``TimeSerieId``
-is removed from the `DataReservoir.io`_ inventory:
+It is only possible to delete an entire time series. Deleting a single datapoint 
+is not supported.
+
+.. danger::
+
+    Note that deleting data is permanent and all references to ``TimeSerieId``
+    is removed from the `DataReservoir.io`_ inventory:
 
 .. code-block:: python
 

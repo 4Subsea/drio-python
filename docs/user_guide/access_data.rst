@@ -5,7 +5,7 @@ Access time series
 
 Access existing data
 --------------------
-You can access time series data using the :py:meth:`Client.get` method, ss long as you have the ``TimeSeriesId``  (and authorization).
+You can access time series data using the :py:meth:`Client.get` method, as long as you have the ``TimeSeriesId``  (and authorization).
 Below is an example demonstrating how to access time series data, which returns a pandas Series.
 
 .. code-block:: python
