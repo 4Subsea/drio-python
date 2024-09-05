@@ -137,6 +137,5 @@ database solution (that compliments `DataReservoir.io`_ for your application).
    browse_search
    advanced_config
    cookbook
-   manage_series
    dos_donts
 
