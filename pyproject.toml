@@ -29,7 +29,7 @@ dependencies = [
     "requests-oauthlib",
     "importlib_resources",
     "opencensus-ext-azure",
-    "tenacity",
+    "tenacity<8.5",
     "urllib3 > 2",
     "tqdm",
     "numpy < 2"
