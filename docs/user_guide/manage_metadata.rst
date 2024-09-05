@@ -1,6 +1,6 @@
 Manage metadata
 ================
-Similar to series, you can add, update, and delete metadata. In addition, you
+Similar to time series, you can add, update, and delete metadata. In addition, you
 can assign a metadata entry to one or more series.For a more comprehensive 
 description of the metadata feature, see `docs.4insight.io`_
 

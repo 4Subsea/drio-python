@@ -32,8 +32,8 @@ This approach is significantly more efficient than the :py:meth:`Client.get` met
 
 Access archived data
 --------------------
-You can access time series data using the :py:meth:`Client.get` method, as long as you have the ``TimeSeriesId`` (and authorization).
-Below is an example for how to access time series data, which returns a pandas Series. We strongly recommended to use the :py:meth:`Client.get_samples_aggregate` as long as the data was created within the last 90 days.
+You can access time series data using the :py:meth:`Client.get` method, as long as you have the ``TimeSeriesId``  (and authorization).
+Below is an example demonstrating how to access time series data, which returns a pandas Series. We strongly recommended to use the :py:meth:`Client.get_samples_aggregate` as long as the data was created within the last 90 days.
 
 .. code-block:: python
 
@@ -60,8 +60,6 @@ Accessing an excessive amount of data at once can cause your script to fail. The
     # Get timeseries in chunks
     for start, end in start_end_iter:
         timeseries = client.get(series_id, start=start, end=end)
-
-
 
 
 .. _DataReservoir.io: https://www.datareservoir.io/
