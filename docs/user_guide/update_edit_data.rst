@@ -1,10 +1,12 @@
 .. py:currentmodule:: datareservoirio
 
-Manage series
-=============
+Create, edit and delete time series
+===================================
 
-Store series data
------------------
+Create time series
+------------------
+
+Below is an example of how to create a simple time series.
 
 .. code-block:: python
 
@@ -59,13 +61,14 @@ Store sequence:
     series = pd.Series(np.random.rand(10), index=np.arange(10))
     response = client.create(series)
 
-
-Edit and append data
---------------------
-
-You can always append new data to an existing time series (and sequence).
+Edit time series
+----------------
+You can append new data to an existing time series (and sequence).
 However, any overlappinging indicies will result in overwrite/edit of existing
 data:
+
+.. _DataReservoir.io: https://www.datareservoir.io/
+.. _Pandas: https://pandas.pydata.org/
 
 .. code-block:: python
 
@@ -105,67 +108,18 @@ be made available on the series.
     should not pass the server-side validation the data will be ignored.
 
 
-Access existing data
---------------------
-
-You can access any data you have ``TimeSeriesId`` (and authorization) for:
-
-.. code-block:: python
-
-    # Get entire timeseries
-    timeseries = client.get(series_id)
-
-    # Get a slice of time series
-    timeseries = client.get(series_id, start='2018-01-01 12:00:00',
-                            end='2018-01-02 06:00:00')
-
-    # Get a sequence
-    sequence = client.get(series_id, convert_date=False)
-
-.. note::
-
-    :py:meth:`Client.get` returns :py:class:`pandas.Series`.
-
-
-Access existing data with aggregation
--------------------------------------
-
-You can also access any data you have ``TimeSeriesId`` (and authorization) for with applied aggregation using:
-
-.. code-block:: python
-
-    # Get entire timeseries
-    timeseries = client.get_samples_aggregate(series_id, start='2024-01-01',
-                            end='2024-01-02', aggregation_period='15m',
-                            aggregation_function='mean')
-
-.. note::
-
-    :py:meth:`Client.get_samples_aggregate` also returns :py:class:`pandas.Series`. The :py:mod:`start`, :py:mod:`end`, :py:mod:`aggregation_period` and :py:mod:`aggregation_function` parameters are required.   
-
-.. important::
-
-    Retrieving aggregated data is available only for the last 90 days.
-
-.. warning::
-
-    The time resolution of aggregated data is in ticks (1tick = 100 nanoseconds), while the time resolution of non-aggregated data is in nanoseconds. This may lead to discrepancies in data when comparing the two, and some datapoints might get lost when using aggregation to access data, in cases when there are multiple datapoints within the same 100 nanosecond range.
-    
 Delete data
 -----------
 
-Note that deleting data is permanent and all references to ``TimeSerieId``
-is removed from the `DataReservoir.io`_ inventory:
+It is only possible to delete an entire time series. Deleting a single datapoint 
+is not supported.
+
+.. danger::
+
+    Note that deleting data is permanent and all references to ``TimeSerieId``
+    is removed from the `DataReservoir.io`_ inventory.
 
 .. code-block:: python
 
     client.delete(series_id)
-
-
-
-.. _DataReservoir.io: https://www.datareservoir.io/
-.. _Pandas: https://pandas.pydata.org/
-
-
-
 
