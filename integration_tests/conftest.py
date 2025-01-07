@@ -9,7 +9,7 @@ import datareservoirio as drio
 @pytest.fixture(autouse=True, scope="session")
 def set_environment_qa():
     """Set environment to 'QA'"""
-    env = drio.environments.Environment()
+    env = drio.globalsettings.environment
     env.set_qa()
 
 
