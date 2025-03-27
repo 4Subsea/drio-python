@@ -68,6 +68,14 @@ or contact support to restore it.
 
     The time resolution of aggregated data is in ticks (1tick = 100 nanoseconds), while the time resolution of non-aggregated data is in nanoseconds. This may lead to discrepancies in data when comparing the two, and some datapoints might get lost when using aggregation to access data, in cases when there are multiple datapoints within the same 100 nanosecond range.
 
+.. warning::
+
+    Regarding boolean values (true and false). A change in DRIO affects data ingested after approximately 10th of March 2025 10:00, booleans are no longer automatically converted to integer values 1 and 0.
+    If this conversion is desried, it can be done manually where required by using the following code after downloading the data as shown above:
+    
+    .. code-block:: python
+
+    timeseries.replace({True: 1, 'true': 1, 'True': 1, False: 0, 'false': 0, 'False': 0}, inplace=True)
 
 .. tip::
     When handling high-frequency data and/or extended timespans, it is crucial to consider memory usage. 
