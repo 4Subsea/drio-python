@@ -71,7 +71,7 @@ or contact support to restore it.
 .. warning::
 
     Regarding boolean values (true and false). A change in DRIO affects data ingested after approximately 10th of March 2025 10:00, booleans are no longer automatically converted to integer values 1 and 0.
-    This can be done manually where required by using the following code after downloading the data as shown above:
+    If this conversion is desried, it can be done manually where required by using the following code after downloading the data as shown above:
     
     .. code-block:: python
     timeseries.replace({True: 1, 'true': 1, 'True': 1, False: 0, 'false': 0, 'False': 0}, inplace=True)
