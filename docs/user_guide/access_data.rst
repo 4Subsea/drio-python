@@ -74,6 +74,7 @@ or contact support to restore it.
     If this conversion is desried, it can be done manually where required by using the following code after downloading the data as shown above:
     
     .. code-block:: python
+
     timeseries.replace({True: 1, 'true': 1, 'True': 1, False: 0, 'false': 0, 'False': 0}, inplace=True)
 
 .. tip::
