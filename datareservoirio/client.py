@@ -4,7 +4,7 @@ import warnings
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from functools import wraps
+from functools import wraps, cache
 from operator import itemgetter
 from urllib.parse import urlencode
 from uuid import uuid4
@@ -29,11 +29,14 @@ from .storage import Storage
 
 log = logging.getLogger(__name__)
 
-metric = logging.getLogger(__name__ + "_metric_appinsight")
-metric.setLevel(logging.DEBUG)
-metric.addHandler(
-    AzureLogHandler(connection_string=environment._application_insight_connectionstring)
-)
+@cache
+def metric() -> logging.Logger:
+    logger = logging.getLogger(__name__ + "_metric_appinsight")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(
+        AzureLogHandler(connection_string=environment._application_insight_connectionstring)
+    )
+    return logger
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
@@ -329,7 +332,7 @@ class Client:
                     "number-of-samples": number_of_samples,
                 }
             }
-            metric.info("Timer", extra=properties)
+            metric().info("Timer", extra=properties)
             return result
 
         return wrapper
