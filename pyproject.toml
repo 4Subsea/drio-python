@@ -4,34 +4,32 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datareservoirio"
-authors = [
-    { name="4Subsea", email="support@4subsea.com" }
-]
+authors = [{ name = "4Subsea", email = "support@4subsea.com" }]
 dynamic = ["version"]
 description = "DataReservoir.io Python API"
 readme = "README.rst"
-license = { file="LICENSE" }
-requires-python = ">3.10"
+license = { file = "LICENSE" }
+requires-python = ">3.11"
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+  "Development Status :: 5 - Production/Stable",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "numpy",
-    "oauthlib",
-    "pandas",
-    "pyarrow",
-    "requests",
-    "requests-oauthlib",
-    "importlib_resources",
-    "opencensus-ext-azure",
-    "tenacity<8.5",
-    "urllib3 > 2",
-    "tqdm"
+  "numpy",
+  "oauthlib",
+  "pandas",
+  "pyarrow",
+  "requests",
+  "requests-oauthlib",
+  "importlib_resources",
+  "opencensus-ext-azure",
+  "tenacity<8.5",
+  "urllib3 > 2",
+  "tqdm",
 ]
 
 [project.urls]
@@ -45,7 +43,7 @@ include = ["datareservoirio*"]
 namespaces = false
 
 [tool.setuptools.dynamic]
-version = {attr = "datareservoirio.__version__"}
+version = { attr = "datareservoirio.__version__" }
 
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]
@@ -68,10 +66,11 @@ deps =
 
 
 [testenv:docs]
-basepython = python3.11
+basepython = python3.12
 commands = sphinx-build -W -b html -d {toxworkdir}/docs_doctree docs {toxworkdir}/docs_out
 deps =
     sphinx==5.3.0
     pydata-sphinx-theme==0.11.0
     myst_parser<2.0
 """
+
