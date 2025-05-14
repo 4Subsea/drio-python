@@ -19,8 +19,8 @@ def get_exceptions_logger() -> logging.Logger:
         enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
         if enable_app_insights == "true" or enable_app_insights == "1":
             configure_azure_monitor(
-                connection_string=environment._application_insight_connectionstring
-                logger_name = __name__ + "exceptions_logger"  
+                connection_string=environment._application_insight_connectionstring,
+                logger_name=__name__ + "_exceptions_logger",
             )
             exceptions_logger.setLevel("WARNING")
 
