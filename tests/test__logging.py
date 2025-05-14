@@ -25,8 +25,8 @@ def my_class():
     my_class = my_test_class()
     my_class.logging_as_exception = False
     my_class.logging_as_warning = False
-    exceptions_logger.exception = types.MethodType(change_logging, my_class)
-    exceptions_logger.warning = types.MethodType(change_logging_warning, my_class)
+    exceptions_logger().exception = types.MethodType(change_logging, my_class)
+    exceptions_logger().warning = types.MethodType(change_logging_warning, my_class)
 
     return my_class
 
