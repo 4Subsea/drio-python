@@ -8,11 +8,11 @@ from functools import wraps, cache
 from operator import itemgetter
 from urllib.parse import urlencode
 from uuid import uuid4
+from azure.monitor.opentelemetry import configure_azure_monitor
 
 import numpy as np
 import pandas as pd
 import requests
-from opencensus.ext.azure.log_exporter import AzureLogHandler
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -29,14 +29,17 @@ from .storage import Storage
 
 log = logging.getLogger(__name__)
 
+
 @cache
 def metric() -> logging.Logger:
     logger = logging.getLogger(__name__ + "_metric_appinsight")
     logger.setLevel(logging.DEBUG)
-    logger.addHandler(
-        AzureLogHandler(connection_string=environment._application_insight_connectionstring)
+    configure_azure_monitor(
+        connection_string=environment._application_insight_connectionstring,
+        logger_name=__name__ + "_metric_appinsight",
     )
     return logger
+
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
