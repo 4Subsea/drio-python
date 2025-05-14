@@ -13,10 +13,12 @@ from requests.exceptions import InvalidJSONError
 from tenacity import RetryError
 
 import datareservoirio as drio
-from datareservoirio._logging import exceptions_logger
+from datareservoirio._logging import get_exceptions_logger
 from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
+
+exceptions_logger = get_exceptions_logger()
 
 
 def change_logging(self, msg, *args, exc_info=True, **kwargs):
@@ -104,7 +106,7 @@ class Test_Client:
         drio.Client(auth_session, cache=True, cache_opt=cache_opt)
 
     def client_error_handler(self, client, method):
-        exceptions_logger().exception = types.MethodType(change_logging, client)
+        exceptions_logger.exception = types.MethodType(change_logging, client)
         client._auth_session.get = types.MethodType(method, client._auth_session)
         return client
 
@@ -946,7 +948,7 @@ class Test_Client:
 
     def test_client_get_throws_exception_is_logged(self, client):
         client.was_called = False
-        exceptions_logger().exception = types.MethodType(change_logging, client)
+        exceptions_logger.exception = types.MethodType(change_logging, client)
         with pytest.raises(ValueError):
             client.get("e3d82cda-4737-4af9-8d17-d9dfda8703d0", raise_empty=True)
         assert client.was_called == True
