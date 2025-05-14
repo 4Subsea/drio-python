@@ -4,15 +4,15 @@ import warnings
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from functools import wraps, cache
+from functools import cache, wraps
 from operator import itemgetter
 from urllib.parse import urlencode
 from uuid import uuid4
-from azure.monitor.opentelemetry import configure_azure_monitor
 
 import numpy as np
 import pandas as pd
 import requests
+from azure.monitor.opentelemetry import configure_azure_monitor
 from tenacity import (
     retry,
     retry_if_exception_type,

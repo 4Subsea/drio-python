@@ -1,6 +1,6 @@
 import logging
 import os
-from functools import wraps, cache
+from functools import cache, wraps
 
 from azure.monitor.opentelemetry import configure_azure_monitor
 
