@@ -13,10 +13,12 @@ from requests.exceptions import InvalidJSONError
 from tenacity import RetryError
 
 import datareservoirio as drio
-from datareservoirio._logging import exceptions_logger
+from datareservoirio._logging import get_exceptions_logger
 from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
+
+exceptions_logger = get_exceptions_logger()
 
 
 def change_logging(self, msg, *args, exc_info=True, **kwargs):

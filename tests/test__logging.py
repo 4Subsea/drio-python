@@ -3,7 +3,9 @@ import types
 
 import pytest
 
-from datareservoirio._logging import exceptions_logger, log_decorator
+from datareservoirio._logging import get_exceptions_logger, log_decorator
+
+exceptions_logger = get_exceptions_logger()
 
 
 class my_test_class:
