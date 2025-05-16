@@ -1,10 +1,11 @@
 import logging
+import os
 import time
 import warnings
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from functools import wraps, cache
+from functools import cache, wraps
 from operator import itemgetter
 from urllib.parse import urlencode
 from uuid import uuid4
@@ -12,7 +13,7 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 import requests
-from opencensus.ext.azure.log_exporter import AzureLogHandler
+from azure.monitor.opentelemetry import configure_azure_monitor
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -22,6 +23,8 @@ from tenacity import (
 )
 from tqdm.auto import tqdm
 
+from datareservoirio._constants import ENV_VAR_ENABLE_APP_INSIGHTS
+
 from ._logging import log_decorator
 from ._utils import function_translation, period_translation
 from .globalsettings import environment
@@ -29,14 +32,20 @@ from .storage import Storage
 
 log = logging.getLogger(__name__)
 
+
 @cache
 def metric() -> logging.Logger:
     logger = logging.getLogger(__name__ + "_metric_appinsight")
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(
-        AzureLogHandler(connection_string=environment._application_insight_connectionstring)
-    )
+    if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
+        enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
+        if enable_app_insights == "true" or enable_app_insights == "1":
+            logger.setLevel(logging.DEBUG)
+            configure_azure_monitor(
+                connection_string=environment._application_insight_connectionstring,
+                logger_name=__name__ + "_metric_appinsight",
+            )
     return logger
+
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
@@ -324,13 +333,11 @@ class Client:
                 ).isoformat()
             number_of_samples = len(result)
             properties = {
-                "custom_dimensions": {
-                    "series_id": series_id,
-                    "start": start_date_as_str,
-                    "end": end_date_as_str,
-                    "elapsed": elapsed_time,
-                    "number-of-samples": number_of_samples,
-                }
+                "series_id": series_id,
+                "start": start_date_as_str,
+                "end": end_date_as_str,
+                "elapsed": elapsed_time,
+                "number-of-samples": number_of_samples,
             }
             metric().info("Timer", extra=properties)
             return result

@@ -1,13 +1,14 @@
 import logging
 import os
-from functools import wraps, cache
+from functools import cache, wraps
 
-from opencensus.ext.azure.log_exporter import AzureLogHandler
+from azure.monitor.opentelemetry import configure_azure_monitor
 
 import datareservoirio as drio
 
 from ._constants import ENV_VAR_ENABLE_APP_INSIGHTS, ENV_VAR_ENGINE_ROOM_APP_ID
 from .globalsettings import environment
+
 
 @cache
 def get_exceptions_logger() -> logging.Logger:
@@ -17,12 +18,14 @@ def get_exceptions_logger() -> logging.Logger:
     if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
         enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
         if enable_app_insights == "true" or enable_app_insights == "1":
-            app_insight_handler = AzureLogHandler(
-                connection_string=environment._application_insight_connectionstring
+            configure_azure_monitor(
+                connection_string=environment._application_insight_connectionstring,
+                logger_name=__name__ + "_exceptions_logger",
             )
-            app_insight_handler.setLevel("WARNING")
-            exceptions_logger.addHandler(app_insight_handler)
+            exceptions_logger.setLevel("WARNING")
+
     return exceptions_logger
+
 
 def log_decorator(log_level):
     def decorator(func):
