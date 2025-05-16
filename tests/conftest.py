@@ -1,4 +1,3 @@
-import logging
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import Mock
@@ -11,14 +10,6 @@ import response_cases as rc
 from datareservoirio._utils import DataHandler
 
 TEST_PATH = Path(__file__).parent
-
-
-@pytest.fixture(autouse=True)
-def disable_logging(monkeypatch):
-    """Disable logging to Application Insight"""
-
-
-#    monkeypatch.setattr("datareservoirio.client.AzureLogHandler", logging.NullHandler())
 
 
 @pytest.fixture

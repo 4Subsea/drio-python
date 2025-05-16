@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 import warnings
 from collections import defaultdict
@@ -22,6 +23,8 @@ from tenacity import (
 )
 from tqdm.auto import tqdm
 
+from datareservoirio._constants import ENV_VAR_ENABLE_APP_INSIGHTS
+
 from ._logging import log_decorator
 from ._utils import function_translation, period_translation
 from .globalsettings import environment
@@ -33,11 +36,14 @@ log = logging.getLogger(__name__)
 @cache
 def metric() -> logging.Logger:
     logger = logging.getLogger(__name__ + "_metric_appinsight")
-    logger.setLevel(logging.DEBUG)
-    configure_azure_monitor(
-        connection_string=environment._application_insight_connectionstring,
-        logger_name=__name__ + "_metric_appinsight",
-    )
+    if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
+        enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
+        if enable_app_insights == "true" or enable_app_insights == "1":
+            logger.setLevel(logging.DEBUG)
+            configure_azure_monitor(
+                connection_string=environment._application_insight_connectionstring,
+                logger_name=__name__ + "_metric_appinsight",
+            )
     return logger
 
 
