@@ -327,13 +327,11 @@ class Client:
                 ).isoformat()
             number_of_samples = len(result)
             properties = {
-                "custom_dimensions": {
-                    "series_id": series_id,
-                    "start": start_date_as_str,
-                    "end": end_date_as_str,
-                    "elapsed": elapsed_time,
-                    "number-of-samples": number_of_samples,
-                }
+                "series_id": series_id,
+                "start": start_date_as_str,
+                "end": end_date_as_str,
+                "elapsed": elapsed_time,
+                "number-of-samples": number_of_samples,
             }
             metric().info("Timer", extra=properties)
             return result
