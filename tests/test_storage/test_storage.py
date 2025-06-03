@@ -4,8 +4,8 @@ import time
 from pathlib import Path
 from unittest.mock import ANY, call
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 import requests
 from requests import HTTPError
