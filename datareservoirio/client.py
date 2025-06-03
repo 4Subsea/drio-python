@@ -104,7 +104,7 @@ class Client:
         return response.json()
 
     @log_decorator("exception")
-    def create(self, series=None, wait_on_verification=True):
+    def create(self, series=None, wait_on_verification=True, dynamic_read_timeout=False):
         """
         Create a new series in DataReservoir.io from a pandas.Series. If no
         data is provided, an empty series is created.
@@ -124,6 +124,12 @@ class Client:
             validation is successful. The latter is significantly faster, but
             is recommended when the data is "validated" in advance.
             Default is True.
+        dynamic_read_timeout : bool (optional)
+            While uploading file there is no timeout for read operations which can cause
+            problems when there is no response from the server. If this flag is set to true,
+            application will calculate and apply timeout for read operations and retry upload 
+            if necessary.
+            Default is False.
 
         Returns
         -------
@@ -157,7 +163,7 @@ class Client:
             environment.api_base_url + "files/commit",
             {"json": {"FileId": file_id}, "timeout": _TIMEOUT_DEAULT},
         )
-        self._storage.put(df, target_url, commit_request)
+        self._storage.put(df, target_url, commit_request, dynamic_read_timeout)
 
         if wait_on_verification:
             status = self._wait_until_file_ready(file_id)
@@ -173,7 +179,7 @@ class Client:
         return response.json()
 
     @log_decorator("exception")
-    def append(self, series, series_id, wait_on_verification=True):
+    def append(self, series, series_id, wait_on_verification=True, dynamic_read_timeout=False):
         """
         Append data to an already existing series.
 
@@ -193,6 +199,12 @@ class Client:
             validation is successful. The latter is significantly faster, but
             is recommended when the data is "validated" in advance.
             Default is True.
+        dynamic_read_timeout : bool (optional)
+            While uploading file there is no timeout for read operations which can cause
+            problems when there is no response from the server. If this flag is set to true,
+            application will calculate and apply timeout for read operations and retry upload 
+            if necessary.
+            Default is False.
 
         Returns
         -------
@@ -217,7 +229,7 @@ class Client:
             {"json": {"FileId": file_id}, "timeout": _TIMEOUT_DEAULT},
         )
 
-        self._storage.put(df, target_url, commit_request)
+        self._storage.put(df, target_url, commit_request, dynamic_read_timeout)
 
         if wait_on_verification:
             status = self._wait_until_file_ready(file_id)

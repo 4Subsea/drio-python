@@ -59,7 +59,7 @@ class Storage:
 
         self._session = session
 
-    def put(self, df, target_url, commit_request):
+    def put(self, df, target_url, commit_request, dynamic_read_timeout=False):
         """
         Put a Pandas DataFrame into storage.
 
@@ -72,9 +72,12 @@ class Storage:
         commit_request : tuple
             Parameteres for "commit" request. Given as `(METHOD, URL, kwargs)`.
             The tuple is passed forward to `session.request(method=METHOD, url=URL, **kwargs)`
+        dynamic_read_timeout : bool
+            Flag that enables timeout calculation for read operation while
+            uploading file
 
         """
-        _df_to_blob(df, target_url)
+        _df_to_blob(df, target_url, _BLOBSTORAGE_SESSION, dynamic_read_timeout)
 
         method, url, kwargs = commit_request
         response = self._session.request(method=method, url=url, **kwargs)
@@ -322,7 +325,7 @@ def _blob_to_df(blob_url, session=_BLOBSTORAGE_SESSION):
     return df
 
 
-def _df_to_blob(df, blob_url, session=_BLOBSTORAGE_SESSION):
+def _df_to_blob(df, blob_url, session=_BLOBSTORAGE_SESSION, dynamic_read_timeout=False):
     """
     Upload a Pandas Dataframe as blob to a remote storage.
 
@@ -354,6 +357,13 @@ def _df_to_blob(df, blob_url, session=_BLOBSTORAGE_SESSION):
             url=blob_url,
             headers={"x-ms-blob-type": "BlockBlob"},
             data=fp,
-            timeout=(30, None),
+            timeout=(30, _calculate_timeout(fp.getbuffer().nbytes) if dynamic_read_timeout else None),
         ).raise_for_status()
     return
+
+
+def _calculate_timeout(file_size_bytes):
+    bytes_per_second = 1 * 1024 * 1024 # 1MB/s
+    min_timeout = 30
+    timeout = max(min_timeout, (file_size_bytes / bytes_per_second) * 1.5)
+    return timeout
