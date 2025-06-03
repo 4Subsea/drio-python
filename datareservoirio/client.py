@@ -104,7 +104,9 @@ class Client:
         return response.json()
 
     @log_decorator("exception")
-    def create(self, series=None, wait_on_verification=True, dynamic_read_timeout=False):
+    def create(
+        self, series=None, wait_on_verification=True, dynamic_read_timeout=False
+    ):
         """
         Create a new series in DataReservoir.io from a pandas.Series. If no
         data is provided, an empty series is created.
@@ -127,7 +129,7 @@ class Client:
         dynamic_read_timeout : bool (optional)
             While uploading file there is no timeout for read operations which can cause
             problems when there is no response from the server. If this flag is set to true,
-            application will calculate and apply timeout for read operations and retry upload 
+            application will calculate and apply timeout for read operations and retry upload
             if necessary.
             Default is False.
 
@@ -179,7 +181,9 @@ class Client:
         return response.json()
 
     @log_decorator("exception")
-    def append(self, series, series_id, wait_on_verification=True, dynamic_read_timeout=False):
+    def append(
+        self, series, series_id, wait_on_verification=True, dynamic_read_timeout=False
+    ):
         """
         Append data to an already existing series.
 
@@ -202,7 +206,7 @@ class Client:
         dynamic_read_timeout : bool (optional)
             While uploading file there is no timeout for read operations which can cause
             problems when there is no response from the server. If this flag is set to true,
-            application will calculate and apply timeout for read operations and retry upload 
+            application will calculate and apply timeout for read operations and retry upload
             if necessary.
             Default is False.
 

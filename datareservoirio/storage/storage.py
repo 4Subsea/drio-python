@@ -357,13 +357,22 @@ def _df_to_blob(df, blob_url, session=_BLOBSTORAGE_SESSION, dynamic_read_timeout
             url=blob_url,
             headers={"x-ms-blob-type": "BlockBlob"},
             data=fp,
-            timeout=(30, _calculate_timeout(fp.getbuffer().nbytes) if dynamic_read_timeout else None),
+            timeout=(
+                30,
+                (
+                    _calculate_timeout(fp.getbuffer().nbytes)
+                    if dynamic_read_timeout
+                    else None
+                ),
+            ),
         ).raise_for_status()
     return
 
 
 def _calculate_timeout(file_size_bytes):
-    bytes_per_second = 0.5 * 1024 * 1024 # 0,5 MB/s
+    bytes_per_second = 0.5 * 1024 * 1024  # 0,5 MB/s
     min_timeout = 30
-    timeout = int(max(min_timeout, (file_size_bytes / bytes_per_second) * 1.5)) # 1.5 tolerance
+    timeout = int(
+        max(min_timeout, (file_size_bytes / bytes_per_second) * 1.5)
+    )  # 1.5 tolerance
     return timeout

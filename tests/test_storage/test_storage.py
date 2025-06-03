@@ -17,24 +17,24 @@ from datareservoirio.storage.cache_engine import CacheIO
 
 TEST_PATH = Path(__file__).parent
 
+
 def helper_function(func):
     func._is_helper = True
     return func
 
+
 @helper_function
 def generate_dataframe(target_bytes):
     NUM_COLUMNS = 5
-    BYTES_PER_VALUE = 28  
-    
+    BYTES_PER_VALUE = 28
+
     bytes_per_row = NUM_COLUMNS * BYTES_PER_VALUE
     num_rows = max(1, int(target_bytes / bytes_per_row))
-    
-    data = {
-        f'col_{i}': np.random.randn(num_rows)
-        for i in range(NUM_COLUMNS)
-    }
-    
+
+    data = {f"col_{i}": np.random.randn(num_rows) for i in range(NUM_COLUMNS)}
+
     return pd.DataFrame(data)
+
 
 class Test__blob_to_df:
     """
@@ -582,7 +582,7 @@ class Test_Storage:
         response_cases,
     ):
         response_cases.set("group4")
-        df = generate_dataframe(20_000_000) # 20 MB
+        df = generate_dataframe(20_000_000)  # 20 MB
 
         storage_no_cache.put(
             df,
@@ -620,7 +620,7 @@ class Test_Storage:
         response_cases,
     ):
         response_cases.set("group4")
-        df = generate_dataframe(1_000_000) # 1 MB
+        df = generate_dataframe(1_000_000)  # 1 MB
 
         storage_no_cache.put(
             df,
@@ -658,7 +658,7 @@ class Test_Storage:
         response_cases,
     ):
         response_cases.set("group4")
-        df = generate_dataframe(20_000_000) # 20 MB
+        df = generate_dataframe(20_000_000)  # 20 MB
 
         storage_no_cache.put(
             df,
@@ -667,7 +667,7 @@ class Test_Storage:
                 "POST",
                 "https://reservoir-api.4subsea.net/api/files/commit",
                 {"json": {"FileId": "1234"}, "timeout": 10},
-            )
+            ),
         )
 
         calls_expected = [
