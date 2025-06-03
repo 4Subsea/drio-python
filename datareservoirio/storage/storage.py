@@ -363,7 +363,7 @@ def _df_to_blob(df, blob_url, session=_BLOBSTORAGE_SESSION, dynamic_read_timeout
 
 
 def _calculate_timeout(file_size_bytes):
-    bytes_per_second = 1 * 1024 * 1024 # 1MB/s
+    bytes_per_second = 0.5 * 1024 * 1024 # 0,5 MB/s
     min_timeout = 30
-    timeout = max(min_timeout, (file_size_bytes / bytes_per_second) * 1.5)
+    timeout = int(max(min_timeout, (file_size_bytes / bytes_per_second) * 1.5)) # 1.5 tolerance
     return timeout

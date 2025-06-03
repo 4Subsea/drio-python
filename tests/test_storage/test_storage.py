@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import ANY, call
 
 import pandas as pd
+import numpy as np
 import pytest
 import requests
 from requests import HTTPError
@@ -16,6 +17,24 @@ from datareservoirio.storage.cache_engine import CacheIO
 
 TEST_PATH = Path(__file__).parent
 
+def helper_function(func):
+    func._is_helper = True
+    return func
+
+@helper_function
+def generate_dataframe(target_bytes):
+    NUM_COLUMNS = 5
+    BYTES_PER_VALUE = 28  
+    
+    bytes_per_row = NUM_COLUMNS * BYTES_PER_VALUE
+    num_rows = max(1, int(target_bytes / bytes_per_row))
+    
+    data = {
+        f'col_{i}': np.random.randn(num_rows)
+        for i in range(NUM_COLUMNS)
+    }
+    
+    return pd.DataFrame(data)
 
 class Test__blob_to_df:
     """
@@ -553,6 +572,119 @@ class Test_Storage:
             mock_requests.call_args_list[0].kwargs["data"].memory
             == data.as_binary_csv()
         )
+
+        mock_requests.assert_has_calls(calls_expected)
+
+    def test_put_dynamic_timeout_sets_correct_value(
+        self,
+        mock_requests,
+        storage_no_cache,
+        response_cases,
+    ):
+        response_cases.set("group4")
+        df = generate_dataframe(20_000_000) # 20 MB
+
+        storage_no_cache.put(
+            df,
+            "http://example/blob/url",
+            (
+                "POST",
+                "https://reservoir-api.4subsea.net/api/files/commit",
+                {"json": {"FileId": "1234"}, "timeout": 10},
+            ),
+            True,
+        )
+
+        calls_expected = [
+            call(
+                method="put",
+                url="http://example/blob/url",
+                headers={"x-ms-blob-type": "BlockBlob"},
+                data=ANY,
+                timeout=(30, 40),
+            ),
+            call(
+                method="POST",
+                url="https://reservoir-api.4subsea.net/api/files/commit",
+                json={"FileId": "1234"},
+                timeout=10,
+            ),
+        ]
+
+        mock_requests.assert_has_calls(calls_expected)
+
+    def test_put_dynamic_timeout_sets_minimal_value(
+        self,
+        mock_requests,
+        storage_no_cache,
+        response_cases,
+    ):
+        response_cases.set("group4")
+        df = generate_dataframe(1_000_000) # 1 MB
+
+        storage_no_cache.put(
+            df,
+            "http://example/blob/url",
+            (
+                "POST",
+                "https://reservoir-api.4subsea.net/api/files/commit",
+                {"json": {"FileId": "1234"}, "timeout": 10},
+            ),
+            True,
+        )
+
+        calls_expected = [
+            call(
+                method="put",
+                url="http://example/blob/url",
+                headers={"x-ms-blob-type": "BlockBlob"},
+                data=ANY,
+                timeout=(30, 30),
+            ),
+            call(
+                method="POST",
+                url="https://reservoir-api.4subsea.net/api/files/commit",
+                json={"FileId": "1234"},
+                timeout=10,
+            ),
+        ]
+
+        mock_requests.assert_has_calls(calls_expected)
+
+    def test_put_without_dynamic_timeout_doesnt_set_its_value(
+        self,
+        mock_requests,
+        storage_no_cache,
+        response_cases,
+    ):
+        response_cases.set("group4")
+        df = generate_dataframe(20_000_000) # 20 MB
+
+        storage_no_cache.put(
+            df,
+            "http://example/blob/url",
+            (
+                "POST",
+                "https://reservoir-api.4subsea.net/api/files/commit",
+                {"json": {"FileId": "1234"}, "timeout": 10},
+            )
+        )
+
+        calls_expected = [
+            call(
+                method="put",
+                url="http://example/blob/url",
+                headers={"x-ms-blob-type": "BlockBlob"},
+                data=ANY,
+                timeout=(30, None),
+            ),
+            call(
+                method="POST",
+                url="https://reservoir-api.4subsea.net/api/files/commit",
+                json={"FileId": "1234"},
+                timeout=10,
+            ),
+        ]
 
         mock_requests.assert_has_calls(calls_expected)
 
