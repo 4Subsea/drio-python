@@ -354,6 +354,6 @@ def _df_to_blob(df, blob_url, session=_BLOBSTORAGE_SESSION):
             url=blob_url,
             headers={"x-ms-blob-type": "BlockBlob"},
             data=fp,
-            timeout=(30, None),
+            timeout=(30, 60),
         ).raise_for_status()
     return
