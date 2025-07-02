@@ -91,12 +91,12 @@ def user_data_dir(appname, roaming=False):
                                 if it exists, else ~/.config/<AppName>
         Unix:                   ~/.local/share/<AppName>    # or in
                                 $XDG_DATA_HOME, if defined
-        Win XP (not roaming):   C:\Documents and Settings\<username>\ ...
-                                ...Application Data\<AppName>
-        Win XP (roaming):       C:\Documents and Settings\<username>\Local ...
-                                ...Settings\Application Data\<AppName>
-        Win 7  (not roaming):   C:\\Users\<username>\AppData\Local\<AppName>
-        Win 7  (roaming):       C:\\Users\<username>\AppData\Roaming\<AppName>
+        Win XP (not roaming):   C:\\Documents and Settings\\<username>\\ ...
+                                ...Application Data\\<AppName>
+        Win XP (roaming):       C:\\Documents and Settings\\<username>\\Local ...
+                                ...Settings\\Application Data\\<AppName>
+        Win 7  (not roaming):   C:\\Users\\<username>\\AppData\\Local\\<AppName>
+        Win 7  (roaming):       C:\\Users\\<username>\\AppData\\\Roaming\\<AppName>
 
     For Unix, we follow the XDG spec and support $XDG_DATA_HOME.
     That means, by default '~/.local/share/<AppName>'.
