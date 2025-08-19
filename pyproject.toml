@@ -29,7 +29,7 @@ dependencies = [
   "tenacity<8.5",
   "urllib3 > 2",
   "tqdm",
-  "azure-monitor-opentelemetry",
+  "azure-monitor-opentelemetry==1.6.12",
 ]
 
 [project.urls]
