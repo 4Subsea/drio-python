@@ -9,7 +9,7 @@ dynamic = ["version"]
 description = "DataReservoir.io Python API"
 readme = "README.rst"
 license = { file = "LICENSE" }
-requires-python = ">3.11"
+requires-python = ">=3.11, <4"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "License :: OSI Approved :: MIT License",
