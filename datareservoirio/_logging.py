@@ -19,7 +19,7 @@ def _ensure_azure_monitor_configured(connection_string, logger_name):
     
     if cache_key not in _configured_loggers:
         with _configure_lock:
-            # Double-check inside lock
+            # Double-check locking
             if cache_key not in _configured_loggers:
                 configure_azure_monitor(connection_string=connection_string, logger_name=logger_name)
                 _configured_loggers[cache_key] = True
@@ -27,8 +27,6 @@ def _ensure_azure_monitor_configured(connection_string, logger_name):
 
 @lru_cache(maxsize=1)
 def get_exceptions_logger() -> logging.Logger:
-    print("bruh", flush=True)
-    logging.log(logging.INFO, 'foobar')
     exceptions_logger = logging.getLogger(__name__ + "_exception_logger")
     exceptions_logger.setLevel(logging.DEBUG)
 

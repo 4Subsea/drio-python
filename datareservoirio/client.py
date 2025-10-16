@@ -344,7 +344,7 @@ class Client:
 
         return wrapper
 
-    # @log_decorator("exception")
+    @log_decorator("exception")
     @_timer
     @retry(
         stop=stop_after_attempt(
@@ -361,7 +361,7 @@ class Client:
         ),
         wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
     )
-    # @log_decorator("warning")
+    @log_decorator("warning")
     def get(
         self,
         series_id,
