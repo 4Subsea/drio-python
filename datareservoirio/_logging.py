@@ -1,6 +1,7 @@
 import logging
 import os
-from functools import cache, wraps
+from functools import lru_cache, wraps
+import threading
 
 from azure.monitor.opentelemetry import configure_azure_monitor
 
@@ -10,18 +11,32 @@ from ._constants import ENV_VAR_ENABLE_APP_INSIGHTS, ENV_VAR_ENGINE_ROOM_APP_ID
 from .globalsettings import environment
 
 
-@cache
+_configure_lock = threading.Lock()
+_configured_loggers = {}
+
+def _ensure_azure_monitor_configured(connection_string, logger_name):
+    cache_key = (connection_string, logger_name)
+    
+    if cache_key not in _configured_loggers:
+        with _configure_lock:
+            # Double-check inside lock
+            if cache_key not in _configured_loggers:
+                configure_azure_monitor(connection_string=connection_string, logger_name=logger_name)
+                _configured_loggers[cache_key] = True
+
+
+@lru_cache(maxsize=1)
 def get_exceptions_logger() -> logging.Logger:
+    print("bruh", flush=True)
+    logging.log(logging.INFO, 'foobar')
     exceptions_logger = logging.getLogger(__name__ + "_exception_logger")
     exceptions_logger.setLevel(logging.DEBUG)
 
     if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
         enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
         if enable_app_insights == "true" or enable_app_insights == "1":
-            configure_azure_monitor(
-                connection_string=environment._application_insight_connectionstring,
-                logger_name=__name__ + "_exceptions_logger",
-            )
+            _ensure_azure_monitor_configured(connection_string=environment._application_insight_connectionstring,
+                                     logger_name=__name__ + "_exception_appinsight")
             exceptions_logger.setLevel("WARNING")
 
     return exceptions_logger

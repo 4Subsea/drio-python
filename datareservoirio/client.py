@@ -5,7 +5,7 @@ import warnings
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from functools import cache, wraps
+from functools import lru_cache, wraps
 from operator import itemgetter
 from urllib.parse import urlencode
 from uuid import uuid4
@@ -25,7 +25,7 @@ from tqdm.auto import tqdm
 
 from datareservoirio._constants import ENV_VAR_ENABLE_APP_INSIGHTS
 
-from ._logging import log_decorator
+from ._logging import _ensure_azure_monitor_configured, log_decorator
 from ._utils import function_translation, period_translation
 from .globalsettings import environment
 from .storage import Storage
@@ -33,14 +33,14 @@ from .storage import Storage
 log = logging.getLogger(__name__)
 
 
-@cache
+@lru_cache(maxsize=1)
 def metric() -> logging.Logger:
     logger = logging.getLogger(__name__ + "_metric_appinsight")
     if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
         enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
         if enable_app_insights == "true" or enable_app_insights == "1":
             logger.setLevel(logging.DEBUG)
-            configure_azure_monitor(
+            _ensure_azure_monitor_configured(
                 connection_string=environment._application_insight_connectionstring,
                 logger_name=__name__ + "_metric_appinsight",
             )
@@ -344,7 +344,7 @@ class Client:
 
         return wrapper
 
-    @log_decorator("exception")
+    # @log_decorator("exception")
     @_timer
     @retry(
         stop=stop_after_attempt(
@@ -361,7 +361,7 @@ class Client:
         ),
         wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
     )
-    @log_decorator("warning")
+    # @log_decorator("warning")
     def get(
         self,
         series_id,
