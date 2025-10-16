@@ -1,7 +1,7 @@
 import logging
 import os
-from functools import lru_cache, wraps
 import threading
+from functools import lru_cache, wraps
 
 from azure.monitor.opentelemetry import configure_azure_monitor
 
@@ -10,18 +10,20 @@ import datareservoirio as drio
 from ._constants import ENV_VAR_ENABLE_APP_INSIGHTS, ENV_VAR_ENGINE_ROOM_APP_ID
 from .globalsettings import environment
 
-
 _configure_lock = threading.Lock()
 _configured_loggers = {}
 
+
 def _ensure_azure_monitor_configured(connection_string, logger_name):
     cache_key = (connection_string, logger_name)
-    
+
     if cache_key not in _configured_loggers:
         with _configure_lock:
             # Double-check locking
             if cache_key not in _configured_loggers:
-                configure_azure_monitor(connection_string=connection_string, logger_name=logger_name)
+                configure_azure_monitor(
+                    connection_string=connection_string, logger_name=logger_name
+                )
                 _configured_loggers[cache_key] = True
 
 
