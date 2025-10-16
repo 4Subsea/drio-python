@@ -33,8 +33,9 @@ def get_exceptions_logger() -> logging.Logger:
     if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
         enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
         if enable_app_insights == "true" or enable_app_insights == "1":
-            _ensure_azure_monitor_configured(connection_string=environment._application_insight_connectionstring,
-                                     logger_name=__name__ + "_exception_appinsight")
+            _ensure_azure_monitor_configured(
+                connection_string=environment._application_insight_connectionstring,
+                logger_name=__name__ + "_exception_appinsight")
             exceptions_logger.setLevel("WARNING")
 
     return exceptions_logger
