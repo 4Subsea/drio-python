@@ -40,7 +40,7 @@ is *"tick"* (100 nanoseconds).
                             start='2024-01-01', end='2024-01-02', 
                             aggregation_period='1m',
                             aggregation_function='mean',
-                            include_aggregated_data=True)                        
+                            include_empty_aggregations=True)                        
 
 .. note::
 
