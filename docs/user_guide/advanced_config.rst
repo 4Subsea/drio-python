@@ -151,4 +151,84 @@ Using the :py:mod:`max_page_size` parameter in :py:mod:`get_samples_aggregate` m
 
 The :py:meth:`Client.get_samples_aggregate` method uses an endpoint that has support for paging of responses. This means that instead of making one big request, it might make a series of smaller requests traversing links to next pages returned in each partial response.
 
-Normally this is something you don't have to think about. In case you do want to change the maximum number of results returned in one page, you can use the parameter called ``max_page_size`` to alter this number. 
+Normally this is something you don't have to think about. In case you do want to change the maximum number of results returned in one page, you can use the parameter called ``max_page_size`` to alter this number.
+
+Using the :py:mod:`include_empty_aggregations` parameter in :py:mod:`get_samples_aggregate` method
+---------------------------------------------------------------------------------------------------
+
+The :py:meth:`Client.get_samples_aggregate` method aggregates data into fixed intervals based on the ``aggregation_period`` parameter. By default, the method only returns aggregations that contain data.
+
+The ``include_empty_aggregations`` parameter controls whether to include aggregation intervals that have no data points. This is useful when you need a complete time series with regular intervals, even for periods where no measurements were recorded.
+
+**Default behavior (include_empty_aggregations=False):**
+
+When ``include_empty_aggregations`` is ``False`` (default), only aggregations with data are returned. This results in a sparse series that may have gaps.
+
+.. code-block:: python
+
+    import datareservoirio as drio
+
+    auth = drio.Authenticator()
+    client = drio.Client(auth)
+
+    # Returns only aggregations with data
+    timeseries = client.get_samples_aggregate(
+        'your-series-id',
+        start='2026-02-23',
+        end='2026-02-24',
+        aggregation_period='1m',
+        aggregation_function='mean',
+        include_empty_aggregations=False  # Default
+    )
+
+    print(timeseries)
+
+    # Result will only include time intervals that have data.
+    # 2026-02-23 00:03:00+00:00   2.2
+    # 2026-02-23 23:56:00+00:00   1.0
+
+**With empty aggregations (include_empty_aggregations=True):**
+
+When ``include_empty_aggregations`` is ``True``, all aggregation intervals within the specified time range are returned, with ``NaN`` (Not a Number) values for intervals that contain no data.
+
+.. code-block:: python
+
+    import datareservoirio as drio
+
+    auth = drio.Authenticator()
+    client = drio.Client(auth)
+
+    # Returns all aggregations, including those with no data
+    timeseries = client.get_samples_aggregate(
+        'your-series-id',
+        start='2026-02-23',
+        end='2026-02-24',
+        aggregation_period='1m',
+        aggregation_function='mean',
+        include_empty_aggregations=True
+    )
+    
+    print(timeseries)
+
+    # Result has a complete time series with NaN values where data is missing
+    # 2026-02-23 00:00:00+00:00   NaN
+    # 2026-02-23 00:01:00+00:00   NaN
+    # 2026-02-23 00:02:00+00:00   NaN
+    # 2026-02-23 00:03:00+00:00   2.2
+    # 2026-02-23 00:04:00+00:00   NaN
+    #                             ..
+    # 2026-02-23 23:55:00+00:00   NaN
+    # 2026-02-23 23:56:00+00:00   1.0
+    # 2026-02-23 23:57:00+00:00   NaN
+    # 2026-02-23 23:58:00+00:00   NaN
+    # 2026-02-23 23:59:00+00:00   NaN
+
+**Use Cases:**
+
+* **Analysis requiring regular intervals:** Set ``include_empty_aggregations=True`` when your analysis requires evenly-spaced data points (e.g., time-series forecasting models that expect regular intervals).
+
+* **Detecting data gaps:** Set ``include_empty_aggregations=True`` if you need to identify periods with missing measurements.
+
+* **Visualization:** Set ``include_empty_aggregations=True`` when creating time-series plots that should display the full time range uniformly.
+
+* **Memory efficiency:** Use ``include_empty_aggregations=False`` (default) if storage or memory is a concern and you only need data-bearing intervals. 
