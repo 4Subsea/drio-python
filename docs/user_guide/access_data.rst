@@ -35,7 +35,7 @@ is *"tick"* (100 nanoseconds).
                             aggregation_period='tick',
                             aggregation_function='mean')
 
-    # Get all datapoints resampled to 1 minute even if there is no data. Empty values will be filled with null.
+    # Get all datapoints resampled to 1 minute even if there is no data. Empty values will be filled with NaN.
     timeseries = client.get_samples_aggregate(series_id, 
                             start='2024-01-01', end='2024-01-02', 
                             aggregation_period='1m',
