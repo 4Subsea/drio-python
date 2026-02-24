@@ -466,6 +466,7 @@ class Client:
         aggregation_period=None,
         aggregation_function=None,
         max_page_size=_DEFAULT_MAX_PAGE_SIZE,
+        include_empty_aggregations=False,
     ):
         """
         Retrieve a series from DataReservoir.io using the samples/aggregate endpoint.
@@ -489,6 +490,8 @@ class Client:
         max_page_size : optional
             Maximum number of samples to return per page. The method automatically follows links
             to next pages and returns the entire series. For advanced usage.
+        include_empty_aggregations : optional
+            Whether to include empty aggregations with no data in the returned series. Default is False.
         Returns
         -------
         pandas.Series
@@ -550,6 +553,7 @@ class Client:
         params["aggregationFunction"] = aggregation_function
         params["start"] = start.isoformat()
         params["end"] = end.isoformat()
+        params["includeEmptyAggregations"] = include_empty_aggregations
 
         next_page_link = f"{environment.api_base_url}reservoir/timeseries/{series_id}/samples/aggregate?{urlencode(params)}"
 
