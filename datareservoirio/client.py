@@ -395,9 +395,6 @@ class Client:
         pandas.Series
             Series data
         """
-        start_provided = start is not None
-        end_provided = end is not None
-
         if not start:
             start = _START_DEFAULT
         if not end:
@@ -433,19 +430,22 @@ class Client:
         else:
             df = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
-        s = df.set_index("index").squeeze("columns")
-
-        # Ensure sorted (cheap if already sorted)
-        if not s.index.is_monotonic_increasing:
+        try:
+            # When we move to pandas 3, the .loc here breaks with None start and end, haven't dug into why yet
+            series = (
+                df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
+            )
+        except KeyError as e:
             logging.warning(
                 "The time series you requested is not properly ordered. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
             )
-            s = s.sort_index()
-
-        series = s.loc[
-            start if start_provided else None : end if end_provided else None
-        ].copy(deep=True)
-
+            series = (
+                df.set_index("index")
+                .sort_index()
+                .squeeze("columns")
+                .loc[start:end]
+                .copy(deep=True)
+            )
         series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing
