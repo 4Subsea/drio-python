@@ -21,7 +21,7 @@ classifiers = [
 dependencies = [
   "numpy",
   "oauthlib",
-  "pandas",
+  "pandas < 3",
   "pyarrow",
   "requests",
   "requests-oauthlib",
