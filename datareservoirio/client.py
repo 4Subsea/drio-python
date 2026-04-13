@@ -847,6 +847,35 @@ class Client:
         response.raise_for_status()
         return
 
+    def range_end(self, timeseriesIds):
+        """
+        Retrieve single latest end date of a set of timeseries ids.
+
+        Parameters
+        ----------
+        timeseriesIds : list or str
+            List of timeseries ids or aliases, or a single timeseries id or alias.
+
+        Returns
+        -------
+        dict
+            Ranges. None if none of the series are found.
+        """
+
+        if isinstance(timeseriesIds, str):
+            timeseriesIds = [timeseriesIds]
+
+        base_url = environment.api_base_url +"reservoir/timeseries/samples/aggregate/range/end"
+        params = [("timeSeriesIdsOrAliases", ts) for ts in timeseriesIds]
+
+        url = f"{base_url}?{urlencode(params)}"
+        response = self._auth_session.get(
+            url,
+            timeout=_TIMEOUT_DEAULT,
+        )
+        response.raise_for_status()
+        return response.json()
+    
     def _verify_and_prepare_series(self, series):
         if not isinstance(series, pd.Series):
             raise ValueError("series must be a pandas Series")
