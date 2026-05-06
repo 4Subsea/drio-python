@@ -8,8 +8,8 @@ Head over to `Python.org`_ for instructions.
 
 Python version support
 ----------------------
-Officially Python 3.11, 3.12, and 3.13. We aim to support the three most
-recent major versions.
+Officially Python 3.11, 3.12, 3.13, 3.14, and 3.15. We aim to support the
+most recent major versions.
 
 OS support
 ----------
