@@ -49,7 +49,7 @@ def metric() -> logging.Logger:
 
 # Default values to push as start/end dates. (Limited by numpy.datetime64)
 _END_DEFAULT = 9214646400000000000  # 2262-01-01
-_START_DEFAULT = -9214560000000000000  # 1678-01-01
+_START_DEFAULT = 0  # 1970-01-01
 
 _TIMEOUT_DEAULT = (120, 120)
 
@@ -430,22 +430,16 @@ class Client:
         else:
             df = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
 
-        try:
-            # When we move to pandas 3, the .loc here breaks with None start and end, haven't dug into why yet
-            series = (
-                df.set_index("index").squeeze("columns").loc[start:end].copy(deep=True)
-            )
-        except KeyError as e:
+        s = df.set_index("index").squeeze("columns")
+
+        # Ensure sorted (cheap if already sorted)
+        if not s.index.is_monotonic_increasing:
             logging.warning(
                 "The time series you requested is not properly ordered. The data will be sorted to attempt to resolve the issue. Please note that this operation may take some time."
             )
-            series = (
-                df.set_index("index")
-                .sort_index()
-                .squeeze("columns")
-                .loc[start:end]
-                .copy(deep=True)
-            )
+            s = s.sort_index()
+
+        series = s.loc[start:end]
         series.index.name = None
 
         if series.empty and raise_empty:  # may become empty after slicing
