@@ -75,6 +75,19 @@ class Test_Environment:
             == _constants.APPLICATIONINSIGHTS_DEV_CONNECTIONSTRING
         )
 
+    def test_set_api_base_url(self, environment):
+        environment.set_api_base_url("http://drio-mock.gov:1337/api/")
+        assert environment.current_environment == "DEV"
+        assert environment.api_base_url == "http://drio-mock.gov:1337/api/"
+        assert (
+            environment._application_insight_connectionstring
+            == _constants.APPLICATIONINSIGHTS_DEV_CONNECTIONSTRING
+        )
+
+    def test_set_api_base_url_adds_trailing_slash(self, environment):
+        environment.set_api_base_url("http://localhost:42/api")
+        assert environment.api_base_url == "http://localhost:42/api/"
+
     def test__set_environment(self, environment):
         environment._set_environment("QA")
         assert environment.current_environment == "QA"

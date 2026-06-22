@@ -43,6 +43,29 @@ class Environment(object):
             _constants.APPLICATIONINSIGHTS_DEV_CONNECTIONSTRING
         )
 
+    def set_api_base_url(self, base_url):
+        """
+        Point the client at a custom DataReservoir.io API base URL.
+
+        Intended for development/testing against a mock server. The
+        environment is marked as DEV, so telemetry (if explicitly enabled)
+        uses the DEV config and does not leak to the production resource.
+
+        Parameters
+        ----------
+        base_url : str
+            Full API base URL including the ``/api/`` suffix, e.g.
+            ``"http://localhost:5824/api/"``. A trailing slash is added if
+            missing.
+        """
+        if not base_url.endswith("/"):
+            base_url = base_url + "/"
+        self._set_environment(_constants.ENV_DEV)
+        self._set_base_url(base_url)
+        self._set_application_insight_connectionstring(
+            _constants.APPLICATIONINSIGHTS_DEV_CONNECTIONSTRING
+        )
+
     def _set_environment(self, environment):
         self._logger.info(f"Setting environment to: {environment}")
         self.current_environment = environment
