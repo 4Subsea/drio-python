@@ -37,7 +37,7 @@ def change_logging(self, msg, *args, exc_info=True, **kwargs):
     if kwargs["extra"]:
         self.logging_as_exception = True
         if os.getenv("ENGINE_ROOM_APP_ID") is not None:
-            self.engine_room_app_id = kwargs["extra"]["customDimensions"][
+            self.engine_room_app_id = kwargs["extra"][
                 "engineRoomAppId"
             ]
     else:
