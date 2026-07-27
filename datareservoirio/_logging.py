@@ -52,12 +52,10 @@ def log_decorator(log_level):
                 return func(self, *args, **kwargs)
             except Exception as e:
                 properties = {
-                    "customDimensions": {
-                        "drioPackage": f"python-datareservoirio/{drio.__version__}",
-                    }
+                    "drioPackage": f"python-datareservoirio/{drio.__version__}",
                 }
                 if os.getenv(ENV_VAR_ENGINE_ROOM_APP_ID) is not None:
-                    properties["customDimensions"]["engineRoomAppId"] = os.getenv(
+                    properties["engineRoomAppId"] = os.getenv(
                         ENV_VAR_ENGINE_ROOM_APP_ID
                     )
 
