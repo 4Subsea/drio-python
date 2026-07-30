@@ -37,7 +37,7 @@ def get_exceptions_logger() -> logging.Logger:
         if enable_app_insights == "true" or enable_app_insights == "1":
             _ensure_azure_monitor_configured(
                 connection_string=environment._application_insight_connectionstring,
-                logger_name=__name__ + "_exceptions_logger",
+                logger_name=__name__ + "_exception_logger",
             )
             exceptions_logger.setLevel("WARNING")
 
@@ -52,12 +52,10 @@ def log_decorator(log_level):
                 return func(self, *args, **kwargs)
             except Exception as e:
                 properties = {
-                    "customDimensions": {
-                        "drioPackage": f"python-datareservoirio/{drio.__version__}",
-                    }
+                    "drioPackage": f"python-datareservoirio/{drio.__version__}",
                 }
                 if os.getenv(ENV_VAR_ENGINE_ROOM_APP_ID) is not None:
-                    properties["customDimensions"]["engineRoomAppId"] = os.getenv(
+                    properties["engineRoomAppId"] = os.getenv(
                         ENV_VAR_ENGINE_ROOM_APP_ID
                     )
 
