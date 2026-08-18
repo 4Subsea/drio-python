@@ -39,6 +39,10 @@ def metric() -> logging.Logger:
     if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
         enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
         if enable_app_insights == "true" or enable_app_insights == "1":
+            # Prevent messages from being passed directly to ancestor logger handlers,
+            # since ancestor logger levels and filters are not considered during propagation.
+            # https://docs.python.org/3.12/library/logging.html#logging.Logger.propagate
+            logger.propagate = False
             logger.setLevel(logging.DEBUG)
             _ensure_azure_monitor_configured(
                 connection_string=environment._application_insight_connectionstring,
