@@ -316,9 +316,14 @@ class Client:
             timeout=_TIMEOUT_DEAULT,
         )
 
-    def _timer(metric_name="Timer"):
-        """Decorator used to log latency of the ``get`` and ``get_samples_aggregate`` method"""
+def _timer(metric_name="Timer"):
+    """Decorator factory used to log latency for the ``get`` and ``get_samples_aggregate`` methods.
 
+    Parameters
+    ----------
+    metric_name : str
+        Metric name to emit (use a stable, low-cardinality value).
+    """
         def decorator(func):
             @wraps(func)
             def wrapper(self, series_id, start=None, end=None, **kwargs):
