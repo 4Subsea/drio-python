@@ -316,7 +316,7 @@ class Client:
             timeout=_TIMEOUT_DEAULT,
         )
 
-    def _timer(metric_name="foo"):
+    def _timer(metric_name="Timer"):
         """Decorator used to log latency of the ``get`` and ``get_samples_aggregate`` method"""
         def decorator(func):
             @wraps(func)
