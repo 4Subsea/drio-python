@@ -318,6 +318,7 @@ class Client:
 
     def _timer(metric_name="Timer"):
         """Decorator used to log latency of the ``get`` and ``get_samples_aggregate`` method"""
+
         def decorator(func):
             @wraps(func)
             def wrapper(self, series_id, start=None, end=None, **kwargs):
@@ -345,7 +346,9 @@ class Client:
                 }
                 metric().info(metric_name, extra=properties)
                 return result
+
             return wrapper
+
         return decorator
 
     @log_decorator("exception")
