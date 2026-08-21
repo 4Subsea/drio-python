@@ -316,40 +316,49 @@ class Client:
             timeout=_TIMEOUT_DEAULT,
         )
 
-    def _timer(func):
-        """Decorator used to log latency of the ``get`` and ``get_samples_aggregate`` method"""
+    def _timer(metric_name="Timer"):
+        """Decorator factory used to log latency for the ``get`` and ``get_samples_aggregate`` methods.
 
-        @wraps(func)
-        def wrapper(self, series_id, start=None, end=None, **kwargs):
-            start_time = time.perf_counter()
-            result = func(self, series_id, start=start, end=end, **kwargs)
-            end_time = time.perf_counter()
-            elapsed_time = end_time - start_time
-            start_date_as_str = None
-            end_date_as_str = None
-            if start:
-                start_date_as_str = pd.to_datetime(
-                    start, dayfirst=True, unit="ns", utc=True
-                ).isoformat()
-            if end:
-                end_date_as_str = pd.to_datetime(
-                    end, dayfirst=True, unit="ns", utc=True
-                ).isoformat()
-            number_of_samples = len(result)
-            properties = {
-                "series_id": series_id,
-                "start": start_date_as_str,
-                "end": end_date_as_str,
-                "elapsed": elapsed_time,
-                "number-of-samples": number_of_samples,
-            }
-            metric().info("Timer", extra=properties)
-            return result
+        Parameters
+        ----------
+        metric_name : str
+            Metric name to emit (use a stable, low-cardinality value).
+        """
 
-        return wrapper
+        def decorator(func):
+            @wraps(func)
+            def wrapper(self, series_id, start=None, end=None, **kwargs):
+                start_time = time.perf_counter()
+                result = func(self, series_id, start=start, end=end, **kwargs)
+                end_time = time.perf_counter()
+                elapsed_time = end_time - start_time
+                start_date_as_str = None
+                end_date_as_str = None
+                if start:
+                    start_date_as_str = pd.to_datetime(
+                        start, dayfirst=True, unit="ns", utc=True
+                    ).isoformat()
+                if end:
+                    end_date_as_str = pd.to_datetime(
+                        end, dayfirst=True, unit="ns", utc=True
+                    ).isoformat()
+                number_of_samples = len(result)
+                properties = {
+                    "series_id": series_id,
+                    "start": start_date_as_str,
+                    "end": end_date_as_str,
+                    "elapsed": elapsed_time,
+                    "number-of-samples": number_of_samples,
+                }
+                metric().info(metric_name, extra=properties)
+                return result
+
+            return wrapper
+
+        return decorator
 
     @log_decorator("exception")
-    @_timer
+    @_timer("Timer_get")
     @retry(
         stop=stop_after_attempt(
             4
@@ -455,7 +464,7 @@ class Client:
         return series
 
     @log_decorator("exception")
-    @_timer
+    @_timer("Timer_get_samples_aggregate")
     @log_decorator("warning")
     def get_samples_aggregate(
         self,
