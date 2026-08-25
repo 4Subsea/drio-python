@@ -7,11 +7,11 @@ from functools import wraps
 from operator import itemgetter
 from urllib.parse import urlencode
 from uuid import uuid4
-from opentelemetry import trace
 
 import numpy as np
 import pandas as pd
 import requests
+from opentelemetry import trace
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -21,7 +21,7 @@ from tenacity import (
 )
 from tqdm.auto import tqdm
 
-from ._logging import log_decorator, get_metric_logger
+from ._logging import get_metric_logger, log_decorator
 from ._utils import function_translation, period_translation
 from .globalsettings import environment
 from .storage import Storage
