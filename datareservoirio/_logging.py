@@ -26,6 +26,7 @@ def _ensure_azure_monitor_configured(connection_string, logger_name):
                 )
                 _configured_loggers[cache_key] = True
 
+
 @lru_cache(maxsize=1)
 def get_metric_logger() -> logging.Logger:
     logger = logging.getLogger(__name__ + "_metric_appinsight")
@@ -42,6 +43,7 @@ def get_metric_logger() -> logging.Logger:
                 logger_name=__name__ + "_metric_appinsight",
             )
     return logger
+
 
 @lru_cache(maxsize=1)
 def get_exceptions_logger() -> logging.Logger:
