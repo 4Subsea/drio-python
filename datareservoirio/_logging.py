@@ -28,6 +28,24 @@ def _ensure_azure_monitor_configured(connection_string, logger_name):
 
 
 @lru_cache(maxsize=1)
+def get_metric_logger() -> logging.Logger:
+    logger = logging.getLogger(__name__ + "_metric_appinsight")
+    if os.getenv(ENV_VAR_ENABLE_APP_INSIGHTS) is not None:
+        enable_app_insights = os.environ[ENV_VAR_ENABLE_APP_INSIGHTS].lower()
+        if enable_app_insights == "true" or enable_app_insights == "1":
+            # Prevent messages from being passed directly to ancestor logger handlers,
+            # since ancestor logger levels and filters are not considered during propagation.
+            # https://docs.python.org/3.12/library/logging.html#logging.Logger.propagate
+            logger.propagate = False
+            logger.setLevel(logging.DEBUG)
+            _ensure_azure_monitor_configured(
+                connection_string=environment._application_insight_connectionstring,
+                logger_name=__name__ + "_metric_appinsight",
+            )
+    return logger
+
+
+@lru_cache(maxsize=1)
 def get_exceptions_logger() -> logging.Logger:
     exceptions_logger = logging.getLogger(__name__ + "_exception_logger")
     exceptions_logger.setLevel(logging.DEBUG)
