@@ -586,23 +586,23 @@ class Client:
             response_json = response.json()
             next_page_link = response_json.get("@odata.nextLink", None)
 
-            content = [
-                (
-                    pd.to_datetime(sample["Timestamp"], unit="ns", utc=True),
-                    sample["Value"],
-                )
-                for sample in response_json["value"]
-            ]
+            page = response_json["value"]
 
             # update the progress bar
-            if content and log.getEffectiveLevel() < logging.WARNING:
+            if page and log.getEffectiveLevel() < logging.WARNING:
                 progress_bar.update(1)
 
             new_df = pd.DataFrame(
-                content, columns=("index", "values"), copy=False
+                {
+                    "index": pd.to_datetime(
+                        [sample["Timestamp"] for sample in page], unit="ns", utc=True
+                    ),
+                    "values": [sample["Value"] for sample in page],
+                }
             ).astype({"values": "float64"}, errors="ignore")
 
             df = pd.concat([df, new_df])
+
         if log.getEffectiveLevel() < logging.WARNING:
             progress_bar.close()
         series = (
