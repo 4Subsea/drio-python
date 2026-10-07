@@ -407,7 +407,7 @@ class Client:
         )
         if response.status_code == 504:
             raise TimeoutError(
-                "Gateway Timeout. Try downloading data in smaller batches, preferably with a daily interval. See documentation for guidance: https://docs.4insight.io/dataanalytics/reservoir/python/latest/user_guide/dos_donts.html."
+                "Gateway Timeout. Try downloading data in smaller batches, preferably with a daily interval. See documentation for guidance: https://docs.4insight.io/dataanalytics/reservoir/python/latest/user_guide/"
             )
         response.raise_for_status()
         response_json = response.json()
@@ -580,7 +580,7 @@ class Client:
             response = get_samples_aggregate_page(next_page_link)
             if response.status_code == 504:
                 raise TimeoutError(
-                    "Gateway Timeout. Try downloading data in smaller batches, preferably with a daily interval. See documentation for guidance: https://docs.4insight.io/dataanalytics/reservoir/python/latest/user_guide/dos_donts.html."
+                    "Gateway Timeout. Try downloading data in smaller batches, preferably with a daily interval. See documentation for guidance: https://docs.4insight.io/dataanalytics/reservoir/python/latest/user_guide/"
                 )
             response.raise_for_status()
             response_json = response.json()
