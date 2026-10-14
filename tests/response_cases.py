@@ -253,6 +253,53 @@ DATARESERVOIRIO_TIMESERIES_API = {
         "status_code": 200,
         "reason": "OK",
     },
+    # description: TimeSeries samples/raw response (empty data)
+    # Note this doesn't contain the entire URL as it's meant to be used with response_irrelevant marker
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/reservoir/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/samples/raw",
+    ): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "samples_raw_empty.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
+    # description: TimeSeries samples/raw response, first of two pages
+    # Note this doesn't contain the entire URL as it's meant to be used with response_irrelevant marker
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/reservoir/timeseries/c1c8a1d5-7bd2-4a5f-9a0e-a2b1d6a3f2a1/samples/raw",
+    ): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "samples_raw_page1.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
+    # description: TimeSeries samples/raw response, second of two pages
+    (
+        "GET",
+        "https://reservoir-api.4subsea.net/api/reservoir/timeseries/c1c8a1d5-7bd2-4a5f-9a0e-a2b1d6a3f2a1/samples/raw/page2",
+    ): {
+        "_content": (
+            TEST_PATH
+            / "testdata"
+            / "response_cases"
+            / "datareservoirio_timeseries_api"
+            / "samples_raw_page2.json"
+        ).read_bytes(),
+        "status_code": 200,
+        "reason": "OK",
+    },
 }
 
 

@@ -6,6 +6,7 @@ from encodings.utf_8 import encode
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import numpy as np
 import pandas as pd
 import pytest
 from requests import HTTPError, Response
@@ -63,6 +64,26 @@ def fail_with_invalid_json_error(self, url, timeout):
 
 def _mock_blob_sequence_days(response_json):
     return {1: "file1", 2: "file2"}
+
+
+def _set_samples_pages(response_cases, series_id, pages, endpoint="raw"):
+    """Register samples/<endpoint> responses with one page per list of values in ``pages``."""
+    base_url = f"https://reservoir-api.4subsea.net/api/reservoir/timeseries/{series_id}/samples/{endpoint}"
+    for page_number, values in enumerate(pages):
+        url = base_url if page_number == 0 else f"{base_url}/page{page_number}"
+        content = {
+            "value": [
+                {"Timestamp": f"2023-12-01T00:00:{page_number}{i}Z", "Value": value}
+                for i, value in enumerate(values)
+            ]
+        }
+        if page_number < len(pages) - 1:
+            content["@odata.nextLink"] = f"{base_url}/page{page_number + 1}"
+        response_cases._CASES["datareservoirio-api"][("GET", url)] = {
+            "_content": json.dumps(content).encode("utf-8"),
+            "status_code": 200,
+            "reason": "OK",
+        }
 
 
 class Test_Client:
@@ -1040,3 +1061,201 @@ class Test_Client:
 
         request_url = mock_requests.call_args.args[1]
         assert f"aggregationPeriod={expected}" in request_url
+
+    @pytest.mark.response_irrelevant
+    def test_get_samples_raw_request_url(self, client, mock_requests, response_cases):
+        response_cases.set("datareservoirio-api")
+
+        series = client.get_samples_raw(
+            "e3d82cda-4737-4af9-8d17-d9dfda8703d0",
+            start="2023-12-01",
+            end="2023-12-02",
+            max_page_size=1000,
+        )
+
+        request_url = mock_requests.call_args.args[1]
+        assert request_url.startswith(
+            "https://reservoir-api.4subsea.net/api/reservoir/timeseries/e3d82cda-4737-4af9-8d17-d9dfda8703d0/samples/raw?"
+        )
+        assert "maxPageSize=1000" in request_url
+        assert "start=2023-12-01T00%3A00%3A00%2B00%3A00" in request_url
+        assert "end=2023-12-02T00%3A00%3A00%2B00%3A00" in request_url
+        assert series.empty
+
+    @pytest.mark.response_irrelevant
+    def test_get_samples_raw_follows_next_link(
+        self, client, mock_requests, response_cases
+    ):
+        response_cases.set("datareservoirio-api")
+
+        series = client.get_samples_raw(
+            "c1c8a1d5-7bd2-4a5f-9a0e-a2b1d6a3f2a1",
+            start="2023-12-01",
+            end="2023-12-02",
+        )
+
+        assert mock_requests.call_count == 2
+        expected = pd.Series(
+            [1.5, 2.5, None, 4.0],
+            index=pd.to_datetime(
+                [
+                    "2023-12-01T00:00:00Z",
+                    "2023-12-01T00:00:01Z",
+                    "2023-12-01T00:00:02Z",
+                    "2023-12-01T00:00:03.5Z",
+                ],
+                utc=True,
+                format="ISO8601",
+            ),
+            name="values",
+            dtype="float64",
+        )
+        expected.index.name = "index"
+        pd.testing.assert_series_equal(series, expected, check_index_type=False)
+
+    @pytest.mark.parametrize(
+        "start, end",
+        [
+            (None, "2023-12-02"),
+            ("2023-12-01", None),
+            ("2023-12-02", "2023-12-01"),
+        ],
+    )
+    def test_get_samples_raw_invalid_interval(self, client, start, end):
+        with pytest.raises(ValueError):
+            client.get_samples_raw(
+                "e3d82cda-4737-4af9-8d17-d9dfda8703d0", start=start, end=end
+            )
+
+    @pytest.mark.response_irrelevant
+    @pytest.mark.parametrize(
+        "values, expected, is_expected_dtype",
+        [
+            ([1, 2], [1, 2], pd.api.types.is_integer_dtype),
+            ([1.5, 2.5], [1.5, 2.5], pd.api.types.is_float_dtype),
+            (["1", "2"], ["1", "2"], pd.api.types.is_string_dtype),
+            (["1.5", "2.5"], ["1.5", "2.5"], pd.api.types.is_string_dtype),
+            ([True, False], [True, False], pd.api.types.is_bool_dtype),
+            (["true", "false"], ["true", "false"], pd.api.types.is_string_dtype),
+            (
+                [{"a": 1}, {"b": [1, 2]}],
+                [{"a": 1}, {"b": [1, 2]}],
+                pd.api.types.is_object_dtype,
+            ),
+            (
+                ['{"a": 1}', '{"b": [1, 2]}'],
+                ['{"a": 1}', '{"b": [1, 2]}'],
+                pd.api.types.is_string_dtype,
+            ),
+        ],
+        ids=[
+            "integers",
+            "doubles",
+            "integers-in-strings",
+            "doubles-in-strings",
+            "booleans",
+            "booleans-in-strings",
+            "json-objects",
+            "stringified-json-objects",
+        ],
+    )
+    def test_get_samples_raw_value_types(
+        self,
+        client,
+        mock_requests,
+        response_cases,
+        values,
+        expected,
+        is_expected_dtype,
+    ):
+        response_cases.set("datareservoirio-api")
+        series_id = "5f0a3b4e-2c3d-4e5f-8a9b-0c1d2e3f4a5b"
+        _set_samples_pages(response_cases, series_id, [values])
+
+        series = client.get_samples_raw(series_id, start="2023-12-01", end="2023-12-02")
+
+        assert series.tolist() == expected
+        assert is_expected_dtype(series.dtype)
+        assert series.index.equals(
+            pd.to_datetime(
+                [f"2023-12-01T00:00:0{i}Z" for i in range(len(values))], utc=True
+            )
+        )
+
+    @pytest.mark.response_irrelevant
+    @pytest.mark.parametrize(
+        "pages, expected, expected_dtype",
+        [
+            ([[1, 1.5]], [1.0, 1.5], "float64"),
+            ([[1, None]], [1.0, np.nan], "float64"),
+            ([[1, True]], [1, True], "object"),
+            (
+                [[1, 1.5, "a", True, {"x": 1}, None]],
+                [1, 1.5, "a", True, {"x": 1}, None],
+                "object",
+            ),
+            ([[1, 2], [1.5]], [1.0, 2.0, 1.5], "float64"),
+            ([[1, 2], [None]], [1.0, 2.0, np.nan], "float64"),
+            ([[1, 2], ["a"]], [1, 2, "a"], "object"),
+            ([[1, 2], [True]], [1, 2, True], "object"),
+            ([[True], [None]], [True, None], "object"),
+            ([["a"], [{"x": 1}]], ["a", {"x": 1}], "object"),
+            ([[], [1, 2]], [1, 2], "int64"),
+        ],
+        ids=[
+            "page-int-float",
+            "page-int-null",
+            "page-int-bool",
+            "page-all-types",
+            "pages-int-float",
+            "pages-int-null",
+            "pages-int-string",
+            "pages-int-bool",
+            "pages-bool-null",
+            "pages-string-json-object",
+            "pages-empty-int",
+        ],
+    )
+    def test_get_samples_raw_mixed_value_types(
+        self, client, mock_requests, response_cases, pages, expected, expected_dtype
+    ):
+        response_cases.set("datareservoirio-api")
+        series_id = "8b6f2d1c-3e4a-4b5c-9d6e-7f8a9b0c1d2e"
+        _set_samples_pages(response_cases, series_id, pages)
+
+        series = client.get_samples_raw(series_id, start="2023-12-01", end="2023-12-02")
+
+        assert mock_requests.call_count == len(pages)
+        pd.testing.assert_series_equal(
+            series.reset_index(drop=True),
+            pd.Series(expected, dtype=expected_dtype, name="values"),
+        )
+        # 1 == True in Python, so check the element types explicitly
+        assert [type(value) for value in series.tolist()] == [
+            type(value) for value in expected
+        ]
+
+    @pytest.mark.response_irrelevant
+    def test_get_samples_raw_equals_aggregate_tick(
+        self, client, mock_requests, response_cases
+    ):
+        response_cases.set("datareservoirio-api")
+        series_id = "2a7c9e1f-4b3d-4c5e-8f6a-1b2c3d4e5f6a"
+        pages = [[0.1, 1.5, -2.25, 2.0], [3.0e-5, 4.75e10, 0.0, -7.0]]
+        _set_samples_pages(response_cases, series_id, pages, endpoint="raw")
+        _set_samples_pages(response_cases, series_id, pages, endpoint="aggregate")
+
+        series_raw = client.get_samples_raw(
+            series_id, start="2023-12-01", end="2023-12-02"
+        )
+        series_aggregate = client.get_samples_aggregate(
+            series_id,
+            start="2023-12-01",
+            end="2023-12-02",
+            aggregation_period="tick",
+            aggregation_function="mean",
+        )
+
+        assert series_raw.dtype == "float64"
+        assert len(series_raw) == 8
+        pd.testing.assert_series_equal(series_raw, series_aggregate)
