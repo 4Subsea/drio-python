@@ -8,15 +8,15 @@ import pandas as pd
 import datareservoirio as drio
 
 
-def wait_for_data_to_appear(func, delay=3):
-    count = 0
-    while count == 0:
+def wait_for_data_to_appear(func, delay=3, timeout=120):
+    deadline = time.monotonic() + timeout
+    while True:
         series = func()
-        count = len(series)
-        if count == 0:
-            time.sleep(delay)
-        else:
+        if len(series):
             return series
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Timed out waiting for raw samples to appear")
+        time.sleep(delay)
 
 
 def test_non_paged(cleanup_series):
