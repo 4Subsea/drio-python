@@ -42,9 +42,14 @@ is *"tick"* (100 nanoseconds).
                             aggregation_function='mean',
                             include_empty_aggregations=True)                        
 
+    # Get the raw samples, as stored, without any aggregation
+    timeseries = client.get_samples_raw(series_id,
+                            start='2024-01-01', end='2024-01-02')
+
 .. note::
 
     :py:meth:`Client.get_samples_aggregate` returns a :py:class:`pandas.Series`. The :py:mod:`start`, :py:mod:`end`, :py:mod:`aggregation_period` and :py:mod:`aggregation_function` parameters are required.   
+    :py:meth:`Client.get_samples_raw` also returns a :py:class:`pandas.Series`; only :py:mod:`start` and :py:mod:`end` are required.
 
 .. important::
 
