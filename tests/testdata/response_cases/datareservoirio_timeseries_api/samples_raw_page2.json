@@ -1,0 +1,7 @@
+{
+    "@odata.context": "https://reservoir-api-test.4subsea.net/api/reservoir/timeseries/samples/raw/$metadata#Samples",
+    "value": [
+        {"Timestamp": "2023-12-01T00:00:02Z", "Value": null},
+        {"Timestamp": "2023-12-01T00:00:03.5Z", "Value": 4}
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "@odata.context": "https://reservoir-api-test.4subsea.net/api/reservoir/timeseries/samples/raw/$metadata#Samples",
+    "@odata.nextLink": "https://reservoir-api.4subsea.net/api/reservoir/timeseries/c1c8a1d5-7bd2-4a5f-9a0e-a2b1d6a3f2a1/samples/raw/page2",
+    "value": [
+        {"Timestamp": "2023-12-01T00:00:00Z", "Value": 1.5},
+        {"Timestamp": "2023-12-01T00:00:01Z", "Value": 2.5}
+    ]
+}

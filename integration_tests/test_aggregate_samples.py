@@ -72,7 +72,7 @@ def test_paged(cleanup_series):
 
     Tests the following:
         * Creates a non-empty timeseries in DataReservoir.io.
-        * Fetches it using the samples/aggregate endpoint and checks that the data is matches with what was created.
+        * Fetches it using the samples/aggregate endpoint and checks that the data matches with what was created.
         * uses a maxPageSize of 1000 which means the response will be paged (into 4 pages)
     """
 

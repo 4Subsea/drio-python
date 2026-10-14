@@ -294,7 +294,7 @@ class Client:
         )
 
     def _timer(metric_name="Timer"):
-        """Decorator factory used to log latency for the ``get`` and ``get_samples_aggregate`` methods.
+        """Decorator factory used to log latency for the ``get``, ``get_samples_aggregate`` and ``get_samples_raw`` methods.
 
         Parameters
         ----------
@@ -546,11 +546,91 @@ class Client:
 
         next_page_link = f"{environment.api_base_url}reservoir/timeseries/{series_id}/samples/aggregate?{urlencode(params)}"
 
-        df = (
-            pd.DataFrame(columns=("index", "values"))
-            .astype({"index": "int64"})
-            .astype({"values": "float64"}, errors="ignore")
+        return self._get_samples_paged(
+            next_page_link, progress_desc="Downloading aggregate data"
         )
+
+    @log_decorator("exception")
+    @_timer("Timer_get_samples_raw")
+    @log_decorator("warning")
+    def get_samples_raw(
+        self,
+        series_id,
+        start=None,
+        end=None,
+        max_page_size=_DEFAULT_MAX_PAGE_SIZE,
+    ):
+        """
+        Retrieve a series from DataReservoir.io using the samples/raw endpoint.
+
+        Returns the samples as stored, without any aggregation. Values are not
+        converted, so the dtype of the returned series is inferred from the values,
+        e.g. numbers, booleans, strings or JSON objects (as dicts).
+
+        Parameters
+        ----------
+        series_id : str
+            Identifier of the series to download
+        start: required
+            Start time (inclusive) of the series given as anything
+            pandas.to_datetime is able to parse. Date must be within the past 90 days.
+        end: required
+            Stop time (exclusive) of the series given as anything
+            pandas.to_datetime is able to parse. Date must be within the past 90 days.
+        max_page_size : optional
+            Maximum number of samples to return per page. The method automatically follows links
+            to next pages and returns the entire series. For advanced usage.
+        Returns
+        -------
+        pandas.Series
+            Series data
+        """
+        if not start:
+            # Required parameter
+            raise ValueError(
+                "You must specify the start date in ISO 8601 format, for example 2023-12-01"
+            )
+
+        if not end:
+            # Required parameter
+            raise ValueError(
+                "You must specify the end date in ISO 8601 format, for example 2023-12-31."
+            )
+
+        start = pd.to_datetime(start, dayfirst=True, unit="ns", utc=True)
+        end = pd.to_datetime(end, dayfirst=True, unit="ns", utc=True)
+
+        if start.value >= end.value:
+            raise ValueError("Start must be before end.")
+
+        params = {}
+
+        params["maxPageSize"] = max_page_size
+        params["start"] = start.isoformat()
+        params["end"] = end.isoformat()
+
+        next_page_link = f"{environment.api_base_url}reservoir/timeseries/{series_id}/samples/raw?{urlencode(params)}"
+
+        return self._get_samples_paged(
+            next_page_link,
+            progress_desc="Downloading raw data",
+            convert_to_float=False,
+        )
+
+    def _get_samples_paged(self, next_page_link, progress_desc, convert_to_float=True):
+        """
+        Download all pages of a samples endpoint, following ``@odata.nextLink``,
+        and return the result as a pandas.Series.
+
+        If ``convert_to_float`` is True, values are converted to float64 where
+        possible. Otherwise, the dtype is inferred from the values as returned.
+        """
+        empty_df = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+        if convert_to_float:
+            empty_df = empty_df.astype({"values": "float64"}, errors="ignore")
+
+        # Collect pages and concatenate once, as concatenating per page is quadratic
+        page_dfs = [empty_df]
 
         @retry(
             stop=stop_after_attempt(
@@ -567,17 +647,17 @@ class Client:
             ),
             wait=wait_chain(*[wait_fixed(0.1), wait_fixed(0.5), wait_fixed(30)]),
         )
-        def get_samples_aggregate_page(url):
+        def get_samples_page(url):
             return self._auth_session.get(
                 url,
                 timeout=_TIMEOUT_DEAULT,
             )
 
         if log.getEffectiveLevel() < logging.WARNING:
-            progress_bar = tqdm(unit=" pages", desc="Downloading aggregate data")
+            progress_bar = tqdm(unit=" pages", desc=progress_desc)
 
         while next_page_link:
-            response = get_samples_aggregate_page(next_page_link)
+            response = get_samples_page(next_page_link)
             if response.status_code == 504:
                 raise TimeoutError(
                     "Gateway Timeout. Try downloading data in smaller batches, preferably with a daily interval. See documentation for guidance: https://docs.4insight.io/dataanalytics/reservoir/python/latest/user_guide/"
@@ -599,12 +679,15 @@ class Client:
                     ),
                     "values": [sample["Value"] for sample in page],
                 }
-            ).astype({"values": "float64"}, errors="ignore")
+            )
+            if convert_to_float:
+                new_df = new_df.astype({"values": "float64"}, errors="ignore")
 
-            df = pd.concat([df, new_df])
+            page_dfs.append(new_df)
 
         if log.getEffectiveLevel() < logging.WARNING:
             progress_bar.close()
+        df = pd.concat(page_dfs)
         series = (
             df.infer_objects().set_index("index").squeeze("columns").copy(deep=True)
         )
