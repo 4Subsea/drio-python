@@ -625,9 +625,12 @@ class Client:
         If ``convert_to_float`` is True, values are converted to float64 where
         possible. Otherwise, the dtype is inferred from the values as returned.
         """
-        df = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
+        empty_df = pd.DataFrame(columns=("index", "values")).astype({"index": "int64"})
         if convert_to_float:
-            df = df.astype({"values": "float64"}, errors="ignore")
+            empty_df = empty_df.astype({"values": "float64"}, errors="ignore")
+
+        # Collect pages and concatenate once, as concatenating per page is quadratic
+        page_dfs = [empty_df]
 
         @retry(
             stop=stop_after_attempt(
@@ -680,10 +683,11 @@ class Client:
             if convert_to_float:
                 new_df = new_df.astype({"values": "float64"}, errors="ignore")
 
-            df = pd.concat([df, new_df])
+            page_dfs.append(new_df)
 
         if log.getEffectiveLevel() < logging.WARNING:
             progress_bar.close()
+        df = pd.concat(page_dfs)
         series = (
             df.infer_objects().set_index("index").squeeze("columns").copy(deep=True)
         )
