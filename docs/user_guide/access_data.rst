@@ -29,11 +29,9 @@ is *"tick"* (100 nanoseconds).
                             aggregation_period='15m',
                             aggregation_function='mean')
 
-    # Get all available data for selected time period
-    timeseries = client.get_samples_aggregate(series_id, 
-                            start='2024-01-01', end='2024-01-02', 
-                            aggregation_period='tick',
-                            aggregation_function='mean')
+    # Get the raw samples, as stored, without any aggregation
+    timeseries = client.get_samples_raw(series_id,
+                            start='2024-01-01', end='2024-01-02')
 
     # Get all datapoints resampled to 1 minute even if there is no data. Empty values will be filled with NaN.
     timeseries = client.get_samples_aggregate(series_id, 
@@ -42,9 +40,6 @@ is *"tick"* (100 nanoseconds).
                             aggregation_function='mean',
                             include_empty_aggregations=True)                        
 
-    # Get the raw samples, as stored, without any aggregation
-    timeseries = client.get_samples_raw(series_id,
-                            start='2024-01-01', end='2024-01-02')
 
 .. note::
 
